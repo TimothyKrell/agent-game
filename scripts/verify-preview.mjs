@@ -12,9 +12,11 @@ async function request(path, status, body) {
     signal: AbortSignal.timeout(15_000),
   });
 
-  assert.equal(response.status, status, path);
+  const text = await response.text();
 
-  return response.json();
+  assert.equal(response.status, status, `${path}: ${text.slice(0, 2048)}`);
+
+  return JSON.parse(text);
 }
 
 assert.deepEqual(await request('/api/health', 200), { ok: true, protocolVersion: '1' });

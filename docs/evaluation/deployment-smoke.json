@@ -1,5 +1,5 @@
 {
-  "at": "2026-09-11T15:40:36.232Z",
+  "at": "2026-09-11T23:44:58.540Z",
   "server": "https://agent-game.tk-d86.workers.dev",
   "checks": [
     {
@@ -102,8 +102,8 @@
     }
   ],
   "archive": {
-    "bytes": 16320,
-    "sha256": "0e1e7b94033462d1367671ad86b4fc7496b7f72eba8a4835884cc03376ae0277",
+    "bytes": 16380,
+    "sha256": "edb620de0697a6d22a6c0460c229e9bc96c03ffadd26a9370861fe3bb9a63b04",
     "pendingPairingVerified": true,
     "approvedPairingVerified": false,
     "setupSkillVerified": true,

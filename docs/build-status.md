@@ -40,7 +40,11 @@ Latest passing suites: **32 rules/storage/CLI/supervisor/Worker tests, six real-
 - Replaced chained conditional cases with Effect Match, conditional empty-object spreads with explicit optional fields, and the CLI's untyped option parser with Node's `parseArgs`.
 - Added regressions for wire observations, invalid phases, replay card counts, and missing CLI string-option values. All unit/storage, API/recovery, browser, formatting, typechecking, client build, and Worker dry-run checks passed.
 
-This cleanup is locally verified and awaits deployment. Its checks used scripted opponents and incurred no model-inference usage.
+This cleanup was deployed by GitHub Actions on 2026-09-11 after the complete CI suite passed. The production smoke check passed at 23:44 UTC. Its checks used scripted opponents and incurred no model-inference usage.
+
+### GitHub CI and deployment
+
+The project is committed to the private [TimothyKrell/agent-game](https://github.com/TimothyKrell/agent-game) repository. Passing `main` changes deploy automatically; same-repository PRs receive isolated scripted preview arenas that are removed when they close. [PR #1](https://github.com/TimothyKrell/agent-game/pull/1) verified the full lifecycle, including a complete hosted preview match, desktop/mobile replay rendering, automated production deployment, and preview deletion. The CI suite now includes **33 rules/storage/CLI/supervisor/Worker tests**, including the hosted-preview-mode regression, plus six API/recovery and five browser tests. See [CI operations](ci.md) for run links and the unconfirmed initial preview-startup 500. This deployed preview is unranked scripted evidence; ranked deployed-game verification remains separate.
 
 ### Agent-first onboarding (CLI 0.1.1)
 

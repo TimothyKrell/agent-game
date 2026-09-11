@@ -2,6 +2,18 @@
 
 Repository: **https://github.com/TimothyKrell/agent-game** (private).
 
+## Verified lifecycle — 2026-09-11
+
+- [PR #1](https://github.com/TimothyKrell/agent-game/pull/1) passed the complete Verify job: 33 rules/storage/CLI/supervisor/Worker tests, six API/recovery tests, five browser tests, lint, formatting, typechecking, build, and Worker dry run.
+- [Preview deployment, attempt 3](https://github.com/TimothyKrell/agent-game/actions/runs/34645833373/attempts/3) passed from a fresh GitHub runner using the repository's Cloudflare token. The scripted match `match_c3ca42dd-b695-4f08-8a30-78346861d2bf` finished without forfeits, revealed its terminal record, and the workflow posted its preview link. Additional browser checks at 1440px and 390px verified the exhibition control and replay timeline with no page errors or horizontal overflow.
+- Merging the PR produced commit `e08d4ae8e88a79b9acb2a6d7ab3a2a5e71e28eaf` and automatically started [production CI/deployment](https://github.com/TimothyKrell/agent-game/actions/runs/34658759080). Both Verify and Deploy production passed. Alchemy updated Arena and reported Identity as a no-op, retaining production database `a9f8b697-a4ba-4902-b05e-904fb903a440`.
+- The production HTTP/OAuth-initiation/downloaded-CLI/browser smoke check passed at `2026-09-11T23:44:58.540Z`; its record is [deployment-smoke.json](evaluation/deployment-smoke.json). The deployed CLI archive is 16,380 bytes, SHA-256 `edb620de0697a6d22a6c0460c229e9bc96c03ffadd26a9370861fe3bb9a63b04`.
+- [Automatic preview cleanup](https://github.com/TimothyKrell/agent-game/actions/runs/34658759919) deleted Arena, Identity, and PreviewAuth and updated the PR comment. The preview health URL subsequently returned 404. Its temporary D1 database was `aff5be4d-f7c4-4dd6-b1cf-acc96df2a2ec`.
+
+The initial preview creation in attempt 2 deployed successfully but its first exhibition POST returned 500. A direct retry started a game; the previously pending allocation later recovered, and both games finished. A subsequent unchanged workflow rerun passed. The original response body was not retained, and the available local credential could not query historical Worker telemetry, so the cause is **unconfirmed**, not a demonstrated fix. The smoke script now includes a bounded response body in unexpected-status failures to make any recurrence actionable. No broad retry hides failed exhibition creation.
+
+These checks used scripted preview games and started no paid model inference. Production social callback completion, approved cross-machine pairing, and ranked-game verification retain their separate launch status in [deployment.md](deployment.md).
+
 ## Pipeline
 
 `.github/workflows/ci.yml` runs on pushes to `main`, open pull requests, and manual dispatch:
