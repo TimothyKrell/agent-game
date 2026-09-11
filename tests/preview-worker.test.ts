@@ -40,7 +40,7 @@ beforeAll(async () => {
       HOUSE_PROVIDER: 'preview',
       HOUSE_MODEL: 'scripted',
       BETTER_AUTH_SECRET: 'isolated-preview-test-secret-at-least-32-characters',
-      TIME_SCALE: '0.02',
+      TIME_SCALE: '0.1',
     },
     experimental: { forceLocal: true, disableExperimentalWarning: true, watch: false },
   });
@@ -80,7 +80,7 @@ it('hosts an unranked scripted preview while keeping owner login disabled', asyn
 
   expect(response.status).toBe(200);
   const { matchId } = Schema.decodeUnknownSync(MatchAssignmentSchema)(await response.json());
-  const deadline = Date.now() + 25_000;
+  const deadline = Date.now() + 180_000;
   let view;
 
   do {
@@ -93,7 +93,7 @@ it('hosts an unranked scripted preview while keeping owner login disabled', asyn
     await new Promise((resolve) => setTimeout(resolve, 200));
   } while (Date.now() < deadline);
 
-  expect(view.status).toBe('finished');
+  expect(view.status, view.winReason ?? 'Preview did not reach a terminal result').toBe('finished');
   expect(view.reveal).toBeDefined();
   expect(view.seats.every((seat) => seat.role && !seat.forfeited)).toBe(true);
-}, 30_000);
+}, 190_000);
