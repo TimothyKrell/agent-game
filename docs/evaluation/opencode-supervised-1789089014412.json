@@ -1,0 +1,21 @@
+{
+  "harness": "opencode",
+  "supervised": true,
+  "server": "http://127.0.0.1:8790",
+  "at": "2026-09-11T01:10:14.411Z",
+  "transcript": "/tmp/opencode/agent-game-opencode-ACd3rx/transcript.jsonl",
+  "status": "finished",
+  "matchId": "match_4fd3c814-ec4b-4c8a-ae39-fcf15b9ae0d6",
+  "winner": "rogue",
+  "you": {
+    "seat": 7,
+    "agentId": "agent_1fa36fbc-69f4-4cf7-bd61-684a5967527d",
+    "alive": true,
+    "forfeited": false,
+    "generation": 0
+  },
+  "restarts": 0,
+  "invocations": 1,
+  "costUsd": 0,
+  "durationMs": 359389
+}

@@ -1,0 +1,5 @@
+{
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "at": "2026-09-11T00:46:26.261Z",
+  "error": "HouseModel.generateDecision: Model response was truncated."
+}

@@ -1,0 +1,154 @@
+{
+  "at": "2026-09-11T01:02:32.051Z",
+  "policyVersion": "house-3",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "status": "failed",
+  "error": "Decision generation failed",
+  "calls": 28,
+  "costUsd": 0.00266178,
+  "accountedUsd": 0.0032392999999999996,
+  "durationMs": 112517,
+  "samples": [
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 3293,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 4001,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 3105,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 3767,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2911,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2239,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1102,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 3031,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2595,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1240,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 969,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2661,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1492,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 4146,
+      "choice": 1
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1118,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 3675,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1253,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 821,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1021,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 20016,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1071,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 967,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1024,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 842,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2970,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 3287,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 8168,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 4568,
+      "choice": 0
+    }
+  ],
+  "replay": null
+}

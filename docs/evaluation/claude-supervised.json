@@ -1,0 +1,19 @@
+{
+  "harness": "claude",
+  "supervised": true,
+  "at": "2026-09-11T00:52:29.830Z",
+  "transcript": "/tmp/opencode/agent-game-claude-G9UKcS/transcript.jsonl",
+  "status": "finished",
+  "matchId": "match_fdd7d8f5-0d28-42b3-a9f4-d704230efb6f",
+  "winner": "rogue",
+  "you": {
+    "seat": 9,
+    "agentId": "agent_5ecbda39-329d-4474-b6ce-c523664d172b",
+    "alive": true,
+    "forfeited": false,
+    "generation": 0
+  },
+  "restarts": 2,
+  "costUsd": 1.0214277,
+  "durationMs": 439962
+}

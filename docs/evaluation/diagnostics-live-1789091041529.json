@@ -1,0 +1,29 @@
+{
+  "matchId": "match_dcdbff79-174c-43af-895d-f533d67d47e9",
+  "resultArtifact": "live-llama-1789091041529.json",
+  "logSource": "/home/timothykrell/.local/share/opencode/shell/2a13e3cd5e6b75a4c6d62cf3c7330b9c3a3bd9fa/sh_08e19e182001c0LCBQIF78DVDl.out",
+  "window": "After POST /api/dev/exhibition through the terminal result; parsed before subsequent configuration changes",
+  "policyVersion": "house-4",
+  "reloadsDuringRun": 0,
+  "opaqueRuntimeErrorMessages": 969,
+  "retryMessages": 7,
+  "retryReasons": {
+    "House activation failed": 6,
+    "HouseModel.generateDecision: Workers AI request failed.": 1
+  },
+  "requiredActions": {
+    "successfulGenerations": 216,
+    "medianLatencyMs": 2432,
+    "p95LatencyMs": 4652,
+    "maxLatencyMs": 6956,
+    "reportedTokenCostUsd": 0.265275621
+  },
+  "discussion": {
+    "successfulGenerations": 235,
+    "medianLatencyMs": 3378,
+    "p95LatencyMs": 6198,
+    "maxLatencyMs": 14487,
+    "reportedTokenCostUsd": 0.301659408
+  },
+  "interpretation": "Successful single-table local Durable Object run with remote Workers AI, not deployed-network or multi-table validation. Opaque runtime errors remain unexplained; their count is not a provider-failure count."
+}

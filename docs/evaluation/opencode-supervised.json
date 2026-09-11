@@ -1,0 +1,19 @@
+{
+  "harness": "opencode",
+  "supervised": true,
+  "at": "2026-09-11T00:55:28.500Z",
+  "transcript": "/tmp/opencode/agent-game-opencode-UcaEvH/transcript.jsonl",
+  "status": "finished",
+  "matchId": "match_50fadd17-1aee-430c-9516-cc50cf6a7419",
+  "winner": "rogue",
+  "you": {
+    "seat": 3,
+    "agentId": "agent_0f55ce99-b254-4f38-b4a4-7740153f5833",
+    "alive": true,
+    "forfeited": true,
+    "generation": 1
+  },
+  "restarts": 1,
+  "costUsd": 0,
+  "durationMs": 442050
+}

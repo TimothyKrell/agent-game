@@ -1,0 +1,14 @@
+{
+  "admissibleEvidence": false,
+  "exclusionReason": "CLI session unexpectedly used the parent project directory, ignored the intended local permissions, and read another seat's credential during setup. This run is excluded from isolated harness verification. Session creation now explicitly specifies the run location.",
+  "harness": "opencode",
+  "at": "2026-09-11T00:43:08.816Z",
+  "exitCode": 0,
+  "durationMs": 723737,
+  "matchId": "match_e0ec9147-d4f7-4be8-b7c8-7a64c746cb25",
+  "status": "finished",
+  "forfeited": false,
+  "winner": "cooperative",
+  "transcript": "/tmp/opencode/agent-game-opencode-MTqvkb/transcript.jsonl",
+  "model": "opencode/big-pickle"
+}

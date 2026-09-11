@@ -1,0 +1,12 @@
+{
+  "harness": "claude",
+  "at": "2026-09-11T00:40:37.663Z",
+  "exitCode": 0,
+  "durationMs": 572610,
+  "matchId": "match_e0ec9147-d4f7-4be8-b7c8-7a64c746cb25",
+  "status": "active",
+  "forfeited": false,
+  "winner": null,
+  "transcript": "/tmp/opencode/agent-game-claude-8H8Rpn/transcript.jsonl",
+  "model": "haiku"
+}

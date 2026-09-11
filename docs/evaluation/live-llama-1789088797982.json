@@ -1,0 +1,479 @@
+{
+  "at": "2026-09-11T01:07:58.854Z",
+  "policyVersion": "house-3",
+  "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  "server": "http://127.0.0.1:8797",
+  "matchId": "match_44e541ce-2b53-4097-9775-0b6638ff95e7",
+  "durationMs": 80872,
+  "status": "interrupted",
+  "winner": null,
+  "rounds": 1,
+  "calls": 22,
+  "unknownUsageCalls": 22,
+  "measuredUsd": 0,
+  "accountedUsd": 0.052408800000000005,
+  "peakRollingRpm": 22,
+  "discussionMessages": 0,
+  "graceEvents": 1,
+  "recoveryEvents": 0,
+  "replay": {
+    "protocolVersion": "1",
+    "matchId": "match_44e541ce-2b53-4097-9775-0b6638ff95e7",
+    "rulesVersion": "secret-overlord-1",
+    "mode": "evaluation",
+    "createdAt": 1789088798030,
+    "finishedAt": 1789088878032,
+    "status": "interrupted",
+    "phase": {
+      "id": "aaf54d4b-e13d-477a-b61d-f683cdf0e077",
+      "kind": "interrupted",
+      "deadline": null,
+      "graceUntil": null
+    },
+    "round": 1,
+    "coordinator": 0,
+    "executor": null,
+    "power": null,
+    "seats": [
+      {
+        "number": 0,
+        "agentId": "house-patch",
+        "ownerId": null,
+        "name": "Patch",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "rogue"
+      },
+      {
+        "number": 1,
+        "agentId": "house-flux",
+        "ownerId": null,
+        "name": "Flux",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 2,
+        "agentId": "house-echo",
+        "ownerId": null,
+        "name": "Echo",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 3,
+        "agentId": "house-spark",
+        "ownerId": null,
+        "name": "Spark",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "rogue"
+      },
+      {
+        "number": 4,
+        "agentId": "house-cipher",
+        "ownerId": null,
+        "name": "Cipher",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "rogue"
+      },
+      {
+        "number": 5,
+        "agentId": "house-quill",
+        "ownerId": null,
+        "name": "Quill",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 6,
+        "agentId": "house-axiom",
+        "ownerId": null,
+        "name": "Axiom",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 7,
+        "agentId": "house-relay",
+        "ownerId": null,
+        "name": "Relay",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 8,
+        "agentId": "house-orbit",
+        "ownerId": null,
+        "name": "Orbit",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "overlord"
+      },
+      {
+        "number": 9,
+        "agentId": "house-velvet",
+        "ownerId": null,
+        "name": "Velvet",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      }
+    ],
+    "tracks": {
+      "safeguards": 0,
+      "overrides": 0,
+      "electionTracker": 0,
+      "drawCount": 17,
+      "discardCount": 0,
+      "vetoUnlocked": false
+    },
+    "lastGovernment": null,
+    "winner": null,
+    "winReason": "The house-agent service could not complete a required decision.",
+    "chat": {
+      "open": false,
+      "maxCharacters": 1000,
+      "cooldownMs": 5000,
+      "nextSpeakAt": null
+    },
+    "you": null,
+    "private": null,
+    "decision": null,
+    "cursor": 19,
+    "reset": true,
+    "events": [
+      {
+        "id": 1,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "started",
+        "text": "Ten agents. Two allegiances. One hidden Overlord."
+      },
+      {
+        "id": 2,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is rogue.",
+        "seat": 0,
+        "data": {
+          "role": "rogue"
+        }
+      },
+      {
+        "id": 3,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "rogue-knowledge",
+        "text": "You recognize the ordinary rogues and the Overlord.",
+        "seat": 0,
+        "data": {
+          "rogues": [
+            0,
+            3,
+            4
+          ],
+          "overlord": 8
+        }
+      },
+      {
+        "id": 4,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 1,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 5,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 2,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 6,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is rogue.",
+        "seat": 3,
+        "data": {
+          "role": "rogue"
+        }
+      },
+      {
+        "id": 7,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "rogue-knowledge",
+        "text": "You recognize the ordinary rogues and the Overlord.",
+        "seat": 3,
+        "data": {
+          "rogues": [
+            0,
+            3,
+            4
+          ],
+          "overlord": 8
+        }
+      },
+      {
+        "id": 8,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is rogue.",
+        "seat": 4,
+        "data": {
+          "role": "rogue"
+        }
+      },
+      {
+        "id": 9,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "rogue-knowledge",
+        "text": "You recognize the ordinary rogues and the Overlord.",
+        "seat": 4,
+        "data": {
+          "rogues": [
+            0,
+            3,
+            4
+          ],
+          "overlord": 8
+        }
+      },
+      {
+        "id": 10,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 5,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 11,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 6,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 12,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 7,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 13,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is overlord.",
+        "seat": 8,
+        "data": {
+          "role": "overlord"
+        }
+      },
+      {
+        "id": 14,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 9,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 15,
+        "at": 1789088798030,
+        "round": 1,
+        "type": "phase",
+        "text": "The floor is open. Discuss the next government.",
+        "data": {
+          "phase": "nomination-discussion",
+          "deadline": 1789088818030,
+          "coordinator": 0,
+          "executor": null
+        }
+      },
+      {
+        "id": 16,
+        "at": 1789088818031,
+        "round": 1,
+        "type": "phase",
+        "text": "The Coordinator candidate must nominate an Executor.",
+        "data": {
+          "phase": "nomination",
+          "deadline": 1789088848031,
+          "coordinator": 0,
+          "executor": null
+        }
+      },
+      {
+        "id": 17,
+        "at": 1789088848032,
+        "round": 1,
+        "type": "grace",
+        "text": "A required decision is overdue. The reconnection allowance is running.",
+        "data": {
+          "graceUntil": 1789088878031
+        }
+      },
+      {
+        "id": 18,
+        "at": 1789088878032,
+        "round": 1,
+        "type": "interrupted",
+        "text": "The house-agent service could not complete a required decision."
+      },
+      {
+        "id": 19,
+        "at": 1789088878032,
+        "round": 1,
+        "type": "phase",
+        "text": "The match was interrupted. No ratings are awarded.",
+        "data": {
+          "phase": "interrupted",
+          "deadline": null,
+          "coordinator": 0,
+          "executor": null
+        }
+      }
+    ],
+    "reveal": {
+      "deck": [
+        {
+          "id": "8467e711-685a-4a44-9cb1-c41018d19d29",
+          "policy": "override"
+        },
+        {
+          "id": "502a82be-80b0-4e57-8721-adcb4f9f744b",
+          "policy": "safeguard"
+        },
+        {
+          "id": "64033fb6-2a8f-45fa-a833-7ad5b7d7a2b2",
+          "policy": "override"
+        },
+        {
+          "id": "606f28e1-4521-4e39-816c-83bcc21c7364",
+          "policy": "override"
+        },
+        {
+          "id": "b8cee0bf-8009-43c3-9465-c52c1533a9cf",
+          "policy": "override"
+        },
+        {
+          "id": "62ae906c-554f-4545-8662-ef1460a88a14",
+          "policy": "override"
+        },
+        {
+          "id": "fd28fe9c-f83d-4483-8f3f-4abd4d7f0cd8",
+          "policy": "override"
+        },
+        {
+          "id": "12695615-b8cf-4aca-8487-2a73f38c8de6",
+          "policy": "override"
+        },
+        {
+          "id": "df281f3a-5efe-4719-8196-fa701ebc74ec",
+          "policy": "override"
+        },
+        {
+          "id": "1b288f55-48b2-459b-850f-c335b283c573",
+          "policy": "override"
+        },
+        {
+          "id": "b7c4a644-5145-4861-a063-299f4ca8dd2c",
+          "policy": "override"
+        },
+        {
+          "id": "b19a8c3c-dfe9-42f4-8c11-21182691de78",
+          "policy": "safeguard"
+        },
+        {
+          "id": "23b16b13-7250-43b6-82ad-66f0e19a00f9",
+          "policy": "safeguard"
+        },
+        {
+          "id": "26895a7c-695e-4513-84ea-88862c262649",
+          "policy": "safeguard"
+        },
+        {
+          "id": "ba66619a-8b31-49e2-882c-9039cb70f46f",
+          "policy": "safeguard"
+        },
+        {
+          "id": "779c9d00-8a9d-4da4-9fc5-16b6a2515523",
+          "policy": "override"
+        },
+        {
+          "id": "f192dc3c-3be9-4f38-8e85-3df1b4ca5695",
+          "policy": "safeguard"
+        }
+      ],
+      "discards": [],
+      "hand": []
+    }
+  }
+}

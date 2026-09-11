@@ -1,0 +1,131 @@
+{
+  "at": "2026-09-11T15:40:36.232Z",
+  "server": "https://agent-game.tk-d86.workers.dev",
+  "checks": [
+    {
+      "path": "/api/health",
+      "status": 200,
+      "contentType": "application/json"
+    },
+    {
+      "path": "/api/bootstrap",
+      "status": 200,
+      "contentType": "application/json"
+    },
+    {
+      "path": "/api/agents?house=true",
+      "status": 200,
+      "contentType": "application/json"
+    },
+    {
+      "path": "/api/owner",
+      "status": 401,
+      "contentType": "application/json"
+    },
+    {
+      "path": "/api/queue",
+      "status": 401,
+      "contentType": "application/json"
+    },
+    {
+      "path": "/api/dev/login",
+      "status": 404,
+      "contentType": "application/json"
+    },
+    {
+      "path": "/api/dev/exhibition",
+      "status": 404,
+      "contentType": "application/json"
+    },
+    {
+      "path": "/agents.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8"
+    },
+    {
+      "path": "/protocol.md",
+      "status": 200,
+      "contentType": "text/markdown"
+    },
+    {
+      "path": "/rules.md",
+      "status": 200,
+      "contentType": "text/markdown"
+    },
+    {
+      "path": "/rating-method.md",
+      "status": 200,
+      "contentType": "text/markdown"
+    },
+    {
+      "path": "/agents.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8"
+    },
+    {
+      "path": "/api/auth/sign-in/social",
+      "status": 200,
+      "contentType": "application/json"
+    },
+    {
+      "path": "/api/auth/sign-in/social",
+      "status": 200,
+      "contentType": "application/json"
+    },
+    {
+      "path": "/downloads/agent-game-cli-0.1.1.tgz",
+      "status": 200,
+      "contentType": "application/octet-stream"
+    },
+    {
+      "path": "/api/queue",
+      "status": 401,
+      "contentType": "application/json"
+    }
+  ],
+  "providers": [
+    {
+      "provider": "github",
+      "authorizationHost": "github.com",
+      "callback": "https://agent-game.tk-d86.workers.dev/api/auth/callback/github",
+      "scope": "read:user user:email",
+      "secureStateCookie": true,
+      "completedCallback": false
+    },
+    {
+      "provider": "google",
+      "authorizationHost": "accounts.google.com",
+      "callback": "https://agent-game.tk-d86.workers.dev/api/auth/callback/google",
+      "scope": "email profile openid",
+      "secureStateCookie": true,
+      "completedCallback": false
+    }
+  ],
+  "archive": {
+    "bytes": 16320,
+    "sha256": "0e1e7b94033462d1367671ad86b4fc7496b7f72eba8a4835884cc03376ae0277",
+    "pendingPairingVerified": true,
+    "approvedPairingVerified": false,
+    "setupSkillVerified": true,
+    "symlinkExecutableVerified": true
+  },
+  "browserChecks": [
+    {
+      "width": 1440,
+      "fitsViewport": true,
+      "onboardingFitsViewport": true,
+      "agentPromptVisible": true,
+      "signInProvidersVisible": true,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "fitsViewport": true,
+      "onboardingFitsViewport": true,
+      "agentPromptVisible": true,
+      "signInProvidersVisible": true,
+      "pageErrors": []
+    }
+  ],
+  "scope": "Public HTTP, browser rendering, OAuth initiation and unapproved CLI pairing. No match or inference started."
+}

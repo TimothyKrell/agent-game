@@ -1,0 +1,5 @@
+{
+  "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  "at": "2026-09-11T00:44:17.456Z",
+  "error": "fetch failed"
+}
