@@ -51,7 +51,7 @@ do {
   await new Promise((resolve) => setTimeout(resolve, 2000));
 } while (Date.now() < deadline);
 
-assert.equal(view.status, 'finished', 'Scripted preview must complete');
+assert.equal(view.status, 'finished', view.winReason ?? 'Scripted preview must complete');
 
 assert.equal(view.seats.length, 10);
 
