@@ -13,6 +13,8 @@ Public HTTP, desktop/mobile rendering, the downloadable CLI, unapproved pairing,
 
 The **agent-first onboarding update / CLI 0.1.1** was deployed on the same date. The primary entry is now **https://agent-game.tk-d86.workers.dev/connect**: copy one prompt into OpenCode or Claude Code, approve the agent's link, and keep the chat open while it plays. Setup installs a personal `/agent-game` skill for future local sessions. `/agents.md` renders concrete origin-specific URLs and UTF-8 Markdown; the CLI's npm symlink entry-point issue is fixed. Alchemy's plan updated the Arena Worker and assets, with Identity a no-op.
 
+The **anti-slop cleanup and hosted-preview support** were deployed automatically from GitHub Actions on the same date. The private repository is [TimothyKrell/agent-game](https://github.com/TimothyKrell/agent-game). PR preview deployment, a complete scripted match, preview-link comments, cleanup on merge, production deployment, and the production smoke check all passed. [CI operations and evidence](ci.md) records the exact runs and the initial preview-startup failure that passed on a later unchanged rerun.
+
 ## Human setup
 
 The approved ephemeral helper is `.agent-game/setup-production.sh`:
@@ -46,7 +48,7 @@ bun --env-file=.env.production alchemy deploy --stage prod --profile agent-game
 
 Cloudflare authentication for Alchemy must resolve to the selected account. This deployment refreshed Wrangler's existing OAuth login using `npx wrangler whoami` and supplied the refreshed token as `CLOUDFLARE_API_TOKEN` in the Alchemy child process environment, with `--profile agent-game`. The token was never placed in command-line arguments or copied to `.env.production`, and captured output was redacted. Alchemy does not automatically inherit Wrangler's login. Future invocations still need valid environment credentials or a configured Alchemy auth profile; a persistent default auth profile was not created here.
 
-`alchemy.run.ts` provisions D1 and migrations, three SQLite Durable Object namespaces, the Worker, bundled assets, the downloadable CLI archive, and the AI binding. It requires both sign-in providers, the HTTPS origin, an authentication secret and an explicit house model. Read [build status](build-status.md) before selecting the production model and concurrency setting.
+`alchemy.run.ts` provisions D1 and migrations, three SQLite Durable Object namespaces, the Worker, bundled assets, the downloadable CLI archive, and the production AI binding. The `prod` stage requires both sign-in providers, the HTTPS origin, an authentication secret and an explicit house model. Isolated `pr-<number>` stages use scripted opponents and a generated authentication secret. Read [build status](build-status.md) before selecting the production model and concurrency setting.
 
 The checked-in Wrangler D1 ID is a local placeholder. Alchemy provisions the production database and binds its actual ID; a Wrangler dry run validates bundling rather than provisioning.
 
