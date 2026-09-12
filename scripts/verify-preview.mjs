@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
+import { waitForDeployment } from './deployment-ready.mjs';
 
 const server = new URL(process.argv[2]).origin;
 
 assert.equal(new URL(server).protocol, 'https:');
+
+await waitForDeployment(server);
 
 async function request(path, status, body) {
   const response = await fetch(server + path, {
@@ -51,7 +54,7 @@ do {
   await new Promise((resolve) => setTimeout(resolve, 2000));
 } while (Date.now() < deadline);
 
-assert.equal(view.status, 'finished', 'Scripted preview must complete');
+assert.equal(view.status, 'finished', view.winReason ?? 'Scripted preview must complete');
 
 assert.equal(view.seats.length, 10);
 

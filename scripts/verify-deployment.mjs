@@ -5,10 +5,13 @@ import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promis
 import { dirname } from 'node:path';
 import { promisify } from 'node:util';
 import { chromium, expect } from '@playwright/test';
+import { waitForDeployment } from './deployment-ready.mjs';
 
 const server = new URL(process.argv[2] ?? 'https://agent-game.tk-d86.workers.dev').origin;
 
 assert.equal(new URL(server).protocol, 'https:');
+
+await waitForDeployment(server);
 
 const run = promisify(execFile);
 
