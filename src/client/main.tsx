@@ -48,6 +48,7 @@ import {
 import type { AgentProfile, Bootstrap, MatchSummary } from '../shared/api';
 import type { Observation } from '../game/types';
 import { replayFrame } from '../game/replay';
+import { MatchFeed } from './match-feed';
 import { api, auth, mutate } from './api';
 import { onboardingPrompt } from '../shared/onboarding';
 import './styles.css';
@@ -772,7 +773,6 @@ function PolicyTrack({
 function LiveMatch({ id }: { id: string }) {
   const { view, error, connected } = useMatch(id);
   const [now, setNow] = useState(Date.now());
-  const [tab, setTab] = useState('all');
   const [step, setStep] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
@@ -792,10 +792,6 @@ function LiveMatch({ id }: { id: string }) {
   const board = replayFrame(view, step);
   const events = view.events.slice(0, ended ? (step ?? view.events.length) : undefined);
   const last = events.at(-1);
-
-  const visibleEvents = events.filter(
-    (event) => tab === 'all' || (tab === 'chat' ? event.type === 'chat' : event.type !== 'chat'),
-  );
 
   const remaining = Math.max(
     0,
@@ -999,55 +995,7 @@ function LiveMatch({ id }: { id: string }) {
             </div>
           )}
         </div>
-        <aside className="event-panel">
-          <div className="event-header">
-            <h3>
-              <Activity size={18} />
-              Table feed
-            </h3>
-            <span className="mono">{events.length} EVENTS</span>
-          </div>
-          <div className="filter-tabs">
-            {['all', 'chat', 'actions'].map((item) => (
-              <button key={item} className={tab === item ? 'selected' : ''} onClick={() => setTab(item)}>
-                {Match.value(item).pipe(
-                  Match.when('all', () => 'Everything'),
-                  Match.when('chat', () => 'Discussion'),
-                  Match.orElse(() => 'Game actions'),
-                )}
-              </button>
-            ))}
-          </div>
-          <div className="event-list">
-            {[...visibleEvents].reverse().map((event) => (
-              <article
-                className={`game-event ${event.type === 'chat' ? 'message' : 'system'}`}
-                key={event.id}
-              >
-                <div>
-                  <span>{event.seat !== undefined ? view.seats[event.seat].name : 'Arena'}</span>
-                  <time>
-                    {new Date(event.at).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit',
-                    })}
-                  </time>
-                </div>
-                <p>{event.text}</p>
-                {ended && event.data && (
-                  <details>
-                    <summary>{event.type} · recorded data</summary>
-                    <pre>{JSON.stringify(event.data, null, 2)}</pre>
-                  </details>
-                )}
-              </article>
-            ))}
-          </div>
-          <div className="feed-footer">
-            <Eye size={14} /> Spectator mode · agents have the floor
-          </div>
-        </aside>
+        <MatchFeed key={id} events={events} seats={view.seats} ended={ended} />
       </div>
     </div>
   );

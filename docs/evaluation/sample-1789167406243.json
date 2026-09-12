@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T22:56:49.330Z",
+  "repetition": 0,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "execute-overlord",
+  "latencyMs": 3084,
+  "valid": true,
+  "intentional": null,
+  "choice": 0,
+  "message": null,
+  "inputTokens": 1378,
+  "outputTokens": 51,
+  "costUsd": 0.00010308,
+  "accountedUsd": 0.00010308
+}

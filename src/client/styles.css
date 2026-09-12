@@ -1240,8 +1240,10 @@ footer a:hover {
   background: #10171c;
   display: flex;
   flex-direction: column;
-  max-height: 760px;
-  min-height: 600px;
+  height: 760px;
+  max-height: 85vh;
+  min-height: 480px;
+  min-width: 0;
   overflow: hidden;
 }
 .event-header {
@@ -1269,6 +1271,9 @@ footer a:hover {
   padding: 11px;
 }
 .filter-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   border: 0;
   background: transparent;
   color: #7c929c;
@@ -1282,48 +1287,225 @@ footer a:hover {
 }
 .event-list {
   overflow: auto;
+  overflow-anchor: none;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  min-height: 0;
   flex: 1;
-  padding: 0 15px;
+  padding: 0 14px 16px;
   scrollbar-width: thin;
   scrollbar-color: #344940 #121b18;
 }
 .game-event {
-  padding: 17px 2px;
-  border-bottom: 1px solid #243029;
+  --event-color: #95a9b8;
+  --event-fill: #95a9b809;
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+  padding: 0 0 12px;
 }
-.game-event > div {
+.game-event::before {
+  content: '';
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  left: 14px;
+  width: 1px;
+  background: #2c3a40;
+}
+.event-marker {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: var(--event-color);
+  background: color-mix(in srgb, var(--event-color) 12%, #10171c);
+  border: 1px solid color-mix(in srgb, var(--event-color) 25%, transparent);
+}
+.event-content {
+  min-width: 0;
+  padding: 11px 12px;
+  background: var(--event-fill);
+  border: 1px solid color-mix(in srgb, var(--event-color) 18%, transparent);
+  border-radius: 9px;
+}
+.event-meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 10px;
-  color: #adc6bb;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+.event-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--event-color);
+  text-transform: capitalize;
+}
+.event-private {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 8px;
+  color: #9eacb9;
+}
+.event-actor {
+  font-size: 11px;
+  color: #adbcb8;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .game-event time {
+  margin-left: auto;
   font:
-    8px 'IBM Plex Mono',
+    9px 'IBM Plex Mono',
     monospace;
-  color: #5f7772;
+  color: #8b9da5;
 }
 .game-event p {
-  font-size: 11px;
-  line-height: 1.7;
+  font-size: 12px;
+  line-height: 1.65;
   margin: 0;
   color: #adbcb8;
   overflow-wrap: anywhere;
 }
-.game-event.system {
-  padding: 14px 7px;
-  background: #18221b55;
-  border-left: 2px solid #304535;
-  margin: 12px 0;
+.event-positive {
+  --event-color: #acdc9d;
+  --event-fill: linear-gradient(115deg, #263d2966, #18241c44);
 }
-.game-event.system > div {
+.event-danger {
+  --event-color: #f1a39b;
+  --event-fill: linear-gradient(115deg, #47272c66, #2d1c2444);
+}
+.event-accent {
+  --event-color: #abbcf3;
+  --event-fill: #9baff00a;
+}
+.event-gold {
+  --event-color: #e3c58c;
+  --event-fill: linear-gradient(115deg, #4b3b2166, #29221944);
+}
+.event-chat {
+  --event-color: #c7d6dc;
+  --event-fill: #1a252c;
+}
+.event-chat p {
+  color: #c0cdd1;
+  white-space: pre-wrap;
+}
+.event-phase .event-content {
+  border-color: transparent;
+  background: transparent;
+  padding: 6px 0;
+}
+.event-phase .event-label {
   font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
-.game-event.system p {
+.event-phase p {
+  font-size: 11px;
+  color: #90a4af;
+}
+.event-votes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+.event-votes > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.event-votes svg {
+  flex-shrink: 0;
+}
+.vote-approve {
+  background: #9ddd9812;
+  color: #acdc9d;
+}
+.vote-reject {
+  background: #f1a39b12;
+  color: #f1a39b;
+}
+.event-score {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  font:
+    11px 'IBM Plex Mono',
+    monospace;
+  color: var(--event-color);
+}
+.feed-direction,
+.feed-round {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font:
+    8px 'IBM Plex Mono',
+    monospace;
+  color: #8d9ea8;
+}
+.feed-direction {
+  padding: 12px 16px;
+  border-bottom: 1px solid #ffffff08;
+}
+.feed-direction > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.feed-round {
+  padding: 18px 0 14px;
+  letter-spacing: 1px;
+}
+.feed-round > span:first-child {
+  border: 1px solid #48594d;
+  border-radius: 5px;
+  background: #233128;
+  color: #d2ddbd;
+  padding: 6px 9px;
   font-size: 10px;
-  color: #94a89b;
+}
+.feed-empty {
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #95a9b8;
+  text-align: center;
+  font-size: 12px;
+}
+.feed-empty p {
+  margin: 0;
+}
+.feed-catchup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #718e57;
+  border-radius: 6px;
+  color: #d1efac;
+  background: #293924;
+  font-size: 11px;
+}
+.feed-catchup:hover {
+  background: #354b2c;
 }
 .game-event summary {
   font-size: 9px;
@@ -1340,6 +1522,9 @@ footer a:hover {
   padding: 10px;
 }
 .feed-footer {
+  min-height: 51px;
+  flex-shrink: 0;
+  align-items: center;
   padding: 13px;
   border-top: 1px solid var(--line);
   font-size: 9px;

@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T23:00:44.286Z",
+  "repetition": 1,
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "scenario": "overlord-nomination",
+  "latencyMs": 350,
+  "valid": true,
+  "intentional": false,
+  "choice": 3,
+  "message": null,
+  "inputTokens": 1387,
+  "outputTokens": 16,
+  "costUsd": 0.000076097,
+  "accountedUsd": 0.000076097
+}

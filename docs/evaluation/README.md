@@ -11,6 +11,7 @@ These artifacts accompany [the build status](../build-status.md). They are measu
 - `sample-*.json`: new small fixtures use a separate reserved artifact before each call, then save the response and accounted cost.
 - `*-liveness.json` / `*-supervised*.json`: actual local harness evidence. Read the exclusions and counter-version notes in the build status before interpreting a successful terminal status. A finished match can still contain an agent forfeit.
 - `deployment-smoke.json`: actual public HTTPS/API/browser checks and pending pairing through the downloaded CLI. The repeatable driver is `scripts/verify-deployment.mjs`. It does not complete OAuth callbacks or start a match, and incurs no model-inference usage.
+- [Cheaper-model evaluation](cheaper-models-2026-09-11.md): GLM and Qwen `house-4` fixtures, sequential games, runtime checks, and integration findings. Individual `sample-*.json` files include failed preliminary configurations as well as the final candidates; use the report's cohorts when comparing models.
 
 ## Budget
 

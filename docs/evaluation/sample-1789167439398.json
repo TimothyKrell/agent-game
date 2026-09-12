@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T22:57:21.060Z",
+  "repetition": 2,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "rogue-discussion",
+  "latencyMs": 1659,
+  "valid": true,
+  "intentional": null,
+  "choice": -1,
+  "message": "I'm open to hearing a proposal. Who would you like to lead the government?",
+  "inputTokens": 1128,
+  "outputTokens": 60,
+  "costUsd": 0.00009167999999999999,
+  "accountedUsd": 0.00009167999999999999
+}

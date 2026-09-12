@@ -57,8 +57,17 @@ export default {
       const queue = env.MATCHMAKING.getByName('secret-overlord');
       const evaluation = path.match(/^\/api\/dev\/evaluation\/(match_[\w-]+)$/);
 
-      if (evaluation && method === 'GET' && env.ENVIRONMENT === 'development' && isLoopback(request.url))
-        return json(await queue.inferenceSummary(evaluation[1]));
+      if (evaluation && method === 'GET' && env.ENVIRONMENT === 'development' && isLoopback(request.url)) {
+        const record = await env.DB.prepare('SELECT model FROM matches WHERE id = ?')
+          .bind(evaluation[1])
+          .first<{ model: string }>();
+
+        return json({
+          ...(await queue.inferenceSummary(evaluation[1])),
+          // The index stores the configuration captured when this match started.
+          houseModel: record ? JSON.parse(record.model) : null,
+        });
+      }
 
       if (path === '/api/bootstrap' && method === 'GET') {
         const [owner, live, recent, leaderboard, queueCount] = await Promise.all([

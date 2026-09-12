@@ -1,0 +1,10 @@
+{
+  "at": "2026-09-11T22:54:16.098Z",
+  "repetition": 1,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "cooperative-policy",
+  "latencyMs": 12,
+  "error": "HouseModel.generateDecision: Workers AI request failed.",
+  "accountedUsd": 0.02
+}

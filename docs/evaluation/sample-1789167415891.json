@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T22:57:00.642Z",
+  "repetition": 0,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "discussion",
+  "latencyMs": 4746,
+  "valid": true,
+  "intentional": null,
+  "choice": -1,
+  "message": "I'm ready to support a strong government. Who would you like to nominate?",
+  "inputTokens": 1123,
+  "outputTokens": 49,
+  "costUsd": 0.00008697999999999998,
+  "accountedUsd": 0.00008697999999999998
+}

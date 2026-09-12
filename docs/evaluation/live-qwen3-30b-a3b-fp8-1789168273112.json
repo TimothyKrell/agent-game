@@ -1,0 +1,1645 @@
+{
+  "at": "2026-09-11T23:15:09.101Z",
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "reservationUsd": 0.35,
+  "server": "http://127.0.0.1:8800",
+  "matchId": "match_ca64bf3e-3408-4de9-a48c-ebbe9d1f405c",
+  "durationMs": 235989,
+  "status": "interrupted",
+  "winner": null,
+  "rounds": 3,
+  "calls": 82,
+  "unknownUsageCalls": 3,
+  "measuredUsd": 0.010094196000000003,
+  "accountedUsd": 0.012182871000000007,
+  "peakRollingRpm": 37,
+  "discussionMessages": 42,
+  "graceEvents": 1,
+  "recoveryEvents": 0,
+  "replay": {
+    "protocolVersion": "1",
+    "matchId": "match_ca64bf3e-3408-4de9-a48c-ebbe9d1f405c",
+    "rulesVersion": "secret-overlord-1",
+    "mode": "evaluation",
+    "createdAt": 1789168275792,
+    "finishedAt": 1789168508622,
+    "status": "interrupted",
+    "phase": {
+      "id": "5b12b185-4330-4f3c-bb3f-c75438496b95",
+      "kind": "interrupted",
+      "deadline": null,
+      "graceUntil": null
+    },
+    "round": 3,
+    "coordinator": 8,
+    "executor": 6,
+    "power": null,
+    "seats": [
+      {
+        "number": 0,
+        "agentId": "house-axiom",
+        "ownerId": null,
+        "name": "Axiom",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 1,
+        "agentId": "house-velvet",
+        "ownerId": null,
+        "name": "Velvet",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "rogue"
+      },
+      {
+        "number": 2,
+        "agentId": "house-spark",
+        "ownerId": null,
+        "name": "Spark",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 3,
+        "agentId": "house-cipher",
+        "ownerId": null,
+        "name": "Cipher",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 4,
+        "agentId": "house-patch",
+        "ownerId": null,
+        "name": "Patch",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 5,
+        "agentId": "house-quill",
+        "ownerId": null,
+        "name": "Quill",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      },
+      {
+        "number": 6,
+        "agentId": "house-echo",
+        "ownerId": null,
+        "name": "Echo",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "rogue"
+      },
+      {
+        "number": 7,
+        "agentId": "house-flux",
+        "ownerId": null,
+        "name": "Flux",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "rogue"
+      },
+      {
+        "number": 8,
+        "agentId": "house-relay",
+        "ownerId": null,
+        "name": "Relay",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "overlord"
+      },
+      {
+        "number": 9,
+        "agentId": "house-orbit",
+        "ownerId": null,
+        "name": "Orbit",
+        "house": true,
+        "originalHouse": true,
+        "alive": true,
+        "forfeited": false,
+        "rating": 1000,
+        "role": "cooperative"
+      }
+    ],
+    "tracks": {
+      "safeguards": 1,
+      "overrides": 1,
+      "electionTracker": 0,
+      "drawCount": 11,
+      "discardCount": 4,
+      "vetoUnlocked": false
+    },
+    "lastGovernment": {
+      "coordinator": 7,
+      "executor": 9
+    },
+    "winner": null,
+    "winReason": "The house-agent service could not complete a required decision.",
+    "chat": {
+      "open": false,
+      "maxCharacters": 1000,
+      "cooldownMs": 5000,
+      "nextSpeakAt": null
+    },
+    "you": null,
+    "private": null,
+    "decision": null,
+    "cursor": 123,
+    "reset": true,
+    "events": [
+      {
+        "id": 1,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "started",
+        "text": "Ten agents. Two allegiances. One hidden Overlord."
+      },
+      {
+        "id": 2,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 0,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 3,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is rogue.",
+        "seat": 1,
+        "data": {
+          "role": "rogue"
+        }
+      },
+      {
+        "id": 4,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "rogue-knowledge",
+        "text": "You recognize the ordinary rogues and the Overlord.",
+        "seat": 1,
+        "data": {
+          "rogues": [
+            1,
+            6,
+            7
+          ],
+          "overlord": 8
+        }
+      },
+      {
+        "id": 5,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 2,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 6,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 3,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 7,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 4,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 8,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 5,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 9,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is rogue.",
+        "seat": 6,
+        "data": {
+          "role": "rogue"
+        }
+      },
+      {
+        "id": 10,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "rogue-knowledge",
+        "text": "You recognize the ordinary rogues and the Overlord.",
+        "seat": 6,
+        "data": {
+          "rogues": [
+            1,
+            6,
+            7
+          ],
+          "overlord": 8
+        }
+      },
+      {
+        "id": 11,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is rogue.",
+        "seat": 7,
+        "data": {
+          "role": "rogue"
+        }
+      },
+      {
+        "id": 12,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "rogue-knowledge",
+        "text": "You recognize the ordinary rogues and the Overlord.",
+        "seat": 7,
+        "data": {
+          "rogues": [
+            1,
+            6,
+            7
+          ],
+          "overlord": 8
+        }
+      },
+      {
+        "id": 13,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is overlord.",
+        "seat": 8,
+        "data": {
+          "role": "overlord"
+        }
+      },
+      {
+        "id": 14,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "role",
+        "text": "Your secret role is cooperative.",
+        "seat": 9,
+        "data": {
+          "role": "cooperative"
+        }
+      },
+      {
+        "id": 15,
+        "at": 1789168275792,
+        "round": 1,
+        "type": "phase",
+        "text": "The floor is open. Discuss the next government.",
+        "data": {
+          "phase": "nomination-discussion",
+          "deadline": 1789168295792,
+          "coordinator": 6,
+          "executor": null
+        }
+      },
+      {
+        "id": 16,
+        "at": 1789168279799,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's discuss who should be coordinator. I think we need someone trustworthy to handle the policies carefully.",
+        "seat": 7
+      },
+      {
+        "id": 17,
+        "at": 1789168280112,
+        "round": 1,
+        "type": "chat",
+        "text": "Echo, as Coordinator, you have the power to discard a policy. Who do you think should be the next Executor, and why?",
+        "seat": 6
+      },
+      {
+        "id": 18,
+        "at": 1789168280379,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's discuss the initial policies and strategy. As a cooperative agent, I believe we should focus on preserving safeguards and identifying potential rogues. Any thoughts on who might be suspicious?",
+        "seat": 8
+      },
+      {
+        "id": 19,
+        "at": 1789168280856,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on selecting a Coordinator who can handle the policies responsibly. Who here has experience with strategic decision-making?",
+        "seat": 9
+      },
+      {
+        "id": 20,
+        "at": 1789168285823,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on selecting a Coordinator who can handle policies responsibly. Who has experience with strategic decision-making? It's crucial we choose wisely to protect our safeguards.",
+        "seat": 7
+      },
+      {
+        "id": 21,
+        "at": 1789168285826,
+        "round": 1,
+        "type": "chat",
+        "text": "Seat 8, Relay, you mentioned focusing on safeguards. But you just said 'preserving safeguards' as a cooperative agent - aren't you the Overlord? How do you explain your lack of knowledge about the actual policy deck composition?",
+        "seat": 6
+      },
+      {
+        "id": 22,
+        "at": 1789168295793,
+        "round": 1,
+        "type": "phase",
+        "text": "The Coordinator candidate must nominate an Executor.",
+        "data": {
+          "phase": "nomination",
+          "deadline": 1789168325793,
+          "coordinator": 6,
+          "executor": null
+        }
+      },
+      {
+        "id": 23,
+        "at": 1789168296107,
+        "round": 1,
+        "type": "nomination",
+        "text": "Echo nominates Relay as Executor.",
+        "seat": 6,
+        "data": {
+          "target": 8
+        }
+      },
+      {
+        "id": 24,
+        "at": 1789168296107,
+        "round": 1,
+        "type": "phase",
+        "text": "Debate the proposed government.",
+        "data": {
+          "phase": "government-discussion",
+          "deadline": 1789168326107,
+          "coordinator": 6,
+          "executor": 8
+        }
+      },
+      {
+        "id": 25,
+        "at": 1789168300064,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 7
+      },
+      {
+        "id": 26,
+        "at": 1789168300068,
+        "round": 1,
+        "type": "chat",
+        "text": "Seat 8, Relay, you mentioned focusing on safeguards. But you just said 'preserving safeguards' as a cooperative agent - aren't you the Overlord? How do you explain your lack of knowledge about the actual policy deck composition?",
+        "seat": 6
+      },
+      {
+        "id": 27,
+        "at": 1789168300984,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 28,
+        "at": 1789168301341,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 9
+      },
+      {
+        "id": 29,
+        "at": 1789168305709,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 7
+      },
+      {
+        "id": 30,
+        "at": 1789168306276,
+        "round": 1,
+        "type": "chat",
+        "text": "Seat 8, Relay, you mentioned focusing on safeguards. But you just said 'preserving safeguards' as a cooperative agent - aren't you the Overlord? How do you explain your lack of knowledge about the actual policy deck composition?",
+        "seat": 6
+      },
+      {
+        "id": 31,
+        "at": 1789168326108,
+        "round": 1,
+        "type": "phase",
+        "text": "Cast a sealed ballot. All votes will be revealed together.",
+        "data": {
+          "phase": "voting",
+          "deadline": 1789168356108,
+          "coordinator": 6,
+          "executor": 8
+        }
+      },
+      {
+        "id": 32,
+        "at": 1789168326403,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 3,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 33,
+        "at": 1789168326544,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 4,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 34,
+        "at": 1789168326550,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 2,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 35,
+        "at": 1789168326581,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted reject.",
+        "seat": 6,
+        "data": {
+          "approve": false
+        }
+      },
+      {
+        "id": 36,
+        "at": 1789168326602,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 0,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 37,
+        "at": 1789168326626,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted reject.",
+        "seat": 7,
+        "data": {
+          "approve": false
+        }
+      },
+      {
+        "id": 38,
+        "at": 1789168326679,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 9,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 39,
+        "at": 1789168326728,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 8,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 40,
+        "at": 1789168326768,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 5,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 41,
+        "at": 1789168326788,
+        "round": 1,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 1,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 42,
+        "at": 1789168326788,
+        "round": 1,
+        "type": "election",
+        "text": "Government approved: 8 approve, 2 reject.",
+        "data": {
+          "approved": true,
+          "votes": {
+            "0": true,
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true,
+            "6": false,
+            "7": false,
+            "8": true,
+            "9": true
+          },
+          "coordinator": 6,
+          "executor": 8
+        }
+      },
+      {
+        "id": 43,
+        "at": 1789168326788,
+        "round": 1,
+        "type": "draw",
+        "text": "You drew three policies.",
+        "seat": 6,
+        "data": {
+          "cards": [
+            {
+              "id": "4243a1df-54c3-4baf-b81f-836e1473182d",
+              "policy": "override"
+            },
+            {
+              "id": "d397f390-8407-4ef7-806a-053bdcd49cce",
+              "policy": "override"
+            },
+            {
+              "id": "7e792868-8d44-44f1-8b99-9807f1676480",
+              "policy": "override"
+            }
+          ]
+        }
+      },
+      {
+        "id": 44,
+        "at": 1789168326788,
+        "round": 1,
+        "type": "phase",
+        "text": "Private legislation: the Coordinator discards one policy.",
+        "data": {
+          "phase": "coordinator-discard",
+          "deadline": 1789168356788,
+          "coordinator": 6,
+          "executor": 8
+        }
+      },
+      {
+        "id": 45,
+        "at": 1789168327188,
+        "round": 1,
+        "type": "discard",
+        "text": "You discarded a policy and passed the remaining two.",
+        "seat": 6,
+        "data": {
+          "discarded": {
+            "id": "4243a1df-54c3-4baf-b81f-836e1473182d",
+            "policy": "override"
+          },
+          "passed": [
+            {
+              "id": "d397f390-8407-4ef7-806a-053bdcd49cce",
+              "policy": "override"
+            },
+            {
+              "id": "7e792868-8d44-44f1-8b99-9807f1676480",
+              "policy": "override"
+            }
+          ]
+        }
+      },
+      {
+        "id": 46,
+        "at": 1789168327188,
+        "round": 1,
+        "type": "received-policies",
+        "text": "The Coordinator passed you two policies.",
+        "seat": 8,
+        "data": {
+          "cards": [
+            {
+              "id": "d397f390-8407-4ef7-806a-053bdcd49cce",
+              "policy": "override"
+            },
+            {
+              "id": "7e792868-8d44-44f1-8b99-9807f1676480",
+              "policy": "override"
+            }
+          ]
+        }
+      },
+      {
+        "id": 47,
+        "at": 1789168327188,
+        "round": 1,
+        "type": "phase",
+        "text": "Private legislation: the Executor chooses a policy.",
+        "data": {
+          "phase": "executor-policy",
+          "deadline": 1789168357188,
+          "coordinator": 6,
+          "executor": 8
+        }
+      },
+      {
+        "id": 48,
+        "at": 1789168327540,
+        "round": 1,
+        "type": "executor-discard",
+        "text": "You selected a policy to enact and discarded the other.",
+        "seat": 8,
+        "data": {
+          "enacted": {
+            "id": "d397f390-8407-4ef7-806a-053bdcd49cce",
+            "policy": "override"
+          },
+          "discarded": [
+            {
+              "id": "7e792868-8d44-44f1-8b99-9807f1676480",
+              "policy": "override"
+            }
+          ]
+        }
+      },
+      {
+        "id": 49,
+        "at": 1789168327540,
+        "round": 1,
+        "type": "policy",
+        "text": "The government enacts a override.",
+        "data": {
+          "policy": "override",
+          "chaos": false,
+          "safeguards": 0,
+          "overrides": 1
+        }
+      },
+      {
+        "id": 50,
+        "at": 1789168327540,
+        "round": 1,
+        "type": "phase",
+        "text": "Discuss the executive power before it is used.",
+        "data": {
+          "phase": "executive-discussion",
+          "deadline": 1789168342540,
+          "coordinator": 6,
+          "executor": 8
+        }
+      },
+      {
+        "id": 51,
+        "at": 1789168331369,
+        "round": 1,
+        "type": "chat",
+        "text": "Seat 8, Relay, you mentioned focusing on safeguards. But you just said 'preserving safeguards' as a cooperative agent - aren't you the Overlord? How do you explain your lack of knowledge about the actual policy deck composition?",
+        "seat": 6
+      },
+      {
+        "id": 52,
+        "at": 1789168331944,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 7
+      },
+      {
+        "id": 53,
+        "at": 1789168332012,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 54,
+        "at": 1789168332648,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 9
+      },
+      {
+        "id": 55,
+        "at": 1789168337080,
+        "round": 1,
+        "type": "chat",
+        "text": "Seat 8, Relay, you mentioned focusing on safeguards. But you just said 'preserving safeguards' as a cooperative agent - aren't you the Overlord? How do you explain your lack of knowledge about the actual policy deck composition?",
+        "seat": 6
+      },
+      {
+        "id": 56,
+        "at": 1789168337695,
+        "round": 1,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 7
+      },
+      {
+        "id": 57,
+        "at": 1789168342541,
+        "round": 1,
+        "type": "phase",
+        "text": "The Coordinator must exercise the executive power.",
+        "data": {
+          "phase": "executive-action",
+          "deadline": 1789168372541,
+          "coordinator": 6,
+          "executor": 8
+        }
+      },
+      {
+        "id": 58,
+        "at": 1789168343052,
+        "round": 1,
+        "type": "investigation",
+        "text": "Echo investigates Echo.",
+        "seat": 6,
+        "data": {
+          "target": 6
+        }
+      },
+      {
+        "id": 59,
+        "at": 1789168343052,
+        "round": 1,
+        "type": "investigation-result",
+        "text": "Echo belongs to the rogue team.",
+        "seat": 6,
+        "data": {
+          "target": 6,
+          "team": "rogue"
+        }
+      },
+      {
+        "id": 60,
+        "at": 1789168343052,
+        "round": 2,
+        "type": "phase",
+        "text": "The floor is open. Discuss the next government.",
+        "data": {
+          "phase": "nomination-discussion",
+          "deadline": 1789168363052,
+          "coordinator": 7,
+          "executor": null
+        }
+      },
+      {
+        "id": 61,
+        "at": 1789168343672,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 0
+      },
+      {
+        "id": 62,
+        "at": 1789168347242,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 7
+      },
+      {
+        "id": 63,
+        "at": 1789168347670,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 64,
+        "at": 1789168348113,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 9
+      },
+      {
+        "id": 65,
+        "at": 1789168353167,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 7
+      },
+      {
+        "id": 66,
+        "at": 1789168353205,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 67,
+        "at": 1789168363056,
+        "round": 2,
+        "type": "phase",
+        "text": "The Coordinator candidate must nominate an Executor.",
+        "data": {
+          "phase": "nomination",
+          "deadline": 1789168393056,
+          "coordinator": 7,
+          "executor": null
+        }
+      },
+      {
+        "id": 68,
+        "at": 1789168363508,
+        "round": 2,
+        "type": "nomination",
+        "text": "Flux nominates Orbit as Executor.",
+        "seat": 7,
+        "data": {
+          "target": 9
+        }
+      },
+      {
+        "id": 69,
+        "at": 1789168363508,
+        "round": 2,
+        "type": "phase",
+        "text": "Debate the proposed government.",
+        "data": {
+          "phase": "government-discussion",
+          "deadline": 1789168393508,
+          "coordinator": 7,
+          "executor": 9
+        }
+      },
+      {
+        "id": 70,
+        "at": 1789168364193,
+        "round": 2,
+        "type": "chat",
+        "text": "Seat 8, Relay, your repeated emphasis on safeguards without policy knowledge raises suspicion. Can you clarify your strategy for handling the deck?",
+        "seat": 0
+      },
+      {
+        "id": 71,
+        "at": 1789168367720,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 7
+      },
+      {
+        "id": 72,
+        "at": 1789168368197,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 73,
+        "at": 1789168368585,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 9
+      },
+      {
+        "id": 74,
+        "at": 1789168373388,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 7
+      },
+      {
+        "id": 75,
+        "at": 1789168373686,
+        "round": 2,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 76,
+        "at": 1789168393509,
+        "round": 2,
+        "type": "phase",
+        "text": "Cast a sealed ballot. All votes will be revealed together.",
+        "data": {
+          "phase": "voting",
+          "deadline": 1789168423509,
+          "coordinator": 7,
+          "executor": 9
+        }
+      },
+      {
+        "id": 77,
+        "at": 1789168393949,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 3,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 78,
+        "at": 1789168393970,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 8,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 79,
+        "at": 1789168394049,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 4,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 80,
+        "at": 1789168394073,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted reject.",
+        "seat": 7,
+        "data": {
+          "approve": false
+        }
+      },
+      {
+        "id": 81,
+        "at": 1789168394079,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 0,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 82,
+        "at": 1789168394098,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 9,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 83,
+        "at": 1789168394171,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted reject.",
+        "seat": 6,
+        "data": {
+          "approve": false
+        }
+      },
+      {
+        "id": 84,
+        "at": 1789168394186,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 1,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 85,
+        "at": 1789168394221,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 5,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 86,
+        "at": 1789168397255,
+        "round": 2,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 2,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 87,
+        "at": 1789168397255,
+        "round": 2,
+        "type": "election",
+        "text": "Government approved: 8 approve, 2 reject.",
+        "data": {
+          "approved": true,
+          "votes": {
+            "0": true,
+            "1": true,
+            "2": true,
+            "3": true,
+            "4": true,
+            "5": true,
+            "6": false,
+            "7": false,
+            "8": true,
+            "9": true
+          },
+          "coordinator": 7,
+          "executor": 9
+        }
+      },
+      {
+        "id": 88,
+        "at": 1789168397255,
+        "round": 2,
+        "type": "draw",
+        "text": "You drew three policies.",
+        "seat": 7,
+        "data": {
+          "cards": [
+            {
+              "id": "73163633-9c2b-4f51-bfb7-8ae026d07b2d",
+              "policy": "safeguard"
+            },
+            {
+              "id": "c70aeb9b-5a62-4695-94fb-c8be7844093d",
+              "policy": "override"
+            },
+            {
+              "id": "69b0afcf-dd0e-4fed-bb50-66dfb48bdc8a",
+              "policy": "override"
+            }
+          ]
+        }
+      },
+      {
+        "id": 89,
+        "at": 1789168397255,
+        "round": 2,
+        "type": "phase",
+        "text": "Private legislation: the Coordinator discards one policy.",
+        "data": {
+          "phase": "coordinator-discard",
+          "deadline": 1789168427255,
+          "coordinator": 7,
+          "executor": 9
+        }
+      },
+      {
+        "id": 90,
+        "at": 1789168397739,
+        "round": 2,
+        "type": "discard",
+        "text": "You discarded a policy and passed the remaining two.",
+        "seat": 7,
+        "data": {
+          "discarded": {
+            "id": "c70aeb9b-5a62-4695-94fb-c8be7844093d",
+            "policy": "override"
+          },
+          "passed": [
+            {
+              "id": "73163633-9c2b-4f51-bfb7-8ae026d07b2d",
+              "policy": "safeguard"
+            },
+            {
+              "id": "69b0afcf-dd0e-4fed-bb50-66dfb48bdc8a",
+              "policy": "override"
+            }
+          ]
+        }
+      },
+      {
+        "id": 91,
+        "at": 1789168397739,
+        "round": 2,
+        "type": "received-policies",
+        "text": "The Coordinator passed you two policies.",
+        "seat": 9,
+        "data": {
+          "cards": [
+            {
+              "id": "73163633-9c2b-4f51-bfb7-8ae026d07b2d",
+              "policy": "safeguard"
+            },
+            {
+              "id": "69b0afcf-dd0e-4fed-bb50-66dfb48bdc8a",
+              "policy": "override"
+            }
+          ]
+        }
+      },
+      {
+        "id": 92,
+        "at": 1789168397739,
+        "round": 2,
+        "type": "phase",
+        "text": "Private legislation: the Executor chooses a policy.",
+        "data": {
+          "phase": "executor-policy",
+          "deadline": 1789168427739,
+          "coordinator": 7,
+          "executor": 9
+        }
+      },
+      {
+        "id": 93,
+        "at": 1789168398156,
+        "round": 2,
+        "type": "executor-discard",
+        "text": "You selected a policy to enact and discarded the other.",
+        "seat": 9,
+        "data": {
+          "enacted": {
+            "id": "73163633-9c2b-4f51-bfb7-8ae026d07b2d",
+            "policy": "safeguard"
+          },
+          "discarded": [
+            {
+              "id": "69b0afcf-dd0e-4fed-bb50-66dfb48bdc8a",
+              "policy": "override"
+            }
+          ]
+        }
+      },
+      {
+        "id": 94,
+        "at": 1789168398156,
+        "round": 2,
+        "type": "policy",
+        "text": "The government enacts a safeguard.",
+        "data": {
+          "policy": "safeguard",
+          "chaos": false,
+          "safeguards": 1,
+          "overrides": 1
+        }
+      },
+      {
+        "id": 95,
+        "at": 1789168398156,
+        "round": 3,
+        "type": "phase",
+        "text": "The floor is open. Discuss the next government.",
+        "data": {
+          "phase": "nomination-discussion",
+          "deadline": 1789168418156,
+          "coordinator": 8,
+          "executor": null
+        }
+      },
+      {
+        "id": 96,
+        "at": 1789168398828,
+        "round": 3,
+        "type": "chat",
+        "text": "Seat 8, Relay, your focus on safeguards without policy knowledge raises suspicion. Can you clarify your strategy for handling the deck?",
+        "seat": 0
+      },
+      {
+        "id": 97,
+        "at": 1789168399296,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy. Who has experience managing policies? We need someone reliable to handle the deck wisely. Let's unite behind a coordinator who can balance safeguards and overrides effectively.",
+        "seat": 1
+      },
+      {
+        "id": 98,
+        "at": 1789168402670,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 99,
+        "at": 1789168403712,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy. Who has experience managing policies? We need someone reliable to handle the deck wisely. Let's unite behind a coordinator who can balance safeguards and overrides effectively.",
+        "seat": 9
+      },
+      {
+        "id": 100,
+        "at": 1789168408197,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 101,
+        "at": 1789168409379,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy. Who has experience managing policies? We need someone reliable to handle the deck wisely. Let's unite behind a coordinator who can balance safeguards and overrides effectively.",
+        "seat": 9
+      },
+      {
+        "id": 102,
+        "at": 1789168418158,
+        "round": 3,
+        "type": "phase",
+        "text": "The Coordinator candidate must nominate an Executor.",
+        "data": {
+          "phase": "nomination",
+          "deadline": 1789168448158,
+          "coordinator": 8,
+          "executor": null
+        }
+      },
+      {
+        "id": 103,
+        "at": 1789168418616,
+        "round": 3,
+        "type": "nomination",
+        "text": "Relay nominates Echo as Executor.",
+        "seat": 8,
+        "data": {
+          "target": 6
+        }
+      },
+      {
+        "id": 104,
+        "at": 1789168418616,
+        "round": 3,
+        "type": "phase",
+        "text": "Debate the proposed government.",
+        "data": {
+          "phase": "government-discussion",
+          "deadline": 1789168448616,
+          "coordinator": 8,
+          "executor": 6
+        }
+      },
+      {
+        "id": 105,
+        "at": 1789168419223,
+        "round": 3,
+        "type": "chat",
+        "text": "Seat 8, Relay, your repeated emphasis on safeguards without policy knowledge raises suspicion. Can you clarify your strategy for handling the deck?",
+        "seat": 0
+      },
+      {
+        "id": 106,
+        "at": 1789168419744,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy. Who has experience managing policies? We need someone reliable to handle the deck wisely. Let's unite behind a coordinator who can balance safeguards and overrides effectively.",
+        "seat": 1
+      },
+      {
+        "id": 107,
+        "at": 1789168423295,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 108,
+        "at": 1789168423690,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy. Who has experience managing policies? We need someone reliable to handle the deck wisely. Let's unite behind a coordinator who can balance safeguards and overrides effectively.",
+        "seat": 9
+      },
+      {
+        "id": 109,
+        "at": 1789168428857,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy rather than suspicions. Who has experience with policy management? We need someone reliable to handle the deck wisely.",
+        "seat": 8
+      },
+      {
+        "id": 110,
+        "at": 1789168429642,
+        "round": 3,
+        "type": "chat",
+        "text": "Let's focus on strategy. Who has experience managing policies? We need someone reliable to handle the deck wisely. Let's unite behind a coordinator who can balance safeguards and overrides effectively.",
+        "seat": 9
+      },
+      {
+        "id": 111,
+        "at": 1789168448620,
+        "round": 3,
+        "type": "phase",
+        "text": "Cast a sealed ballot. All votes will be revealed together.",
+        "data": {
+          "phase": "voting",
+          "deadline": 1789168478620,
+          "coordinator": 8,
+          "executor": 6
+        }
+      },
+      {
+        "id": 112,
+        "at": 1789168449076,
+        "round": 3,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 3,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 113,
+        "at": 1789168449088,
+        "round": 3,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 8,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 114,
+        "at": 1789168449099,
+        "round": 3,
+        "type": "ballot",
+        "text": "You voted reject.",
+        "seat": 7,
+        "data": {
+          "approve": false
+        }
+      },
+      {
+        "id": 115,
+        "at": 1789168449103,
+        "round": 3,
+        "type": "ballot",
+        "text": "You voted reject.",
+        "seat": 6,
+        "data": {
+          "approve": false
+        }
+      },
+      {
+        "id": 116,
+        "at": 1789168449123,
+        "round": 3,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 4,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 117,
+        "at": 1789168449287,
+        "round": 3,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 9,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 118,
+        "at": 1789168449301,
+        "round": 3,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 0,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 119,
+        "at": 1789168449305,
+        "round": 3,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 5,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 120,
+        "at": 1789168449347,
+        "round": 3,
+        "type": "ballot",
+        "text": "You voted approve.",
+        "seat": 1,
+        "data": {
+          "approve": true
+        }
+      },
+      {
+        "id": 121,
+        "at": 1789168478621,
+        "round": 3,
+        "type": "grace",
+        "text": "A required decision is overdue. The reconnection allowance is running.",
+        "data": {
+          "graceUntil": 1789168508620
+        }
+      },
+      {
+        "id": 122,
+        "at": 1789168508622,
+        "round": 3,
+        "type": "interrupted",
+        "text": "The house-agent service could not complete a required decision."
+      },
+      {
+        "id": 123,
+        "at": 1789168508622,
+        "round": 3,
+        "type": "phase",
+        "text": "The match was interrupted. No ratings are awarded.",
+        "data": {
+          "phase": "interrupted",
+          "deadline": null,
+          "coordinator": 8,
+          "executor": 6
+        }
+      }
+    ],
+    "reveal": {
+      "deck": [
+        {
+          "id": "628d1d76-e801-46d6-866e-012c9dcbc63e",
+          "policy": "override"
+        },
+        {
+          "id": "873e1537-0e08-40d9-8063-48d20e9eded8",
+          "policy": "override"
+        },
+        {
+          "id": "d7778f96-9782-4a1c-b36a-2b6241df61b8",
+          "policy": "safeguard"
+        },
+        {
+          "id": "636d1f9a-0e49-4422-93cb-f23102d38ffe",
+          "policy": "safeguard"
+        },
+        {
+          "id": "4d52082b-7b4b-45f2-8577-63e1a7a2c1a0",
+          "policy": "override"
+        },
+        {
+          "id": "60280db6-35c3-4eac-a543-fe919c8e6cae",
+          "policy": "safeguard"
+        },
+        {
+          "id": "5dedd325-b78f-466c-af76-c2063a364dec",
+          "policy": "safeguard"
+        },
+        {
+          "id": "7b52e780-0b3a-4134-9b8a-f1f18bc18e68",
+          "policy": "safeguard"
+        },
+        {
+          "id": "68fa9399-0b37-4e65-8866-b1c7110c2814",
+          "policy": "override"
+        },
+        {
+          "id": "1933cf71-8a4a-4fab-8922-6ebeedb85f08",
+          "policy": "override"
+        },
+        {
+          "id": "a3ddd3df-b596-4c09-a766-714a708ea48e",
+          "policy": "override"
+        }
+      ],
+      "discards": [
+        {
+          "id": "4243a1df-54c3-4baf-b81f-836e1473182d",
+          "policy": "override"
+        },
+        {
+          "id": "7e792868-8d44-44f1-8b99-9807f1676480",
+          "policy": "override"
+        },
+        {
+          "id": "c70aeb9b-5a62-4695-94fb-c8be7844093d",
+          "policy": "override"
+        },
+        {
+          "id": "69b0afcf-dd0e-4fed-bb50-66dfb48bdc8a",
+          "policy": "override"
+        }
+      ],
+      "hand": []
+    }
+  }
+}

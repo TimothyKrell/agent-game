@@ -1,0 +1,10 @@
+{
+  "at": "2026-09-11T22:57:47.493Z",
+  "repetition": 2,
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "scenario": "coordinator-discard",
+  "latencyMs": 2804,
+  "error": "HouseModel.generateDecision: Unsupported model response.",
+  "accountedUsd": 0.02
+}

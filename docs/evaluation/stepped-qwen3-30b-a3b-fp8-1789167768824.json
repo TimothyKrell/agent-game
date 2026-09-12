@@ -1,0 +1,51 @@
+{
+  "at": "2026-09-11T23:02:53.772Z",
+  "policyVersion": "house-4",
+  "budgetUsd": 0.2,
+  "initialSeed": 20260911,
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "status": "failed",
+  "error": "HouseModel.generateDecision: Model response was truncated.",
+  "calls": 7,
+  "costUsd": 0.00048224,
+  "accountedUsd": 0.0008994269999999997,
+  "durationMs": 4948,
+  "samples": [
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "latencyMs": 306,
+      "choice": 8
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "latencyMs": 217,
+      "choice": 0
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "latencyMs": 366,
+      "choice": 0
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "latencyMs": 292,
+      "choice": 0
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "latencyMs": 260,
+      "choice": 0
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "latencyMs": 422,
+      "choice": 0
+    },
+    {
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "latencyMs": 337,
+      "choice": 1
+    }
+  ],
+  "replay": null
+}

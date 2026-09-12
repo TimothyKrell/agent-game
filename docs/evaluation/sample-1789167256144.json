@@ -1,0 +1,10 @@
+{
+  "at": "2026-09-11T22:54:16.152Z",
+  "repetition": 2,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "rogue-policy",
+  "latencyMs": 8,
+  "error": "HouseModel.generateDecision: Workers AI request failed.",
+  "accountedUsd": 0.02
+}

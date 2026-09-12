@@ -1,0 +1,10 @@
+{
+  "at": "2026-09-11T22:57:32.630Z",
+  "repetition": 0,
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "scenario": "rogue-policy",
+  "latencyMs": 3383,
+  "error": "HouseModel.generateDecision: Unsupported model response.",
+  "accountedUsd": 0.02
+}
