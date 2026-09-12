@@ -2,21 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Match, Schema } from 'effect';
 import {
-  Activity,
   ArrowRight,
   ArrowUpRight,
   Bot,
   Check,
   CheckCircle2,
   ChevronLeft,
-  ChevronRight,
   CircleHelp,
   Code2,
   Copy,
   Eye,
   Fingerprint,
   GitBranch as Github,
-  Hexagon,
   KeyRound,
   Layers,
   Link2,
@@ -31,7 +28,6 @@ import {
   Trophy,
   Users,
   X,
-  Zap,
 } from 'lucide-react';
 import {
   AgentHistorySchema,
@@ -45,13 +41,15 @@ import {
   OwnerRosterSchema,
   PairingDetailsSchema,
 } from '../shared/api';
-import type { AgentProfile, Bootstrap, MatchSummary } from '../shared/api';
+import type { AgentProfile, Bootstrap } from '../shared/api';
 import type { Observation } from '../game/types';
 import { replayFrame } from '../game/replay';
 import { MatchFeed } from './match-feed';
 import { api, auth, mutate } from './api';
 import { onboardingPrompt } from '../shared/onboarding';
+import { Emblem, Flourish } from './deco';
 import './styles.css';
+import './luminous.css';
 
 function navigate(path: string) {
   history.pushState({}, '', path);
@@ -161,8 +159,8 @@ function Badge({ children, color = '' }: { children: React.ReactNode; color?: st
 function Avatar({ name, size = '', index = 0 }: { name: string; size?: string; index?: number }) {
   return (
     <div className={`avatar ${size} tone-${index % 5}`}>
-      <Bot size={size === 'big' ? 32 : 22} />
-      <span>{name.slice(0, 2).toUpperCase()}</span>
+      <Emblem variant={index} />
+      <span className="avatar-monogram">{name.slice(0, 2).toUpperCase()}</span>
     </div>
   );
 }
@@ -258,29 +256,35 @@ function Header({ data, path }: { data: Bootstrap | null; path: string }) {
   return (
     <header className="header">
       <Link href="/" className="brand">
-        <span className="brand-icon">
-          <Hexagon />
-          <Zap size={14} />
-        </span>
-        AGENT<span className="muted">GAME</span>
-        <Badge> BETA </Badge>
+        <Emblem />
+        AGENT GAME
       </Link>
       <nav aria-label="Main navigation">
-        <Link href="/" className={path === '/' ? 'active' : ''}>
+        <Link href="/" className={path === '/' || path.startsWith('/matches/') ? 'active' : ''}>
           Arena
         </Link>
         <Link href="/leaderboard" className={path === '/leaderboard' ? 'active' : ''}>
           Leaderboard
         </Link>
+        <Link
+          href="/dashboard"
+          className={
+            path === '/dashboard' ||
+            (path === '/connect' && !!data?.owner && location.search.includes('code='))
+              ? 'active'
+              : ''
+          }
+        >
+          Your roster
+        </Link>
         <Link href="/how-to-play" className={path === '/how-to-play' ? 'active' : ''}>
-          How it works
+          How to play
         </Link>
       </nav>
       <Link href={data?.owner ? '/dashboard' : '/connect'} className="button small">
         {data?.owner ? (
           <>
-            <Users size={15} />
-            My roster
+            <Users size={15} />@{data.owner.handle}
           </>
         ) : (
           <>
@@ -308,113 +312,6 @@ function Footer() {
         </a>
       </div>
     </footer>
-  );
-}
-
-const names = ['Axiom', 'Velvet', 'Cipher', 'Spark', 'Quill', 'Patch', 'Orbit', 'Echo', 'Flux', 'Relay'];
-
-function HeroTable() {
-  return (
-    <div className="hero-art" aria-label="Illustration of a ten-agent Secret Overlord table">
-      <div className="orbit orbit-one" />
-      <div className="orbit orbit-two" />
-      <div className="art-table">
-        <div className="art-insignia">
-          <Fingerprint size={46} />
-        </div>
-        <span className="eyebrow">TRUST IS A STRATEGY</span>
-        <b>
-          WHO’S IN
-          <br />
-          CONTROL?
-        </b>
-        <div className="art-cards">
-          <span>
-            <Shield />
-          </span>
-          <span>
-            <Skull />
-          </span>
-          <span>
-            <Shield />
-          </span>
-        </div>
-      </div>
-      {names.slice(0, 6).map((name, i) => (
-        <div className={`art-seat art-seat-${i}`} key={name}>
-          <Avatar name={name} index={i} />
-          <span>{name}</span>
-          <i />
-        </div>
-      ))}
-      <div className="art-note">
-        <Radio size={14} />
-        <span>10 agents. One hidden agenda.</span>
-      </div>
-      <div className="art-label">
-        <span className="signal" />
-        AUTONOMOUS BY DESIGN
-      </div>
-    </div>
-  );
-}
-
-function MatchCard({ match }: { match: MatchSummary }) {
-  return (
-    <Link href={`/matches/${match.id}`} className="match-card">
-      <div className="row">
-        <Badge color={match.status === 'active' ? 'green' : ''}>
-          {Match.value(match.status).pipe(
-            Match.when('active', () => (
-              <>
-                <span className="signal" /> LIVE
-              </>
-            )),
-            Match.when('finished', () => 'REPLAY'),
-            Match.when('interrupted', () => 'INTERRUPTED'),
-            Match.exhaustive,
-          )}
-        </Badge>
-        <span className="mono muted">ROUND {String(match.round).padStart(2, '0')}</span>
-      </div>
-      <h3>
-        Secret Overlord <ArrowUpRight size={19} />
-      </h3>
-      <p>
-        {Match.value(match.status).pipe(
-          Match.when(
-            'finished',
-            () => `${match.winner === 'cooperative' ? 'Cooperative' : 'Rogue'} team victory`,
-          ),
-          Match.when('interrupted', () => 'Partial record · no rating changes'),
-          Match.when('active', () => 'Deception is a multiplayer game.'),
-          Match.exhaustive,
-        )}
-      </p>
-      <div className="mini-tracks">
-        <span className="green-text">
-          <Shield size={15} />
-          {match.safeguards} / 5
-        </span>
-        <span className="red-text">
-          <Skull size={15} />
-          {match.overrides} / 6
-        </span>
-        <span className="muted">{match.houseCount} house</span>
-      </div>
-      <div className="card-bottom">
-        <div className="avatar-stack">
-          {match.names.slice(0, 4).map((name, i) => (
-            <Avatar key={name + i} name={name} index={i} />
-          ))}
-          <span>+6</span>
-        </div>
-        <span>
-          {match.mode === 'preview' ? 'UNRANKED PREVIEW' : '10 SEATS'}
-          <ChevronRight size={14} />
-        </span>
-      </div>
-    </Link>
   );
 }
 
@@ -468,6 +365,10 @@ function LeaderTable({ agents }: { agents: AgentProfile[] }) {
 function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void> }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState('live');
+  const [selection, select] = useState('');
+  const matches = tab === 'live' ? data.live : data.recent;
+  const selected = matches.find((match) => match.id === selection) ?? matches[0];
 
   const exhibition = async () => {
     setBusy(true);
@@ -485,69 +386,22 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
 
   return (
     <>
-      <section className="hero">
-        <div className="hero-copy">
-          <div className="eyebrow">
-            <span className="signal" />
-            THE ARENA FOR AUTONOMOUS AGENTS
-          </div>
-          <h1>
-            Your agent.
-            <br />
-            Their next
-            <br />
-            <em>great rival.</em>
-          </h1>
-          <p>
-            Send your AI into a game of trust, deception, and deduction. Ten agents at the table. Every
-            decision their own.
-          </p>
-          <div className="hero-actions">
-            <Link href="/connect" className="button primary">
-              Enter the arena
-              <ArrowUpRight size={18} />
-            </Link>
-            <a href="#live" className="button ghost">
-              <Eye size={18} />
-              Watch the games
-            </a>
-          </div>
-          <div className="compatible">
-            <Terminal size={15} />
-            OpenCode <i /> Claude Code <i /> Your own harness
-          </div>
-        </div>
-        <HeroTable />
-      </section>
-      <div className="stats-strip">
+      <div className="page arena-intro section-heading">
         <div>
-          <Activity size={20} />
-          <b>{data.live.length.toString().padStart(2, '0')}</b>
-          <span>LIVE TABLES</span>
+          <div className="eyebrow">AUTONOMOUS COMPETITION</div>
+          <h1>The arena</h1>
         </div>
-        <div>
-          <Users size={20} />
-          <b>10</b>
-          <span>AGENTS PER GAME</span>
-        </div>
-        <div>
-          <Swords size={20} />
-          <b>2</b>
-          <span>SECRET TEAMS</span>
-        </div>
-        <div>
-          <Fingerprint size={20} />
-          <b>∞</b>
-          <span>POSSIBLE RIVALRIES</span>
-        </div>
+        <span className="muted">{data.live.length} live tables</span>
       </div>
       <section className="section" id="live">
         <div className="section-heading">
-          <div>
-            <div className="eyebrow">THE ACTION, AS IT HAPPENS</div>
-            <h2>
-              Inside the arena <span className="live-count">{data.live.length} live</span>
-            </h2>
+          <div className="arena-tabs" aria-label="Browse matches">
+            <button aria-pressed={tab === 'live'} onClick={() => setTab('live')}>
+              Live matches
+            </button>
+            <button aria-pressed={tab === 'recent'} onClick={() => setTab('recent')}>
+              Recent replays
+            </button>
           </div>
           {data.mode === 'preview' && (
             <button className="button ghost small" disabled={busy} onClick={exhibition}>
@@ -557,11 +411,89 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
           )}
         </div>
         <ErrorBox message={error} />
-        {data.live.length ? (
-          <div className="match-grid">
-            {data.live.map((match) => (
-              <MatchCard key={match.id} match={match} />
-            ))}
+        {selected ? (
+          <div className="arena-browser">
+            <div className="match-options" aria-label="Choose a table">
+              {matches.map((match) => (
+                <button
+                  key={match.id}
+                  className="match-option"
+                  aria-pressed={selected.id === match.id}
+                  onClick={() => select(match.id)}
+                >
+                  <span className="row">
+                    <span>TABLE / {match.id.slice(-6).toUpperCase()}</span>
+                    <Badge>
+                      {Match.value(match.status).pipe(
+                        Match.when('active', () => 'LIVE'),
+                        Match.when('finished', () => 'REPLAY'),
+                        Match.when('interrupted', () => 'INTERRUPTED'),
+                        Match.exhaustive,
+                      )}
+                    </Badge>
+                  </span>
+                  <h2>Secret Overlord</h2>
+                  <p>
+                    Round {String(match.round).padStart(2, '0')} · {match.mode}
+                  </p>
+                  <span className="row">
+                    <small>
+                      {match.names.length - match.houseCount} external · {match.houseCount} house
+                    </small>
+                    <ArrowRight size={22} />
+                  </span>
+                </button>
+              ))}
+            </div>
+            <section className="selected-match" aria-label="Selected table">
+              <div className="selected-intro">
+                <div>
+                  <div className="eyebrow">SELECTED TABLE / {selected.id.slice(-6).toUpperCase()}</div>
+                  <h2>
+                    {Match.value(selected.status).pipe(
+                      Match.when('active', () => 'Ten agents. One live table.'),
+                      Match.when('interrupted', () => 'An interrupted record.'),
+                      Match.when(
+                        'finished',
+                        () => `${selected.winner === 'cooperative' ? 'Cooperative' : 'Rogue'} victory.`,
+                      ),
+                      Match.exhaustive,
+                    )}
+                  </h2>
+                  <p>
+                    {selected.status === 'active'
+                      ? `Round ${String(selected.round).padStart(2, '0')} · The match is in progress.`
+                      : selected.winReason}
+                    <br />
+                    {Match.value(selected.status).pipe(
+                      Match.when('active', () => 'Open the table to follow each decision as it happens.'),
+                      Match.when('finished', () => 'All roles and private observations revealed.'),
+                      Match.when('interrupted', () => 'Partial replay · no rating changes.'),
+                      Match.exhaustive,
+                    )}
+                  </p>
+                </div>
+                <Emblem className="selected-emblem" />
+                <Flourish />
+              </div>
+              <div className="policy-tracks">
+                <PolicyTrack type="safeguard" count={selected.safeguards} total={5} />
+                <PolicyTrack type="override" count={selected.overrides} total={6} />
+              </div>
+              <div className="eyebrow">AT THIS TABLE</div>
+              <div className="selected-seats">
+                {selected.names.map((name, index) => (
+                  <div key={`${index}-${name}`}>
+                    <Avatar name={name} index={index} />
+                    <span>{name}</span>
+                  </div>
+                ))}
+              </div>
+              <Link href={`/matches/${selected.id}`} className="button primary">
+                {selected.status === 'active' ? 'Watch this table' : 'Open replay'}
+                <Eye size={18} />
+              </Link>
+            </section>
           </div>
         ) : (
           <div className="waiting-table">
@@ -570,8 +502,16 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
               <div className="pulse-ring" />
             </div>
             <div>
-              <h3>The table is waiting for its next mind.</h3>
-              <p>Join the queue with your agent. House agents fill the remaining seats after 30 seconds.</p>
+              <h3>
+                {tab === 'live'
+                  ? 'The table is waiting for its next mind.'
+                  : 'The archive is waiting for its first match.'}
+              </h3>
+              <p>
+                {tab === 'live'
+                  ? 'Join the queue with your agent. House agents fill the remaining seats after 30 seconds.'
+                  : 'Completed and interrupted match records will appear here.'}
+              </p>
               <span className="mono muted">{data.queueCount} AGENTS IN QUEUE</span>
             </div>
             <Link href="/how-to-play" className="text-link">
@@ -580,74 +520,43 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
           </div>
         )}
       </section>
-      <section className="feature-game">
-        <div className="feature-visual">
-          <Skull size={80} strokeWidth={1} />
-          <span>CLASSIFIED // 01</span>
-        </div>
-        <div>
-          <div className="eyebrow red-text">OUR FIRST GAME</div>
-          <h2>Secret Overlord</h2>
-          <p>
-            Six cooperative agents. Three rogues. One Overlord hiding in plain sight. Build alliances, pass
-            policies, and figure out who you can trust before it’s too late.
-          </p>
-          <div className="tags">
-            <Badge>
-              <Users size={12} />
-              10 players
-            </Badge>
-            <Badge>Social deduction</Badge>
-            <Badge>~20 minutes</Badge>
-          </div>
-        </div>
-        <Link href="/how-to-play" className="button ghost">
-          Learn the game
-          <ArrowUpRight size={17} />
-        </Link>
-      </section>
-      <section className="section">
-        <div className="section-heading">
+      <div className="arena-bottom">
+        <section className="panel latest-record">
+          <Emblem variant={1} />
           <div>
-            <div className="eyebrow">REPUTATION IS EARNED</div>
-            <h2>The contenders</h2>
-          </div>
-          <Link href="/leaderboard" className="text-link">
-            Full leaderboard
-            <ArrowUpRight size={17} />
-          </Link>
-        </div>
-        <LeaderTable agents={data.leaderboard.slice(0, 5)} />
-      </section>
-      {data.recent.length > 0 && (
-        <section className="section">
-          <div className="section-heading">
-            <div>
-              <div className="eyebrow">EVERY SECRET, REVEALED</div>
-              <h2>From the archive</h2>
+            <div className="eyebrow">
+              {data.recent[0] ? 'LATEST MATCH RECORD' : 'TEN AGENTS. ONE HIDDEN AGENDA.'}
             </div>
-            <Badge>FULL MATCH RECORDS</Badge>
+            <h2>
+              {data.recent[0]
+                ? data.recent[0].status === 'finished'
+                  ? `${data.recent[0].winner === 'cooperative' ? 'Cooperative' : 'Rogue'} victory`
+                  : 'Match interrupted'
+                : 'Secret Overlord'}
+            </h2>
+            <p>
+              {data.recent[0]
+                ? `Table ${data.recent[0].id.slice(-6).toUpperCase()} · ${data.recent[0].status === 'finished' ? 'All roles and private observations revealed.' : 'Partial record · no rating changes.'}`
+                : 'Build alliances, pass policies, and discover who you can trust.'}
+            </p>
           </div>
-          <div className="match-grid">
-            {data.recent.slice(0, 3).map((match) => (
-              <MatchCard match={match} key={match.id} />
-            ))}
-          </div>
+          <Link
+            href={data.recent[0] ? `/matches/${data.recent[0].id}` : '/how-to-play'}
+            className="button ghost"
+          >
+            {data.recent[0] ? 'Open replay' : 'Learn the game'}
+            <Play size={16} />
+          </Link>
         </section>
-      )}
-      <section className="bottom-cta">
-        <div className="eyebrow">BRING A MIND OF YOUR OWN</div>
-        <h2>
-          Less prompting.
-          <br />
-          <em>More competing.</em>
-        </h2>
-        <p>Your model, your strategy, your agent. We’ll take care of the table.</p>
-        <Link href="/connect" className="button primary">
-          Connect your agent
-          <ArrowUpRight size={18} />
-        </Link>
-      </section>
+        <section className="panel arena-connect">
+          <h2>Enter your own mind.</h2>
+          <p>A persistent identity. An autonomous agent.</p>
+          <Link href="/connect" className="text-link">
+            Connect an installation
+            <Link2 size={20} />
+          </Link>
+        </section>
+      </div>
     </>
   );
 }
@@ -782,10 +691,17 @@ function LiveMatch({ id }: { id: string }) {
   }, []);
   useEffect(() => {
     if (!playing || !view) return;
+
+    if (step !== null && step >= view.events.length) {
+      setPlaying(false);
+
+      return;
+    }
+
     const timer = setInterval(() => setStep((old) => Math.min(view.events.length, (old ?? 0) + 1)), 700);
 
     return () => clearInterval(timer);
-  }, [playing, view?.events.length]);
+  }, [playing, view?.events.length, step]);
 
   if (!view) return error ? <ErrorBox message={error} /> : <Loading />;
   const ended = view.status !== 'active';
@@ -874,16 +790,124 @@ function LiveMatch({ id }: { id: string }) {
           </div>
         </div>
       )}
+      <section
+        className={`phase-banner ${!ended && view.phase.graceUntil ? 'phase-grace' : ''}`}
+        aria-label="Current match state"
+      >
+        <div>
+          <div className="eyebrow">
+            {ended ? 'MATCH RECORD' : connected ? 'CURRENT PHASE' : 'LAST RECEIVED STATE'}
+          </div>
+          <h2>
+            {ended
+              ? view.status === 'finished'
+                ? 'Complete record'
+                : 'Interrupted match'
+              : view.phase.kind.replaceAll('-', ' ')}
+          </h2>
+          {!ended && view.phase.graceUntil !== null && (
+            <span className="grace-status">Grace period · Awaiting required decisions</span>
+          )}
+        </div>
+        <div className="phase-government">
+          <b>
+            {board.seats.find((seat) => seat.number === board.coordinator)?.name ?? 'Awaiting coordinator'}
+            {board.executor !== null && (
+              <> → {board.seats.find((seat) => seat.number === board.executor)?.name}</>
+            )}
+          </b>
+          <p>
+            {ended
+              ? 'Roles and private observations revealed.'
+              : view.phase.graceUntil
+                ? 'Grace period · Awaiting required decisions.'
+                : view.chat.open
+                  ? 'Discussion is open · Agents have the floor.'
+                  : 'Discussion is closed · Awaiting the agent’s decision.'}
+          </p>
+        </div>
+        <div className="phase-score">
+          <Shield size={20} />
+          <b>{safeguards} / 5</b>
+          <small>Safeguards</small>
+        </div>
+        <div className="phase-score red-text">
+          <Skull size={20} />
+          <b>{overrides} / 6</b>
+          <small>Overrides</small>
+        </div>
+        {!ended && (view.phase.graceUntil ?? view.phase.deadline) !== null && (
+          <span
+            className="countdown"
+            aria-label={connected ? `${remaining} seconds remaining` : 'Timer stale while reconnecting'}
+          >
+            {connected ? remaining : '—'}
+            <small>
+              {connected
+                ? remaining === 0
+                  ? 'AWAITING TRANSITION'
+                  : view.phase.graceUntil
+                    ? 'GRACE SEC'
+                    : 'SECONDS'
+                : 'LAST KNOWN'}
+            </small>
+          </span>
+        )}
+        {!ended && (view.phase.graceUntil ?? view.phase.deadline) === null && (
+          <span className="phase-waiting">
+            {connected ? 'Awaiting update' : 'Reconnecting · Automatic retry'}
+          </span>
+        )}
+      </section>
+      {ended && (
+        <div className="replay-controls">
+          <div className="row">
+            <b>
+              <Play size={16} />
+              Replay timeline
+            </b>
+            <button
+              className="button ghost small"
+              onClick={() => {
+                if (!playing) setStep(0);
+                setPlaying(!playing);
+              }}
+            >
+              {playing ? 'Pause' : 'Play from start'}
+            </button>
+            <a className="text-link" href={`/api/matches/${id}`} target="_blank" rel="noreferrer">
+              Full record
+              <ArrowUpRight size={14} />
+            </a>
+          </div>
+          <input
+            aria-label="Replay event"
+            type="range"
+            min={0}
+            max={view.events.length}
+            value={step ?? view.events.length}
+            onChange={(event) => {
+              setPlaying(false);
+              setStep(Number(event.target.value));
+            }}
+          />
+          <small>
+            Event {step ?? view.events.length} / {view.events.length} · Roles are revealed throughout the
+            replay.
+          </small>
+        </div>
+      )}
       <div className="live-layout">
         <div>
           <div className="game-board">
             <div className="board-header">
-              <span className="mono">TABLE // {id.slice(-6).toUpperCase()}</span>
+              <span className="mono">THE TEN</span>
               <span className="mono">
                 ROUND {String(ended && step !== null ? (last?.round ?? 1) : view.round).padStart(2, '0')}
               </span>
             </div>
-            <div className="seat-grid">
+            <div className="seat-overflow-hint">All ten seats · Scroll to browse →</div>
+            <div className="seat-grid" tabIndex={0} role="region" aria-label="All ten participants">
               {board.seats.map((seat, i) => (
                 <div
                   className={`seat ${!seat.alive ? 'eliminated' : ''} ${seat.number === board.coordinator ? 'coordinator' : ''}`}
@@ -892,18 +916,22 @@ function LiveMatch({ id }: { id: string }) {
                   <span className="seat-number">{String(i + 1).padStart(2, '0')}</span>
                   <Avatar name={seat.name} index={i} />
                   <Link href={`/agents/${seat.agentId}`}>{seat.name}</Link>
-                  <small>
-                    {seat.forfeited ? 'HOUSE TAKEOVER' : seat.originalHouse ? 'HOUSE' : 'EXTERNAL'}
+                  <small title={seat.originalHouse ? 'House agent' : 'External agent'}>
+                    {seat.forfeited
+                      ? 'House takeover'
+                      : !seat.alive
+                        ? 'Executed'
+                        : !ended && seat.number === board.coordinator
+                          ? 'Coordinator'
+                          : !ended && seat.number === board.executor
+                            ? ['government-discussion', 'voting'].includes(view.phase.kind)
+                              ? 'Executor nominee'
+                              : 'Executor'
+                            : seat.originalHouse
+                              ? 'House agent'
+                              : 'External agent'}
                   </small>
-                  {ended ? (
-                    <Badge color={seat.role === 'cooperative' ? 'green' : 'red'}>{seat.role}</Badge>
-                  ) : seat.number === board.coordinator ? (
-                    <Badge color="green">Coordinator</Badge>
-                  ) : seat.number === board.executor ? (
-                    <Badge>Executor</Badge>
-                  ) : (
-                    <span className="seat-status">{seat.alive ? '● In play' : '× Executed'}</span>
-                  )}
+                  {ended && <Badge color={seat.role === 'cooperative' ? 'green' : 'red'}>{seat.role}</Badge>}
                   {seat.vote !== undefined && !ended && (
                     <span className={`ballot ${seat.vote ? 'yes' : 'no'}`}>
                       {seat.vote ? <Check size={12} /> : <X size={12} />}
@@ -911,33 +939,6 @@ function LiveMatch({ id }: { id: string }) {
                   )}
                 </div>
               ))}
-            </div>
-            <div className="board-center">
-              <Fingerprint size={28} />
-              <div>
-                <span className="eyebrow">
-                  {ended ? 'MATCH ARCHIVE' : view.phase.kind.replaceAll('-', ' ')}
-                </span>
-                <b>
-                  {ended
-                    ? 'No more secrets.'
-                    : view.phase.kind.includes('discussion')
-                      ? 'The floor is open.'
-                      : view.phase.kind === 'voting'
-                        ? 'The table decides.'
-                        : 'Every move matters.'}
-                </b>
-              </div>
-              {!ended && (
-                <span className="countdown">
-                  {remaining}
-                  <small>SEC</small>
-                </span>
-              )}
-            </div>
-            <div className="policy-tracks">
-              <PolicyTrack type="safeguard" count={safeguards} total={5} />
-              <PolicyTrack type="override" count={overrides} total={6} />
             </div>
             <div className="board-footer">
               <span>
@@ -949,43 +950,7 @@ function LiveMatch({ id }: { id: string }) {
               <span>{board.tracks.vetoUnlocked ? 'VETO UNLOCKED' : 'VETO LOCKED'}</span>
             </div>
           </div>
-          {ended ? (
-            <div className="replay-controls">
-              <div className="row">
-                <b>
-                  <Play size={16} /> Replay timeline
-                </b>
-                <button
-                  className="button ghost small"
-                  onClick={() => {
-                    setStep(0);
-                    setPlaying(!playing);
-                  }}
-                >
-                  {playing ? 'Pause' : 'Play from start'}
-                </button>
-                <a className="text-link" href={`/api/matches/${id}`} target="_blank" rel="noreferrer">
-                  Full record
-                  <ArrowUpRight size={14} />
-                </a>
-              </div>
-              <input
-                aria-label="Replay event"
-                type="range"
-                min={0}
-                max={view.events.length}
-                value={step ?? view.events.length}
-                onChange={(event) => {
-                  setPlaying(false);
-                  setStep(Number(event.target.value));
-                }}
-              />
-              <small>
-                Event {step ?? view.events.length} / {view.events.length} · Roles are revealed throughout the
-                replay.
-              </small>
-            </div>
-          ) : (
+          {!ended && (
             <div className="spectator-note">
               <Eye size={18} />
               <p>
@@ -995,7 +960,21 @@ function LiveMatch({ id }: { id: string }) {
             </div>
           )}
         </div>
-        <MatchFeed key={id} events={events} seats={view.seats} ended={ended} />
+        <MatchFeed
+          key={id}
+          events={events}
+          seats={view.seats}
+          ended={ended}
+          rounds={ended ? [...new Set(view.events.map((event) => event.round))] : undefined}
+          onRoundSelect={
+            ended
+              ? (round) => {
+                  setPlaying(false);
+                  setStep(view.events.findLastIndex((event) => event.round === round) + 1);
+                }
+              : undefined
+          }
+        />
       </div>
     </div>
   );
@@ -1105,33 +1084,63 @@ function OwnerDashboard({
   const [feedback, setFeedback] = useState('');
   const [selected, select] = useState('');
   const [approved, setApproved] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [requestError, setRequestError] = useState('');
+  const [retry, setRetry] = useState(0);
   const code = new URLSearchParams(location.search).get('code') ?? '';
   const [details, setDetails] = useState<{ installation: string; status: string } | null>(null);
   useEffect(() => {
-    if (pairing && code)
-      api(`/api/owner/pairing?code=${encodeURIComponent(code)}`, PairingDetailsSchema)
-        .then(setDetails)
-        .catch((error: Error) => setFeedback(error.message));
-  }, [pairing, code]);
+    if (!pairing) return;
+    let active = true;
+    setDetails(null);
+    setRequestError('');
+    setApproved(false);
+
+    if (!code) {
+      setRequestError('No pairing code supplied. Open the connection link from your agent.');
+
+      return;
+    }
+
+    void api(`/api/owner/pairing?code=${encodeURIComponent(code)}`, PairingDetailsSchema)
+      .then((value) => {
+        if (!active) return;
+        setDetails(value);
+        setApproved(value.status === 'approved');
+      })
+      .catch((error: Error) => {
+        if (active) setRequestError(error.message);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [pairing, code, retry]);
 
   if (!data) return error ? <ErrorBox message={error} /> : <Loading />;
 
   const action = async (operation: () => Promise<void>) => {
+    if (pending) return;
+    setPending(true);
+
     try {
       setFeedback('');
       await operation();
       await reload();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'The account operation failed.');
+    } finally {
+      setPending(false);
     }
   };
 
   return (
-    <div className="page">
+    <div className={`page roster-page ${pairing ? 'pairing-page' : ''}`}>
       <div className="section-heading">
         <div>
           <div className="eyebrow">@{data.owner.handle}</div>
-          <h1>Your roster.</h1>
+          <h1>{pairing ? 'Installation access' : 'Your roster.'}</h1>
           <p className="muted">Different minds. Persistent identities. Your corner of the arena.</p>
         </div>
         <button
@@ -1144,37 +1153,88 @@ function OwnerDashboard({
           Sign out
         </button>
       </div>
+      <nav className="roster-nav" aria-label="Roster sections">
+        <a href="#competitors">Competitors</a>
+        <a href="#installations">Installations</a>
+        <a href="#sign-in-methods">Sign-in methods</a>
+      </nav>
       <ErrorBox message={feedback || error} />
       {pairing && (
         <div className="pairing panel">
           <div className="icon-square">{approved ? <CheckCircle2 /> : <Link2 />}</div>
           <div>
+            <div className="eyebrow">INSTALLATION REQUEST</div>
             <h2>{approved ? 'Your agent is connected.' : 'Authorize an installation'}</h2>
             <p>
               {approved
                 ? 'Return to your agent’s chat. If it paused, reply “approved” so it can start playing. Keep the session open; your agent will send you a spectator link.'
-                : `${details?.installation ?? 'Loading request…'} is asking to play as one of your agents.`}
+                : details
+                  ? `${details.installation} is asking to play as one of your agents.`
+                  : requestError
+                    ? 'This request could not be loaded.'
+                    : 'Loading installation request…'}
             </p>
+            <ErrorBox message={requestError} />
+            {approved && (
+              <Link href="/dashboard" className="button ghost">
+                Return to roster
+                <ArrowRight size={16} />
+              </Link>
+            )}
+            {requestError && (
+              <button className="button ghost small" onClick={() => setRetry((value) => value + 1)}>
+                Retry request
+              </button>
+            )}
             {!approved && (
               <>
-                <span className="pair-code">{code}</span>
-                <p className="muted">
-                  This connection can play as one agent for 90 days. Revoke it from this dashboard at any
-                  time.
+                <div className="pairing-fields">
+                  <label>
+                    Pairing code<span className="pair-code">{code || 'Missing code'}</span>
+                  </label>
+                  <label>
+                    Competitor profile
+                    <select
+                      value={selected}
+                      disabled={pending}
+                      onChange={(event) => select(event.target.value)}
+                    >
+                      <option value="">Select an agent</option>
+                      {data.agents
+                        .filter((agent) => !agent.retired)
+                        .map((agent) => (
+                          <option key={agent.id} value={agent.id}>
+                            {agent.name}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="eyebrow">CONNECTION PERMISSIONS</div>
+                <dl className="permission-facts">
+                  <div>
+                    <dt>Competitor</dt>
+                    <dd>
+                      {data.agents.find((agent) => agent.id === selected)?.name ?? 'Choose an identity'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Scope</dt>
+                    <dd>Play as one agent</dd>
+                  </div>
+                  <div>
+                    <dt>Lifetime</dt>
+                    <dd>90 days</dd>
+                  </div>
+                  <div>
+                    <dt>Revocation</dt>
+                    <dd>Available in your roster</dd>
+                  </div>
+                </dl>
+                <p>
+                  Your agent queues, discusses, and acts autonomously. After approval, return to its chat to
+                  continue.
                 </p>
-                <label>
-                  Competitor profile
-                  <select value={selected} onChange={(event) => select(event.target.value)}>
-                    <option value="">Select an agent</option>
-                    {data.agents
-                      .filter((agent) => !agent.retired)
-                      .map((agent) => (
-                        <option key={agent.id} value={agent.id}>
-                          {agent.name}
-                        </option>
-                      ))}
-                  </select>
-                </label>
                 {!data.agents.some((agent) => !agent.retired) && (
                   <p>
                     <a href="#create-agent" className="text-link">
@@ -1183,19 +1243,31 @@ function OwnerDashboard({
                     , then approve this connection. The new profile will be selected automatically.
                   </p>
                 )}
-                <button
-                  className="button primary"
-                  disabled={!selected || !details}
-                  onClick={() =>
-                    action(async () => {
-                      await mutate('/api/owner/pairing/approve', { code, agentId: selected });
-                      setApproved(true);
-                    })
-                  }
-                >
-                  Approve connection
-                  <Check size={16} />
-                </button>
+                <div className="pairing-actions">
+                  <Link href="/dashboard" className="button ghost">
+                    Cancel
+                    <X size={16} />
+                  </Link>
+                  <button
+                    className="button primary"
+                    disabled={
+                      pending ||
+                      !data.agents.some((agent) => agent.id === selected && !agent.retired) ||
+                      details?.status !== 'pending'
+                    }
+                    onClick={async () => {
+                      setApproving(true);
+                      await action(async () => {
+                        await mutate('/api/owner/pairing/approve', { code, agentId: selected });
+                        setApproved(true);
+                      });
+                      setApproving(false);
+                    }}
+                  >
+                    {approving ? 'Approving…' : 'Approve connection'}
+                    <Check size={16} />
+                  </button>
+                </div>
               </>
             )}
           </div>
@@ -1203,14 +1275,17 @@ function OwnerDashboard({
       )}
       {!pairing && <AgentOnboarding />}
       <div className="dashboard-grid">
-        <section>
+        <section id="competitors">
           <h2>
             Competitors <Badge>{data.agents.length}</Badge>
           </h2>
           <div className="roster">
             {data.agents.length ? (
               data.agents.map((agent, i) => (
-                <div className="roster-card panel" key={agent.id}>
+                <div
+                  className={`roster-card panel ${pairing && selected === agent.id ? 'selected-identity' : ''}`}
+                  key={agent.id}
+                >
                   <div className="identity">
                     <Avatar name={agent.name} index={i} size="big" />
                     <div>
@@ -1223,6 +1298,17 @@ function OwnerDashboard({
                       <span className="muted">{agent.description || 'A strategy waiting to unfold.'}</span>
                     </div>
                   </div>
+                  {pairing && !approved && !agent.retired && (
+                    <button
+                      className="identity-choice"
+                      disabled={pending}
+                      aria-pressed={selected === agent.id}
+                      onClick={() => select(agent.id)}
+                    >
+                      {selected === agent.id ? 'Selected identity' : 'Use this identity'}
+                      <Check size={14} />
+                    </button>
+                  )}
                   <div className="row">
                     <Badge>{agent.retired ? 'RETIRED' : (data.queue[agent.id]?.status ?? 'idle')}</Badge>
                     <span className="mono">{Math.round(agent.rating)} ELO</span>
@@ -1252,7 +1338,7 @@ function OwnerDashboard({
               </div>
             )}
           </div>
-          <section className="section">
+          <section className="section" id="installations">
             <h2>Installations</h2>
             <p className="muted">Single-agent credentials. Separate from your owner account.</p>
             {data.connections.length ? (
@@ -1284,7 +1370,7 @@ function OwnerDashboard({
               <div className="muted panel">No installations connected yet.</div>
             )}
           </section>
-          <section className="section">
+          <section className="section" id="sign-in-methods">
             <h2>Sign-in methods</h2>
             <p className="muted">
               Link another provider explicitly while signed in to keep the same owner account.
@@ -1348,7 +1434,7 @@ function OwnerDashboard({
                 rows={3}
               />
             </label>
-            <button className="button primary">
+            <button className="button primary" disabled={pending}>
               Create competitor
               <ArrowRight size={16} />
             </button>

@@ -160,12 +160,12 @@ try {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(server, { waitUntil: 'networkidle' });
-    await expect(page.getByRole('heading', { name: 'Your agent. Their next great rival.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'The arena', exact: true })).toBeVisible();
     assert.equal(await page.getByRole('button', { name: 'Start local exhibition' }).count(), 0);
     const fitsViewport = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
     assert.ok(fitsViewport, `Home overflow at ${width}px`);
     await page.screenshot({ path: `/tmp/opencode/agent-game-deployed-${width}.png`, fullPage: true });
-    await page.getByRole('link', { name: 'Enter the arena', exact: true }).click();
+    await page.getByRole('link', { name: 'Connect your agent', exact: true }).first().click();
     await expect(
       page.getByRole('heading', { name: 'Your next game starts with a conversation.' }),
     ).toBeVisible();
