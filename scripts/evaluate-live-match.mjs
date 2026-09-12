@@ -1,11 +1,18 @@
 import { writeFile, mkdir } from 'node:fs/promises';
+import { Schema } from 'effect';
 import { evaluationLedger, lockEvaluation } from './evaluation-budget.mjs';
+
+const HouseModel = Schema.Struct({
+  provider: Schema.NonEmptyString,
+  model: Schema.NonEmptyString,
+  policyVersion: Schema.NonEmptyString,
+});
 
 const server = process.env.LIVE_EVALUATION_URL ?? 'http://127.0.0.1:8797';
 
 const reservation = Number(process.env.LIVE_EVALUATION_RESERVATION_USD ?? 2);
 
-const model = process.env.HOUSE_MODEL ?? '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+const requestedModel = process.env.HOUSE_MODEL || null;
 
 if (!Number.isFinite(reservation) || reservation <= 0 || reservation > 2)
   throw new Error('Choose an evaluation reservation above zero and no greater than $2.');
@@ -17,9 +24,12 @@ await lockEvaluation();
 if ((await evaluationLedger()).remainingUsd < reservation)
   throw new Error('Insufficient evaluation headroom for the live match reservation.');
 
-const path = `docs/evaluation/live-${model.split('/').at(-1)}-${Date.now()}.json`;
+const path = `docs/evaluation/live-${Date.now()}.json`;
 
-await writeFile(path, JSON.stringify({ status: 'reserved', model, accountedUsd: reservation }) + '\n');
+await writeFile(
+  path,
+  JSON.stringify({ status: 'reserved', requestedModel, accountedUsd: reservation }) + '\n',
+);
 
 const started = Date.now();
 
@@ -37,11 +47,73 @@ await writeFile(
   path,
   JSON.stringify({
     status: 'running',
-    model,
+    requestedModel,
     accountedUsd: reservation,
     matchId,
     server,
-    policyVersion: 'house-4',
+  }) + '\n',
+);
+
+let houseModel;
+
+try {
+  // Match indexing is asynchronous; allow its persisted configuration to arrive.
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const evidence = await fetch(`${server}/api/dev/evaluation/${matchId}`);
+
+    if (!evidence.ok) throw new Error(`Model evidence request failed: HTTP ${evidence.status}.`);
+    const usage = await evidence.json();
+
+    if (usage.houseModel != null) {
+      houseModel = usage.houseModel;
+      break;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  if (!Schema.is(HouseModel)(houseModel))
+    throw new Error(
+      'The server did not provide a persisted house-model configuration; the evaluation cannot be labeled.',
+    );
+
+  if (requestedModel !== null && requestedModel !== houseModel.model)
+    throw new Error(
+      `Requested HOUSE_MODEL ${requestedModel}, but match ${matchId} uses ${houseModel.model}. Configure the evaluation Worker to use the requested model.`,
+    );
+} catch (error) {
+  await writeFile(
+    path,
+    JSON.stringify(
+      {
+        status: 'model-verification-failed',
+        requestedModel,
+        houseModel,
+        matchId,
+        server,
+        accountedUsd: reservation,
+        error: error instanceof Error ? error.message : String(error),
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  throw error;
+}
+
+const { model, provider, policyVersion } = houseModel;
+
+await writeFile(
+  path,
+  JSON.stringify({
+    status: 'running',
+    requestedModel,
+    model,
+    provider,
+    policyVersion,
+    matchId,
+    server,
+    accountedUsd: reservation,
   }) + '\n',
 );
 
@@ -58,8 +130,11 @@ const usage = await fetch(`${server}/api/dev/evaluation/${matchId}`).then((respo
 
 const summary = {
   at: new Date().toISOString(),
-  policyVersion: 'house-4',
+  ...usage,
+  policyVersion,
   model,
+  provider,
+  requestedModel,
   reservationUsd: reservation,
   server,
   matchId,
@@ -67,7 +142,6 @@ const summary = {
   status: replay.status,
   winner: replay.winner,
   rounds: replay.round,
-  ...usage,
   // Keep the full allowance if the driver stops before the table does.
   accountedUsd: replay.status === 'active' ? reservation : usage.accountedUsd,
   discussionMessages: replay.events.filter((event) => event.type === 'chat').length,
