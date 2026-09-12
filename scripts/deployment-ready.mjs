@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 import { setTimeout } from 'node:timers/promises';
 
-export async function waitForDeployment(server, { timeoutMs = 90_000, intervalMs = 2_000 } = {}) {
+export async function waitForDeployment(
+  server,
+  { timeoutMs = 90_000, intervalMs = 2_000, stableForMs = 10_000 } = {},
+) {
   const deadline = Date.now() + timeoutMs;
+  let healthySince = null;
   let failure = new Error('No healthy response received');
 
   do {
@@ -16,8 +20,11 @@ export async function waitForDeployment(server, { timeoutMs = 90_000, intervalMs
       assert.equal(response.status, 200, `/api/health: ${text.slice(0, 2048)}`);
       assert.deepEqual(JSON.parse(text), { ok: true, protocolVersion: '1' });
 
-      return;
+      healthySince ??= Date.now();
+
+      if (Date.now() - healthySince >= stableForMs) return;
     } catch (error) {
+      healthySince = null;
       failure = error instanceof Error ? error : new Error(String(error));
     }
 
