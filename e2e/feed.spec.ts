@@ -44,6 +44,23 @@ test('timeline preserves reading position on live updates and names archived vot
   await expect
     .poll(() => list.evaluate((element) => element.scrollHeight - element.scrollTop - element.clientHeight))
     .toBeLessThan(2);
+
+  // Reproduce a late font reflow followed by the initial jump's queued scroll event.
+  // Change font metrics locally so this regression needs no external font server.
+  const growth = await list.evaluate((element) => {
+    const before = element.scrollHeight;
+
+    for (const paragraph of element.querySelectorAll<HTMLElement>('.game-event p'))
+      paragraph.style.lineHeight = '2';
+    element.dispatchEvent(new Event('scroll'));
+
+    return element.scrollHeight - before;
+  });
+
+  expect(growth).toBeGreaterThan(48);
+  await expect
+    .poll(() => list.evaluate((element) => element.scrollHeight - element.scrollTop - element.clientHeight))
+    .toBeLessThan(2);
   await list.evaluate((element) => {
     element.scrollTop = 350;
     element.dispatchEvent(new Event('scroll'));
@@ -75,11 +92,33 @@ test('timeline preserves reading position on live updates and names archived vot
   });
 
   const anchor = await list.locator('.game-event').evaluateAll((rows) => {
-    const top = rows[0].parentElement!.getBoundingClientRect().top;
+    const top = rows[0].closest('.event-list')!.getBoundingClientRect().top;
     const row = rows.find((entry) => entry.getBoundingClientRect().bottom > top)!;
 
     return { text: row.querySelector('p')!.textContent!, top: row.getBoundingClientRect().top - top };
   });
+
+  const anchoredRow = list
+    .locator('.game-event')
+    .filter({ has: page.getByText(anchor.text, { exact: true }) });
+
+  // Reflow must also preserve an older message while the reader is not following.
+  await list.evaluate((element) => {
+    for (const paragraph of element.querySelectorAll<HTMLElement>('.game-event p'))
+      paragraph.style.lineHeight = '2.5';
+    element.dispatchEvent(new Event('scroll'));
+  });
+  await expect
+    .poll(() =>
+      anchoredRow.evaluate(
+        (row, top) =>
+          Math.abs(
+            row.getBoundingClientRect().top - row.closest('.event-list')!.getBoundingClientRect().top - top,
+          ),
+        anchor.top,
+      ),
+    )
+    .toBeLessThanOrEqual(1); // scrollTop can round fractional font metrics to a CSS pixel.
 
   state.events.push(
     {
@@ -113,17 +152,17 @@ test('timeline preserves reading position on live updates and names archived vot
   send(archive);
   await expect(list.locator('.event-private')).not.toHaveCount(0);
 
-  const anchoredRow = list
-    .locator('.game-event')
-    .filter({ has: page.getByText(anchor.text, { exact: true }) });
-
   await expect
     .poll(() =>
       anchoredRow.evaluate(
-        (row) => row.getBoundingClientRect().top - row.parentElement!.getBoundingClientRect().top,
+        (row, top) =>
+          Math.abs(
+            row.getBoundingClientRect().top - row.closest('.event-list')!.getBoundingClientRect().top - top,
+          ),
+        anchor.top,
       ),
     )
-    .toBeCloseTo(anchor.top, 0);
+    .toBeLessThanOrEqual(1);
   await expect(page.getByRole('button', { name: /new events? · Jump to latest/ })).toHaveCount(0);
   await expect(list.getByText(`${observation.seats[2].name} voted reject.`, { exact: true })).toBeVisible();
   await expect(list.getByText('You voted reject.', { exact: true })).toHaveCount(0);

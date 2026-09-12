@@ -223,6 +223,8 @@ export function MatchFeed({
   const [filter, setFilter] = useState('all');
   const [unread, setUnread] = useState(0);
   const list = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  const scrollTop = useRef(0);
   const following = useRef(true);
   const anchor = useRef<{ identity: string; top: number } | null>(null);
   const previous = useRef({ id: 0, filter, ended });
@@ -240,18 +242,25 @@ export function MatchFeed({
     const reset = previous.current.filter !== filter || latest < previous.current.id;
     const archived = ended && !previous.current.ended;
 
+    const restorePosition = () => {
+      if (following.current) element.scrollTop = element.scrollHeight;
+      else {
+        const saved = anchor.current;
+        const event = saved && visible.find((entry) => eventIdentity(entry) === saved.identity);
+        const row = event && element.querySelector(`[data-event-id="${event.id}"]`);
+
+        if (row)
+          element.scrollTop +=
+            row.getBoundingClientRect().top - element.getBoundingClientRect().top - saved.top;
+      }
+
+      scrollTop.current = element.scrollTop;
+    };
+
     if (following.current || reset) {
-      element.scrollTop = element.scrollHeight;
       following.current = true;
       setUnread(0);
     } else {
-      const saved = anchor.current;
-      const event = saved && visible.find((entry) => eventIdentity(entry) === saved.identity);
-      const row = event && element.querySelector(`[data-event-id="${event.id}"]`);
-
-      if (row)
-        element.scrollTop +=
-          row.getBoundingClientRect().top - element.getBoundingClientRect().top - saved.top;
       const added = visible.filter((event) => event.id > previous.current.id).length;
 
       // Revealed observations are historical, not new live events.
@@ -259,7 +268,16 @@ export function MatchFeed({
       else if (added) setUnread((count) => count + added);
     }
 
+    restorePosition();
     previous.current = { id: latest, filter, ended };
+
+    // Fonts, expanded records and viewport changes can reflow without new events.
+    const resize = new ResizeObserver(restorePosition);
+    resize.observe(element);
+
+    if (content.current) resize.observe(content.current);
+
+    return () => resize.disconnect();
   }, [events, filter, latest, ended]);
 
   return (
@@ -298,7 +316,10 @@ export function MatchFeed({
         onScroll={() => {
           const element = list.current;
 
-          if (!element) return;
+          // A queued notification from our own jump may arrive after a reflow.
+          // Only a changed scroll position should update the reader's intent.
+          if (!element || element.scrollTop === scrollTop.current) return;
+          scrollTop.current = element.scrollTop;
           following.current = element.scrollHeight - element.scrollTop - element.clientHeight < 48;
 
           if (following.current) setUnread(0);
@@ -316,35 +337,41 @@ export function MatchFeed({
               : null;
         }}
       >
-        {!visible.length && (
-          <div className="feed-empty">
-            <MessageCircle size={24} />
-            <b>{filter === 'chat' ? 'The floor is quiet' : 'The story starts here'}</b>
-            <p>
-              {filter === 'chat'
-                ? 'Agent discussion will appear here.'
-                : 'Game events will appear as the match unfolds.'}
-            </p>
-          </div>
-        )}
-        {visible.map((event, index) => (
-          <Fragment key={event.id}>
-            {visible[index - 1]?.round !== event.round && (
-              <div className="feed-round">
-                <span>ROUND {String(event.round).padStart(2, '0')}</span>
-                <span>{index === 0 ? 'Opening events' : 'Next round'}</span>
-              </div>
-            )}
-            <FeedEvent event={event} seats={seats} ended={ended} />
-          </Fragment>
-        ))}
+        <div ref={content}>
+          {!visible.length && (
+            <div className="feed-empty">
+              <MessageCircle size={24} />
+              <b>{filter === 'chat' ? 'The floor is quiet' : 'The story starts here'}</b>
+              <p>
+                {filter === 'chat'
+                  ? 'Agent discussion will appear here.'
+                  : 'Game events will appear as the match unfolds.'}
+              </p>
+            </div>
+          )}
+          {visible.map((event, index) => (
+            <Fragment key={event.id}>
+              {visible[index - 1]?.round !== event.round && (
+                <div className="feed-round">
+                  <span>ROUND {String(event.round).padStart(2, '0')}</span>
+                  <span>{index === 0 ? 'Opening events' : 'Next round'}</span>
+                </div>
+              )}
+              <FeedEvent event={event} seats={seats} ended={ended} />
+            </Fragment>
+          ))}
+        </div>
       </div>
       <div className="feed-footer">
         {unread > 0 ? (
           <button
             className="feed-catchup"
             onClick={() => {
-              if (list.current) list.current.scrollTop = list.current.scrollHeight;
+              if (list.current) {
+                list.current.scrollTop = list.current.scrollHeight;
+                scrollTop.current = list.current.scrollTop;
+              }
+
               following.current = true;
               setUnread(0);
             }}
