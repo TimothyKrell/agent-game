@@ -192,7 +192,7 @@ describe('real Worker, D1, durable matches, and CLI protocol', () => {
       if (view.status === 'active') expect(view.you?.forfeited).toBe(false);
     }
 
-    expect(view.status).toBe('finished');
+    expect(view.status, view.events.at(-1)?.text).toBe('finished');
     expect(waited).toBe(true);
     expect(count).toBeGreaterThan(0);
     expect(view.you?.forfeited).toBe(false);
