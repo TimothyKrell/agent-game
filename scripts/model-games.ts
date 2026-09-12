@@ -20,10 +20,42 @@ const endpoint = process.env.EVALUATION_URL ?? 'http://127.0.0.1:8794';
 
 await lockEvaluation();
 
-for (const model of ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/zai-org/glm-4.7-flash']) {
-  if ((await evaluationLedger()).remainingUsd < 2)
+const models = process.env.EVALUATION_MODELS?.split(',') ?? [
+  '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+  '@cf/zai-org/glm-4.7-flash',
+];
+
+const budget = Number(process.env.EVALUATION_GAME_BUDGET_USD ?? 2);
+
+if (!Number.isFinite(budget) || budget <= 0 || budget > 2)
+  throw new Error('Choose a per-game evaluation budget above zero and no greater than $2.');
+
+if (
+  !models.length ||
+  models.some(
+    (model) =>
+      ![
+        '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+        '@cf/zai-org/glm-4.7-flash',
+        '@cf/qwen/qwen3-30b-a3b-fp8',
+      ].includes(model),
+  )
+)
+  throw new Error('Choose models from the Workers AI evaluation shortlist.');
+
+for (const model of models) {
+  if ((await evaluationLedger()).remainingUsd < budget)
     throw new Error('Insufficient headroom in the approved model-evaluation budget.');
-  const path = `docs/evaluation/stepped-${model.includes('llama') ? 'llama' : 'glm'}-${Date.now()}.json`;
+  const path = `docs/evaluation/stepped-${model.split('/').at(-1)}-${Date.now()}.json`;
+
+  // Identical initial role/deck shuffles for comparison; subsequent decisions can diverge.
+  let seed = 20260911;
+
+  const random = (n: number) => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
+    return seed % n;
+  };
 
   let state = createMatch(
     'model-game-' + crypto.randomUUID(),
@@ -35,7 +67,7 @@ for (const model of ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/zai-org/gl
       rating: 1000,
     })),
     0,
-    { mode: 'evaluation' },
+    { mode: 'evaluation', random },
   );
 
   const notes = Array<string>(10).fill('');
@@ -52,6 +84,8 @@ for (const model of ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/zai-org/gl
         {
           at: new Date().toISOString(),
           policyVersion: 'house-4',
+          budgetUsd: budget,
+          initialSeed: 20260911,
           model,
           status,
           error,
@@ -91,7 +125,7 @@ for (const model of ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/zai-org/gl
 
       const estimate = inferenceCost(model, new TextEncoder().encode(prompt + HOUSE_SYSTEM).byteLength, 512);
 
-      if (accountedUsd + estimate > 2) throw new Error('Per-game admission budget reached.');
+      if (accountedUsd + estimate > budget) throw new Error('Per-game admission budget reached.');
       accountedUsd += estimate;
       await record('running'); // Reserve before the potentially billable request.
 
@@ -134,6 +168,9 @@ for (const model of ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/zai-org/gl
       await record(state.phase.kind);
     }
 
+    await record(terminal(state) ? state.phase.kind : 'decision-limit');
+
+    if (!terminal(state)) process.exitCode = 1;
     console.log(
       JSON.stringify({
         model,

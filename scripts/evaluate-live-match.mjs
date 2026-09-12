@@ -5,6 +5,8 @@ const server = process.env.LIVE_EVALUATION_URL ?? 'http://127.0.0.1:8797';
 
 const reservation = Number(process.env.LIVE_EVALUATION_RESERVATION_USD ?? 2);
 
+const model = process.env.HOUSE_MODEL ?? '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+
 if (!Number.isFinite(reservation) || reservation <= 0 || reservation > 2)
   throw new Error('Choose an evaluation reservation above zero and no greater than $2.');
 
@@ -15,9 +17,9 @@ await lockEvaluation();
 if ((await evaluationLedger()).remainingUsd < reservation)
   throw new Error('Insufficient evaluation headroom for the live match reservation.');
 
-const path = `docs/evaluation/live-llama-${Date.now()}.json`;
+const path = `docs/evaluation/live-${model.split('/').at(-1)}-${Date.now()}.json`;
 
-await writeFile(path, JSON.stringify({ status: 'reserved', accountedUsd: reservation }) + '\n');
+await writeFile(path, JSON.stringify({ status: 'reserved', model, accountedUsd: reservation }) + '\n');
 
 const started = Date.now();
 
@@ -35,6 +37,7 @@ await writeFile(
   path,
   JSON.stringify({
     status: 'running',
+    model,
     accountedUsd: reservation,
     matchId,
     server,
@@ -56,7 +59,8 @@ const usage = await fetch(`${server}/api/dev/evaluation/${matchId}`).then((respo
 const summary = {
   at: new Date().toISOString(),
   policyVersion: 'house-4',
-  model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+  model,
+  reservationUsd: reservation,
   server,
   matchId,
   durationMs: Date.now() - started,

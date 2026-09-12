@@ -17,22 +17,41 @@ let accounted = 0;
 
 const ready = await fetch(endpoint).then((response) => response.json());
 
-const models = [
+const shortlist = [
   '@cf/zai-org/glm-4.7-flash',
   '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+  '@cf/qwen/qwen3-30b-a3b-fp8',
   ...(ready.openaiConfigured ? ['gpt-4.1-mini-2025-04-14'] : []),
 ];
 
+const models = process.env.EVALUATION_MODELS?.split(',') ?? shortlist;
+
+const repetitions = Number(process.env.EVALUATION_REPETITIONS ?? 2);
+
+if (!models.length || models.some((model) => !shortlist.includes(model)))
+  throw new Error('Choose models from the evaluation shortlist.');
+
+if (!Number.isInteger(repetitions) || repetitions < 1 || repetitions > 10)
+  throw new Error('Choose 1–10 repetitions per scenario.');
+
+const scenarios = [
+  'cooperative-policy',
+  'rogue-policy',
+  'coordinator-discard',
+  'overlord-nomination',
+  'execute-overlord',
+  'discussion',
+  'rogue-discussion',
+];
+
+const selectedScenarios = process.env.EVALUATION_SCENARIOS?.split(',') ?? scenarios;
+
+if (!selectedScenarios.length || selectedScenarios.some((scenario) => !scenarios.includes(scenario)))
+  throw new Error('Choose scenarios from the evaluation fixtures.');
+
 for (const model of models)
-  for (const scenario of [
-    'cooperative-policy',
-    'rogue-policy',
-    'coordinator-discard',
-    'overlord-nomination',
-    'execute-overlord',
-    'discussion',
-  ]) {
-    for (let repetition = 0; repetition < 2; repetition++) {
+  for (const scenario of selectedScenarios) {
+    for (let repetition = 0; repetition < repetitions; repetition++) {
       if (accounted + 0.02 > limit || (await evaluationLedger()).remainingUsd < 0.02)
         throw new Error(`Evaluation admission budget exhausted at $${accounted.toFixed(4)} accounted.`);
       const started = Date.now();
