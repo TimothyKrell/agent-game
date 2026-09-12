@@ -1351,6 +1351,12 @@ footer a:hover {
   font-size: 8px;
   color: #9eacb9;
 }
+.event-actor {
+  font-size: 11px;
+  color: #adbcb8;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
 .game-event time {
   margin-left: auto;
   font:

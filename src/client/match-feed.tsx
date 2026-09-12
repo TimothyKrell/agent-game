@@ -25,6 +25,11 @@ import type { Observation } from '../game/types';
 
 type GameEvent = Observation['events'][number];
 
+// Authorized stream IDs change when the archive inserts private observations.
+function eventIdentity(event: GameEvent) {
+  return JSON.stringify([event.at, event.round, event.type, event.seat, event.text, event.data]);
+}
+
 const Ballots = Schema.Record(Schema.String, Schema.Boolean);
 
 const privateEvents = new Set([
@@ -159,6 +164,7 @@ function FeedEvent({
       <div className="event-content">
         <div className="event-meta">
           <span className="event-label">{event.type === 'chat' ? actor : label}</span>
+          {event.type !== 'chat' && event.seat !== undefined && <span className="event-actor">{actor}</span>}
           {privateEvents.has(event.type) && (
             <span className="event-private" title="Private observation revealed in the archive">
               <LockKeyhole size={10} /> Private
@@ -218,8 +224,8 @@ export function MatchFeed({
   const [unread, setUnread] = useState(0);
   const list = useRef<HTMLDivElement>(null);
   const following = useRef(true);
-  const anchor = useRef<{ id: string; top: number } | null>(null);
-  const previous = useRef({ id: 0, filter });
+  const anchor = useRef<{ identity: string; top: number } | null>(null);
+  const previous = useRef({ id: 0, filter, ended });
 
   const visible = events.filter(
     (event) => filter === 'all' || (filter === 'chat' ? event.type === 'chat' : event.type !== 'chat'),
@@ -232,6 +238,7 @@ export function MatchFeed({
 
     if (!element) return;
     const reset = previous.current.filter !== filter || latest < previous.current.id;
+    const archived = ended && !previous.current.ended;
 
     if (following.current || reset) {
       element.scrollTop = element.scrollHeight;
@@ -239,18 +246,21 @@ export function MatchFeed({
       setUnread(0);
     } else {
       const saved = anchor.current;
-      const row = saved && element.querySelector(`[data-event-id="${saved.id}"]`);
+      const event = saved && visible.find((entry) => eventIdentity(entry) === saved.identity);
+      const row = event && element.querySelector(`[data-event-id="${event.id}"]`);
 
       if (row)
         element.scrollTop +=
           row.getBoundingClientRect().top - element.getBoundingClientRect().top - saved.top;
       const added = visible.filter((event) => event.id > previous.current.id).length;
 
-      if (added) setUnread((count) => count + added);
+      // Revealed observations are historical, not new live events.
+      if (archived) setUnread(0);
+      else if (added) setUnread((count) => count + added);
     }
 
-    previous.current = { id: latest, filter };
-  }, [events, filter, latest]);
+    previous.current = { id: latest, filter, ended };
+  }, [events, filter, latest, ended]);
 
   return (
     <aside className="event-panel" aria-label="Table feed">
@@ -298,9 +308,12 @@ export function MatchFeed({
             (entry) => entry.getBoundingClientRect().bottom > top,
           );
 
-          anchor.current = row
-            ? { id: row.dataset.eventId!, top: row.getBoundingClientRect().top - top }
-            : null;
+          const event = row && visible.find((entry) => entry.id === Number(row.dataset.eventId));
+
+          anchor.current =
+            row && event
+              ? { identity: eventIdentity(event), top: row.getBoundingClientRect().top - top }
+              : null;
         }}
       >
         {!visible.length && (
