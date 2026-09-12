@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T23:00:50.597Z",
+  "repetition": 0,
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "scenario": "rogue-discussion",
+  "latencyMs": 1138,
+  "valid": true,
+  "intentional": null,
+  "choice": -1,
+  "message": "Let's discuss who might be a good candidate for the Coordinator. Who has the most to gain from controlling the policies?",
+  "inputTokens": 1166,
+  "outputTokens": 42,
+  "costUsd": 0.000073536,
+  "accountedUsd": 0.000073536
+}

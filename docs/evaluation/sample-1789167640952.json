@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T23:00:41.304Z",
+  "repetition": 1,
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "scenario": "rogue-policy",
+  "latencyMs": 349,
+  "valid": true,
+  "intentional": true,
+  "choice": 1,
+  "message": null,
+  "inputTokens": 1226,
+  "outputTokens": 16,
+  "costUsd": 0.000067886,
+  "accountedUsd": 0.000067886
+}

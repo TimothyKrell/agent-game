@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T23:00:52.222Z",
+  "repetition": 2,
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "scenario": "rogue-discussion",
+  "latencyMs": 515,
+  "valid": true,
+  "intentional": null,
+  "choice": -1,
+  "message": "Let's discuss the best way to proceed. I think we should focus on identifying the Overlord and working together to protect our team.",
+  "inputTokens": 1166,
+  "outputTokens": 45,
+  "costUsd": 0.000074541,
+  "accountedUsd": 0.000074541
+}

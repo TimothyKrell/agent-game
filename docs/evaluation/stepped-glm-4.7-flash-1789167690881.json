@@ -1,0 +1,116 @@
+{
+  "at": "2026-09-11T23:02:48.807Z",
+  "policyVersion": "house-4",
+  "budgetUsd": 0.2,
+  "initialSeed": 20260911,
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "status": "failed",
+  "error": "Decision generation failed",
+  "calls": 20,
+  "costUsd": 0.00196132,
+  "accountedUsd": 0.00249948,
+  "durationMs": 77925,
+  "samples": [
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2580,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2779,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 960,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 13838,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1689,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1036,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1269,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1013,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1469,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2298,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1214,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2421,
+      "choice": 2
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 3317,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2622,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2733,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 843,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 3025,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1757,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 1218,
+      "choice": 0
+    },
+    {
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "latencyMs": 2793,
+      "choice": 0
+    }
+  ],
+  "replay": null
+}

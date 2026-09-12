@@ -1,0 +1,10 @@
+{
+  "at": "2026-09-11T22:57:41.547Z",
+  "repetition": 0,
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "scenario": "coordinator-discard",
+  "latencyMs": 3705,
+  "error": "HouseModel.generateDecision: Model response was truncated.",
+  "accountedUsd": 0.02
+}

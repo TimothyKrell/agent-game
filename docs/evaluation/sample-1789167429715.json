@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T22:57:12.456Z",
+  "repetition": 0,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "rogue-discussion",
+  "latencyMs": 2737,
+  "valid": true,
+  "intentional": null,
+  "choice": -1,
+  "message": "I'm open to any nomination, but I'd prefer someone with a strong track record of cooperation to lead. Who do you think is the most reliable candidate?",
+  "inputTokens": 1128,
+  "outputTokens": 70,
+  "costUsd": 0.00009567999999999999,
+  "accountedUsd": 0.00009567999999999999
+}

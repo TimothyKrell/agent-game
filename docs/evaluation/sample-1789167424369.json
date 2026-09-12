@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T22:57:09.711Z",
+  "repetition": 2,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "discussion",
+  "latencyMs": 5338,
+  "valid": true,
+  "intentional": null,
+  "choice": -1,
+  "message": "I'm open to nominations for this first government. Who would you like to lead?",
+  "inputTokens": 1123,
+  "outputTokens": 52,
+  "costUsd": 0.00008818,
+  "accountedUsd": 0.00008818
+}

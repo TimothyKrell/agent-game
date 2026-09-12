@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T22:57:04.365Z",
+  "repetition": 1,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "discussion",
+  "latencyMs": 3715,
+  "valid": true,
+  "intentional": null,
+  "choice": -1,
+  "message": "I'm ready to support a strong coalition. Who would you like to nominate for Chancellor?",
+  "inputTokens": 1123,
+  "outputTokens": 30,
+  "costUsd": 0.00007937999999999999,
+  "accountedUsd": 0.00007937999999999999
+}

@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T23:00:47.219Z",
+  "repetition": 0,
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "scenario": "discussion",
+  "latencyMs": 1550,
+  "valid": true,
+  "intentional": null,
+  "choice": -1,
+  "message": "Let's discuss the best way to proceed. I think we should focus on identifying any suspicious behavior and ensuring we protect our safeguards.",
+  "inputTokens": 1161,
+  "outputTokens": 46,
+  "costUsd": 0.00007462099999999999,
+  "accountedUsd": 0.00007462099999999999
+}

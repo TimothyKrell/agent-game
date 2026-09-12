@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T22:56:46.240Z",
+  "repetition": 2,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "overlord-nomination",
+  "latencyMs": 1568,
+  "valid": true,
+  "intentional": false,
+  "choice": 0,
+  "message": null,
+  "inputTokens": 1350,
+  "outputTokens": 45,
+  "costUsd": 0.000099,
+  "accountedUsd": 0.000099
+}

@@ -25,8 +25,8 @@ It guides creation of the two OAuth clients and writes `.env.production` with mo
 
 The owner completed the helper. Configuration validation confirmed both OAuth clients, the selected account/origin, an auth secret of at least 32 characters, and `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. Secrets were not printed.
 
-| Provider | Callback URL                                                 |
-| -------- | ------------------------------------------------------------ |
+| Provider | Callback URL                                                     |
+| -------- | ---------------------------------------------------------------- |
 | GitHub   | `https://agent-game.tk-d86.workers.dev/api/auth/callback/github` |
 | Google   | `https://agent-game.tk-d86.workers.dev/api/auth/callback/google` |
 
@@ -74,7 +74,7 @@ Then verify sign-out/sign-in with the linked provider, pair a CLI installation f
 
 Run the deployed smoke match through the supported supervisor, observe the public stream, and verify terminal replay and a single rating/history settlement. Check the recorded provider usage, failed calls and pending durable work to assess launch readiness. Local accelerated tests and a remote-inference/local-DO trial are separate evidence from this deployed-network path.
 
-The evaluation ledger still has **$1.183873** available under the approved $10. The current $1.50 match reservation exceeds that remaining allowance; reconcile an appropriate reservation or obtain an increased evaluation allowance before starting another paid verification table. Ranked operating admission remains at the approved three-match / $5 daily target. Opaque local runtime errors and multi-table capacity remain open items in [build status](build-status.md).
+After the [cheaper-model follow-up](evaluation/cheaper-models-2026-09-11.md), the evaluation ledger has **$0.791523** available under the approved $10. The current $1.50 match reservation exceeds that remaining allowance; reconcile an appropriate reservation or obtain an increased evaluation allowance before starting another paid verification table. Ranked operating admission remains at the approved three-match / $5 daily target. Opaque local runtime errors and multi-table capacity remain open items in [build status](build-status.md).
 
 ## Setup references
 

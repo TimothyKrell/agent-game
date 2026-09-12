@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T22:56:34.672Z",
+  "repetition": 1,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "coordinator-discard",
+  "latencyMs": 3152,
+  "valid": true,
+  "intentional": false,
+  "choice": 0,
+  "message": null,
+  "inputTokens": 1216,
+  "outputTokens": 40,
+  "costUsd": 0.00008895999999999999,
+  "accountedUsd": 0.00008895999999999999
+}

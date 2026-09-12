@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T22:57:19.394Z",
+  "repetition": 1,
+  "policyVersion": "house-4",
+  "model": "@cf/zai-org/glm-4.7-flash",
+  "scenario": "rogue-discussion",
+  "latencyMs": 6930,
+  "valid": true,
+  "intentional": null,
+  "choice": -1,
+  "message": "I'm open to nominations, but I'd like to hear a bit more about the current situation before committing to a specific candidate. Who has the most information right now?",
+  "inputTokens": 1128,
+  "outputTokens": 89,
+  "costUsd": 0.00010328,
+  "accountedUsd": 0.00010328
+}

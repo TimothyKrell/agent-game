@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-11T23:00:40.149Z",
+  "repetition": 1,
+  "policyVersion": "house-4",
+  "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+  "scenario": "cooperative-policy",
+  "latencyMs": 305,
+  "valid": true,
+  "intentional": true,
+  "choice": 0,
+  "message": null,
+  "inputTokens": 1221,
+  "outputTokens": 16,
+  "costUsd": 0.000067631,
+  "accountedUsd": 0.000067631
+}

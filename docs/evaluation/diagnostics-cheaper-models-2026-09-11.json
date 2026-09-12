@@ -1,0 +1,235 @@
+{
+  "at": "2026-09-11T23:18:20.943Z",
+  "samples": {
+    "glm-current": {
+      "calls": 21,
+      "valid": 21,
+      "objectiveCorrect": 5,
+      "objectiveScored": 12,
+      "reportedUsd": 0.0019634399999999995,
+      "accountedUsd": 0.0019634399999999995,
+      "latency": {
+        "count": 21,
+        "medianMs": 3084,
+        "p95Ms": 5338,
+        "maxMs": 6930
+      },
+      "failures": []
+    },
+    "qwen-thinking-512": {
+      "calls": 11,
+      "valid": 4,
+      "objectiveCorrect": 4,
+      "objectiveScored": 4,
+      "reportedUsd": 0.0006912190000000001,
+      "accountedUsd": 0.140691219,
+      "latency": {
+        "count": 4,
+        "medianMs": 1736,
+        "p95Ms": 3130,
+        "maxMs": 3130
+      },
+      "failures": [
+        {
+          "scenario": "cooperative-policy",
+          "error": "HouseModel.generateDecision: Model response was truncated."
+        },
+        {
+          "scenario": "rogue-policy",
+          "error": "HouseModel.generateDecision: Unsupported model response."
+        },
+        {
+          "scenario": "rogue-policy",
+          "error": "HouseModel.generateDecision: Unsupported model response."
+        },
+        {
+          "scenario": "coordinator-discard",
+          "error": "HouseModel.generateDecision: Model response was truncated."
+        },
+        {
+          "scenario": "coordinator-discard",
+          "error": "HouseModel.generateDecision: Unsupported model response."
+        },
+        {
+          "scenario": "overlord-nomination",
+          "error": "HouseModel.generateDecision: Unsupported model response."
+        },
+        {
+          "scenario": "overlord-nomination",
+          "error": "HouseModel.generateDecision: Unsupported model response."
+        }
+      ]
+    },
+    "qwen-no-thinking-512": {
+      "calls": 21,
+      "valid": 21,
+      "objectiveCorrect": 6,
+      "objectiveScored": 12,
+      "reportedUsd": 0.0015337469999999998,
+      "accountedUsd": 0.0015337469999999998,
+      "latency": {
+        "count": 21,
+        "medianMs": 438,
+        "p95Ms": 1188,
+        "maxMs": 1550
+      },
+      "failures": []
+    }
+  },
+  "sequences": [
+    {
+      "file": "stepped-glm-4.7-flash-1789167690881.json",
+      "at": "2026-09-11T23:02:48.807Z",
+      "policyVersion": "house-4",
+      "budgetUsd": 0.2,
+      "initialSeed": 20260911,
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "status": "failed",
+      "error": "Decision generation failed",
+      "calls": 20,
+      "costUsd": 0.00196132,
+      "accountedUsd": 0.00249948,
+      "durationMs": 77925,
+      "latency": {
+        "count": 20,
+        "medianMs": 1757,
+        "p95Ms": 3317,
+        "maxMs": 13838
+      }
+    },
+    {
+      "file": "stepped-qwen3-30b-a3b-fp8-1789167768824.json",
+      "at": "2026-09-11T23:02:53.772Z",
+      "policyVersion": "house-4",
+      "budgetUsd": 0.2,
+      "initialSeed": 20260911,
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "status": "failed",
+      "error": "HouseModel.generateDecision: Model response was truncated.",
+      "calls": 7,
+      "costUsd": 0.00048224,
+      "accountedUsd": 0.0008994269999999997,
+      "durationMs": 4948,
+      "latency": {
+        "count": 7,
+        "medianMs": 306,
+        "p95Ms": 422,
+        "maxMs": 422
+      }
+    }
+  ],
+  "live": [
+    {
+      "file": "live-glm-4.7-flash-1789167894944.json",
+      "at": "2026-09-11T23:11:11.208Z",
+      "policyVersion": "house-4",
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "reservationUsd": 0.35,
+      "server": "http://127.0.0.1:8799",
+      "matchId": "match_c3ce0319-4085-44c1-95f3-675ac7543f04",
+      "durationMs": 376264,
+      "status": "finished",
+      "winner": "cooperative",
+      "rounds": 6,
+      "calls": 157,
+      "unknownUsageCalls": 2,
+      "measuredUsd": 0.031306379999999995,
+      "accountedUsd": 0.032579979999999994,
+      "peakRollingRpm": 35,
+      "discussionMessages": 76,
+      "graceEvents": 0,
+      "recoveryEvents": 0,
+      "terminalReason": "five safeguards enacted",
+      "distinctDiscussionTexts": 18,
+      "repeatedDiscussionTexts": 58,
+      "successfulGenerations": 155,
+      "actionLatency": {
+        "count": 79,
+        "medianMs": 1632,
+        "p95Ms": 4272,
+        "maxMs": 5610
+      },
+      "chatLatency": {
+        "count": 76,
+        "medianMs": 2581,
+        "p95Ms": 6754,
+        "maxMs": 10494
+      },
+      "retryEvents": 2,
+      "retryFailures": [
+        {
+          "job": "64bb35a8-69b1-4644-9625-c041809860d6:6:0:chat:1",
+          "failure": "House activation failed"
+        },
+        {
+          "job": "b742a6b4-4e60-4a53-95a9-c437cbcb6a4e:7:0:chat:1",
+          "failure": "House activation failed"
+        }
+      ],
+      "runtimeInternalErrors": 69,
+      "reloads": 0,
+      "inputTokens": 438773,
+      "outputTokens": 12450
+    },
+    {
+      "file": "live-qwen3-30b-a3b-fp8-1789168273112.json",
+      "at": "2026-09-11T23:15:09.101Z",
+      "policyVersion": "house-4",
+      "model": "@cf/qwen/qwen3-30b-a3b-fp8",
+      "reservationUsd": 0.35,
+      "server": "http://127.0.0.1:8800",
+      "matchId": "match_ca64bf3e-3408-4de9-a48c-ebbe9d1f405c",
+      "durationMs": 235989,
+      "status": "interrupted",
+      "winner": null,
+      "rounds": 3,
+      "calls": 82,
+      "unknownUsageCalls": 3,
+      "measuredUsd": 0.010094196000000003,
+      "accountedUsd": 0.012182871000000007,
+      "peakRollingRpm": 37,
+      "discussionMessages": 42,
+      "graceEvents": 1,
+      "recoveryEvents": 0,
+      "terminalReason": "The house-agent service could not complete a required decision.",
+      "distinctDiscussionTexts": 10,
+      "repeatedDiscussionTexts": 32,
+      "successfulGenerations": 79,
+      "actionLatency": {
+        "count": 37,
+        "medianMs": 475,
+        "p95Ms": 685,
+        "maxMs": 700
+      },
+      "chatLatency": {
+        "count": 42,
+        "medianMs": 662,
+        "p95Ms": 1052,
+        "maxMs": 1316
+      },
+      "retryEvents": 3,
+      "retryFailures": [
+        {
+          "job": "4f1c93ac-7bcf-4409-be21-0a5e4be00867:2:0:action",
+          "failure": "HouseModel.generateDecision: Model response was truncated."
+        },
+        {
+          "job": "f17aefa6-a90e-40d0-8af7-bd5faabadef6:2:0:action",
+          "failure": "HouseModel.generateDecision: The model returned no structured response."
+        },
+        {
+          "job": "f17aefa6-a90e-40d0-8af7-bd5faabadef6:2:0:action",
+          "failure": "LanguageModel.generateObject: Structured output validation failed: Expected a valid JSON string"
+        }
+      ],
+      "runtimeInternalErrors": 30,
+      "reloads": 0,
+      "inputTokens": 170751,
+      "outputTokens": 4137
+    }
+  ],
+  "reportedSuccessfulCallUsd": 0.048032541999999984,
+  "cumulativeAccountedUsd": 9.208477139999998,
+  "incrementalAccountedUsd": 0.3923501639999962,
+  "remainingUsd": 0.7915228600000024
+}
