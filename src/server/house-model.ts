@@ -5,6 +5,8 @@ import { FetchHttpClient } from 'effect/unstable/http';
 import type { Observation } from '../game/types';
 import type { HouseModelConfig } from './house-contract';
 
+type HouseEnvironment = Pick<Env, 'OPENAI_API_KEY' | 'OPENAI_BASE_URL'> & { AI: Pick<Ai, 'run'> };
+
 export const HouseResponse = Schema.Struct({
   choice: Schema.Number,
   message: Schema.NullOr(Schema.String),
@@ -12,7 +14,7 @@ export const HouseResponse = Schema.Struct({
 });
 
 const NativeResult = Schema.Struct({
-  response: Schema.optional(Schema.Union([Schema.String, HouseResponse])),
+  response: Schema.optional(Schema.NullOr(Schema.Union([Schema.String, HouseResponse]))),
   choices: Schema.optional(
     Schema.Array(
       Schema.Struct({
@@ -37,7 +39,7 @@ function modelError(description: string): AiError.AiError {
   });
 }
 
-function nativeLayer(ai: Ai, model: string): Layer.Layer<LanguageModel.LanguageModel> {
+function nativeLayer(ai: Pick<Ai, 'run'>, model: string): Layer.Layer<LanguageModel.LanguageModel> {
   return Layer.effect(
     LanguageModel.LanguageModel,
     LanguageModel.make({
@@ -63,13 +65,24 @@ function nativeLayer(ai: Ai, model: string): Layer.Layer<LanguageModel.LanguageM
           },
         );
 
+        // Qwen's documented soft switch avoids spending the 512-token decision budget on reasoning.
+        // Workers AI's Qwen input does not expose GLM's chat_template_kwargs hard switch.
+        if (model === '@cf/qwen/qwen3-30b-a3b-fp8') {
+          for (const message of messages) {
+            if (message.role === 'user') message.content += '\n/no_think';
+          }
+        }
+
         if (options.responseFormat.type !== 'json')
           return yield* Effect.fail(modelError('A response schema is required.'));
         const schema = LanguageModel.defaultCodecTransformer(options.responseFormat.schema).jsonSchema;
 
         const raw = yield* Effect.tryPromise({
           try: async (signal) => {
-            if (model === '@cf/meta/llama-3.3-70b-instruct-fp8-fast')
+            if (
+              model === '@cf/meta/llama-3.3-70b-instruct-fp8-fast' ||
+              model === '@cf/qwen/qwen3-30b-a3b-fp8'
+            )
               return ai.run(
                 model,
                 {
@@ -111,7 +124,7 @@ function nativeLayer(ai: Ai, model: string): Layer.Layer<LanguageModel.LanguageM
           return yield* Effect.fail(modelError('Model response was truncated.'));
 
         const text =
-          result.response !== undefined
+          result.response != null
             ? Match.value(result.response).pipe(
                 Match.when(Schema.is(HouseResponse), (decision) => JSON.stringify(decision)),
                 Match.orElse((text) => text),
@@ -144,7 +157,11 @@ export function houseConfigured(env: Env): boolean {
   if (env.HOUSE_PROVIDER === 'workers-ai')
     return (
       !!env.AI &&
-      ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/zai-org/glm-4.7-flash'].includes(env.HOUSE_MODEL)
+      [
+        '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+        '@cf/zai-org/glm-4.7-flash',
+        '@cf/qwen/qwen3-30b-a3b-fp8',
+      ].includes(env.HOUSE_MODEL)
     );
 
   return (
@@ -221,13 +238,15 @@ export function inferenceCost(model: string, input: number, output: number): num
     ? [0.06, 0.4]
     : model.includes('llama-3.3')
       ? [0.293, 2.253]
-      : [0.4, 1.6];
+      : model === '@cf/qwen/qwen3-30b-a3b-fp8'
+        ? [0.051, 0.335]
+        : [0.4, 1.6];
 
   return (input * price[0] + output * price[1]) / 1_000_000;
 }
 
 export const generateHouse = Effect.fn('generateHouse')(function* (
-  env: Env,
+  env: HouseEnvironment,
   config: HouseModelConfig,
   prompt: string,
   deadline: number,
