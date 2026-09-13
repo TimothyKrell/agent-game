@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -10,6 +11,7 @@ import { ObservationSchema, QueueStatusSchema } from '../src/shared/api';
 import { Observation2Schema, HistoryPage2Schema } from '../src/shared/succession';
 import { previewSuccessionAction } from '../src/game/succession/preview';
 import { previewAction } from '../src/game/preview';
+import type { ActionRequest } from '../src/game/types';
 import { version } from '../package.json';
 
 const run = promisify(execFile);
@@ -142,11 +144,29 @@ it('installs outside checkout, finishes both games against the real Worker, page
     const acts = new Set<number>();
     const deadline = Date.now() + 180000;
     let choices = 0;
+    let chatted = false;
 
     while (view.status === 'active' && Date.now() < deadline) {
       if (view.protocolVersion === '2') acts.add(view.act);
 
       if (view.decision) {
+        if (!chatted) {
+          const request: ActionRequest & { gameId?: 'succession' } = {
+            actionId: randomUUID(),
+            phaseId: view.phase.id,
+            action: { type: 'chat', text: 'Reviewing the current legal choices.' },
+          };
+
+          if (view.protocolVersion === '2') request.gameId = 'succession';
+
+          const receipt = Schema.decodeUnknownSync(Receipt)(
+            JSON.parse(await cli('act', '--json', JSON.stringify(request))),
+          );
+
+          expect(receipt.actionId).toBe(request.actionId);
+          chatted = true;
+        }
+
         const action =
           view.protocolVersion === '2' ? previewSuccessionAction(view, () => 0) : previewAction(view);
 
@@ -177,6 +197,7 @@ it('installs outside checkout, finishes both games against the real Worker, page
     expect(view.status).toBe('finished');
     expect(view.you?.forfeited).toBe(false);
     expect(choices).toBeGreaterThan(0);
+    expect(chatted).toBe(true);
 
     if (view.protocolVersion === '2') {
       acts.add(view.act);

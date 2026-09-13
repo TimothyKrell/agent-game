@@ -106,3 +106,11 @@ npx oxlint cli scripts/package-cli.mjs src/shared/onboarding.ts tests/cli*.test.
 Native-adapter fake executables and observation-only house preview policies incur no model usage. Production paid-provider latency, model strategy and invoice costs were not measured.
 
 The final scoped integration checks cover **52 tests** across those eight files. The actual Worker case passed again after the C1 changes (25.4 seconds); the seven-case installed Succession suite passed after correcting its queue fixture to include the protocol identity. TypeScript and scoped lint/format checks passed. C1 now includes concurrent delayed queue/current/receipt responses and both old data pages and archive-targeting reset pages after another reader has advanced the archive walk. All config writers serialize owned-field updates under the same lock and check connection/participation identity.
+
+### Queued-participation review follow-up
+
+Independent review confirmed the original terminal/status and reset-cursor repros were fixed, then identified a further queued-state transition: an old response could restore a previous match after a new join cleared `matchId`. Commit `5735d23` captures the request's participation identity before waiting and checks it under the shared lock, including a new pending queue request with no match selected. Stale receipts still report their accepted action ID independently, without exposing the obsolete current; history with no remaining accepted observation reports `stale-page`.
+
+Four additional installed-CLI cases hold live current, terminal current, receipt, and history responses across an actual CLI new queued join. All four plus the original three focused C1 cases passed (seven cases, 1.8 seconds). The independent reviewer's original queued-state reproduction, run against the fix, preserves the new queue exactly and reports `restoredOldMatchOverNewQueue: false`. Independent closure of this follow-up was requested from the reviewer.
+
+The actual Worker test also now submits `act --json` chat with the optional `decisionId` omitted while a required decision is cached, for both games. Both receipts were accepted and the complete integration passed in 33.9 seconds. This reported source edge did not reproduce: explicit JSON submission bypasses the generated-action pending guard. No production guard was relaxed.
