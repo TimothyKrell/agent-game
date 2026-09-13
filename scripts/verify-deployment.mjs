@@ -219,10 +219,11 @@ try {
     assert.deepEqual(errors, []);
 
     await page.goto(`${server}/?gameId=succession`, { waitUntil: 'networkidle' });
-    await expect(page.getByRole('button', { name: 'Succession', exact: true })).toHaveAttribute(
-      'aria-pressed',
-      'true',
+    await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveValue('succession');
+    await expect(page.getByRole('combobox', { name: 'Standings', exact: true })).toHaveValue(
+      'secret-overlord',
     );
+    await expect(page.locator('.header .brand')).toHaveAttribute('href', '/');
 
     const successionFitsViewport = await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
