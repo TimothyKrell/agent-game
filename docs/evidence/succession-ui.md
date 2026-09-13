@@ -28,7 +28,22 @@ Typechecking, scoped Oxlint, formatting, and all four UI stream unit tests pass.
 
 The frozen delivery contains 128 artifacts. Its `inventory.json` SHA-256 is `830418e09a7f3d8d78173d75ae5bdc489206e79252608537eaaa9ef6c881a3b3`. Design received this exact folder for independent review. Curated durable stills are retained under `docs/images/succession/`; full recordings remain in the frozen directory.
 
-Application visual approval remains open until Design explicitly closes SU01 (compact picker), SU02 (complete action cards), SU03 (phase identities), SU04 (paging alongside chronology), SU05 (historical phase presentation), and issue #6 (painted divider join and containing surface). Growing-record paging, reconnect/grace, and interaction recordings should be evaluated against their actual supplied artifacts rather than inferred from still-state coverage.
+Design independently verified all 128 artifact hashes and closed SU01 (compact picker), SU02 (complete action cards), SU03 (phase identities), SU04 presentation (paging alongside chronology), SU05 (historical phase presentation), and issue #6 (painted divider join and containing surface) at `67726d6`. The overall application visual gate remains open for expanded-coverage findings and targeted interaction evidence.
+
+### Compact follow-up: `902c4d2`
+
+- SU06: restored the approved `.18/.34/.24/.24` compact navigation allocation, with a max-content floor for the single-word Leaderboard label at supplemental zoom and 48-pixel targets. Coverage visits all four tabs, signed in and out, at 320/390 pixels and scales 1/1.25.
+- SU07: compact cap tuples are normal-flow cards retaining each full survivor name and all three labeled metrics. The ten-row fixture is preserved. Captures wait for the selected historical replay frame to settle.
+- The 768-pixel native context and recording now use the required 1024-pixel height. These live challenge recordings establish dimensions and static phase presentation; they do not establish picker interactions, champion entrance motion, or hidden/reduced lifecycle behavior.
+
+Follow-up evidence uses a separate frozen directory, `/tmp/opencode/succession-ui-final-902c4d2`, containing 62 artifacts with inventory SHA-256 `fa99f1a04dc4587d436a6dd84d900a2b79baf40f8e5c67397409b80e22082e8a`. Targeted browser checks passed 11/11. `native-video-dimensions.json` records ffprobe verification of all eight native recordings. The original 128-artifact folder is unchanged. Explicit Design closure of SU06/SU07 and remaining interaction evidence is pending.
+
+Served follow-up assets were again fetched over HTTP and compared byte-for-byte with build output:
+
+| Asset                | SHA-256                                                            |
+| -------------------- | ------------------------------------------------------------------ |
+| `index-B1j05nE0.js`  | `1357cc59418f53564b2e49e99cf33f69debd8785d4baef9aa22c2fed3b3450fc` |
+| `index-uF6Q6Fat.css` | `3d5a0ba3a64f6197166772f791e617c03c0159aba5162f285f3634f9f30d0bf0` |
 
 ## Design source authority
 
