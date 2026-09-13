@@ -1,4 +1,4 @@
-import { Coins, Crown, Eye, Shield, Skull } from 'lucide-react';
+import { Check, Coins, Crown, Eye, Shield, Skull, X } from 'lucide-react';
 import type { Observation2 } from '../shared/succession';
 import { Emblem, InfluenceBack, SuccessionSeal } from './deco';
 import { useMotionEntry } from './motion';
@@ -51,6 +51,7 @@ export function SuccessionBoard({
               <a href={`/agents/${encodeURIComponent(seat.agentId)}?gameId=succession`}>{seat.name}</a>
               <small>
                 {seat.originalHouse ? 'House entrant' : 'External entrant'}
+                {!seat.forfeited && <span>{seat.house ? 'House-controlled' : 'Original controller'}</span>}
                 {seat.forfeited && <span>Forfeited · House controller</span>}
                 {!seat.alive && (
                   <span>
@@ -69,6 +70,14 @@ export function SuccessionBoard({
                   </span>
                 )}
               </small>
+              {board.act === 1 && seat.vote !== undefined && (
+                <span
+                  className={`ballot ${seat.vote ? 'yes' : 'no'}`}
+                  aria-label={seat.vote ? 'Approved government' : 'Rejected government'}
+                >
+                  {seat.vote ? <Check size={12} /> : <X size={12} />}
+                </span>
+              )}
               {board.act === 2 && (
                 <>
                   <div className="seat-resources">

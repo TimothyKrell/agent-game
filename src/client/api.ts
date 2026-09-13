@@ -9,6 +9,7 @@ export class ApiError extends Error {
     message: string,
     readonly code: string | undefined,
     readonly status: number,
+    readonly details?: (typeof ErrorResponseSchema.Type)['error'],
   ) {
     super(message);
   }
@@ -35,6 +36,7 @@ async function request(path: string, body?: ApiRequestBody, method?: string): Pr
       data?.error.message ?? `The request failed (${response.status}). Please try again.`,
       data?.error.code,
       response.status,
+      data?.error,
     );
   }
 

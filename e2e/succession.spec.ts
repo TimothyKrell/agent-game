@@ -374,7 +374,286 @@ test('archive expansion preserves the opaque reading anchor and rejects delayed 
     .toBeCloseTo(before.offset, 0);
   transport.deliver(live);
   await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
-  await expect(page.locator('.phase-banner')).toHaveCount(0);
+  await expect(page.locator('.phase-banner').filter({ hasText: 'CURRENT PHASE' })).toHaveCount(0);
   expect(transport.pageRequests.length).toBeLessThan(8);
   await page.screenshot({ path: '/tmp/opencode/succession-ui/archive-anchor-1600.png', fullPage: true });
 });
+
+async function outcomeSnapshot(page: Page, state: SuccessionState) {
+  const view = observeSuccession(state, null, { visibilityEpoch: 'archive', streamHead: 1 });
+  await routes(page, view);
+
+  const event: AuthorizedEvent2 = {
+    id: 1,
+    eventKey: 'outcome-snapshot',
+    at: state.finishedAt ?? Date.now(),
+    act: view.act,
+    round: view.round,
+    type: state.status,
+    text: state.result
+      ? `Table-round cap reached. Winning seat ${state.result.winnerSeat + 1}.`
+      : (state.interruptionReason ?? 'Partial record.'),
+  };
+
+  await page.route('**/api/matches/succession-ui/history?*', (route) =>
+    route.fulfill({
+      json: {
+        protocolVersion: '2',
+        gameId: 'succession',
+        matchId: state.id,
+        visibilityEpoch: 'archive',
+        streamHead: 1,
+        after: 0,
+        through: 1,
+        cursor: 1,
+        events: [event],
+        hasMore: false,
+        reset: false,
+      },
+    }),
+  );
+  await page.route('**/api/matches/succession-ui/rounds?*', (route) =>
+    route.fulfill({
+      json: {
+        protocolVersion: '2',
+        gameId: 'succession',
+        matchId: state.id,
+        visibilityEpoch: 'archive',
+        rounds: [
+          {
+            key: `act-${view.act}:${view.act === 1 ? 'election' : 'table'}-${view.round}`,
+            act: view.act,
+            round: view.round,
+            through: 1,
+            eventKey: event.eventKey,
+          },
+        ],
+      },
+    }),
+  );
+  await page.route('**/api/matches/succession-ui/replay?*', (route) =>
+    route.fulfill({ json: replayFrameSuccession(state, 1, 'archive') }),
+  );
+  await page.goto('/matches/succession-ui');
+}
+
+function capSnapshot(criterion: 'influence' | 'coins' | 'priority', forfeit = false) {
+  let state = structuredClone(fixture.act2);
+
+  if (state.stage.act !== 2) throw new Error('Expected Act 2 fixture');
+  const board = state.stage.board;
+  const actor = (board.firstSeat + 9) % 10;
+  board.round = 12;
+  board.slot = 9;
+  board.activeSeat = actor;
+
+  for (const [seat, resource] of board.resources.entries()) {
+    resource.coins = criterion === 'priority' ? (seat === actor ? 0 : 1) : 0;
+
+    if (criterion === 'influence' && seat !== actor) {
+      const card = resource.hand.pop();
+
+      if (card) resource.revealed.push(card);
+    }
+  }
+
+  const winner = criterion === 'priority' ? state.commitment.priority[0] : actor;
+
+  if (forfeit) {
+    state.seats[winner].forfeited = true;
+    state.seats[winner].generation++;
+    state.seats[winner].houseProfile = 'house-relief';
+  }
+
+  const random = { id: () => crypto.randomUUID(), random: () => 0 };
+  state = evolveSuccession(state, { type: 'advance', now: state.phase.deadline ?? Date.now() }, random).state;
+  const decision = observeSuccession(state, actor, undefined, state.seats[actor].houseProfile !== null);
+  state = evolveSuccession(
+    state,
+    {
+      type: 'act',
+      seat: actor,
+      generation: state.seats[actor].generation,
+      now: state.phase.startedAt + 1,
+      request: {
+        gameId: 'succession',
+        actionId: random.id(),
+        phaseId: decision.phase.id,
+        decisionId: decision.decision?.id,
+        action: { type: 'income' },
+      },
+    },
+    random,
+  ).state;
+  expect(state.status).toBe('finished');
+  expect(state.result?.tieBreak?.decisive).toBe(criterion);
+
+  return state;
+}
+
+test('cap criteria, forfeited champion and interrupted acts retain their separate outcomes', async ({
+  page,
+}) => {
+  for (const [index, criterion] of (['influence', 'coins', 'priority'] as const).entries()) {
+    await page.setViewportSize({ width: [320, 390, 1600][index], height: 1120 });
+    await outcomeSnapshot(page, capSnapshot(criterion, criterion === 'priority'));
+    await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: `Cap tiebreak · Decided by ${criterion}` })).toBeVisible();
+    await expect(page.locator('.cap-evidence tbody tr')).toHaveCount(10);
+
+    if (criterion === 'priority') await expect(page.locator('.forfeit-result')).toContainText('forfeit loss');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: `/tmp/opencode/succession-ui/cap-${criterion}.png`, fullPage: true });
+  }
+
+  for (const source of [fixture.act1, fixture.act2]) {
+    const state = evolveSuccession(
+      source,
+      {
+        type: 'interrupt',
+        now: Date.now(),
+        reason: 'Synthetic platform interruption for presentation coverage.',
+      },
+      { id: () => crypto.randomUUID(), random: () => 0 },
+    ).state;
+
+    await page.setViewportSize({ width: source.stage.act === 1 ? 320 : 768, height: 1120 });
+    await outcomeSnapshot(page, state);
+    await expect(page.getByRole('heading', { name: 'Match interrupted.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'One champion.' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Act 2 begins.' })).toHaveCount(0);
+    await expect(page.getByRole('region', { name: `Act ${source.stage.act} board` })).toBeVisible();
+    await page.screenshot({
+      path: `/tmp/opencode/succession-ui/interrupted-act${source.stage.act}.png`,
+      fullPage: true,
+    });
+  }
+});
+
+test('a replaced controller loses private cards and controls and delayed private snapshots cannot restore them', async ({
+  page,
+}) => {
+  const state = fixture.stages.get('act-2:action');
+
+  if (!state || state.stage.act !== 2) throw new Error('Missing action fixture');
+  const seat = state.stage.board.activeSeat;
+  const initial = observeSuccession(state, seat, { visibilityEpoch: 'seat', streamHead: 0 });
+  const transport = await routes(page, initial);
+  await page.setViewportSize({ width: 768, height: 1120 });
+  await page.goto('/matches/succession-ui');
+  await expect(page.getByRole('heading', { name: 'Your capability cards' })).toBeVisible();
+  await expect(page.locator('.legal-actions button').first()).toBeVisible();
+  await page.screenshot({ path: '/tmp/opencode/succession-ui/entitled-controller-768.png', fullPage: true });
+
+  if (!initial.you) throw new Error('Missing controller');
+
+  const cutoff: Observation2 = {
+    ...initial,
+    private: null,
+    decision: null,
+    you: { ...initial.you, forfeited: true },
+    seats: initial.seats.map((entry) =>
+      entry.number === seat
+        ? { ...entry, forfeited: true, house: true, generation: entry.generation + 1 }
+        : entry,
+    ),
+  };
+
+  transport.publish(cutoff);
+  await expect(page.locator('.succession-private')).toHaveCount(0);
+  await expect(page.getByText(/Your original controller has been replaced/)).toBeVisible();
+  transport.deliver(initial);
+  await expect(page.locator('.legal-actions')).toHaveCount(0);
+  await expect(page.locator('.capability-hand')).toHaveCount(0);
+  await page.screenshot({ path: '/tmp/opencode/succession-ui/forfeit-cutoff-768.png', fullPage: true });
+});
+
+for (const width of [320, 390, 768, 1600]) {
+  for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+    test.describe(`native capture ${width} ${reducedMotion}`, () => {
+      const viewport = { width, height: width < 768 ? 844 : 1120 };
+      test(`live resources and sealed challenge stay readable at ${width}px (${reducedMotion})`, async ({
+        browser,
+        baseURL,
+      }, testInfo) => {
+        const context = await browser.newContext({
+          baseURL,
+          viewport,
+          reducedMotion,
+          recordVideo: { dir: testInfo.outputPath('native-video'), size: viewport },
+        });
+
+        const page = await context.newPage();
+
+        try {
+          await page.setViewportSize({ width, height: width < 768 ? 844 : 1120 });
+          await page.emulateMedia({ reducedMotion });
+          const state = fixture.stages.get('act-2:challenge');
+
+          if (!state) throw new Error('Missing challenge fixture');
+          await routes(page, viewOf(state));
+          await page.goto('/matches/succession-ui');
+          await expect(
+            page.getByText('Challenges sealed · Choices reveal together at resolution.'),
+          ).toBeVisible();
+          await expect(page.locator('.seat')).toHaveCount(10);
+          await expect(page.locator('.legal-actions')).toHaveCount(0);
+          await expect(page.locator('html')).toHaveAttribute(
+            'data-motion',
+            reducedMotion === 'reduce' ? 'static' : 'enabled',
+          );
+          expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+          await page.screenshot({
+            path: `/tmp/opencode/succession-ui/live-${width}-${reducedMotion}.png`,
+            fullPage: true,
+          });
+          // Deliberate native-speed recording dwell after the settled live phase.
+          await page.waitForTimeout(2000);
+        } finally {
+          await context.close();
+        }
+      });
+    });
+  }
+}
+
+for (const width of [320, 390]) {
+  test(`full phase identities fit actor target blocker and historical coordinator at ${width}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 1120 });
+    const state = fixture.stages.get('act-2:challenge');
+
+    if (!state) throw new Error('Missing challenge fixture');
+    const view = viewOf(state);
+
+    if (view.board.act !== 2 || !view.board.pending) throw new Error('Missing pending claim');
+    // Presentation fixture: retain the engine phase, give every displayed identity its maximum-length example.
+    view.seats = view.seats.map((seat) => ({ ...seat, name: 'ThePersistentStrategistWithAnUnabridgedName' }));
+    const target = (view.board.pending.actor + 1) % 10;
+    view.board.pending = {
+      ...view.board.pending,
+      action: 'assassinate',
+      claim: 'assassin',
+      paid: 3,
+      target,
+      block: { seat: target, capability: 'guard' },
+    };
+    await routes(page, view);
+    await page.goto('/matches/succession-ui');
+    await expect(page.getByRole('heading', { name: 'Challenge the block' })).toBeVisible();
+    const phase = page.getByRole('region', { name: 'Current match state' });
+    expect(await phase.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+    await page.screenshot({ path: `/tmp/opencode/succession-ui/long-phase-${width}.png`, fullPage: true });
+    await routes(page, viewOf(fixture.terminal, true));
+    await page.goto('/matches/succession-ui');
+    await page.getByLabel('Replay event', { exact: true }).fill('0');
+    const historical = page.getByRole('region', { name: 'Historical match state' });
+    await expect(historical).toContainText('Coordinator:');
+    expect(await historical.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+    await page.screenshot({
+      path: `/tmp/opencode/succession-ui/historical-phase-${width}.png`,
+      fullPage: true,
+    });
+  });
+}

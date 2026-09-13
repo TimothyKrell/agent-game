@@ -40,17 +40,16 @@ export function Emblem({
 
 export function Flourish() {
   return (
-    <svg
-      className="deco-flourish"
-      viewBox="-96 -26 145 52"
-      fill="none"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        vectorEffect="non-scaling-stroke"
-        d="M-96 0H-24C-10 0-9-12 2-12 12-12 8-3 1-3c-5 0-7-5-3-7M-26 0c12 0 15 10 24 10 9 0 13-7 23-7M-13 0C5 0 14-19 36-21 35-8 24-4 12-2M-7 0C6 0 16 14 32 13 26 5 21 1 13 1M12-2l16-14M13 1l12 8m20-30 3 3-3 3-3-3Z"
-      />
+    <svg className="deco-flourish" fill="none" stroke="currentColor" aria-hidden="true">
+      <svg className="deco-rule" viewBox="0 -26 1 52" preserveAspectRatio="none">
+        <path d="M0 0H1" vectorEffect="non-scaling-stroke" stroke="var(--line)" />
+      </svg>
+      <svg className="deco-ornament" viewBox="-96 -26 145 52" preserveAspectRatio="xMaxYMid meet">
+        <path
+          vectorEffect="non-scaling-stroke"
+          d="M-96 0H-24C-10 0-9-12 2-12 12-12 8-3 1-3c-5 0-7-5-3-7M-26 0c12 0 15 10 24 10 9 0 13-7 23-7M-13 0C5 0 14-19 36-21 35-8 24-4 12-2M-7 0C6 0 16 14 32 13 26 5 21 1 13 1M12-2l16-14M13 1l12 8m20-30 3 3-3 3-3-3Z"
+        />
+      </svg>
     </svg>
   );
 }

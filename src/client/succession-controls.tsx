@@ -1,5 +1,6 @@
 import { LockKeyhole } from 'lucide-react';
 import type { Action2, Observation2 } from '../shared/succession';
+import { successionPhaseLabel } from './succession-display';
 
 export function SuccessionControls({
   view,
@@ -72,10 +73,12 @@ export function SuccessionPhase({
   view,
   connected,
   now,
+  historical = false,
 }: {
-  view: Observation2;
+  view: Pick<Observation2, 'board' | 'phase' | 'seats' | 'chat'>;
   connected: boolean;
   now: number;
+  historical?: boolean;
 }) {
   const board = view.board;
   const deadline = view.phase.graceUntil ?? view.phase.deadline;
@@ -84,32 +87,18 @@ export function SuccessionPhase({
   const seatName = (number: number) =>
     view.seats.find((seat) => seat.number === number)?.name ?? `Seat ${number + 1}`;
 
-  const phaseLabel = {
-    'act-2:discussion': 'Turn discussion',
-    'act-2:action': 'Choose action',
-    'act-2:challenge':
-      board.act === 2 && board.pending?.block ? 'Challenge the block' : 'Challenge the action claim',
-    'act-2:block': 'Target may block',
-    'act-2:loss': 'Choose influence to lose',
-    'act-2:exchange': 'Private exchange',
-    'act-2:finished': 'Complete record',
-  };
-
   return (
     <section
       className={`phase-banner succession-phase ${view.phase.graceUntil ? 'phase-grace' : ''}`}
-      aria-label="Current match state"
+      aria-label={historical ? 'Historical match state' : 'Current match state'}
       data-phase={view.phase.kind}
     >
       <div>
         <div className="eyebrow">
-          ACT {board.act} · {connected ? 'CURRENT PHASE' : 'LAST RECEIVED STATE'}
+          ACT {board.act} ·{' '}
+          {historical ? 'AT SELECTED EVENT' : connected ? 'CURRENT PHASE' : 'LAST RECEIVED STATE'}
         </div>
-        <h2>
-          {view.phase.kind in phaseLabel
-            ? Object.entries(phaseLabel).find(([key]) => key === view.phase.kind)?.[1]
-            : view.phase.kind.replaceAll('-', ' ')}
-        </h2>
+        <h2>{successionPhaseLabel(view)}</h2>
         {view.phase.graceUntil !== null && (
           <span className="grace-status">Grace period · Awaiting required decisions</span>
         )}
@@ -137,11 +126,13 @@ export function SuccessionPhase({
         {board.act === 2 && view.phase.kind === 'act-2:challenge' && (
           <p>Challenges sealed · Choices reveal together at resolution.</p>
         )}
-        <p className="chat-context">
-          {view.chat.open ? 'Discussion is open · Living agents have the floor.' : 'Discussion is closed.'}
-        </p>
+        {!historical && (
+          <p className="chat-context">
+            {view.chat.open ? 'Discussion is open · Living agents have the floor.' : 'Discussion is closed.'}
+          </p>
+        )}
       </div>
-      {remaining !== null && (
+      {!historical && remaining !== null && (
         <span
           className="countdown"
           aria-label={connected ? `${remaining} seconds remaining` : 'Timer stale while reconnecting'}
@@ -158,7 +149,7 @@ export function SuccessionPhase({
           </small>
         </span>
       )}
-      {remaining === null && (
+      {!historical && remaining === null && (
         <span className="phase-waiting">
           {connected ? 'Awaiting update' : 'Reconnecting · Last known state'}
         </span>

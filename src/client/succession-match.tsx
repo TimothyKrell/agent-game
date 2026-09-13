@@ -112,7 +112,7 @@ export function SuccessionMatch({
             </div>
           )}
           <div
-            className={`live-layout ${view.board.act === 2 && !fullHistory ? 'succession-act2-layout' : ''}`}
+            className={`live-layout ${fullHistory ? 'succession-history-layout' : view.board.act === 2 ? 'succession-act2-layout' : ''}`}
           >
             <div>
               {!fullHistory && (
@@ -133,6 +133,8 @@ export function SuccessionMatch({
                   </details>
                 </>
               )}
+            </div>
+            <div className="succession-chronology">
               <section className="history-paging" aria-label="History page controls">
                 <p>
                   Showing record {history.events[0]?.id ?? 0}–{history.events.at(-1)?.id ?? 0} ·{' '}
@@ -177,24 +179,24 @@ export function SuccessionMatch({
                   </a>
                 )}
               </section>
+              <MatchFeed
+                memory={feedMemory}
+                events={history.events}
+                seats={view.seats}
+                ended={ended}
+                chatOpen={view.chat.open}
+                connected={connected}
+                partial={view.status === 'interrupted'}
+                actRounds={[
+                  ...new Map(
+                    history.events.map((event) => [
+                      `${event.act}:${event.round}`,
+                      { act: event.act, round: event.round, cursor: event.id },
+                    ]),
+                  ).values(),
+                ]}
+              />
             </div>
-            <MatchFeed
-              memory={feedMemory}
-              events={history.events}
-              seats={view.seats}
-              ended={ended}
-              chatOpen={view.chat.open}
-              connected={connected}
-              partial={view.status === 'interrupted'}
-              actRounds={[
-                ...new Map(
-                  history.events.map((event) => [
-                    `${event.act}:${event.round}`,
-                    { act: event.act, round: event.round, cursor: event.id },
-                  ]),
-                ).values(),
-              ]}
-            />
           </div>
         </>
       )}

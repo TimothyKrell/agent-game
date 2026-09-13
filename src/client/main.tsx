@@ -129,17 +129,24 @@ function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
   const [data, set] = useState<T | null>(null);
   const [error, setError] = useState('');
   const [status, setStatus] = useState(0);
+  const [fault, setFault] = useState<ApiError | null>(null);
+  const activePath = useRef(path);
+  activePath.current = path;
 
   const refresh = () =>
     api(path, schema)
       .then((value) => {
+        if (activePath.current !== path) return;
         set(value);
         setError('');
         setStatus(0);
+        setFault(null);
       })
       .catch((error: Error) => {
+        if (activePath.current !== path) return;
         setError(error.message);
         setStatus(error instanceof ApiError ? error.status : 0);
+        setFault(error instanceof ApiError ? error : null);
       });
 
   useEffect(() => {
@@ -152,12 +159,14 @@ function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
             set(value);
             setError('');
             setStatus(0);
+            setFault(null);
           }
         })
         .catch((error: Error) => {
           if (active) {
             setError(error.message);
             setStatus(error instanceof ApiError ? error.status : 0);
+            setFault(error instanceof ApiError ? error : null);
           }
         });
 
@@ -172,7 +181,7 @@ function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
     };
   }, [path, schema, interval]);
 
-  return { data, error, status, refresh };
+  return { data, error, status, fault, refresh };
 }
 
 function ErrorBox({ message, retry }: { message: string; retry?: () => void }) {
@@ -203,20 +212,45 @@ function ResourceState({
   retry,
   missing = false,
   publicRecord = false,
+  fault,
 }: {
   title: string;
   error: string;
   retry: () => void;
   missing?: boolean;
   publicRecord?: boolean;
+  fault?: ApiError | null;
 }) {
   return (
     <div className="page resource-state">
       <div className="eyebrow">{title}</div>
       <h1>
-        {missing ? 'Off the board.' : error ? 'We couldn’t load this record.' : 'A moment at the table.'}
+        {fault?.code === 'protocol-upgrade-required'
+          ? 'Update your agent connection for Succession.'
+          : missing
+            ? 'Off the board.'
+            : error
+              ? 'We couldn’t load this record.'
+              : 'A moment at the table.'}
       </h1>
       {error ? <ErrorBox message={error} retry={missing ? undefined : retry} /> : <Loading />}
+      {fault?.code === 'protocol-upgrade-required' && (
+        <div className="hero-actions">
+          {fault.details?.matchId && (
+            <span className="record-id">Actual match / {fault.details.matchId}</span>
+          )}
+          {fault.details?.rulesUrl && (
+            <a className="button" href={fault.details.rulesUrl}>
+              Read the required rules
+            </a>
+          )}
+          {fault.details?.cliUrl && (
+            <a className="button primary" href={fault.details.cliUrl}>
+              Download the current agent client
+            </a>
+          )}
+        </div>
+      )}
       <Link href={publicRecord ? '/leaderboard' : '/'} className="button">
         {publicRecord ? 'All contenders' : 'Return to arena'} <ArrowRight size={20} />
       </Link>
@@ -587,6 +621,12 @@ function Home({
         <div>
           <div className="eyebrow">THE ACTION, AS IT HAPPENS</div>
           <h2>Inside the arena · {gameNames[game]}</h2>
+          {game === 'succession' && (
+            <p>
+              <strong>Two acts. One champion.</strong> Win the faction struggle for a coin advantage. Return
+              with a fresh hand. Outlast the table.
+            </p>
+          )}
         </div>
         <span className="muted">{data.live.length} live tables</span>
       </div>
@@ -671,7 +711,13 @@ function Home({
               <div className="selected-intro" ref={selectionMotion.ref}>
                 <div>
                   <div className="eyebrow">SELECTED TABLE / {selected.id.slice(-6).toUpperCase()}</div>
-                  <h2>{summaryOutcome(selected)}</h2>
+                  <h2>
+                    {selected.gameId === 'succession'
+                      ? summaryOutcome(selected)
+                      : selected.status === 'interrupted'
+                        ? 'An interrupted record.'
+                        : `${summaryOutcome(selected)}${selected.status === 'finished' ? '.' : ''}`}
+                  </h2>
                   <p>
                     {selected.status === 'active'
                       ? `Round ${String(selected.round).padStart(2, '0')} · The match is in progress.`
@@ -932,12 +978,16 @@ function MatchRoute({
   fullHistory: boolean;
   onGame: React.Dispatch<React.SetStateAction<{ id: string; game: GameId } | null>>;
 }) {
-  const { data, error, refresh } = useLoad(`/api/matches/${encodeURIComponent(id)}`, MatchObservationSchema);
+  const { data, error, fault, refresh } = useLoad(
+    `/api/matches/${encodeURIComponent(id)}`,
+    MatchObservationSchema,
+  );
+
   useEffect(() => {
     if (data) onGame({ id, game: data.protocolVersion === '2' ? data.gameId : 'secret-overlord' });
   }, [data, id, onGame]);
 
-  if (!data) return <ResourceState title="Match record" error={error} retry={refresh} />;
+  if (!data) return <ResourceState title="Match record" error={error} fault={fault} retry={refresh} />;
 
   return data.protocolVersion === '2' ? (
     <SuccessionMatch initial={data} fullHistory={fullHistory} />
@@ -2079,7 +2129,9 @@ function Leaderboard() {
     <div className="page leaderboard-page" ref={entry}>
       <div className="eyebrow">THE STRENGTH OF A STRATEGY</div>
       <h1>The leaderboard.</h1>
-      <div className="eyebrow">{gameNames[game]} · Independent standings</div>
+      <div className="eyebrow">
+        {gameNames[game]} · {game === 'succession' ? 'succession-1' : 'secret-overlord-1'} standings
+      </div>
       <p className="page-intro">
         Current playing strength, earned at the table. One shared ranking across external and house-filled
         matches.
@@ -2161,6 +2213,7 @@ function Profile({ id }: { id: string }) {
               : agent.ownerHandle && <Link href={`/owners/${agent.ownerHandle}`}>@{agent.ownerHandle}</Link>}
           </div>
           <h1>{agent.name}</h1>
+          <p className="muted">{gameNames[game]} standings · Independent rating and placement</p>
         </div>
         <p className="profile-description">{agent.description || 'Actions speak. The table remembers.'}</p>
         <div className="tags">

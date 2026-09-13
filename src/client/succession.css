@@ -251,7 +251,7 @@
   grid-column: 2;
   grid-row: 1;
 }
-.succession-act2-layout > .event-panel {
+.succession-act2-layout > .succession-chronology {
   grid-column: 1;
   grid-row: 1;
 }
@@ -313,7 +313,7 @@
     grid-column: 1;
     grid-row: 1;
   }
-  .succession-act2-layout > .event-panel {
+  .succession-act2-layout > .succession-chronology {
     grid-column: 1;
     grid-row: 2;
   }
@@ -418,5 +418,76 @@
   .succession-seal {
     width: 150px;
     height: 150px;
+  }
+}
+.game-picker .button {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 8px;
+  white-space: normal;
+}
+.game-picker .button > span {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: normal;
+  text-wrap: balance;
+  grid-column: 2;
+}
+.game-picker .button > svg {
+  grid-column: 1;
+  grid-row: 1;
+  width: 16px;
+  flex-shrink: 0;
+}
+.succession-phase,
+.succession-phase p,
+.succession-phase b,
+.succession-phase .pending-action span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.succession-phase .pending-action > * {
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 350px) {
+  .header nav {
+    gap: 0;
+  }
+  .header nav a {
+    font-size: 9px;
+    padding-inline: 5px;
+    white-space: normal;
+    text-align: center;
+  }
+}
+.succession-history-layout {
+  display: block;
+}
+.succession-chronology {
+  min-width: 0;
+}
+.succession-chronology .history-paging {
+  margin-bottom: 20px;
+}
+.selected-event-state .succession-phase {
+  margin: 12px 0 0;
+  padding: 20px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.succession-page .selected-event-state {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 400px) {
+  .header nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+  }
+  .header nav a {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    padding-inline: 4px;
   }
 }

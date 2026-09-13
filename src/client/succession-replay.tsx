@@ -10,6 +10,7 @@ import { SuccessionBoard } from './succession-board';
 import { MatchFeed } from './match-feed';
 import type { FeedReadingMemory } from './match-feed';
 import { Flourish } from './deco';
+import { SuccessionPhase } from './succession-controls';
 
 const FrameResponse = Schema.Union([ReplayFrame2Schema, HistoryPage2Schema]);
 
@@ -35,7 +36,6 @@ export function SuccessionReplay({
   const [loading, setLoading] = useState(false);
   const [retry, setRetry] = useState(0);
   const requests = useRef(0);
-  const reader = useRef(new SuccessionHistory());
   const epoch = view.history.visibilityEpoch;
 
   const [anchorKey] = useState(
@@ -108,13 +108,31 @@ export function SuccessionReplay({
 
     const timer = setTimeout(() => {
       const query = new URLSearchParams({ epoch, through: String(through) });
-      const history = reader.current;
-      history.observe(view.history);
-      history.seek(Math.max(0, through - 32), through);
-      const walk = through > 0 ? { epoch, after: Math.max(0, through - 32), through } : null;
+
+      const loadWindow = async () => {
+        const history = new SuccessionHistory();
+        history.observe(view.history);
+        history.seek(Math.max(0, through - 32), through);
+
+        // Byte limits may split this 32-event window across multiple pages.
+        // This never walks the archive outside the selected bounded window.
+        for (let pageNumber = 0; history.cursor < through && pageNumber < 32; pageNumber++) {
+          if (request !== requests.current) return null;
+          const walk = { epoch, after: history.cursor, through };
+          const page = await api(historyPath(view.matchId, walk), HistoryPage2Schema);
+
+          if (page.reset) return { reset: true, events: [] };
+
+          if (page.matchId !== view.matchId || !history.accept(page, walk))
+            throw new Error('The replay history page changed while loading.');
+        }
+
+        return { reset: false, events: history.events };
+      };
+
       void Promise.all([
         api(`/api/matches/${encodeURIComponent(view.matchId)}/replay?${query}`, FrameResponse),
-        walk ? api(historyPath(view.matchId, walk), HistoryPage2Schema) : Promise.resolve(null),
+        loadWindow(),
       ])
         .then(([result, page]) => {
           if (request !== requests.current) return;
@@ -132,12 +150,7 @@ export function SuccessionReplay({
           )
             throw new Error('The replay frame changed while loading.');
           setFrame(result);
-
-          if (page && walk) {
-            if (!history.accept(page, walk))
-              throw new Error('The replay history page changed while loading.');
-            setEvents([...history.events]);
-          } else setEvents([]);
+          setEvents(page?.events ?? []);
         })
         .catch((cause: Error) => {
           if (request === requests.current) {
@@ -172,7 +185,7 @@ export function SuccessionReplay({
 
   useEffect(() => {
     const pause = () => {
-      if (document.hidden) setPlaying(false);
+      if (document.visibilityState !== 'visible') setPlaying(false);
     };
 
     document.addEventListener('visibilitychange', pause);
@@ -330,10 +343,15 @@ export function SuccessionReplay({
                 <div className="eyebrow">
                   AT SELECTED EVENT {actualFrame?.through ?? '…'} · ACT {actualFrame?.act ?? '…'}
                 </div>
-                <p>
-                  {actualFrame?.phase.kind.replaceAll('-', ' ') ?? 'Loading'}
-                  {loading && ' · Updating frame'}
-                </p>
+                {actualFrame && (
+                  <SuccessionPhase
+                    view={actualFrame}
+                    connected={false}
+                    now={actualFrame.createdAt}
+                    historical
+                  />
+                )}
+                {loading && <p>Updating historical frame…</p>}
               </div>
             }
           />

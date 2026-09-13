@@ -290,8 +290,11 @@
   letter-spacing: 1px;
 }
 .decorated .deco-flourish {
+  --flourish-width: 94px;
   color: #518f90;
-  width: 94px;
+}
+.decorated {
+  border-bottom-color: transparent;
 }
 .game-introduction {
   display: flex;

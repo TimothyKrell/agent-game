@@ -16,8 +16,8 @@ test('shared divider flourishes join the rule baseline at full and compact fract
       const joins = await page.locator('.decorated .deco-flourish').evaluateAll((svgs) =>
         svgs.map((svg) => {
           if (!(svg instanceof SVGSVGElement)) throw new Error('Missing flourish SVG');
-          const path = svg.querySelector('path');
-          const matrix = svg.getScreenCTM();
+          const path = svg.querySelector<SVGPathElement>('.deco-ornament path');
+          const matrix = path?.getScreenCTM();
           const parent = svg.parentElement;
 
           if (!path || !matrix || !parent) throw new Error('Missing shared flourish geometry');
