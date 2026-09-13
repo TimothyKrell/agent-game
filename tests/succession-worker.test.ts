@@ -5,6 +5,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { unstable_dev } from 'wrangler';
 import type { ActionRequest2, HistoryPage2, Observation2, ReplayFrame2 } from '../src/shared/succession';
 import type { ActionRequest, Observation } from '../src/game/types';
+import type { GameId } from '../src/game/contracts';
+import { previewAction } from '../src/game/preview';
 import type { QueueStatus } from '../src/shared/api';
 import type { FixtureController, FixtureInspection } from './fixtures/succession-worker';
 
@@ -131,7 +133,7 @@ async function until<T>(load: () => Promise<T>, ready: (value: T) => boolean, ti
 
 async function clock(
   matchId: string,
-  view: Observation2,
+  view: Observation2 | Observation,
   kind: 'discussion' | 'grace' | 'late-alarm' = 'discussion',
 ) {
   await data(`/__fixture/matches/${matchId}/clock?kind=${kind}&phaseId=${encodeURIComponent(view.phase.id)}`);
@@ -234,13 +236,55 @@ async function drive(
   throw new Error(`Match ${matchId} did not reach its checkpoint within ${timeout}ms`);
 }
 
-async function admitted(count: number): Promise<{ matchId: string; controllers: FixtureController[] }> {
+async function driveOriginal(matchId: string, controllers: FixtureController[]): Promise<Observation> {
+  const deadline = Date.now() + 120_000;
+
+  while (Date.now() < deadline) {
+    const publicView = await data<Observation>(`/api/matches/${matchId}`);
+    expect(publicView.status, publicView.winReason ?? '').not.toBe('interrupted');
+
+    if (publicView.status === 'finished') return publicView;
+
+    if (publicView.phase.kind.includes('discussion')) {
+      await clock(matchId, publicView);
+      continue;
+    }
+
+    const seats = await Promise.all(
+      controllers.map((controller) => data<Observation>(`/api/matches/${matchId}`, controller)),
+    );
+    await Promise.all(
+      seats.map(async (view, index) => {
+        const choice = previewAction(view);
+
+        if (!choice || !view.decision) return;
+        const input: ActionRequest = {
+          actionId: crypto.randomUUID(),
+          phaseId: view.phase.id,
+          decisionId: view.decision.id,
+          action: choice,
+        };
+        await data(`/api/matches/${matchId}/actions`, controllers[index], {
+          method: 'POST',
+          body: JSON.stringify(input),
+        });
+      }),
+    );
+  }
+
+  throw new Error('Original game did not finish through actual HTTP decisions');
+}
+
+async function admitted(
+  count: number,
+  gameId: GameId = 'succession',
+): Promise<{ matchId: string; controllers: FixtureController[] }> {
   const controllers = await data<FixtureController[]>(`/__fixture/controllers?count=${count}`);
   await Promise.all(
     controllers.map((controller) =>
       data('/api/queue', controller, {
         method: 'POST',
-        body: JSON.stringify({ gameId: 'succession', requestId: crypto.randomUUID() }),
+        body: JSON.stringify({ gameId, requestId: crypto.randomUUID() }),
       }),
     ),
   );
@@ -258,9 +302,7 @@ async function admitted(count: number): Promise<{ matchId: string; controllers: 
     controllers.map((controller) => data<QueueStatus>('/api/queue', controller)),
   );
 
-  expect(tickets.every((entry) => entry.matchId === ticket.matchId && entry.gameId === 'succession')).toBe(
-    true,
-  );
+  expect(tickets.every((entry) => entry.matchId === ticket.matchId && entry.gameId === gameId)).toBe(true);
 
   return { matchId: ticket.matchId, controllers };
 }
@@ -304,6 +346,117 @@ async function restart(): Promise<void> {
 }
 
 describe('actual Succession HTTP, Durable Object and house execution', () => {
+  it('runs both games concurrently through one coordinator and independently settles twenty ranked external agents', async () => {
+    provider = 'openai';
+    const [original, succession] = await Promise.all([
+      admitted(10, 'secret-overlord'),
+      admitted(10, 'succession'),
+    ]);
+    expect(original.matchId).not.toBe(succession.matchId);
+
+    const groups = [
+      { ...original, gameId: 'secret-overlord' as const, otherGame: 'succession' as const },
+      { ...succession, gameId: 'succession' as const, otherGame: 'secret-overlord' as const },
+    ];
+
+    const allocations =
+      await data<{ id: string; game_id: GameId; state: string; reservation: number }[]>(
+        '/__fixture/allocations',
+      );
+    expect(allocations.filter((entry) => entry.state === 'active')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: original.matchId, game_id: 'secret-overlord', reservation: 1.5 }),
+        expect.objectContaining({ id: succession.matchId, game_id: 'succession', reservation: 1.5 }),
+      ]),
+    );
+
+    for (const group of groups) {
+      const current = await data<Observation | Observation2>(
+        `/api/matches/${group.matchId}`,
+        group.controllers[0],
+      );
+      expect(current.status).toBe('active');
+      expect(current.mode).toBe('ranked');
+      expect(current.seats.every((seat) => !seat.originalHouse)).toBe(true);
+      const before = await data<QueueStatus>('/api/queue', group.controllers[0]);
+      const conflict = await request('/api/queue', group.controllers[0], {
+        method: 'POST',
+        body: JSON.stringify({ gameId: group.otherGame, requestId: crypto.randomUUID() }),
+      });
+      expect(conflict.status).toBe(409);
+      expect(await conflict.json()).toMatchObject({
+        error: { code: 'agent-busy', gameId: group.gameId, matchId: group.matchId },
+      });
+      expect(await data('/api/queue', group.controllers[0])).toEqual(before);
+      const selected = await until(
+        () => data<{ id: string }[]>(`/api/matches?gameId=${group.gameId}`),
+        (matches) => matches.some((entry) => entry.id === group.matchId),
+      );
+      expect(selected.some((entry) => entry.id === group.matchId)).toBe(true);
+      expect(
+        selected.some(
+          (entry) => entry.id === (group.gameId === 'succession' ? original.matchId : succession.matchId),
+        ),
+      ).toBe(false);
+    }
+
+    const [teamResult, individualResult] = await Promise.all([
+      driveOriginal(original.matchId, original.controllers),
+      drive(succession.matchId, succession.controllers, (view) => view.status === 'finished'),
+    ]);
+
+    expect(teamResult.winner).not.toBeNull();
+    expect(individualResult.publicView.result?.kind).toBe('individual');
+
+    for (const group of groups) {
+      const settled = await until(
+        () => data<Settlement>(`/__fixture/matches/${group.matchId}/settlement`),
+        (value) => value.record?.result_applied === 1,
+      );
+      expect(settled.record).toMatchObject({
+        game_id: group.gameId,
+        status: 'finished',
+        mode: 'ranked',
+        result_applied: 1,
+      });
+      expect(settled.participants).toHaveLength(10);
+      expect(settled.inference.calls).toBe(0);
+      const winners = settled.participants.filter((participant) => participant.won === 1);
+      expect(winners).toHaveLength(
+        group.gameId === 'succession' ? 1 : teamResult.winner === 'cooperative' ? 6 : 4,
+      );
+
+      for (const participant of settled.participants) {
+        expect(participant.forfeited).toBe(0);
+        const own = await data<{
+          agent: { games: number; wins: number; placements: number; rating: number };
+          history: { id: string }[];
+        }>(`/api/agents/${participant.agent_id}?gameId=${group.gameId}`);
+        const other = await data<{
+          agent: { games: number; wins: number; placements: number; rating: number };
+          history: { id: string }[];
+        }>(`/api/agents/${participant.agent_id}?gameId=${group.otherGame}`);
+        expect(own.agent).toMatchObject({ games: 1, placements: 1, wins: participant.won });
+        expect(own.agent.rating).toBeCloseTo(1000 + (participant.rating_delta ?? 0));
+        expect(own.history.map((match) => match.id)).toEqual([group.matchId]);
+        expect(other.agent).toMatchObject({ games: 0, placements: 0, wins: 0, rating: 1000 });
+        expect(other.history).toEqual([]);
+      }
+
+      await until(
+        () => data<QueueStatus>('/api/queue', group.controllers[0]),
+        (value) => value.status === 'idle',
+      );
+    }
+
+    const released = await data<{ id: string; state: string }[]>('/__fixture/allocations');
+    expect(
+      released
+        .filter((entry) => entry.id === original.matchId || entry.id === succession.matchId)
+        .every((entry) => entry.state === 'settled'),
+    ).toBe(true);
+  }, 180_000);
+
   it('plays ten external controllers through both acts with sealed delivery, persistent receipts, recovery and one overall settlement', async () => {
     const { matchId, controllers } = await admitted(10);
 

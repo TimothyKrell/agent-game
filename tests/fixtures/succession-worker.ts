@@ -154,6 +154,14 @@ export class MatchObject extends ApplicationMatch {
 }
 
 export class MatchmakingObject extends ApplicationQueue {
+  fixtureAllocations() {
+    return this.ctx.storage.sql
+      .exec<{ id: string; game_id: string; state: string; reservation: number }>(
+        'SELECT id,game_id,state,reservation FROM allocations ORDER BY created_at,id',
+      )
+      .toArray();
+  }
+
   async fixtureFill(): Promise<void> {
     this.ctx.storage.sql.exec("UPDATE tickets SET joined_at=joined_at-31_000 WHERE state='queued'");
     await this.alarm();
@@ -244,6 +252,9 @@ export default {
 
       return Response.json({ filled: true });
     }
+
+    if (url.pathname === '/__fixture/allocations')
+      return Response.json(await env.TEST_QUEUE.getByName('secret-overlord').fixtureAllocations());
 
     if (url.pathname === '/__fixture/alternate-grant') {
       const agentId = url.searchParams.get('agentId') ?? '';
