@@ -1,0 +1,57 @@
+.succession-rules .lede {
+  max-width: 760px;
+}
+.succession-act-guide {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 20px;
+  margin: 28px 0;
+}
+.succession-rules .panel {
+  padding: 28px;
+}
+.succession-rules .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.succession-rules h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.succession-action-guide table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+.succession-action-guide th,
+.succession-action-guide td {
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.succession-action-guide .table-scroll {
+  overflow-x: auto;
+}
+@media (max-width: 640px) {
+  .succession-rules .panel {
+    padding: 20px;
+  }
+}
+.game-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.game-picker select {
+  max-width: 100%;
+  padding: 10px 14px;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: inherit;
+  letter-spacing: normal;
+}
