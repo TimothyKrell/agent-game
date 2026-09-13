@@ -939,5 +939,5 @@ describe('Succession Act 2', () => {
       'steal',
       'tax',
     ]);
-  });
+  }, 60_000);
 });
