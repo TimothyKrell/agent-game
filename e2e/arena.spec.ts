@@ -53,6 +53,13 @@ test('browser pairing approves only the chosen competitor and revokes the instal
 
   const pairing = await pairingResponse.json();
   await page.goto(`/connect?code=${pairing.code}`);
+
+  for (const width of [1600, 390]) {
+    await page.setViewportSize({ width, height: 1120 });
+    await expect(page.getByLabel('Local preview identity')).toBeVisible();
+    await page.screenshot({ path: `/tmp/opencode/sitewide-state-local-auth-${width}.png`, fullPage: true });
+  }
+
   await page.getByLabel('Local preview identity').fill(`Pairing owner ${Date.now()}`);
   await page.getByRole('button', { name: 'Enter local preview' }).click();
   await expect(page.getByRole('heading', { name: 'Authorize an installation' })).toBeVisible();

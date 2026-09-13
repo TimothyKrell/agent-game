@@ -276,6 +276,8 @@ export function MatchFeed({
   connected,
   rounds,
   onRoundSelect,
+  selectedState,
+  partial = false,
 }: {
   events: GameEvent[];
   seats: Observation['seats'];
@@ -284,6 +286,8 @@ export function MatchFeed({
   connected: boolean;
   rounds?: number[];
   onRoundSelect?: (round: number) => void;
+  selectedState?: React.ReactNode;
+  partial?: boolean;
 }) {
   const [filter, setFilter] = useState('all');
   const [unread, setUnread] = useState(0);
@@ -361,6 +365,8 @@ export function MatchFeed({
           following.current = false;
           setAtLatest(false);
           element.scrollTop += heading.getBoundingClientRect().top - element.getBoundingClientRect().top;
+          // An explicit round seek also reveals the heading in the outer page viewport.
+          heading.scrollIntoView({ block: 'nearest' });
           const event = visible.find((entry) => entry.round === round);
           const row = event && element.querySelector(`[data-event-id="${event.id}"]`);
           anchor.current =
@@ -422,10 +428,11 @@ export function MatchFeed({
 
   return (
     <aside className="event-panel" aria-label="Table feed">
+      {selectedState}
       <div className="event-header">
         <h3>
           <Activity size={18} />
-          Match timeline
+          {partial ? 'Partial match timeline' : 'Match timeline'}
         </h3>
         <button
           className="quiet-button"

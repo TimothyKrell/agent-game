@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import type {
   AgentHistorySchema,
   AgentProfile,
@@ -54,6 +54,18 @@ const queue: QueueStatus = {
   fillAt: 1789250030000,
   capacity: 'busy',
 };
+
+async function captureState(page: Page, name: string) {
+  for (const width of [1600, 390]) {
+    await page.setViewportSize({ width, height: 1120 });
+    await page.evaluate(() => document.fonts.ready);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      `${name} at ${width}`,
+    ).toBe(true);
+    await page.screenshot({ path: `/tmp/opencode/sitewide-state-${name}-${width}.png`, fullPage: true });
+  }
+}
 
 test('all public compositions preserve their links and fit desktop, tablet and narrow phones', async ({
   page,
@@ -117,7 +129,7 @@ test('all public compositions preserve their links and fit desktop, tablet and n
       ['/leaderboard', 'The leaderboard.'],
       ['/agents/agent-sitewide', 'Axiom'],
       ['/owners/persistent-minds', '@persistent-minds'],
-      ['/how-to-play', 'Secret Overlord'],
+      ['/how-to-play', 'The rules of trust.'],
       ['/connect', 'Your next game starts with a conversation.'],
       ['/dashboard', 'Build your roster.'],
     ]) {
@@ -185,7 +197,7 @@ test('all public compositions preserve their links and fit desktop, tablet and n
   );
   await page.goto('/how-to-play');
 
-  for (const href of ['/rules.md', '/protocol.md', '/agents.md'])
+  for (const href of ['/rules.md', '/protocol.md', '/agents.md', '/rating-method.md'])
     await expect(page.locator(`main a[href="${href}"]`).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -355,10 +367,12 @@ test('sign-in uses configured providers, preserves pairing callback and surfaces
   await expect(page.getByLabel('Local preview identity')).toHaveCount(0);
   await page.getByRole('button', { name: 'Continue with GitHub' }).click();
   await expect(page.getByRole('alert')).toContainText('Sign-in unavailable.');
+  await captureState(page, 'provider-failure');
   providers = [];
   await page.goto('/dashboard');
   await expect(page.getByText('Owner sign-in is awaiting provider configuration.')).toBeVisible();
   await expect(page.getByRole('button', { name: /Continue with/ })).toHaveCount(0);
+  await captureState(page, 'no-provider');
 });
 
 test('expired pairing uses a fresh-link recovery for both load and approval failures', async ({ page }) => {
@@ -393,6 +407,7 @@ test('expired pairing uses a fresh-link recovery for both load and approval fail
   await expect(page.getByText(/Ask your agent for a fresh connection link/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Retry request' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Approve connection' })).toHaveCount(0);
+  await captureState(page, 'expired-pairing');
   expired = false;
   // A changed query at the same pathname must load the new request.
   await page.evaluate(() => {
@@ -416,11 +431,13 @@ test('route errors retry, static onboarding survives bootstrap failure and unkno
   await page.goto('/');
   await expect(page.getByText(/Match admission is paused/)).toBeVisible();
   await expect(page.getByText('2 AGENTS IN QUEUE')).toBeVisible();
+  await captureState(page, 'empty-live');
   await page.getByRole('button', { name: 'Recent replays', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'The archive is waiting for its first match.' }),
   ).toBeVisible();
   let failed = true;
+  await captureState(page, 'empty-archive');
   await page.route('**/api/agents', (route) =>
     failed
       ? route.fulfill({ status: 503, json: { error: { message: 'Leaderboard temporarily unavailable.' } } })
@@ -428,14 +445,29 @@ test('route errors retry, static onboarding survives bootstrap failure and unkno
   );
   await page.goto('/leaderboard');
   await expect(page.getByRole('alert')).toContainText('Leaderboard temporarily unavailable.');
+  await captureState(page, 'initial-error');
   await expect(page.getByText('Connecting to the arena…')).toHaveCount(0);
   failed = false;
   await page.getByRole('button', { name: 'Try again' }).click();
   await expect(page.getByRole('heading', { name: 'The first place is yours to earn.' })).toBeVisible();
+  await captureState(page, 'empty-ranking');
   await page.goto('/unknown-route');
   await expect(page.getByRole('heading', { name: 'Off the board.' })).toBeVisible();
+  await captureState(page, 'not-found');
   await page.getByRole('link', { name: 'Return to arena' }).click();
   await expect(page.getByRole('heading', { name: 'Your agent. Their next great rival.' })).toBeVisible();
+  await page.route('**/api/agents/missing', (route) =>
+    route.fulfill({ status: 404, json: { error: { message: 'Agent not found.' } } }),
+  );
+  await page.goto('/agents/missing');
+  await expect(page.getByRole('heading', { name: 'Off the board.' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'All contenders' })).toHaveAttribute('href', '/leaderboard');
+  await expect(page.getByRole('button', { name: 'Try again' })).toHaveCount(0);
+  await captureState(page, 'missing-agent');
+  await page.route('**/api/owners/empty', (route) => route.fulfill({ json: { owner, agents: [] } }));
+  await page.goto('/owners/empty');
+  await expect(page.getByRole('heading', { name: 'No public competitors yet.' })).toBeVisible();
+  await captureState(page, 'empty-owner');
   await page.route('**/api/bootstrap', (route) =>
     route.fulfill({ status: 503, json: { error: { message: 'Arena offline.' } } }),
   );
@@ -598,6 +630,7 @@ test('malformed responses, retained refresh failures and session expiry have usa
   await page.route('**/api/owner', (route) =>
     route.fulfill({ json: { owner, agents: [agent], connections: [], queue: {} } }),
   );
+  await captureState(page, 'stale-ranking');
   await page.goto('/dashboard');
   await expect(page.getByRole('heading', { name: 'Your roster.' })).toBeVisible();
   signedIn = false;

@@ -142,15 +142,23 @@ test('all phases, powers and simultaneous seat facts survive compact layouts and
       seats: view.seats.map((seat, index) => ({ ...seat, role: state.seats[index].role })),
     });
     await expect(page.locator('.result-banner')).toContainText(
-      status === 'finished' ? 'Rogue agents win' : 'Match interrupted',
+      status === 'finished' ? 'Rogue victory.' : 'Match interrupted',
     );
     await expect(page.getByText('Archived', { exact: true })).toBeVisible();
     await expect(page.locator('.countdown')).toHaveCount(0);
     await expect(page.getByRole('slider', { name: 'Replay event' })).toBeVisible();
-    await expect(page.locator('.phase-government')).toBeVisible();
+    await expect(page.getByLabel('At selected event')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 
     if (status === 'interrupted')
-      await expect(page.getByText('THE PARTIAL RECORD', { exact: true })).toBeVisible();
+      await expect(page.locator('.result-banner')).toContainText('THE PARTIAL RECORD');
+
+    for (const width of [1600, 390, 320]) {
+      await page.setViewportSize({ width, height: 1120 });
+      await page.locator('.seat-grid').evaluate((element) => {
+        element.scrollLeft = 0;
+      });
+      await page.screenshot({ path: `/tmp/opencode/sitewide-result-${status}-${width}.png`, fullPage: true });
+    }
   }
 });

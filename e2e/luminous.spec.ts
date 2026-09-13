@@ -244,11 +244,13 @@ test('live and revealed records use real phase timers, outcomes, and accessible 
   send({
     ...view,
     status: 'finished',
-    tracks: { ...view.tracks, safeguards: 5 },
+    matchId: '4d2a08f1-91a7-4c65-a8dc-e7b9c2d60834',
+    tracks: { ...view.tracks, safeguards: 3, overrides: 4 },
+    phase: { ...view.phase, kind: 'finished' },
     seats: view.seats.map((seat, index) => ({ ...seat, role: state.seats[index].role })),
     winner: 'cooperative',
-    winReason: 'five safeguards enacted',
-    finishedAt: Date.now(),
+    winReason: 'The Overlord was executed.',
+    finishedAt: view.createdAt + 1_182_000,
     events: [
       ...view.events,
       {
@@ -288,11 +290,61 @@ test('live and revealed records use real phase timers, outcomes, and accessible 
   await expect(page.locator('.countdown')).toHaveCount(0);
   await expect(page.getByLabel('safeguards: 2 to 3')).toBeVisible();
   await expect(page.locator('.election-metric')).toContainText('7');
+  const finalTracks = page.getByRole('region', { name: 'Final policy tracks' });
+  await expect(finalTracks.locator('.safeguard b')).toHaveText('3');
+  await expect(finalTracks.locator('.override b')).toHaveText('4');
+  await expect(page.locator('.result-metadata')).toContainText('4d2a08f1-91a7-4c65-a8dc-e7b9c2d60834');
+  await expect(page.locator('.result-metadata')).toContainText('Duration 19m 42s');
+  await expect(page.getByRole('heading', { name: 'Cooperative victory.' })).toBeVisible();
+
+  for (const width of [1600, 1024, 768, 760, 390, 320]) {
+    await page.setViewportSize({ width, height: 1120 });
+    await page.evaluate(() => document.fonts.ready);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      `Result at ${width}`,
+    ).toBe(true);
+    expect(
+      await page
+        .locator(
+          '.result-banner h1, .result-banner h2, .result-metadata, .final-track, .replay-controls .button, .selected-event-state',
+        )
+        .evaluateAll((elements) =>
+          elements.every((element) => {
+            const box = element.getBoundingClientRect();
+
+            const parent = (element.closest('.replay-controls') ??
+              element.parentElement)!.getBoundingClientRect();
+
+            const range = document.createRange();
+            range.selectNodeContents(element);
+            const text = range.getBoundingClientRect();
+
+            return (
+              box.left >= parent.left - 1 && box.right <= parent.right + 1 && text.right <= box.right + 1
+            );
+          }),
+        ),
+      `Result text and controls internally bounded at ${width}`,
+    ).toBe(true);
+    await page.getByRole('heading', { name: 'Cooperative victory.' }).click();
+    await page.locator('.seat-grid').evaluate((element) => {
+      element.scrollLeft = 0;
+    });
+    await page.locator('.event-list').evaluate((element) => {
+      element.scrollTop = 0;
+    });
+    await page.screenshot({ path: `/tmp/opencode/sitewide-result-complete-${width}.png`, fullPage: true });
+  }
+
   await page.setViewportSize({ width: 1600, height: 1120 });
   await page.getByRole('button', { name: 'Collapse discussions', exact: true }).click();
   await page.screenshot({ path: '/tmp/opencode/luminous-replay-desktop.png', fullPage: true });
   const slider = page.getByRole('slider', { name: 'Replay event' });
   await slider.fill('0');
+  await expect(finalTracks.locator('.safeguard b')).toHaveText('3');
+  await expect(finalTracks.locator('.override b')).toHaveText('4');
+  await expect(page.getByLabel('At selected event')).toContainText('Safeguards 0 / 5 · Overrides 0 / 6');
   await page.getByLabel('Browse by round').selectOption('6');
   await expect(slider).toHaveValue('6');
   await expect(page.locator('.feed-round[data-round="6"]')).toBeInViewport();
