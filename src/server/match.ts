@@ -15,6 +15,7 @@ import type { MatchSnapshot } from '../game/contracts';
 import type { SecretOverlordState } from '../game/secret-overlord';
 import type { Evolution, SuccessionState } from '../game/succession/types';
 import { replayFrameSuccession } from '../game/succession/replay';
+import { decodeReplayCheckpoint } from '../game/succession/persistence';
 import { GameError } from '../game/types';
 import type { GameEvent, Observation } from '../game/types';
 import { ActionRequestSchema } from '../shared/api';
@@ -275,6 +276,7 @@ export class MatchObject extends DurableObject<Env> {
 
       return structuredClone(input.snapshot);
     }
+
     const descriptor = gameDescriptor(input.gameId ?? 'secret-overlord');
     const scale = Math.max(0.001, Number(this.env.TIME_SCALE) || 1);
     const provider = this.env.HOUSE_PROVIDER;
@@ -723,9 +725,7 @@ export class MatchObject extends DurableObject<Env> {
         .toArray()[0];
 
       if (!row) throw new Error('Missing bounded replay checkpoint');
-      const checkpoint = decodeGameState(JSON.parse(row.data));
-
-      if (checkpoint.gameId !== 'succession') throw new Error('Invalid replay checkpoint game');
+      const checkpoint = decodeReplayCheckpoint(JSON.parse(row.data));
       const value = replayFrameSuccession(checkpoint, through, metadata.visibilityEpoch);
 
       if (jsonBytes(value) > 32_768) throw new Error('Replay frame exceeds 32 KiB');

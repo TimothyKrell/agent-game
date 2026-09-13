@@ -208,6 +208,7 @@ it('retains and traverses 31,200 maximum-length four-byte messages with bounded 
   const metadata: HistoryMetadata2 = JSON.parse(
     await (await command('large', { type: 'metadata', audience: publicAudience })).text(),
   );
+
   expect(metadata.streamHead).toBe(31_200);
   let after = 0;
   let characters = 0;
