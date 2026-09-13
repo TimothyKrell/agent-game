@@ -153,7 +153,7 @@ function enter(element: HTMLElement, scene: Entry): Animation[] {
 
     if (scene === 'result')
       add(
-        '.result-banner > .deco-emblem',
+        '.result-banner > .deco-emblem, .result-banner > .succession-seal',
         [
           { opacity: 0.7, transform: 'scale(.97)' },
           { opacity: 1, transform: 'scale(1)' },

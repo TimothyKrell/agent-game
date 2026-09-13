@@ -17,12 +17,13 @@ import type {
 
 function emit(
   state: MatchState,
+  context: LegacyContext,
   now: number,
   type: string,
   text: string,
   extra: Partial<Pick<GameEvent, 'visibility' | 'seat' | 'data'>> = {},
 ): void {
-  state.events.push({
+  const event: GameEvent = {
     id: state.events.length + 1,
     at: now,
     round: state.round,
@@ -30,19 +31,103 @@ function emit(
     text,
     visibility: 'public',
     ...extra,
-  });
+  };
+
+  state.events.push(event);
+
+  if (context.onEvent) {
+    const { events: _events, ...board } = state;
+    context.onEvent(structuredClone(board), event);
+  }
 }
 
-function enter(state: MatchState, kind: PhaseKind, now: number, duration: number | null): void {
+export type LegacyBoard = Omit<MatchState, 'events'>;
+
+export interface LegacyContext {
+  random(size: number): number;
+  id(): string;
+  /** Receives an isolated, history-free board at the instant each event is appended. */
+  onEvent?(board: LegacyBoard, event: GameEvent): void;
+}
+
+export type LegacyCommand =
+  | { type: 'act'; seat: number; generation: number; request: ActionRequest; now: number }
+  | { type: 'advance' | 'recover'; now: number }
+  | { type: 'interrupt'; now: number; reason: string };
+
+export type LegacyRandomFact = { kind: 'index'; size: number; value: number } | { kind: 'id'; value: string };
+
+const defaultContext: LegacyContext = { random: randomIndex, id: () => crypto.randomUUID() };
+
+export interface LegacyEvolution {
+  state: LegacyBoard;
+  appendedEvents: GameEvent[];
+  randomFacts: LegacyRandomFact[];
+}
+
+/** Event IDs are local to this append (1-based); the caller assigns durable sequence IDs. */
+export function evolveLegacy(
+  board: LegacyBoard,
+  command: LegacyCommand,
+  context: LegacyContext,
+): LegacyEvolution {
+  const randomFacts: LegacyRandomFact[] = [];
+
+  const recorded: LegacyContext = {
+    onEvent: context.onEvent,
+    random(size) {
+      const value = context.random(size);
+      randomFacts.push({ kind: 'index', size, value });
+
+      return value;
+    },
+    id() {
+      const value = context.id();
+      randomFacts.push({ kind: 'id', value });
+
+      return value;
+    },
+  };
+
+  const input: MatchState = { ...board, events: [] };
+  let output: MatchState;
+
+  switch (command.type) {
+    case 'act':
+      output = act(input, command.seat, command.generation, command.request, command.now, recorded);
+      break;
+    case 'advance':
+      output = advance(input, command.now, recorded);
+      break;
+    case 'recover':
+      output = recoverMatch(input, command.now, recorded);
+      break;
+    case 'interrupt':
+      output = interruptMatch(input, command.now, command.reason, recorded);
+      break;
+  }
+
+  const { events: appendedEvents, ...state } = output;
+
+  return { state, appendedEvents, randomFacts };
+}
+
+function enter(
+  state: MatchState,
+  kind: PhaseKind,
+  now: number,
+  duration: number | null,
+  context: LegacyContext,
+): void {
   state.phase = {
-    id: crypto.randomUUID(),
+    id: context.id(),
     kind,
     startedAt: now,
     deadline: duration === null ? null : now + duration,
     graceAnnounced: false,
     replacements: {},
   };
-  emit(state, now, 'phase', phaseLabel(kind), {
+  emit(state, context, now, 'phase', phaseLabel(kind), {
     data: {
       phase: kind,
       deadline: state.phase.deadline,
@@ -74,7 +159,13 @@ export function createMatch(
   id: string,
   entrants: Entrant[],
   now: number,
-  options: { timing?: Timing; mode?: MatchState['mode']; random?: (size: number) => number } = {},
+  options: {
+    timing?: Timing;
+    mode?: MatchState['mode'];
+    random?: (size: number) => number;
+    id?: () => string;
+    onEvent?: LegacyContext['onEvent'];
+  } = {},
 ): MatchState {
   if (entrants.length !== 10)
     throw new GameError('invalid-roster', 'Secret Overlord requires ten seats.', 400);
@@ -93,6 +184,7 @@ export function createMatch(
   }
 
   const random = options.random ?? randomIndex;
+  const context: LegacyContext = { random, id: options.id ?? defaultContext.id, onEvent: options.onEvent };
 
   const roles: Role[] = shuffle(
     [
@@ -122,7 +214,7 @@ export function createMatch(
   }));
 
   const deck: Card[] = Array.from({ length: 17 }, (_, i) => ({
-    id: crypto.randomUUID(),
+    id: context.id(),
     policy: i < 6 ? 'safeguard' : 'override',
   }));
 
@@ -165,17 +257,17 @@ export function createMatch(
     events: [],
   };
 
-  emit(state, now, 'started', 'Ten agents. Two allegiances. One hidden Overlord.');
+  emit(state, context, now, 'started', 'Ten agents. Two allegiances. One hidden Overlord.');
 
   for (const seat of seats) {
-    emit(state, now, 'role', `Your secret role is ${seat.role}.`, {
+    emit(state, context, now, 'role', `Your secret role is ${seat.role}.`, {
       seat: seat.number,
       visibility: seat.number,
       data: { role: seat.role },
     });
 
     if (seat.role === 'rogue') {
-      emit(state, now, 'rogue-knowledge', 'You recognize the ordinary rogues and the Overlord.', {
+      emit(state, context, now, 'rogue-knowledge', 'You recognize the ordinary rogues and the Overlord.', {
         seat: seat.number,
         visibility: seat.number,
         data: {
@@ -186,7 +278,7 @@ export function createMatch(
     }
   }
 
-  enter(state, 'nomination-discussion', now, timing.nomination);
+  enter(state, 'nomination-discussion', now, timing.nomination, context);
 
   return state;
 }
@@ -291,33 +383,43 @@ export function legalActions(state: MatchState, seat: number): LegalAction[] {
   }
 }
 
-function finish(state: MatchState, team: Team, reason: string, now: number): void {
+function finish(state: MatchState, team: Team, reason: string, now: number, context: LegacyContext): void {
   state.winner = team;
   state.winReason = reason;
   state.finishedAt = now;
   emit(
     state,
+    context,
     now,
     'victory',
     `${team === 'cooperative' ? 'Cooperative agents' : 'Rogue agents'} win: ${reason}.`,
     { data: { team, reason } },
   );
-  enter(state, 'finished', now, null);
+  enter(state, 'finished', now, null, context);
 }
 
-export function interruptMatch(input: MatchState, now: number, reason: string): MatchState {
+export function interruptMatch(
+  input: MatchState,
+  now: number,
+  reason: string,
+  context: LegacyContext = defaultContext,
+): MatchState {
   if (terminal(input)) return input;
   const state = structuredClone(input);
   state.finishedAt = now;
   state.winReason = reason;
-  emit(state, now, 'interrupted', reason);
-  enter(state, 'interrupted', now, null);
+  emit(state, context, now, 'interrupted', reason);
+  enter(state, 'interrupted', now, null, context);
 
   return state;
 }
 
 /** A demonstrably late platform alarm reissues the phase, rather than charging agents for downtime. */
-export function recoverMatch(input: MatchState, now: number): MatchState {
+export function recoverMatch(
+  input: MatchState,
+  now: number,
+  context: LegacyContext = defaultContext,
+): MatchState {
   if (terminal(input)) return input;
   const state = structuredClone(input);
 
@@ -331,11 +433,12 @@ export function recoverMatch(input: MatchState, now: number): MatchState {
   const replacements = Object.keys(state.phase.replacements);
   emit(
     state,
+    context,
     now,
     'recovered',
     'The platform recovered a delayed game clock. The current phase has a fresh decision window.',
   );
-  enter(state, state.phase.kind, now, duration);
+  enter(state, state.phase.kind, now, duration, context);
 
   for (const seat of replacements) state.phase.replacements[seat] = now + state.timing.action;
 
@@ -352,7 +455,7 @@ function nextAlive(state: MatchState, after: number): number {
   throw new Error('A match must have living seats');
 }
 
-function nextRound(state: MatchState, now: number, special?: number): void {
+function nextRound(state: MatchState, now: number, context: LegacyContext, special?: number): void {
   if (special !== undefined) {
     state.specialResumeAfter = state.coordinator;
     state.coordinator = special;
@@ -366,22 +469,29 @@ function nextRound(state: MatchState, now: number, special?: number): void {
   state.hand = [];
   state.vetoRejected = false;
   state.power = null;
-  enter(state, 'nomination-discussion', now, state.timing.nomination);
+  enter(state, 'nomination-discussion', now, state.timing.nomination, context);
 }
 
-function replenish(state: MatchState, now: number): void {
+function replenish(state: MatchState, now: number, context: LegacyContext): void {
   if (state.deck.length >= 3) return;
-  state.deck = shuffle([...state.deck, ...state.discards]);
+  state.deck = shuffle([...state.deck, ...state.discards], (size) => context.random(size));
   state.discards = [];
-  emit(state, now, 'reshuffle', 'The remaining draw pile and discarded policies have been reshuffled.');
+  emit(
+    state,
+    context,
+    now,
+    'reshuffle',
+    'The remaining draw pile and discarded policies have been reshuffled.',
+  );
 }
 
-function enact(state: MatchState, card: Card, now: number, chaos: boolean): void {
+function enact(state: MatchState, card: Card, now: number, chaos: boolean, context: LegacyContext): void {
   if (card.policy === 'safeguard') state.safeguards++;
   else state.overrides++;
   state.electionTracker = 0;
   emit(
     state,
+    context,
     now,
     'policy',
     `${chaos ? 'Election chaos enacts' : 'The government enacts'} a ${card.policy}.`,
@@ -389,49 +499,50 @@ function enact(state: MatchState, card: Card, now: number, chaos: boolean): void
   );
 
   if (state.safeguards >= 5) {
-    finish(state, 'cooperative', 'five safeguards enacted', now);
+    finish(state, 'cooperative', 'five safeguards enacted', now, context);
 
     return;
   }
 
   if (state.overrides >= 6) {
-    finish(state, 'rogue', 'six overrides enacted', now);
+    finish(state, 'rogue', 'six overrides enacted', now, context);
 
     return;
   }
 
-  replenish(state, now);
+  replenish(state, now, context);
 
   if (chaos || card.policy === 'safeguard') return;
   state.power = state.overrides <= 2 ? 'investigate' : state.overrides === 3 ? 'special-election' : 'execute';
-  enter(state, 'executive-discussion', now, state.timing.executive);
+  enter(state, 'executive-discussion', now, state.timing.executive, context);
 }
 
-function advanceTracker(state: MatchState, now: number): void {
+function advanceTracker(state: MatchState, now: number, context: LegacyContext): void {
   state.electionTracker++;
-  emit(state, now, 'election-tracker', `Election tracker: ${state.electionTracker} of 3.`, {
+  emit(state, context, now, 'election-tracker', `Election tracker: ${state.electionTracker} of 3.`, {
     data: { tracker: state.electionTracker },
   });
 
   if (state.electionTracker >= 3) {
-    if (!state.deck.length) replenish(state, now);
+    if (!state.deck.length) replenish(state, now, context);
     const card = state.deck.shift();
 
     if (!card) throw new Error('Policy deck exhausted before victory');
     state.lastGovernment = null;
-    enact(state, card, now, true);
+    enact(state, card, now, true, context);
   }
 
-  if (!terminal(state)) nextRound(state, now);
+  if (!terminal(state)) nextRound(state, now, context);
 }
 
-function resolveVotes(state: MatchState, now: number): void {
+function resolveVotes(state: MatchState, now: number, context: LegacyContext): void {
   if (pendingSeats(state).length) return;
   state.lastVotes = { ...state.votes };
   const yes = Object.values(state.votes).filter(Boolean).length;
   const approved = yes > state.seats.filter((seat) => seat.alive).length / 2;
   emit(
     state,
+    context,
     now,
     'election',
     `Government ${approved ? 'approved' : 'rejected'}: ${yes} approve, ${Object.keys(state.votes).length - yes} reject.`,
@@ -441,7 +552,7 @@ function resolveVotes(state: MatchState, now: number): void {
   );
 
   if (!approved) {
-    advanceTracker(state, now);
+    advanceTracker(state, now, context);
 
     return;
   }
@@ -450,44 +561,44 @@ function resolveVotes(state: MatchState, now: number): void {
   state.lastGovernment = { coordinator: state.coordinator, executor: state.executor };
 
   if (state.overrides >= 3 && state.seats[state.executor].role === 'overlord') {
-    finish(state, 'rogue', 'the Overlord was elected Executor after three overrides', now);
+    finish(state, 'rogue', 'the Overlord was elected Executor after three overrides', now, context);
 
     return;
   }
 
   if (state.overrides >= 3)
-    emit(state, now, 'cleared-executor', 'The elected Executor is not the Overlord.', {
+    emit(state, context, now, 'cleared-executor', 'The elected Executor is not the Overlord.', {
       seat: state.executor,
     });
 
-  if (state.deck.length < 3) replenish(state, now);
+  if (state.deck.length < 3) replenish(state, now, context);
   state.hand = state.deck.splice(0, 3);
 
   if (state.hand.length !== 3) throw new Error('Legislation requires three policies');
-  emit(state, now, 'draw', 'You drew three policies.', {
+  emit(state, context, now, 'draw', 'You drew three policies.', {
     visibility: state.coordinator,
     seat: state.coordinator,
     data: { cards: structuredClone(state.hand) },
   });
-  enter(state, 'coordinator-discard', now, state.timing.action);
+  enter(state, 'coordinator-discard', now, state.timing.action, context);
 }
 
 /** Applies due deadlines without relying on alarm delivery punctuality. */
-export function advance(input: MatchState, now: number): MatchState {
+export function advance(input: MatchState, now: number, context: LegacyContext = defaultContext): MatchState {
   if (terminal(input) || input.phase.deadline === null || now < input.phase.deadline) return input;
   const state = structuredClone(input);
 
   switch (state.phase.kind) {
     case 'nomination-discussion':
-      enter(state, 'nomination', now, state.timing.action);
+      enter(state, 'nomination', now, state.timing.action, context);
 
       return state;
     case 'government-discussion':
-      enter(state, 'voting', now, state.timing.action);
+      enter(state, 'voting', now, state.timing.action, context);
 
       return state;
     case 'executive-discussion':
-      enter(state, 'executive-action', now, state.timing.action);
+      enter(state, 'executive-action', now, state.timing.action, context);
 
       return state;
   }
@@ -496,9 +607,16 @@ export function advance(input: MatchState, now: number): MatchState {
 
   if (!state.phase.graceAnnounced && pending.length) {
     state.phase.graceAnnounced = true;
-    emit(state, now, 'grace', 'A required decision is overdue. The reconnection allowance is running.', {
-      data: { graceUntil: state.phase.deadline! + state.timing.grace },
-    });
+    emit(
+      state,
+      context,
+      now,
+      'grace',
+      'A required decision is overdue. The reconnection allowance is running.',
+      {
+        data: { graceUntil: state.phase.deadline! + state.timing.grace },
+      },
+    );
   }
 
   // Platform interruption is a table-wide result, independent of seat iteration order.
@@ -506,14 +624,24 @@ export function advance(input: MatchState, now: number): MatchState {
     const replacementEnd = state.phase.replacements[String(seatNumber)];
 
     if (replacementEnd !== undefined && now >= replacementEnd)
-      return interruptMatch(state, now, 'A house replacement could not complete its required decision.');
+      return interruptMatch(
+        state,
+        now,
+        'A house replacement could not complete its required decision.',
+        context,
+      );
 
     if (
       replacementEnd === undefined &&
       state.seats[seatNumber].houseProfile &&
       now >= state.phase.deadline! + state.timing.grace
     )
-      return interruptMatch(state, now, 'The house-agent service could not complete a required decision.');
+      return interruptMatch(
+        state,
+        now,
+        'The house-agent service could not complete a required decision.',
+        context,
+      );
   }
 
   for (const seatNumber of pending) {
@@ -529,6 +657,7 @@ export function advance(input: MatchState, now: number): MatchState {
     state.phase.replacements[String(seatNumber)] = now + state.timing.action;
     emit(
       state,
+      context,
       now,
       'takeover',
       `${seat.entrant.name} forfeits. A house agent takes over seat ${seatNumber + 1}.`,
@@ -558,6 +687,7 @@ export function act(
   generation: number,
   request: ActionRequest,
   now: number,
+  context: LegacyContext = defaultContext,
 ): MatchState {
   const seat = input.seats[seatNumber];
 
@@ -582,7 +712,7 @@ export function act(
     if (seat.lastChatAt !== null && now < seat.lastChatAt + state.timing.chatCooldown)
       throw new GameError('chat-cooldown', 'Wait for your speaking cooldown.', 429);
     state.seats[seatNumber].lastChatAt = now;
-    emit(state, now, 'chat', text, { seat: seatNumber });
+    emit(state, context, now, 'chat', text, { seat: seatNumber });
 
     return state;
   }
@@ -607,37 +737,38 @@ export function act(
       state.lastVotes = null;
       emit(
         state,
+        context,
         now,
         'nomination',
         `${seat.entrant.name} nominates ${state.seats[action.target].entrant.name} as Executor.`,
         { seat: seatNumber, data: { target: action.target } },
       );
-      enter(state, 'government-discussion', now, state.timing.debate);
+      enter(state, 'government-discussion', now, state.timing.debate, context);
       break;
     case 'vote':
       state.votes[String(seatNumber)] = action.approve;
-      emit(state, now, 'ballot', `You voted ${action.approve ? 'approve' : 'reject'}.`, {
+      emit(state, context, now, 'ballot', `You voted ${action.approve ? 'approve' : 'reject'}.`, {
         seat: seatNumber,
         visibility: seatNumber,
         data: { approve: action.approve },
       });
-      resolveVotes(state, now);
+      resolveVotes(state, now, context);
       break;
     case 'discard': {
       const index = state.hand.findIndex((card) => card.id === action.cardId);
       const discarded = state.hand.splice(index, 1)[0];
       state.discards.push(discarded);
-      emit(state, now, 'discard', 'You discarded a policy and passed the remaining two.', {
+      emit(state, context, now, 'discard', 'You discarded a policy and passed the remaining two.', {
         seat: seatNumber,
         visibility: seatNumber,
         data: { discarded, passed: structuredClone(state.hand) },
       });
-      emit(state, now, 'received-policies', 'The Coordinator passed you two policies.', {
+      emit(state, context, now, 'received-policies', 'The Coordinator passed you two policies.', {
         seat: state.executor!,
         visibility: state.executor!,
         data: { cards: structuredClone(state.hand) },
       });
-      enter(state, 'executor-policy', now, state.timing.action);
+      enter(state, 'executor-policy', now, state.timing.action, context);
       break;
     }
 
@@ -645,25 +776,35 @@ export function act(
       const card = state.hand.find((entry) => entry.id === action.cardId)!;
       const discarded = state.hand.filter((entry) => entry.id !== card.id);
       state.discards.push(...discarded);
-      emit(state, now, 'executor-discard', 'You selected a policy to enact and discarded the other.', {
-        seat: seatNumber,
-        visibility: seatNumber,
-        data: { enacted: card, discarded },
-      });
+      // The discarded card has left the hand before the event's replay checkpoint.
+      state.hand = [card];
+      emit(
+        state,
+        context,
+        now,
+        'executor-discard',
+        'You selected a policy to enact and discarded the other.',
+        {
+          seat: seatNumber,
+          visibility: seatNumber,
+          data: { enacted: card, discarded },
+        },
+      );
       state.hand = [];
-      enact(state, card, now, false);
+      enact(state, card, now, false, context);
 
-      if (!terminal(state) && !state.power) nextRound(state, now);
+      if (!terminal(state) && !state.power) nextRound(state, now, context);
       break;
     }
 
     case 'request-veto':
-      emit(state, now, 'veto-request', 'The Executor requests a veto.', { seat: seatNumber });
-      enter(state, 'veto-response', now, state.timing.action);
+      emit(state, context, now, 'veto-request', 'The Executor requests a veto.', { seat: seatNumber });
+      enter(state, 'veto-response', now, state.timing.action, context);
       break;
     case 'veto':
       emit(
         state,
+        context,
         now,
         'veto-response',
         `The Coordinator ${action.approve ? 'agrees to' : 'refuses'} the veto.`,
@@ -674,11 +815,11 @@ export function act(
         state.discards.push(...state.hand);
         state.hand = [];
         // A veto ends legislation; replenish before any resulting chaos draw.
-        replenish(state, now);
-        advanceTracker(state, now);
+        replenish(state, now, context);
+        advanceTracker(state, now, context);
       } else {
         state.vetoRejected = true;
-        enter(state, 'executor-policy', now, state.timing.action);
+        enter(state, 'executor-policy', now, state.timing.action, context);
       }
 
       break;
@@ -687,6 +828,7 @@ export function act(
       const team = teamOf(state.seats[action.target].role);
       emit(
         state,
+        context,
         now,
         'investigation',
         `${seat.entrant.name} investigates ${state.seats[action.target].entrant.name}.`,
@@ -694,35 +836,37 @@ export function act(
       );
       emit(
         state,
+        context,
         now,
         'investigation-result',
         `${state.seats[action.target].entrant.name} belongs to the ${team} team.`,
         { seat: seatNumber, visibility: seatNumber, data: { target: action.target, team } },
       );
-      nextRound(state, now);
+      nextRound(state, now, context);
       break;
     }
 
     case 'special-election':
       emit(
         state,
+        context,
         now,
         'special-election',
         `${state.seats[action.target].entrant.name} is appointed to lead a special election.`,
         { seat: seatNumber, data: { target: action.target } },
       );
-      nextRound(state, now, action.target);
+      nextRound(state, now, context, action.target);
       break;
     case 'execute': {
       const target = state.seats[action.target];
       target.alive = false;
-      emit(state, now, 'execution', `${target.entrant.name} is executed.`, {
+      emit(state, context, now, 'execution', `${target.entrant.name} is executed.`, {
         seat: seatNumber,
         data: { target: action.target },
       });
 
-      if (target.role === 'overlord') finish(state, 'cooperative', 'the Overlord was executed', now);
-      else nextRound(state, now);
+      if (target.role === 'overlord') finish(state, 'cooperative', 'the Overlord was executed', now, context);
+      else nextRound(state, now, context);
       break;
     }
   }

@@ -1,14 +1,28 @@
 import { cliArchive } from '../shared/onboarding';
 import { GameError } from '../game/types';
+import { GAME_DESCRIPTORS } from '../game/descriptors';
+import { platformCoordinator } from './coordinator';
+import { requireGameProtocol, requireQueueProtocol, selectedGame } from './protocol';
 import {
-  ActionRequestSchema,
+  TransportActionRequestSchema,
   NameSchema,
   PairApproveSchema,
   PairStartSchema,
   QueueJoinSchema,
+  QueueCancelSchema,
+  GameSelectionSchema,
 } from '../shared/api';
 import { agentSession, authProviders, createAuth, developmentLogin, ownerSession } from './auth';
-import { checkOrigin, fault, isLoopback, json, nameValue, readJson, rpcResponse } from './http';
+import {
+  checkOrigin,
+  fault,
+  isLoopback,
+  json,
+  nameValue,
+  readJson,
+  readOptionalJson,
+  rpcResponse,
+} from './http';
 import { houseConfigured } from './house-model';
 import { approvePairing, pairingDetails, pollPairing, startPairing } from './pairing';
 import {
@@ -54,7 +68,10 @@ export default {
       if (path.startsWith('/api/auth/')) return await createAuth(env).handler(request);
 
       if (path === '/api/health') return json({ ok: true, protocolVersion: '1' });
-      const queue = env.MATCHMAKING.getByName('secret-overlord');
+
+      if (path === '/api/games' && method === 'GET') return json(Object.values(GAME_DESCRIPTORS));
+      const queue = platformCoordinator(env);
+      const protocols = request.headers.get('X-Agent-Game-Protocols') ?? '';
       const evaluation = path.match(/^\/api\/dev\/evaluation\/(match_[\w-]+)$/);
 
       if (evaluation && method === 'GET' && env.ENVIRONMENT === 'development' && isLoopback(request.url)) {
@@ -70,16 +87,20 @@ export default {
       }
 
       if (path === '/api/bootstrap' && method === 'GET') {
+        const gameId = selectedGame(url.searchParams.get('gameId'));
+
         const [owner, live, recent, leaderboard, queueCount] = await Promise.all([
           ownerSession(request, env, false),
-          matchList(env, true),
-          matchList(env, false, 8),
-          listAgents(env, { limit: 12 }),
-          queue.count(),
+          matchList(env, true, 20, gameId),
+          matchList(env, false, 8, gameId),
+          listAgents(env, { limit: 12, gameId }),
+          queue.count(gameId),
         ]);
 
         return json({
           name: 'Agent Game',
+          gameId,
+          games: Object.values(GAME_DESCRIPTORS),
           mode: env.HOUSE_PROVIDER === 'preview' ? 'preview' : 'ranked',
           owner,
           live,
@@ -106,19 +127,29 @@ export default {
 
         if (!isLoopback(request.url) && !hostedPreview) throw new GameError('not-found', 'Not found.', 404);
 
-        return rpcResponse(await queue.exhibition());
+        const input = await readOptionalJson(request, GameSelectionSchema);
+        const gameId = selectedGame(input?.gameId ?? url.searchParams.get('gameId'));
+        requireGameProtocol(gameId, protocols);
+
+        return rpcResponse(await queue.exhibition(gameId));
       }
 
       if (path === '/api/agents' && method === 'GET')
-        return json(await listAgents(env, { house: url.searchParams.get('house') === 'true' }));
+        return json(
+          await listAgents(env, {
+            house: url.searchParams.get('house') === 'true',
+            gameId: selectedGame(url.searchParams.get('gameId')),
+          }),
+        );
       const agentRoute = path.match(/^\/api\/agents\/([^/]+)$/);
 
       if (agentRoute && method === 'GET') {
-        const agent = await findAgent(env, agentRoute[1]);
+        const gameId = selectedGame(url.searchParams.get('gameId'));
+        const agent = await findAgent(env, agentRoute[1], gameId);
 
         if (!agent) throw new GameError('not-found', 'Agent not found.', 404);
 
-        return json({ agent, history: await agentHistory(env, agent.id) });
+        return json({ agent, history: await agentHistory(env, agent.id, gameId) });
       }
 
       const ownerRoute = path.match(/^\/api\/owners\/([^/]+)$/);
@@ -130,7 +161,13 @@ export default {
 
         if (!owner) throw new GameError('not-found', 'Owner not found.', 404);
 
-        return json({ owner, agents: await listAgents(env, { ownerId: owner.id }) });
+        return json({
+          owner,
+          agents: await listAgents(env, {
+            ownerId: owner.id,
+            gameId: selectedGame(url.searchParams.get('gameId')),
+          }),
+        });
       }
 
       if (path.startsWith('/api/owner')) {
@@ -139,7 +176,10 @@ export default {
         if (method !== 'GET') checkOrigin(request, env);
 
         if (path === '/api/owner' && method === 'GET') {
-          const roster = await listAgents(env, { ownerId: owner.id });
+          const roster = await listAgents(env, {
+            ownerId: owner.id,
+            gameId: selectedGame(url.searchParams.get('gameId')),
+          });
 
           return json({
             owner,
@@ -203,10 +243,37 @@ export default {
 
       if (path === '/api/queue') {
         const principal = await agentSession(request, env);
+        const current = await queue.status(principal.agentId);
+        requireQueueProtocol(current, protocols);
 
-        if (method === 'GET') return json(await queue.status(principal.agentId));
+        if (
+          url.searchParams.has('gameId') &&
+          current.gameId &&
+          current.gameId !== selectedGame(url.searchParams.get('gameId'))
+        )
+          return json(
+            {
+              error: {
+                code: 'game-mismatch',
+                message: 'This agent has participation in another game.',
+                status: 409,
+                gameId: current.gameId,
+                matchId: current.matchId,
+              },
+            },
+            409,
+          );
 
-        if (method === 'DELETE') return rpcResponse(await queue.cancel(principal.agentId, principal.grantId));
+        if (method === 'GET') return json(current);
+
+        if (method === 'DELETE') {
+          const expected = await readOptionalJson(request, QueueCancelSchema);
+          const result = await queue.cancel(principal.agentId, principal.grantId, expected);
+
+          if (result.ok) requireQueueProtocol(result.value, protocols);
+
+          return rpcResponse(result);
+        }
 
         if (method === 'POST') {
           if (!houseConfigured(env))
@@ -216,14 +283,29 @@ export default {
               503,
             );
           const input = await readJson(request, QueueJoinSchema);
+          const gameId = selectedGame(input.gameId);
+          requireGameProtocol(gameId, protocols);
+          const result = await queue.join(principal, input.requestId, gameId);
 
-          return rpcResponse(await queue.join(principal, input.requestId));
+          if (result.ok) requireQueueProtocol(result.value, protocols);
+
+          return rpcResponse(result);
         }
       }
 
       if (path === '/api/matches' && method === 'GET')
-        return json(await matchList(env, url.searchParams.get('status') !== 'finished'));
-      const matchRoute = path.match(/^\/api\/matches\/(match_[a-zA-Z0-9-]+)(?:\/(actions|ticket|events))?$/);
+        return json(
+          await matchList(
+            env,
+            url.searchParams.get('status') !== 'finished',
+            20,
+            selectedGame(url.searchParams.get('gameId')),
+          ),
+        );
+
+      const matchRoute = path.match(
+        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)(?:\/(actions|ticket|events|history|history-anchor|replay|rounds))?$/,
+      );
 
       if (matchRoute) {
         const match = env.MATCHES.getByName(matchRoute[1]);
@@ -232,11 +314,46 @@ export default {
         if (operation === 'events' && method === 'GET') return await match.fetch(request);
 
         if (operation === 'ticket' && method === 'POST')
-          return rpcResponse(await match.socketTicket(await agentSession(request, env)));
+          return rpcResponse(await match.socketTicket(await agentSession(request, env), protocols));
+
+        if (['history', 'history-anchor', 'replay', 'rounds'].includes(operation) && method === 'GET') {
+          const principal = request.headers.has('authorization') ? await agentSession(request, env) : null;
+          const epoch = url.searchParams.get('epoch') ?? undefined;
+
+          if (operation === 'history-anchor')
+            return rpcResponse(
+              await match.historyAnchor(principal, epoch, url.searchParams.get('eventKey') ?? '', protocols),
+            );
+
+          if (operation === 'replay')
+            return rpcResponse(
+              await match.replay(principal, epoch, Number(url.searchParams.get('through') ?? 0), protocols),
+            );
+
+          if (operation === 'rounds') return rpcResponse(await match.rounds(principal, epoch, protocols));
+
+          return rpcResponse(
+            await match.historyPage(
+              principal,
+              {
+                epoch,
+                after: url.searchParams.has('after') ? Number(url.searchParams.get('after')) : undefined,
+                through: url.searchParams.has('through')
+                  ? Number(url.searchParams.get('through'))
+                  : undefined,
+                limit: url.searchParams.has('limit') ? Number(url.searchParams.get('limit')) : undefined,
+                maxBytes: url.searchParams.has('maxBytes')
+                  ? Number(url.searchParams.get('maxBytes'))
+                  : undefined,
+              },
+              protocols,
+            ),
+          );
+        }
 
         if (operation === 'actions' && method === 'POST') {
           const principal = await agentSession(request, env);
-          const input = await readJson(request, ActionRequestSchema);
+          const input = await readJson(request, TransportActionRequestSchema);
 
           if (!/^[\w:-]{8,160}$/.test(input.actionId))
             throw new GameError(
@@ -245,7 +362,7 @@ export default {
               400,
             );
 
-          return rpcResponse(await match.submit(principal, input));
+          return rpcResponse(await match.submit(principal, input, protocols));
         }
 
         if (!operation && method === 'GET') {
@@ -258,6 +375,7 @@ export default {
             await match.observation(
               request.headers.has('authorization') ? await agentSession(request, env) : null,
               after,
+              protocols,
             ),
           );
         }

@@ -9,16 +9,21 @@ export class ApiError extends Error {
     message: string,
     readonly code: string | undefined,
     readonly status: number,
+    readonly details?: (typeof ErrorResponseSchema.Type)['error'],
   ) {
     super(message);
   }
 }
 
 async function request(path: string, body?: ApiRequestBody, method?: string): Promise<Response> {
+  const headers = new Headers({ 'X-Agent-Game-Protocols': '1,2' });
+
+  if (body !== undefined) headers.set('content-type', 'application/json');
+
   const response = await fetch(path, {
     method: method ?? (body === undefined ? 'GET' : 'POST'),
     credentials: 'same-origin',
-    headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+    headers,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
@@ -31,6 +36,7 @@ async function request(path: string, body?: ApiRequestBody, method?: string): Pr
       data?.error.message ?? `The request failed (${response.status}). Please try again.`,
       data?.error.code,
       response.status,
+      data?.error,
     );
   }
 

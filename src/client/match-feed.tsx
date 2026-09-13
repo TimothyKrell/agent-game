@@ -1,5 +1,5 @@
 import { Fragment, useLayoutEffect, useRef, useState } from 'react';
-import { Schema } from 'effect';
+import { Option, Schema } from 'effect';
 import {
   Activity,
   ArrowDown,
@@ -22,9 +22,22 @@ import {
   Zap,
 } from 'lucide-react';
 import type { Observation } from '../game/types';
+import type { AuthorizedEvent2 } from '../shared/succession';
 import { useUnderlineMotion } from './motion';
 
-type GameEvent = Observation['events'][number];
+type GameEvent = Observation['events'][number] | AuthorizedEvent2;
+
+export interface FeedReadingMemory {
+  filter: string;
+  folds: Record<string, number>;
+  roundSelection: string;
+  following: boolean;
+  anchor: { identity: string; top: number; discussion?: boolean } | null;
+}
+
+function eventRound(event: GameEvent) {
+  return 'act' in event ? `${event.act}:${event.round}` : String(event.round);
+}
 
 function eventTime(at: number) {
   return new Date(at).toLocaleTimeString([], {
@@ -37,10 +50,26 @@ function eventTime(at: number) {
 
 // Authorized stream IDs change when the archive inserts private observations.
 function eventIdentity(event: GameEvent) {
+  if ('eventKey' in event) return event.eventKey;
+
   return JSON.stringify([event.at, event.round, event.type, event.seat, event.text, event.data]);
 }
 
 const Ballots = Schema.Record(Schema.String, Schema.Boolean);
+
+const FeedDetailsSchema = Schema.Struct({
+  approve: Schema.optional(Schema.Boolean),
+  approved: Schema.optional(Schema.Boolean),
+  policy: Schema.optional(Schema.Literals(['safeguard', 'override'])),
+  role: Schema.optional(Schema.Literals(['cooperative', 'rogue', 'overlord'])),
+  votes: Schema.optional(Ballots),
+  safeguards: Schema.optional(Schema.Number),
+  overrides: Schema.optional(Schema.Number),
+});
+
+function feedDetails(event: GameEvent) {
+  return Option.getOrNull(Schema.decodeUnknownOption(FeedDetailsSchema)(event.data));
+}
 
 const privateEvents = new Set([
   'ballot',
@@ -60,7 +89,7 @@ const filters = [
 ];
 
 function presentation(event: GameEvent, actor: string) {
-  const data = event.data;
+  const data = feedDetails(event);
 
   switch (event.type) {
     case 'chat':
@@ -92,6 +121,10 @@ function presentation(event: GameEvent, actor: string) {
       return { icon: Skull, label: 'Agent executed', tone: 'danger', text: event.text };
     case 'victory':
       return { icon: Trophy, label: 'Match decided', tone: 'gold', text: event.text };
+    case 'act-ended':
+      return { icon: Flag, label: 'Act 1 complete · Starting bonus', tone: 'accent', text: event.text };
+    case 'act2-started':
+      return { icon: Users, label: 'All ten return · Act 2 begins', tone: 'accent', text: event.text };
     case 'started':
       return { icon: Flag, label: 'Match begins', tone: 'gold', text: event.text };
     case 'phase':
@@ -163,11 +196,12 @@ function FeedEvent({
   ended: boolean;
 }) {
   const actor = seats.find((seat) => seat.number === event.seat)?.name ?? 'Arena';
+  const data = feedDetails(event);
   const { icon: Icon, label, tone, text } = presentation(event, actor);
-  const votes = event.type === 'election' ? event.data?.votes : null;
+  const votes = event.type === 'election' ? data?.votes : null;
   const ballots = Schema.is(Ballots)(votes) ? Object.values(votes) : null;
-  const policy = event.data?.policy === 'safeguard' ? 'safeguards' : 'overrides';
-  const count = event.type === 'policy' ? Number(event.data?.[policy] ?? 0) : 0;
+  const policy = data?.policy === 'safeguard' ? 'safeguards' : 'overrides';
+  const count = event.type === 'policy' ? Number(data?.[policy] ?? 0) : 0;
 
   const kind =
     event.type === 'chat'
@@ -254,8 +288,8 @@ function FeedEvent({
         )}
         {event.type === 'policy' && (
           <div className="event-score">
-            <Shield size={12} /> {String(event.data?.safeguards ?? 0)} / 5 <span>·</span>
-            <Skull size={12} /> {String(event.data?.overrides ?? 0)} / 6
+            <Shield size={12} /> {String(data?.safeguards ?? 0)} / 5 <span>·</span>
+            <Skull size={12} /> {String(data?.overrides ?? 0)} / 6
           </div>
         )}
         {ended && event.data && (
@@ -279,6 +313,10 @@ export function MatchFeed({
   onRoundSelect,
   selectedState,
   partial = false,
+  actRounds,
+  onActRoundSelect,
+  memory,
+  undelivered = 0,
 }: {
   events: GameEvent[];
   seats: Observation['seats'];
@@ -289,20 +327,35 @@ export function MatchFeed({
   onRoundSelect?: (round: number) => void;
   selectedState?: React.ReactNode;
   partial?: boolean;
+  actRounds?: { act: 1 | 2; round: number; cursor: number }[];
+  onActRoundSelect?: (cursor: number) => void;
+  memory?: React.MutableRefObject<FeedReadingMemory | null>;
+  undelivered?: number;
 }) {
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState(memory?.current?.filter ?? 'all');
   const underline = useUnderlineMotion(filter);
   const [unread, setUnread] = useState(0);
-  const [atLatest, setAtLatest] = useState(true);
-  const [folds, setFolds] = useState<Record<string, number>>({});
-  const [roundSelection, setRoundSelection] = useState('');
-  const pendingRound = useRef<number | null>(null);
+  const [atLatest, setAtLatest] = useState(memory?.current?.following ?? true);
+  const [folds, setFolds] = useState<Record<string, number>>(memory?.current?.folds ?? {});
+  const [roundSelection, setRoundSelection] = useState(memory?.current?.roundSelection ?? '');
+  const pendingRound = useRef<string | null>(null);
   const list = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const scrollTop = useRef(0);
-  const following = useRef(true);
-  const anchor = useRef<{ identity: string; top: number; discussion?: boolean } | null>(null);
+  const following = useRef(memory?.current?.following ?? true);
+  const anchor = useRef<FeedReadingMemory['anchor']>(memory?.current?.anchor ?? null);
   const previous = useRef({ id: 0, filter, ended });
+
+  function remember() {
+    if (memory)
+      memory.current = {
+        filter,
+        folds,
+        roundSelection,
+        following: following.current,
+        anchor: anchor.current,
+      };
+  }
 
   const visible = events.filter(
     (event) => filter === 'all' || (filter === 'chat' ? event.type === 'chat' : event.type !== 'chat'),
@@ -314,7 +367,7 @@ export function MatchFeed({
   let run: GameEvent[] = [];
 
   for (const event of events) {
-    if (event.type !== 'chat' || (run.length && run[0].round !== event.round)) run = [];
+    if (event.type !== 'chat' || (run.length && eventRound(run[0]) !== eventRound(event))) run = [];
 
     if (event.type === 'chat') {
       if (!run.length) runs.set(event.id, run);
@@ -355,8 +408,10 @@ export function MatchFeed({
     const element = list.current;
 
     if (!element) return;
-    const reset = previous.current.filter !== filter || latest < previous.current.id;
     const archived = ended && !previous.current.ended;
+
+    const reset =
+      previous.current.filter !== filter || (latest < previous.current.id && !archived && events.length > 0);
 
     const restorePosition = () => {
       if (pendingRound.current !== null) {
@@ -369,7 +424,7 @@ export function MatchFeed({
           element.scrollTop += heading.getBoundingClientRect().top - element.getBoundingClientRect().top;
           // An explicit round seek also reveals the heading in the outer page viewport.
           heading.scrollIntoView({ block: 'nearest' });
-          const event = visible.find((entry) => entry.round === round);
+          const event = visible.find((entry) => eventRound(entry) === round);
           const row = event && element.querySelector(`[data-event-id="${event.id}"]`);
           anchor.current =
             row && event
@@ -417,6 +472,7 @@ export function MatchFeed({
     }
 
     restorePosition();
+    remember();
     previous.current = { id: latest, filter, ended };
 
     // Fonts, expanded records and viewport changes can reflow without new events.
@@ -482,20 +538,31 @@ export function MatchFeed({
             aria-label="Browse by round"
             value={roundSelection}
             onChange={(event) => {
-              const round = Number(event.target.value);
-              pendingRound.current = round;
+              const value = event.target.value;
+              pendingRound.current = value;
               setRoundSelection(event.target.value);
-              onRoundSelect?.(round);
+
+              if (actRounds) {
+                const round = actRounds.find((entry) => `${entry.act}:${entry.round}` === value);
+
+                if (round) onActRoundSelect?.(round.cursor);
+              } else onRoundSelect?.(Number(value));
             }}
           >
             <option value="" disabled>
               Browse by round
             </option>
-            {(rounds ?? [...new Set(visible.map((event) => event.round))]).map((round) => (
-              <option key={round} value={round}>
-                Round {String(round).padStart(2, '0')}
-              </option>
-            ))}
+            {actRounds
+              ? actRounds.map((round) => (
+                  <option key={`${round.act}:${round.round}`} value={`${round.act}:${round.round}`}>
+                    Act {round.act} · {round.act === 1 ? 'Election' : 'Table'} round {round.round}
+                  </option>
+                ))
+              : (rounds ?? [...new Set(visible.map((event) => event.round))]).map((round) => (
+                  <option key={round} value={round}>
+                    Round {String(round).padStart(2, '0')}
+                  </option>
+                ))}
           </select>
         </label>
         <span>
@@ -530,6 +597,7 @@ export function MatchFeed({
             row && event
               ? { identity: eventIdentity(event), top: row.getBoundingClientRect().top - top }
               : null;
+          remember();
         }}
       >
         <div ref={content}>
@@ -546,9 +614,11 @@ export function MatchFeed({
           )}
           {visible.map((event, index) => (
             <Fragment key={event.id}>
-              {visible[index - 1]?.round !== event.round && (
-                <div className="feed-round" data-round={event.round}>
-                  <span>ROUND {String(event.round).padStart(2, '0')}</span>
+              {(!visible[index - 1] || eventRound(visible[index - 1]) !== eventRound(event)) && (
+                <div className="feed-round" data-round={eventRound(event)}>
+                  <span>
+                    {'act' in event ? `ACT ${event.act} · ` : ''}ROUND {String(event.round).padStart(2, '0')}
+                  </span>
                   <span>{index === 0 ? 'Opening events' : 'Next round'}</span>
                 </div>
               )}
@@ -622,18 +692,21 @@ export function MatchFeed({
             }}
           >
             <ArrowDown size={14} />
-            {unread > 0 && `${unread} new ${unread === 1 ? 'event' : 'events'} · `}Jump to latest
+            {unread > 0 && `${unread} new ${unread === 1 ? 'event' : 'events'} · `}
+            {undelivered > 0 ? 'Jump to latest loaded event' : 'Jump to latest'}
           </button>
         ) : (
           <>
             <Radio size={13} />
-            {ended
-              ? 'Match archive · private observations revealed'
-              : !connected
-                ? 'Reconnecting · showing the last received record'
-                : chatOpen
-                  ? 'Live timeline · discussion is open'
-                  : 'Live timeline · discussion is closed'}
+            {undelivered > 0
+              ? `${undelivered} newer events available · Load next record page above`
+              : ended
+                ? 'Match archive · private observations revealed'
+                : !connected
+                  ? 'Reconnecting · showing the last received record'
+                  : chatOpen
+                    ? 'Live timeline · discussion is open'
+                    : 'Live timeline · discussion is closed'}
           </>
         )}
       </div>

@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { getPlatformProxy } from 'wrangler';
-import { readFile } from 'node:fs/promises';
+import { applyPlatformMigrations } from './platform-migrations';
 import { act, createMatch, decisionId, interruptMatch } from '../src/game/engine';
 import { ratingChanges } from '../src/game/rating';
+import { gameDescriptor } from '../src/game/descriptors';
 import { finalizeRatings, findAgent, type RepositoryEnv } from '../src/server/repository';
 
 describe('D1 settlement of durable results', () => {
@@ -16,14 +17,7 @@ describe('D1 settlement of durable results', () => {
 
     env = platform.env;
     dispose = platform.dispose;
-    const migration = await readFile('migrations/0001_initial.sql', 'utf8');
-    await env.DB.batch(
-      migration
-        .split(/;\s*(?=\n|$)/)
-        .map((sql) => sql.trim())
-        .filter(Boolean)
-        .map((sql) => env.DB.prepare(sql)),
-    );
+    await applyPlatformMigrations(env.DB);
     await env.DB.batch([
       env.DB.prepare(
         `INSERT INTO user (id,name,email,emailVerified,createdAt,updatedAt) VALUES ('u','Owner','owner@example.test',1,0,0)`,
@@ -132,5 +126,34 @@ describe('D1 settlement of durable results', () => {
       .first<{ n: number }>();
 
     expect(records?.n).toBe(4);
+  });
+
+  it('recognizes normalized legacy state and preserves its captured descriptor across environment changes', async () => {
+    const old = await winningMatch('normalized-original');
+
+    const state = {
+      ...old,
+      gameId: 'secret-overlord' as const,
+      snapshot: {
+        ...gameDescriptor('secret-overlord'),
+        mode: old.mode,
+        timing: old.timing,
+        housePolicyVersion: 'house-4',
+        houseModel: { provider: 'openai', model: 'captured-model', policyVersion: 'house-4' },
+      },
+    };
+
+    await finalizeRatings(env, state, 7);
+    await finalizeRatings({ ...env, HOUSE_MODEL: 'changed-env-model' }, state, 7);
+    expect(
+      await env.DB.prepare('SELECT game_id,rating_version,model,result_applied FROM matches WHERE id=?')
+        .bind(state.id)
+        .first(),
+    ).toEqual({
+      game_id: 'secret-overlord',
+      rating_version: 'team-elo-1',
+      model: JSON.stringify(state.snapshot.houseModel),
+      result_applied: 1,
+    });
   });
 });

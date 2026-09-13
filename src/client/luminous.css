@@ -560,13 +560,31 @@ button:disabled {
   height: auto;
 }
 .deco-flourish {
+  --flourish-width: 145px;
   position: absolute;
-  right: 0;
-  bottom: -16px;
-  width: 145px;
-  height: 42px;
+  left: 0;
+  right: 4px;
+  bottom: -0.5px;
+  transform: translateY(50%);
+  width: calc(100% - 4px);
+  height: 52px;
   color: var(--teal);
-  background: var(--bg);
+  overflow: visible;
+  pointer-events: none;
+}
+.deco-rule {
+  width: calc(100% - var(--flourish-width));
+  height: 52px;
+}
+.deco-ornament {
+  width: var(--flourish-width);
+  height: 52px;
+  x: calc(100% - var(--flourish-width));
+  overflow: visible;
+}
+.decorated,
+.selected-intro {
+  border-bottom-color: transparent;
 }
 .selected-match .policy-tracks {
   padding: 0;

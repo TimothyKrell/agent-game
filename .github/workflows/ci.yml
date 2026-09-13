@@ -24,29 +24,133 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - run: npm run lint -- --deny-warnings
-      - run: npm run format:check
-      - run: npm run typecheck
-      - run: npm run build
-      - run: npm test
-      - run: npm run test:api
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
-      - run: npx wrangler deploy --dry-run
-      - name: Save build and browser diagnostics
+      - run: npm run lint -- --deny-warnings 2>&1 | tee lint.log
+        shell: bash
+      - run: npm run format:check 2>&1 | tee format.log
+        shell: bash
+      - run: npm run typecheck 2>&1 | tee typecheck.log
+        shell: bash
+      - run: npm run build 2>&1 | tee build.log
+        shell: bash
+      - run: npx wrangler deploy --dry-run 2>&1 | tee dry-run.log
+        shell: bash
+      - name: Save build diagnostics
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: build-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             dist/client
+            lint.log
+            format.log
+            typecheck.log
+            build.log
+            dry-run.log
+          retention-days: 7
+
+  unit:
+    name: Unit and Worker tests (${{ matrix.shard }}/3)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npm run build
+      - name: Exercise complete unit inventory shard
+        shell: bash
+        env:
+          SUCCESSION_BOUNDS_RESULTS_PATH: succession-worker-bounds-results.json
+        run: |
+          node -e 'const os = require("node:os"); console.log(JSON.stringify({ node: process.version, cpus: os.availableParallelism(), memoryBytes: os.totalmem(), workers: 1 }))' | tee unit.log
+          npm test -- --shard=${{ matrix.shard }}/3 --maxWorkers=1 --reporter=verbose --reporter=json --outputFile.json=unit-results.json 2>&1 | tee -a unit.log
+      - name: Save unit and actual-host evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: unit-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            unit.log
+            unit-results.json
+            succession-worker-bounds-results.json
+            /tmp/opencode/succession-worker-small-baseline-*.json
+          retention-days: 7
+
+  api:
+    name: API and recovery tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npm run build
+      - run: npm run test:api -- --reporter=verbose --reporter=json --outputFile.json=api-results.json 2>&1 | tee api.log
+        shell: bash
+      - name: Save API diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: api-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            api.log
+            api-results.json
+          retention-days: 7
+
+  browser:
+    name: Browser and motion tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser 2>&1 | tee browser.log
+        shell: bash
+      - name: Save browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            browser.log
             test-results
             playwright-report
           retention-days: 7
 
+  provider:
+    name: Verify production provider transport
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npm run build
+      - name: Exercise actual house runners against the local synthetic provider
+        shell: bash
+        run: npm run test:provider 2>&1 | tee provider-verification.log
+      - name: Save provider verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: provider-${{ github.run_id }}-${{ github.run_attempt }}
+          path: provider-verification.log
+          retention-days: 7
+
   production:
     name: Deploy production
-    needs: verify
+    needs: [verify, unit, api, browser, provider]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -85,6 +189,7 @@ jobs:
           HOUSE_MODEL: ${{ vars.HOUSE_MODEL }}
           HOUSE_DAILY_BUDGET_USD: ${{ vars.HOUSE_DAILY_BUDGET_USD }}
           HOUSE_MATCH_RESERVATION_USD: ${{ vars.HOUSE_MATCH_RESERVATION_USD }}
+          HOUSE_SUCCESSION_MATCH_RESERVATION_USD: ${{ vars.HOUSE_SUCCESSION_MATCH_RESERVATION_USD }}
           MAX_CONCURRENT_MATCHES: ${{ vars.MAX_CONCURRENT_MATCHES }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           GITHUB_CLIENT_ID: ${{ secrets.OAUTH_GITHUB_CLIENT_ID }}
@@ -113,7 +218,7 @@ jobs:
 
   preview:
     name: Deploy preview
-    needs: verify
+    needs: [verify, unit, api, browser, provider]
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -191,3 +296,11 @@ jobs:
         run: node scripts/preview-comment.mjs deployed
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Save both-game preview evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: preview-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .agent-game/preview-smoke.json
+          include-hidden-files: true
+          retention-days: 30

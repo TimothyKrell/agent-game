@@ -1,0 +1,255 @@
+{
+  "approvedAt": "2026-09-13T15:41:21.025163+00:00",
+  "decision": "PASS \u2014 Succession application visual gate",
+  "captureSource": "bdc7172bec4e4d17a7ff3d460e7ba23a63bc0016",
+  "approvedIntegratedHead": "9c68e7a42fc4e34daef15cdfc87bfad8c6818e7f",
+  "base": "b013563",
+  "frozenInventory": {
+    "path": "implementation-review/bdc7172/evidence/inventory.json",
+    "sha256": "d5a54996e91bcdf699dcfd93624d7f101a5c41c1009379ae240081cb1642ccd5",
+    "verifiedArtifacts": 79
+  },
+  "previousFrozenArtifactCounts": [
+    128,
+    62
+  ],
+  "integration": {
+    "clientSharedDeltaSha256": "02f9be29a0cb512ad5a46d04a4f5f9ec88b7c4fa4793a4713d18ef3f449507b8",
+    "equalsReviewedOnboardingSupplement": true,
+    "previousHead": "1a920d5e78e997fe090849b2ac0c9a860b694491",
+    "emptyPresentationPublicPackageDeltaToApprovedHead": true,
+    "assets": [
+      {
+        "path": "index-DBOoobtC.js",
+        "bytes": 442154,
+        "sha256": "1e273e1e5a529d123740536fe8c5274c1c30b54866e8f896922de85f5670b817"
+      },
+      {
+        "path": "index-DDog0Idy.css",
+        "bytes": 103981,
+        "sha256": "7613fcd0243ce9c26207c619c2076869edc57cb9850f72bc4f374b84e66d2cae"
+      }
+    ]
+  },
+  "closedFindings": [
+    "SU01",
+    "SU02",
+    "SU03",
+    "SU04 presentation and growing-page proof",
+    "SU05",
+    "SU06 required and supplemental matrices",
+    "SU07",
+    "issue #6 Design presentation",
+    "SM01",
+    "SM02",
+    "SM03"
+  ],
+  "motion": {
+    "actualVideoFPS": 25,
+    "viewportStablePerContext": true,
+    "motionMatrixTraceChecks": [
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "preference": "no-preference",
+        "pickerCalls": 7,
+        "firstResultCalls": 2,
+        "replayCalls": 0,
+        "allCalls": 11,
+        "rapidIntervalsMs": [
+          63,
+          62,
+          62
+        ],
+        "activeBoundaries": []
+      },
+      {
+        "viewport": {
+          "width": 1600,
+          "height": 1120
+        },
+        "preference": "no-preference",
+        "pickerCalls": 7,
+        "firstResultCalls": 2,
+        "replayCalls": 0,
+        "allCalls": 15,
+        "rapidIntervalsMs": [
+          100,
+          99,
+          88
+        ],
+        "activeBoundaries": [
+          {
+            "boundary": "reduced",
+            "activeBefore": 2,
+            "runningAfter": 0,
+            "runningRestored": 0,
+            "restoreDwellMs": 2033,
+            "hoverReadyAfterRestore": null
+          },
+          {
+            "boundary": "hidden",
+            "activeBefore": 2,
+            "runningAfter": 0,
+            "runningRestored": 0,
+            "restoreDwellMs": 2034,
+            "hoverReadyAfterRestore": null
+          }
+        ]
+      },
+      {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "preference": "no-preference",
+        "pickerCalls": 7,
+        "firstResultCalls": 2,
+        "replayCalls": 0,
+        "allCalls": 11,
+        "rapidIntervalsMs": [
+          67,
+          64,
+          62
+        ],
+        "activeBoundaries": []
+      },
+      {
+        "viewport": {
+          "width": 320,
+          "height": 844
+        },
+        "preference": "no-preference",
+        "pickerCalls": 7,
+        "firstResultCalls": 2,
+        "replayCalls": 0,
+        "allCalls": 15,
+        "rapidIntervalsMs": [
+          65,
+          62,
+          63
+        ],
+        "activeBoundaries": [
+          {
+            "boundary": "reduced",
+            "activeBefore": 2,
+            "runningAfter": 0,
+            "runningRestored": 0,
+            "restoreDwellMs": 2051,
+            "hoverReadyAfterRestore": null
+          },
+          {
+            "boundary": "hidden",
+            "activeBefore": 2,
+            "runningAfter": 0,
+            "runningRestored": 0,
+            "restoreDwellMs": 2031,
+            "hoverReadyAfterRestore": null
+          }
+        ]
+      },
+      {
+        "viewport": {
+          "width": 1600,
+          "height": 1120
+        },
+        "preference": "reduce",
+        "pickerCalls": 0,
+        "firstResultCalls": 0,
+        "replayCalls": 0,
+        "allCalls": 0,
+        "rapidIntervalsMs": [
+          66,
+          65,
+          65
+        ],
+        "activeBoundaries": []
+      },
+      {
+        "viewport": {
+          "width": 320,
+          "height": 844
+        },
+        "preference": "reduce",
+        "pickerCalls": 0,
+        "firstResultCalls": 0,
+        "replayCalls": 0,
+        "allCalls": 0,
+        "rapidIntervalsMs": [
+          69,
+          64,
+          64
+        ],
+        "activeBoundaries": []
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "preference": "reduce",
+        "pickerCalls": 0,
+        "firstResultCalls": 0,
+        "replayCalls": 0,
+        "allCalls": 0,
+        "rapidIntervalsMs": [
+          62,
+          64,
+          66
+        ],
+        "activeBoundaries": []
+      },
+      {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "preference": "reduce",
+        "pickerCalls": 0,
+        "firstResultCalls": 0,
+        "replayCalls": 0,
+        "allCalls": 0,
+        "rapidIntervalsMs": [
+          65,
+          64,
+          63
+        ],
+        "activeBoundaries": []
+      }
+    ],
+    "visibilityBoundary": "SIMULATED via existing helper; real media-query subscription and native animation cancellation/consumption exercised",
+    "rawFramePTSRetained": true,
+    "decodedSelectedSceneFrames": 1183,
+    "nativeCueSheetFrames": 236,
+    "reviewMethod": "Frozen actual stills; native-speed recording overview and PTS-indexed native cue crops compared with native animation/action traces. No retiming."
+  },
+  "growingHistory": {
+    "authoritativePath": "growing-history-supplement",
+    "viewports": [
+      [
+        1600,
+        1120
+      ],
+      [
+        320,
+        844
+      ]
+    ],
+    "streamHead": 478,
+    "caughtUpRange": [
+      223,
+      478
+    ],
+    "cacheLimit": 256,
+    "earlierRange": [
+      191,
+      222
+    ],
+    "earlierUndelivered": 256,
+    "maximumRequestedPageLimit": 32,
+    "initialTwoGrowingClips": "Retained historical diagnostics; earlier control was not reached there"
+  },
+  "releaseGates": "CI, hosted preview and deployment remain lead/reviewer responsibilities; Design PASS does not represent their completion."
+}

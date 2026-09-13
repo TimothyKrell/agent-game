@@ -1,11 +1,13 @@
-import { mkdir, readFile, writeFile, chmod, copyFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile, chmod, copyFile, cp, readdir, rm } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 const source = JSON.parse(await readFile('package.json', 'utf8'));
 
-const directory = resolve('.agent-game/cli-package');
+await mkdir('.agent-game', { recursive: true });
+
+const directory = await mkdtemp(resolve('.agent-game/cli-package-'));
 
 for (const file of [
   'cli/agent-game.mjs',
@@ -13,11 +15,18 @@ for (const file of [
   'cli/setup.mjs',
   'skills/agent-game/SKILL.md',
   'public/rules.md',
+  'public/rating-method.md',
   'public/protocol.md',
 ]) {
   await mkdir(dirname(`${directory}/${file}`), { recursive: true });
   await copyFile(file, `${directory}/${file}`);
 }
+
+for (const file of await readdir('cli')) {
+  if (file.endsWith('.mjs')) await copyFile(`cli/${file}`, `${directory}/cli/${file}`);
+}
+
+await cp('public/games', `${directory}/public/games`, { recursive: true });
 
 await chmod(`${directory}/cli/agent-game.mjs`, 0o755);
 
@@ -42,6 +51,10 @@ const destination = resolve('public/downloads');
 
 await mkdir(destination, { recursive: true });
 
+for (const file of await readdir('cli/releases')) {
+  if (file.endsWith('.tgz')) await copyFile(`cli/releases/${file}`, `${destination}/${file}`);
+}
+
 const packed = await promisify(execFile)(
   'npm',
   ['pack', '--ignore-scripts', '--json', '--pack-destination', destination],
@@ -49,5 +62,7 @@ const packed = await promisify(execFile)(
 );
 
 const [artifact] = JSON.parse(packed.stdout);
+
+await rm(directory, { recursive: true, force: true });
 
 console.log(`CLI archive: /downloads/${artifact.filename} (${artifact.size} bytes)`);

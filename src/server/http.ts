@@ -1,7 +1,8 @@
 import { Schema } from 'effect';
 import { GameError } from '../game/types';
-import type { ActionRequest } from '../game/types';
-import type { RpcResult } from '../shared/api';
+import type { ActionRequest2 } from '../shared/succession';
+import type { ApiFault, RpcResult } from '../shared/api';
+import { ProtocolUpgradeError } from './protocol';
 
 export async function readJson<A, I>(
   request: Request,
@@ -11,11 +12,24 @@ export async function readJson<A, I>(
   if (!request.headers.get('content-type')?.includes('application/json'))
     throw new GameError('content-type', 'Use application/json.', 415);
 
+  const value = await readOptionalJson(request, schema, limit);
+
+  if (value === undefined) throw new GameError('invalid-json', 'A JSON body is required.', 400);
+
+  return value;
+}
+
+/** Empty proxy body streams preserve the existing bodyless queue and preview APIs. */
+export async function readOptionalJson<A, I>(
+  request: Request,
+  schema: Schema.Codec<A, I>,
+  limit = 16_384,
+): Promise<A | undefined> {
   if (Number(request.headers.get('content-length') ?? 0) > limit)
     throw new GameError('body-too-large', 'Request body is too large.', 413);
   const reader = request.body?.getReader();
 
-  if (!reader) throw new GameError('invalid-json', 'A JSON body is required.', 400);
+  if (!reader) return undefined;
   const chunks: Uint8Array[] = [];
   let size = 0;
 
@@ -36,6 +50,11 @@ export async function readJson<A, I>(
   } finally {
     reader.releaseLock();
   }
+
+  if (!size) return undefined;
+
+  if (!request.headers.get('content-type')?.includes('application/json'))
+    throw new GameError('content-type', 'Use application/json.', 415);
 
   const bytes = new Uint8Array(size);
   let offset = 0;
@@ -63,7 +82,10 @@ export function rpcResponse<T>(result: RpcResult<T>): Response {
   return result.ok ? json(result.value) : json({ error: result.error }, result.error.status);
 }
 
-export function fault(cause: unknown): { code: string; message: string; status: number } {
+export function fault(cause: unknown): ApiFault {
+  if (cause instanceof ProtocolUpgradeError)
+    return { code: cause.code, message: cause.message, status: cause.status, ...cause.details };
+
   return cause instanceof GameError
     ? { code: cause.code, message: cause.message, status: cause.status }
     : { code: 'internal', message: 'The operation could not be completed.', status: 500 };
@@ -122,8 +144,8 @@ export function checkOrigin(request: Request, env: Env): void {
   }
 }
 
-export function stableJson(request: ActionRequest): string {
-  // Actions have scalar fields; the envelope's only nested object is the action.
+export function stableJson<T extends { action: ActionRequest2['action'] }>(request: T): string {
+  // Preserve protocol-1 fingerprints exactly. Protocol-2 exchange pairs keep legal-choice order.
   const action = Object.fromEntries(Object.entries(request.action).sort(([a], [b]) => a.localeCompare(b)));
 
   return JSON.stringify(

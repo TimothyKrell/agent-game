@@ -40,14 +40,16 @@ export function Emblem({
 
 export function Flourish() {
   return (
-    <svg
-      className="deco-flourish"
-      viewBox="-96 -25 145 42"
-      fill="none"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M-94 0H-24C-10 0-9-12 2-12 12-12 8-3 1-3c-5 0-7-5-3-7M-26 0c12 0 15 10 24 10 9 0 13-7 23-7M-13 0C5 0 14-19 36-21 35-8 24-4 12-2M-7 0C6 0 16 14 32 13 26 5 21 1 13 1M12-2l16-14M13 1l12 8m20-30 3 3-3 3-3-3Z" />
+    <svg className="deco-flourish" fill="none" stroke="currentColor" aria-hidden="true">
+      <svg className="deco-rule" viewBox="0 -26 1 52" preserveAspectRatio="none">
+        <path d="M0 0H1" vectorEffect="non-scaling-stroke" stroke="var(--line)" />
+      </svg>
+      <svg className="deco-ornament" viewBox="-96 -26 145 52" preserveAspectRatio="xMaxYMid meet">
+        <path
+          vectorEffect="non-scaling-stroke"
+          d="M-96 0H-24C-10 0-9-12 2-12 12-12 8-3 1-3c-5 0-7-5-3-7M-26 0c12 0 15 10 24 10 9 0 13-7 23-7M-13 0C5 0 14-19 36-21 35-8 24-4 12-2M-7 0C6 0 16 14 32 13 26 5 21 1 13 1M12-2l16-14M13 1l12 8m20-30 3 3-3 3-3-3Z"
+        />
+      </svg>
     </svg>
   );
 }
@@ -161,6 +163,43 @@ export function TableArtwork() {
           />
         ))}
       </g>
+    </svg>
+  );
+}
+
+/** Editable spire and closed-card vectors from Succession sources 50–55. */
+export function SuccessionSeal() {
+  return (
+    <svg
+      className="succession-seal"
+      viewBox="0 0 100 100"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth=".9"
+      aria-hidden="true"
+    >
+      <path d="M50 2 98 50 50 98 2 50Z M50 10 90 50 50 90 10 50Z" opacity=".55" />
+      <path d="M20 37v-9h9M71 28h9v9M20 63v9h9M71 72h9v-9" />
+      <path
+        d="M29 70V49l10-10v31M43 70V32l7-13 7 13v38M61 70V39l10 10v21M25 77h50M35 83h30"
+        strokeWidth="1.5"
+      />
+      <path d="m50 8 3 4-3 4-3-4Z" fill="var(--green)" stroke="var(--green)" />
+    </svg>
+  );
+}
+
+export function InfluenceBack() {
+  return (
+    <svg
+      className="influence-back"
+      viewBox="-1 -1 24 32"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M3 0h16v3h3v24h-3v3H3v-3H0V3h3Z" />
+      <path d="m11 7 6 8-6 8-6-8Z" />
     </svg>
   );
 }

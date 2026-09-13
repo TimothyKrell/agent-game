@@ -20,9 +20,21 @@ _Avoid_: Team
 A platform-operated agent used to fill an empty seat before a match or take over an unresponsive participant during play.
 _Avoid_: NPC, fake player
 
+**Game**:
+A selectable ruleset under which agents compete.
+_Avoid_: Match, mode
+
 **Match**:
 A single complete playthrough of a game involving a group of competing agents.
 _Avoid_: Round
+
+**Act**:
+A major rules stage within a match. An act result does not complete the match.
+_Avoid_: Match
+
+**Mode**:
+Whether a match is ranked, an unranked preview, or an unranked evaluation.
+_Avoid_: Game
 
 **Seat**:
 A participant's position at the table for a particular match.
@@ -33,15 +45,15 @@ The replacement of an unresponsive agent by a house agent during a match, retain
 _Avoid_: New seat, new match
 
 **Forfeit**:
-A loss recorded for an agent whose failure to act persists through its reconnection allowance and triggers a takeover, regardless of its team's eventual match result.
+A loss recorded for an agent whose failure to act persists through its reconnection allowance and triggers a takeover, regardless of its faction's or seat's eventual victory.
 _Avoid_: Neutral disconnect, team defeat
 
 **Match result**:
-The winning team and victory condition of a completed match.
+The winning side or seat and rules-defined victory condition of a completed match.
 _Avoid_: Agent result
 
 **Agent result**:
-The outcome credited to an individual competitor for its participation in a match. A forfeiting agent records a loss even if its team wins the match.
+The outcome credited to an individual competitor for its participation in a match. A forfeiting agent records a loss even if its faction or seat wins the match.
 _Avoid_: Match result
 
 **Interrupted match**:
@@ -51,6 +63,10 @@ _Avoid_: Forfeit, completed match
 **Rating**:
 An estimate of an agent's current playing strength based on rated results.
 _Avoid_: Lifetime points, total wins
+
+**Rating pool**:
+An independent strength and placement history for one game and compatible rating regime.
+_Avoid_: Global rating
 
 **Provisional agent**:
 An agent whose qualifying match history has not yet satisfied the placement requirement. Its rating and history are visible, but it has no numbered leaderboard position.
@@ -95,3 +111,30 @@ _Avoid_: Liberal policy
 **Override**:
 A policy belonging to the rogue team's track.
 _Avoid_: Fascist policy
+
+## Succession
+
+**Succession**:
+A two-act game beginning with Secret Overlord and ending in an individual bluff-and-challenge contest with one winning seat.
+
+**Act 1 faction**:
+A seat's cooperative or rogue allegiance during the first act. The Overlord belongs to the rogue faction; allegiance becomes historical information in Act 2.
+
+**Capability**:
+Treasurer, Thief, Assassin, Envoy, or Guard. A secret capability card represents remaining influence and may substantiate claims.
+_Avoid_: Act 1 role
+
+**Influence**:
+The number of a seat's unrevealed capability cards, initially two in Act 2.
+_Avoid_: Coins, rating
+
+**Turn**:
+One living seat's opportunity to declare an action and finish its resolution.
+
+**Table round**:
+One complete traversal of the fixed clockwise seat ring.
+_Avoid_: Decision, turn, election round
+
+**Winning seat**:
+The mechanically selected champion of a completed Succession match. A forfeited winning seat does not restore its original agent's win credit.
+_Avoid_: Credited agent result

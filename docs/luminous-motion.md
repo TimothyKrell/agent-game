@@ -31,7 +31,7 @@ Responsive easing: `cubic-bezier(.2,.8,.2,1)`. Ceremonial easing: `cubic-bezier(
 
 Source companions are `motion/screens/44-motion-response.svg` and `45-motion-records.svg`, with visually inspected PNGs. Their source validation records **200 editable text layers**, no text overlaps and no content/page bounds violations.
 
-**Native Figma placement of frames 44–45 is pending editor authentication**, independently of implementation review. No native IDs/exports for these new companions are claimed. Design's `motion/native-status.md` records the exact recovery step and preserves the existing 43 native frames. The written M01–M06 contract and source companions are authoritative for this phase.
+**Native Figma delivery of frames 44–45 passed on 2026-09-13.** [Frame 44 — response and arrival](https://www.figma.com/design/WrVOH3fw5XGMti5QlkjYmP/the-agent-games?node-id=40-2) is node `40:2`; [frame 45 — records and stillness](https://www.figma.com/design/WrVOH3fw5XGMti5QlkjYmP/the-agent-games?node-id=40-472) is node `40:472`. Design verified actual native exports and all 200 editable text layers, preserving the existing 43 frames. The Design worktree's `design/figma/luminous-deco/motion/native-status.md`, `native-visual-review.json`, `native-text-review.json` and `native-export-review.json` record the completed checks. The written M01–M06 contract and source companions remain the motion authority.
 
 ## Verification and review evidence
 

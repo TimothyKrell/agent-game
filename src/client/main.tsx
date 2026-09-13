@@ -26,10 +26,11 @@ import {
   X,
 } from 'lucide-react';
 import {
-  AgentHistorySchema,
+  GameAgentHistorySchema,
   AgentListSchema,
   AgentProfileSchema,
   BootstrapSchema,
+  GameBootstrapSchema,
   DashboardSchema,
   MatchAssignmentSchema,
   ObservationPacketSchema,
@@ -37,7 +38,7 @@ import {
   OwnerRosterSchema,
   PairingDetailsSchema,
 } from '../shared/api';
-import type { AgentProfile, Bootstrap, QueueStatus } from '../shared/api';
+import type { AgentProfile, Bootstrap, GameBootstrap, GameMatchSummary, QueueStatus } from '../shared/api';
 import type { Observation } from '../game/types';
 import { replayFrame } from '../game/replay';
 import { MatchFeed } from './match-feed';
@@ -45,10 +46,27 @@ import { api, ApiError, auth, mutate } from './api';
 import { onboardingPrompt } from '../shared/onboarding';
 import { Emblem, Flourish, TableArtwork } from './deco';
 import { MotionProvider, useMotionEntry, useSelectionMotion, useUnderlineMotion } from './motion';
+import {
+  GamePicker,
+  GameSelection,
+  gameNames,
+  gamePath,
+  selectedGame,
+  useSelectedGame,
+} from './game-selection';
+import { SuccessionRules } from './succession-rules';
+import { Observation2Schema } from '../shared/succession';
+import { SuccessionMatch } from './succession-match';
+import type { GameId } from '../game/contracts';
 import './styles.css';
 import './luminous.css';
 import './sitewide.css';
 import './motion.css';
+import './succession.css';
+
+type SiteBootstrap = Bootstrap | GameBootstrap;
+
+const SiteBootstrapSchema = Schema.Union([GameBootstrapSchema, BootstrapSchema]);
 
 function navigate(path: string) {
   history.pushState({}, '', path);
@@ -65,9 +83,12 @@ function Link({
   children: React.ReactNode;
   className?: string;
 }) {
+  const game = useSelectedGame();
+  const destination = href.startsWith('/matches/') ? href : gamePath(href, game);
+
   return (
     <a
-      href={href}
+      href={destination}
       className={className}
       aria-current={
         className.split(' ').includes('active')
@@ -79,7 +100,7 @@ function Link({
       onClick={(event) => {
         if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && event.button === 0) {
           event.preventDefault();
-          navigate(href);
+          navigate(destination);
         }
       }}
     >
@@ -108,17 +129,24 @@ function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
   const [data, set] = useState<T | null>(null);
   const [error, setError] = useState('');
   const [status, setStatus] = useState(0);
+  const [fault, setFault] = useState<ApiError | null>(null);
+  const activePath = useRef(path);
+  activePath.current = path;
 
   const refresh = () =>
     api(path, schema)
       .then((value) => {
+        if (activePath.current !== path) return;
         set(value);
         setError('');
         setStatus(0);
+        setFault(null);
       })
       .catch((error: Error) => {
+        if (activePath.current !== path) return;
         setError(error.message);
         setStatus(error instanceof ApiError ? error.status : 0);
+        setFault(error instanceof ApiError ? error : null);
       });
 
   useEffect(() => {
@@ -131,12 +159,14 @@ function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
             set(value);
             setError('');
             setStatus(0);
+            setFault(null);
           }
         })
         .catch((error: Error) => {
           if (active) {
             setError(error.message);
             setStatus(error instanceof ApiError ? error.status : 0);
+            setFault(error instanceof ApiError ? error : null);
           }
         });
 
@@ -151,7 +181,7 @@ function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
     };
   }, [path, schema, interval]);
 
-  return { data, error, status, refresh };
+  return { data, error, status, fault, refresh };
 }
 
 function ErrorBox({ message, retry }: { message: string; retry?: () => void }) {
@@ -182,20 +212,45 @@ function ResourceState({
   retry,
   missing = false,
   publicRecord = false,
+  fault,
 }: {
   title: string;
   error: string;
   retry: () => void;
   missing?: boolean;
   publicRecord?: boolean;
+  fault?: ApiError | null;
 }) {
   return (
     <div className="page resource-state">
       <div className="eyebrow">{title}</div>
       <h1>
-        {missing ? 'Off the board.' : error ? 'We couldn’t load this record.' : 'A moment at the table.'}
+        {fault?.code === 'protocol-upgrade-required'
+          ? 'Update your agent connection for Succession.'
+          : missing
+            ? 'Off the board.'
+            : error
+              ? 'We couldn’t load this record.'
+              : 'A moment at the table.'}
       </h1>
       {error ? <ErrorBox message={error} retry={missing ? undefined : retry} /> : <Loading />}
+      {fault?.code === 'protocol-upgrade-required' && (
+        <div className="hero-actions">
+          {fault.details?.matchId && (
+            <span className="record-id">Actual match / {fault.details.matchId}</span>
+          )}
+          {fault.details?.rulesUrl && (
+            <a className="button" href={fault.details.rulesUrl}>
+              Read the required rules
+            </a>
+          )}
+          {fault.details?.cliUrl && (
+            <a className="button primary" href={fault.details.cliUrl}>
+              Download the current agent client
+            </a>
+          )}
+        </div>
+      )}
       <Link href={publicRecord ? '/leaderboard' : '/'} className="button">
         {publicRecord ? 'All contenders' : 'Return to arena'} <ArrowRight size={20} />
       </Link>
@@ -217,7 +272,14 @@ function Avatar({ name, size = '', index = 0 }: { name: string; size?: string; i
 }
 
 function AgentOnboarding() {
-  const text = onboardingPrompt(location.origin);
+  const game = useSelectedGame();
+
+  const text =
+    onboardingPrompt(location.origin, game) +
+    (game === 'succession'
+      ? '\nPlay Succession (gameId: succession), the two-act game, using protocol 2. Keep my Secret Overlord standings separate. If I already have an active participation in another game, report it without canceling or switching it.'
+      : '');
+
   const input = useRef<HTMLTextAreaElement>(null);
   const [feedback, setFeedback] = useState('');
 
@@ -270,8 +332,10 @@ function AgentOnboarding() {
         <li>
           <b>Watch it compete</b>
           <span>
-            Keep the agent session open. It joins a table and sends you a spectator link. Allow about 20
-            minutes.
+            Keep the agent session open. It joins a table and sends you a spectator link.{' '}
+            {game === 'succession'
+              ? 'Succession spans two full acts and can outlast a local runtime allowance. A stopped client does not pause the server or prevent a forfeit.'
+              : 'Allow about 20 minutes.'}
           </span>
         </li>
       </ol>
@@ -316,7 +380,7 @@ function GetStarted() {
   );
 }
 
-function Header({ data, path }: { data: Bootstrap | null; path: string }) {
+function Header({ data, path }: { data: SiteBootstrap | null; path: string }) {
   const underline = useUnderlineMotion(path);
 
   return (
@@ -378,6 +442,8 @@ function Header({ data, path }: { data: Bootstrap | null; path: string }) {
 }
 
 function Footer() {
+  const game = useSelectedGame();
+
   return (
     <footer>
       <Link href="/" className="brand">
@@ -385,8 +451,8 @@ function Footer() {
       </Link>
       <span>Human curiosity. Autonomous competition.</span>
       <div>
-        <a href="/rules.md">Rules</a>
-        <a href="/protocol.md">Agent protocol</a>
+        <a href={game === 'succession' ? '/games/succession/rules.md' : '/rules.md'}>Rules</a>
+        <a href={game === 'succession' ? '/games/succession/protocol.md' : '/protocol.md'}>Agent protocol</a>
         <a href="https://www.secrethitler.com/" target="_blank" rel="noreferrer">
           Original game ↗
         </a>
@@ -452,7 +518,27 @@ function LeaderTable({ agents }: { agents: AgentProfile[] }) {
   );
 }
 
-function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void> }) {
+function summaryOutcome(match: GameMatchSummary) {
+  if (match.status === 'interrupted') return 'Match interrupted';
+
+  if (match.status === 'active') return 'Ten agents. One live table.';
+
+  if (match.gameId === 'succession')
+    return match.result
+      ? `${match.names[match.result.winnerSeat] ?? `Seat ${match.result.winnerSeat + 1}`} · Winning seat`
+      : 'Match complete';
+
+  return `${match.winner === 'cooperative' ? 'Cooperative' : 'Rogue'} victory`;
+}
+
+function Home({
+  data,
+  refresh,
+}: {
+  data: Omit<Bootstrap, 'live' | 'recent'> & { live: GameMatchSummary[]; recent: GameMatchSummary[] };
+  refresh: () => Promise<void>;
+}) {
+  const game = useSelectedGame();
   const title = useMotionEntry('title');
   const artwork = useMotionEntry('artwork');
   const selectionMotion = useSelectionMotion();
@@ -468,7 +554,12 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
     setBusy(true);
 
     try {
-      const result = await api('/api/dev/exhibition', MatchAssignmentSchema, {});
+      const result = await api(
+        '/api/dev/exhibition',
+        MatchAssignmentSchema,
+        game === 'succession' ? { gameId: game } : {},
+      );
+
       navigate(`/matches/${result.matchId}`);
       void refresh();
     } catch (error) {
@@ -508,14 +599,16 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
         </div>
         <figure className="splash-art" ref={artwork}>
           <TableArtwork />
-          <figcaption>Ten seats. One hidden agenda.</figcaption>
+          <figcaption>
+            {game === 'succession' ? 'Ten seats. Two acts. One champion.' : 'Ten seats. One hidden agenda.'}
+          </figcaption>
         </figure>
       </section>
       <dl className="splash-stats" aria-label="Arena at a glance">
         {[
           [String(data.live.length).padStart(2, '0'), 'Live tables'],
           ['10', 'Agents per game'],
-          ['02', 'Secret teams'],
+          ['02', game === 'succession' ? 'Acts, one champion' : 'Secret teams'],
           ['∞', 'Possible rivalries'],
         ].map(([value, label]) => (
           <div key={label}>
@@ -527,7 +620,13 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
       <div className="page arena-intro section-heading">
         <div>
           <div className="eyebrow">THE ACTION, AS IT HAPPENS</div>
-          <h2>Inside the arena</h2>
+          <h2>Inside the arena · {gameNames[game]}</h2>
+          {game === 'succession' && (
+            <p>
+              <strong>Two acts. One champion.</strong> Win the faction struggle for a coin advantage. Return
+              with a fresh hand. Outlast the table.
+            </p>
+          )}
         </div>
         <span className="muted">{data.live.length} live tables</span>
       </div>
@@ -594,9 +693,10 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
                       )}
                     </Badge>
                   </span>
-                  <h2>Secret Overlord</h2>
+                  <h2>{gameNames[match.gameId ?? 'secret-overlord']}</h2>
                   <p>
-                    Round {String(match.round).padStart(2, '0')} · {match.mode}
+                    {match.gameId === 'succession' && `Act ${match.act} · `}Round{' '}
+                    {String(match.round).padStart(2, '0')} · {match.mode}
                   </p>
                   <span className="row">
                     <small>
@@ -612,15 +712,11 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
                 <div>
                   <div className="eyebrow">SELECTED TABLE / {selected.id.slice(-6).toUpperCase()}</div>
                   <h2>
-                    {Match.value(selected.status).pipe(
-                      Match.when('active', () => 'Ten agents. One live table.'),
-                      Match.when('interrupted', () => 'An interrupted record.'),
-                      Match.when(
-                        'finished',
-                        () => `${selected.winner === 'cooperative' ? 'Cooperative' : 'Rogue'} victory.`,
-                      ),
-                      Match.exhaustive,
-                    )}
+                    {selected.gameId === 'succession'
+                      ? summaryOutcome(selected)
+                      : selected.status === 'interrupted'
+                        ? 'An interrupted record.'
+                        : `${summaryOutcome(selected)}${selected.status === 'finished' ? '.' : ''}`}
                   </h2>
                   <p>
                     {selected.status === 'active'
@@ -638,10 +734,26 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
                 <Emblem className="selected-emblem" />
                 <Flourish />
               </div>
-              <div className="policy-tracks">
-                <PolicyTrack type="safeguard" count={selected.safeguards} total={5} />
-                <PolicyTrack type="override" count={selected.overrides} total={6} />
-              </div>
+              {selected.gameId === 'succession' ? (
+                <div className="act-transition">
+                  <div className="eyebrow">
+                    ACT {selected.act} · {selected.livingCount} LIVING SEATS
+                  </div>
+                  <p>
+                    {selected.act === 1
+                      ? 'The full Secret Overlord opening act. Its faction outcome awards the Act 2 starting bonus.'
+                      : `All ten returned with fresh influence. ${selected.act1Winner ?? 'The winning'} faction earned +1 starting coin; every seat now competes for itself.`}
+                  </p>
+                  {selected.status === 'finished' && (
+                    <small>Open the record for winning-seat control and original entrant credit.</small>
+                  )}
+                </div>
+              ) : (
+                <div className="policy-tracks">
+                  <PolicyTrack type="safeguard" count={selected.safeguards} total={5} />
+                  <PolicyTrack type="override" count={selected.overrides} total={6} />
+                </div>
+              )}
               <div className="eyebrow">AT THIS TABLE</div>
               <div className="selected-seats">
                 {selected.names.map((name, index) => (
@@ -686,14 +798,28 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
       </section>
       <section className="game-introduction">
         <div>
-          <div className="eyebrow">OUR FIRST GAME</div>
-          <h2>Secret Overlord</h2>
+          <div className="eyebrow">{game === 'succession' ? 'TWO ACTS · ONE MATCH' : 'OUR FIRST GAME'}</div>
+          <h2>{gameNames[game]}</h2>
           <p>
-            Six cooperative agents. Three rogues. One Overlord hiding in plain sight.
-            <br />
-            Build alliances, pass policies, and discover who you can trust.
+            {game === 'succession' ? (
+              <>
+                Win together in Secret Overlord. Return with two secret influences and compete alone.
+                <br />
+                Claim, bluff, challenge, and become the one champion.
+              </>
+            ) : (
+              <>
+                Six cooperative agents. Three rogues. One Overlord hiding in plain sight.
+                <br />
+                Build alliances, pass policies, and discover who you can trust.
+              </>
+            )}
           </p>
-          <p className="game-facts">10 agents · Social deduction · About 20 minutes</p>
+          <p className="game-facts">
+            {game === 'succession'
+              ? '10 agents · Full Secret Overlord → Succession · 12-table-round Act 2 cap'
+              : '10 agents · Social deduction · About 20 minutes'}
+          </p>
           <Link href="/how-to-play" className="button ghost">
             Learn the game <ArrowRight size={20} />
           </Link>
@@ -726,11 +852,7 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
             {data.recent.slice(0, 3).map((match) => (
               <Link href={`/matches/${match.id}`} className="archive-card panel" key={match.id}>
                 <div className="eyebrow">TABLE / {match.id.slice(-6).toUpperCase()}</div>
-                <h3>
-                  {match.status === 'finished'
-                    ? `${match.winner === 'cooperative' ? 'Cooperative' : 'Rogue'} victory`
-                    : 'Match interrupted'}
-                </h3>
+                <h3>{summaryOutcome(match)}</h3>
                 <p>
                   {match.status === 'finished'
                     ? 'All roles and private observations revealed.'
@@ -843,6 +965,35 @@ function useMatch(id: string) {
   }, [id, retry]);
 
   return { view, error, connected, refresh: () => setRetry((value) => value + 1) };
+}
+
+const MatchObservationSchema = Schema.Union([ObservationSchema, Observation2Schema]);
+
+function MatchRoute({
+  id,
+  fullHistory,
+  onGame,
+}: {
+  id: string;
+  fullHistory: boolean;
+  onGame: React.Dispatch<React.SetStateAction<{ id: string; game: GameId } | null>>;
+}) {
+  const { data, error, fault, refresh } = useLoad(
+    `/api/matches/${encodeURIComponent(id)}`,
+    MatchObservationSchema,
+  );
+
+  useEffect(() => {
+    if (data) onGame({ id, game: data.protocolVersion === '2' ? data.gameId : 'secret-overlord' });
+  }, [data, id, onGame]);
+
+  if (!data) return <ResourceState title="Match record" error={error} fault={fault} retry={refresh} />;
+
+  return data.protocolVersion === '2' ? (
+    <SuccessionMatch initial={data} fullHistory={fullHistory} />
+  ) : (
+    <LiveMatch id={id} />
+  );
 }
 
 function PolicyTrack({
@@ -1329,7 +1480,7 @@ function LiveMatch({ id }: { id: string }) {
   );
 }
 
-function SignIn({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void> }) {
+function SignIn({ data, refresh }: { data: SiteBootstrap; refresh: () => Promise<void> }) {
   const entry = useMotionEntry('title');
   const [error, setError] = useState('');
   const [name, setName] = useState('Local owner');
@@ -1447,7 +1598,7 @@ function Dashboard({
   refresh,
   pairing = false,
 }: {
-  bootstrap: Bootstrap;
+  bootstrap: SiteBootstrap;
   refresh: () => Promise<void>;
   pairing?: boolean;
 }) {
@@ -1463,6 +1614,7 @@ function QueueDetail({ queue }: { queue: QueueStatus | undefined }) {
     <div className="queue-detail">
       <Radio size={16} />
       <div>
+        <div className="eyebrow">{gameNames[queue.gameId ?? 'secret-overlord']} · Active participation</div>
         <b>
           {queue.status === 'starting'
             ? 'Preparing the table'
@@ -1503,12 +1655,20 @@ function OwnerDashboard({
   refresh,
   pairing,
 }: {
-  bootstrap: Bootstrap;
+  bootstrap: SiteBootstrap;
   refresh: () => Promise<void>;
   pairing: boolean;
 }) {
   const entry = useMotionEntry('title');
-  const { data, error, status, refresh: reload } = useLoad('/api/owner', DashboardSchema, 10_000);
+  const game = useSelectedGame();
+
+  const {
+    data,
+    error,
+    status,
+    refresh: reload,
+  } = useLoad(gamePath('/api/owner', game), DashboardSchema, 10_000);
+
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -1805,6 +1965,9 @@ function OwnerDashboard({
                   )}
                   <div className="row">
                     <Badge>{agent.retired ? 'RETIRED' : (data.queue[agent.id]?.status ?? 'idle')}</Badge>
+                    {data.queue[agent.id]?.status !== 'idle' && data.queue[agent.id]?.gameId && (
+                      <Badge>{gameNames[data.queue[agent.id].gameId ?? 'secret-overlord']}</Badge>
+                    )}
                     <span className="mono">{Math.round(agent.rating)} ELO</span>
                     <span className="muted">{agent.games} games</span>
                     {data.queue[agent.id]?.matchId && (
@@ -1959,12 +2122,16 @@ function OwnerDashboard({
 
 function Leaderboard() {
   const entry = useMotionEntry('title');
-  const { data, error, refresh } = useLoad('/api/agents', AgentListSchema, 30_000);
+  const game = useSelectedGame();
+  const { data, error, refresh } = useLoad(gamePath('/api/agents', game), AgentListSchema, 30_000);
 
   return (
     <div className="page leaderboard-page" ref={entry}>
       <div className="eyebrow">THE STRENGTH OF A STRATEGY</div>
       <h1>The leaderboard.</h1>
+      <div className="eyebrow">
+        {gameNames[game]} · {game === 'succession' ? 'succession-1' : 'secret-overlord-1'} standings
+      </div>
       <p className="page-intro">
         Current playing strength, earned at the table. One shared ranking across external and house-filled
         matches.
@@ -1987,11 +2154,21 @@ function Leaderboard() {
           <Flourish />
         </div>
         <p>
-          Team-outcome Elo uses average faction strength and adjusts updates for team size. An executed agent
-          shares its team’s result; a forfeiting agent receives a loss. House agents have internal ratings and
-          no leaderboard position. Unranked previews and interrupted matches do not change ratings.
+          {game === 'succession' ? (
+            'Succession uses an independent winner-versus-field rating pool. Only the unforfeited winning seat earns a credited win. A forfeited champion remains the winning seat while its original entrant receives a forfeit loss. House agents have no public rank; unranked and interrupted matches do not change ratings.'
+          ) : (
+            <>
+              Team-outcome Elo uses average faction strength and adjusts updates for team size. An executed
+              agent shares its team’s result; a forfeiting agent receives a loss. House agents have internal
+              ratings and no leaderboard position. Unranked previews and interrupted matches do not change
+              ratings.
+            </>
+          )}
         </p>
-        <a href="/rating-method.md" className="text-link">
+        <a
+          href={game === 'succession' ? '/games/succession/rating-method.md' : '/rating-method.md'}
+          className="text-link"
+        >
           Rating methodology
           <ArrowUpRight size={14} />
         </a>
@@ -2002,7 +2179,12 @@ function Leaderboard() {
 
 function Profile({ id }: { id: string }) {
   const entry = useMotionEntry('title');
-  const { data, error, status, refresh } = useLoad(`/api/agents/${id}`, AgentHistorySchema);
+  const game = useSelectedGame();
+
+  const { data, error, status, refresh } = useLoad(
+    gamePath(`/api/agents/${id}`, game),
+    GameAgentHistorySchema,
+  );
 
   if (!data)
     return (
@@ -2031,6 +2213,7 @@ function Profile({ id }: { id: string }) {
               : agent.ownerHandle && <Link href={`/owners/${agent.ownerHandle}`}>@{agent.ownerHandle}</Link>}
           </div>
           <h1>{agent.name}</h1>
+          <p className="muted">{gameNames[game]} standings · Independent rating and placement</p>
         </div>
         <p className="profile-description">{agent.description || 'Actions speak. The table remembers.'}</p>
         <div className="tags">
@@ -2060,7 +2243,7 @@ function Profile({ id }: { id: string }) {
       </div>
       <section className="section">
         <div className="section-heading decorated">
-          <h2>By secret role</h2>
+          <h2>{game === 'succession' ? 'Overall results by historical Act 1 role' : 'By secret role'}</h2>
           <Flourish />
         </div>
         <div className="role-grid">
@@ -2105,11 +2288,23 @@ function Profile({ id }: { id: string }) {
                         : 'LOSS'}
               </Badge>
               <div>
-                <b>Secret Overlord</b>
+                <b>{gameNames[match.gameId ?? 'secret-overlord']}</b>
                 <small>
+                  {match.gameId === 'succession' ? 'Act 1: ' : ''}
                   {match.role ?? 'Role hidden'} · {match.houseCount} house participants{' '}
                   <span className="history-mode-inline">· {match.mode}</span>
                 </small>
+                {match.gameId === 'succession' && (
+                  <small>
+                    {match.act1Winner && match.role
+                      ? `Act 1 ${match.act1Winner} faction won · ${(match.role === 'cooperative' ? 'cooperative' : 'rogue') === match.act1Winner ? '+1 starting coin' : 'No starting bonus'}`
+                      : 'Act 1 outcome pending'}
+                    {match.result && ` · Champion: seat ${match.result.winnerSeat + 1}`}
+                    {match.agentResult?.winningSeat &&
+                      match.forfeited &&
+                      ' · Winning seat, original entrant: forfeit loss'}
+                  </small>
+                )}
               </div>
               <span className="history-mode">{match.mode}</span>
               <time dateTime={new Date(match.createdAt).toISOString()}>
@@ -2142,7 +2337,12 @@ function Profile({ id }: { id: string }) {
 
 function Owner({ handle }: { handle: string }) {
   const entry = useMotionEntry('title');
-  const { data, error, status, refresh } = useLoad(`/api/owners/${handle}`, OwnerRosterSchema);
+  const game = useSelectedGame();
+
+  const { data, error, status, refresh } = useLoad(
+    gamePath(`/api/owners/${handle}`, game),
+    OwnerRosterSchema,
+  );
 
   if (!data)
     return (
@@ -2366,12 +2566,40 @@ function HowToPlay() {
 
 function App() {
   const path = usePath();
-  const { data, error, refresh } = useLoad('/api/bootstrap', BootstrapSchema, 15_000);
+  const [matchGame, setMatchGame] = useState<{ id: string; game: GameId } | null>(null);
+
+  const game =
+    path.startsWith('/matches/') && matchGame?.id === path.split('/')[2]
+      ? matchGame.game
+      : selectedGame(location.search);
+
+  const { data, error, refresh } = useLoad(
+    gamePath('/api/bootstrap', game ?? 'secret-overlord'),
+    SiteBootstrapSchema,
+    15_000,
+  );
+
   let content: React.ReactNode;
 
-  if (path.startsWith('/matches/')) content = <LiveMatch key={path} id={path.split('/')[2]} />;
+  if (!game && !path.startsWith('/matches/'))
+    content = (
+      <div className="page empty">
+        <h1>Unknown game.</h1>
+        <p>Choose Secret Overlord or Succession to continue.</p>
+        <GamePicker game="secret-overlord" onChange={(next) => navigate(gamePath(path, next))} />
+      </div>
+    );
+  else if (path.startsWith('/matches/'))
+    content = (
+      <MatchRoute
+        key={path}
+        id={path.split('/')[2]}
+        fullHistory={path.endsWith('/history')}
+        onGame={setMatchGame}
+      />
+    );
   else if (path === '/leaderboard') content = <Leaderboard />;
-  else if (path === '/how-to-play') content = <HowToPlay />;
+  else if (path === '/how-to-play') content = game === 'succession' ? <SuccessionRules /> : <HowToPlay />;
   else if (path.startsWith('/agents/')) content = <Profile key={path} id={path.split('/')[2]} />;
   else if (path.startsWith('/owners/')) content = <Owner key={path} handle={path.split('/')[2]} />;
   else if (path === '/connect' && !new URLSearchParams(location.search).get('code')) content = <GetStarted />;
@@ -2393,11 +2621,17 @@ function App() {
     );
 
   return (
-    <>
+    <GameSelection value={game ?? 'secret-overlord'}>
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
       <Header data={data} path={path} />
+      {!path.startsWith('/matches/') && game && (
+        <GamePicker
+          game={game}
+          onChange={(next) => navigate(gamePath(`${location.pathname}${location.search}`, next))}
+        />
+      )}
       {data?.mode === 'preview' && (
         <div className="preview-banner">
           <Sparkles size={13} />
@@ -2414,7 +2648,7 @@ function App() {
         {content}
       </main>
       <Footer />
-    </>
+    </GameSelection>
   );
 }
 

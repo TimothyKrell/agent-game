@@ -1,9 +1,14 @@
 import { DurableObject } from 'cloudflare:workers';
-import { Effect } from 'effect';
+import { Effect, Schema } from 'effect';
 import { previewAction, previewSpeech } from '../game/preview';
-import type { ActionRequest, GameAction } from '../game/types';
+import { previewSuccessionAction, previewSuccessionSpeech } from '../game/succession/preview';
+import { ObservationSchema } from '../shared/api';
+import type { TransportActionRequest } from '../shared/api';
+import { Observation2Schema } from '../shared/succession';
+import type { Action2 } from '../shared/succession';
 import type { HouseJob } from './house-contract';
-import { generateHouse, housePrompt, inferenceCost, HOUSE_SYSTEM } from './house-model';
+import { generateHouse, housePrompt, houseSystem, inferenceCost } from './house-model';
+import { platformCoordinator } from './coordinator';
 
 type JobRow = {
   id: string;
@@ -16,7 +21,7 @@ type JobRow = {
 };
 
 interface SavedResponse {
-  request: ActionRequest | null;
+  request: TransportActionRequest | null;
   notes: string;
   usageId: string | null;
   cost: number | null;
@@ -93,7 +98,10 @@ export class HouseSeatObject extends DurableObject<Env> {
           return;
         }
 
-        const view = input.observation;
+        const view =
+          input.observation.protocolVersion === '2'
+            ? Schema.decodeUnknownSync(Observation2Schema)(input.observation)
+            : Schema.decodeUnknownSync(ObservationSchema)(input.observation);
 
         if (job.kind === 'action' && !view.decision) {
           this.done(row.id);
@@ -112,7 +120,7 @@ export class HouseSeatObject extends DurableObject<Env> {
             .exec<{ text: string }>('SELECT text FROM notes WHERE generation = ?', job.generation)
             .toArray()[0]?.text ?? '';
 
-        let action: GameAction | null;
+        let action: Action2 | null;
         let nextNotes = notes;
         let cost: number | null = 0;
 
@@ -121,20 +129,29 @@ export class HouseSeatObject extends DurableObject<Env> {
             throw new Error('Preview agents cannot run in production');
           action =
             job.kind === 'action'
-              ? previewAction(view)
-              : { type: 'chat', text: previewSpeech(view, input.persona) };
+              ? view.protocolVersion === '2'
+                ? previewSuccessionAction(view)
+                : previewAction(view)
+              : {
+                  type: 'chat',
+                  text:
+                    view.protocolVersion === '2'
+                      ? previewSuccessionSpeech(view)
+                      : previewSpeech(view, input.persona),
+                };
         } else {
-          const prompt = housePrompt(view, input.persona, notes, job.kind);
+          const prompt = housePrompt(view, input.persona, notes, job.kind, input.recent);
+          const system = houseSystem(view);
 
           const estimate = inferenceCost(
             job.model.model,
-            new TextEncoder().encode(HOUSE_SYSTEM + prompt).byteLength,
+            new TextEncoder().encode(system + prompt).byteLength,
             512,
           );
 
           usageId = `${job.id}:attempt:${row.attempts + 1}`;
 
-          const reserved = await this.env.MATCHMAKING.getByName('secret-overlord').reserveInference({
+          const reserved = await platformCoordinator(this.env).reserveInference({
             id: usageId,
             matchId: job.matchId,
             estimate,
@@ -163,6 +180,7 @@ export class HouseSeatObject extends DurableObject<Env> {
               prompt,
               job.deadline,
               job.kind === 'action' ? view.decision!.actions.length : 0,
+              system,
             ),
           );
 
@@ -201,10 +219,18 @@ export class HouseSeatObject extends DurableObject<Env> {
           );
         }
 
+        const request: TransportActionRequest | null = action
+          ? {
+              gameId: view.protocolVersion === '2' ? view.gameId : undefined,
+              actionId: job.id,
+              phaseId: job.phaseId,
+              decisionId: view.decision?.id,
+              action,
+            }
+          : null;
+
         response = {
-          request: action
-            ? { actionId: job.id, phaseId: job.phaseId, decisionId: view.decision?.id, action }
-            : null,
+          request,
           notes: nextNotes,
           usageId,
           cost,
@@ -217,10 +243,7 @@ export class HouseSeatObject extends DurableObject<Env> {
       }
 
       if (response.usageId)
-        await this.env.MATCHMAKING.getByName('secret-overlord').recordInference(
-          response.usageId,
-          response.cost,
-        );
+        await platformCoordinator(this.env).recordInference(response.usageId, response.cost);
       const accepted = response.request ? await match.submitHouse(job, response.request) : { ok: true };
 
       if (accepted.ok)
@@ -231,7 +254,7 @@ export class HouseSeatObject extends DurableObject<Env> {
         );
       this.done(row.id);
     } catch (error) {
-      if (usageId) await this.env.MATCHMAKING.getByName('secret-overlord').recordInference(usageId, null);
+      if (usageId) await platformCoordinator(this.env).recordInference(usageId, null);
 
       const current = this.ctx.storage.sql
         .exec<{ attempts: number }>('SELECT attempts FROM jobs WHERE id = ?', row.id)
