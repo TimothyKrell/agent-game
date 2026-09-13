@@ -195,8 +195,9 @@
   overflow-wrap: anywhere;
 }
 .game-picker .button[aria-pressed='true'] {
-  color: var(--bg);
-  background: var(--green);
+  color: var(--green);
+  background: none;
+  border-image-source: url('./deco-game-selected.svg');
 }
 @media (max-width: 640px) {
   .game-scope {
@@ -360,4 +361,62 @@
 }
 .succession-board.act-2 .board-footer {
   display: flex;
+}
+.succession-action-cards {
+  display: none;
+}
+@media (max-width: 1000px) {
+  .succession-action-guide .table-scroll {
+    display: none;
+  }
+  .succession-action-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 20px;
+  }
+  .succession-action-cards article {
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+  }
+  .succession-action-cards dl {
+    margin: 0;
+  }
+  .succession-action-cards dt {
+    color: var(--green);
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-top: 16px;
+  }
+  .succession-action-cards dd {
+    margin: 6px 0 0;
+    overflow-wrap: anywhere;
+  }
+}
+.succession-seal {
+  width: 240px;
+  height: 240px;
+  color: var(--brass);
+}
+.succession-result .result-banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  align-items: center;
+  gap: 32px;
+}
+.succession-result .result-banner h1 {
+  font-size: clamp(42px, 5vw, 70px);
+}
+.influence-back {
+  width: 22px;
+  height: 30px;
+  color: var(--green);
+}
+@media (max-width: 700px) {
+  .succession-result .result-banner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .succession-seal {
+    width: 150px;
+    height: 150px;
+  }
 }

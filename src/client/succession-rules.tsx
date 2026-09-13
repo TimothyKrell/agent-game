@@ -105,6 +105,21 @@ export function SuccessionRules() {
             </tbody>
           </table>
         </div>
+        <div className="succession-action-cards">
+          {actions.map(([name, claim, effect, reaction]) => (
+            <article key={name}>
+              <h3>{name}</h3>
+              <dl>
+                <dt>Claim / cost</dt>
+                <dd>{claim}</dd>
+                <dt>Effect</dt>
+                <dd>{effect}</dd>
+                <dt>Reaction</dt>
+                <dd>{reaction}</dd>
+              </dl>
+            </article>
+          ))}
+        </div>
       </section>
       <div className="succession-act-guide">
         <section className="panel">

@@ -561,10 +561,12 @@ button:disabled {
 }
 .deco-flourish {
   position: absolute;
-  right: 0;
-  bottom: -16px;
+  right: 4px;
+  bottom: -0.5px;
+  transform: translateY(50%);
   width: 145px;
-  height: 42px;
+  height: auto;
+  aspect-ratio: 145 / 52;
   color: var(--teal);
   background: var(--bg);
 }

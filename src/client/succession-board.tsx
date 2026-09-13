@@ -1,6 +1,6 @@
 import { Coins, Crown, Eye, Shield, Skull } from 'lucide-react';
 import type { Observation2 } from '../shared/succession';
-import { Emblem } from './deco';
+import { Emblem, InfluenceBack, SuccessionSeal } from './deco';
 import { useMotionEntry } from './motion';
 
 export function SuccessionBoard({
@@ -81,7 +81,7 @@ export function SuccessionBoard({
                   </div>
                   <div className="influence-backs" aria-hidden="true">
                     {Array.from({ length: seat.influence ?? 0 }, (_, card) => (
-                      <span key={card} />
+                      <InfluenceBack key={card} />
                     ))}
                   </div>
                   {view.act1Result && (
@@ -200,7 +200,7 @@ export function SuccessionResult({ view }: { view: Observation2 }) {
             </p>
           )}
         </div>
-        {view.status === 'finished' && <Crown size={72} />}
+        {view.status === 'finished' && <SuccessionSeal />}
       </div>
       <div className="result-metadata">
         <span className="record-id">Table / {view.matchId}</span>

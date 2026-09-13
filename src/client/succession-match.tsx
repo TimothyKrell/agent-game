@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, Eye, Radio } from 'lucide-react';
 import type { Observation2 } from '../shared/succession';
 import { useSuccessionMatch } from './use-succession-match';
@@ -6,6 +6,7 @@ import { SuccessionBoard, SuccessionPrivacy, SuccessionResult } from './successi
 import { SuccessionControls, SuccessionPhase } from './succession-controls';
 import { SuccessionReplay } from './succession-replay';
 import { MatchFeed } from './match-feed';
+import type { FeedReadingMemory } from './match-feed';
 
 export function SuccessionMatch({
   initial,
@@ -29,6 +30,7 @@ export function SuccessionMatch({
   } = useSuccessionMatch(initial);
 
   const [now, setNow] = useState(Date.now());
+  const feedMemory = useRef<FeedReadingMemory | null>(null);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
 
@@ -98,7 +100,7 @@ export function SuccessionMatch({
       )}
       <SuccessionPrivacy view={view} />
       {ended && !fullHistory ? (
-        <SuccessionReplay view={view} refresh={refresh} />
+        <SuccessionReplay view={view} refresh={refresh} memory={feedMemory} />
       ) : (
         <>
           {fullHistory && (
@@ -177,6 +179,7 @@ export function SuccessionMatch({
               </section>
             </div>
             <MatchFeed
+              memory={feedMemory}
               events={history.events}
               seats={view.seats}
               ended={ended}

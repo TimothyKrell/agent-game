@@ -122,6 +122,8 @@ export class SuccessionHistory {
     if (page.events.some((event, index) => event.id !== page.after + index + 1)) return false;
 
     if (page.cursor !== (page.events.at(-1)?.id ?? page.after)) return false;
+
+    if (page.hasMore && page.cursor === page.after) return false;
     this.cursor = page.cursor;
     this.head = Math.max(this.head, page.streamHead);
     this.events = [...this.events, ...page.events].slice(-this.maxCachedEvents);

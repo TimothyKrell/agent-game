@@ -3,18 +3,29 @@ import { Schema } from 'effect';
 import { ArrowUpRight, Pause, Play } from 'lucide-react';
 import { HistoryPage2Schema, ReplayFrame2Schema } from '../shared/succession';
 import type { AuthorizedEvent2, Observation2, ReplayFrame2 } from '../shared/succession';
-import { RoundIndex2Schema } from '../shared/history';
+import { HistoryAnchor2Schema, RoundIndex2Schema } from '../shared/history';
 import { api } from './api';
 import { historyPath, SuccessionHistory } from './succession-stream';
 import { SuccessionBoard } from './succession-board';
 import { MatchFeed } from './match-feed';
+import type { FeedReadingMemory } from './match-feed';
 import { Flourish } from './deco';
 
 const FrameResponse = Schema.Union([ReplayFrame2Schema, HistoryPage2Schema]);
 
 const RoundsResponse = Schema.Union([RoundIndex2Schema, HistoryPage2Schema]);
 
-export function SuccessionReplay({ view, refresh }: { view: Observation2; refresh: () => void }) {
+const AnchorResponse = Schema.Union([HistoryAnchor2Schema, HistoryPage2Schema]);
+
+export function SuccessionReplay({
+  view,
+  refresh,
+  memory,
+}: {
+  view: Observation2;
+  refresh: () => void;
+  memory: React.MutableRefObject<FeedReadingMemory | null>;
+}) {
   const [through, setThrough] = useState(view.history.streamHead);
   const [playing, setPlaying] = useState(false);
   const [frame, setFrame] = useState<ReplayFrame2 | null>(null);
@@ -26,6 +37,42 @@ export function SuccessionReplay({ view, refresh }: { view: Observation2; refres
   const requests = useRef(0);
   const reader = useRef(new SuccessionHistory());
   const epoch = view.history.visibilityEpoch;
+  const [anchorKey] = useState(
+    memory.current?.following === false ? memory.current.anchor?.identity : undefined,
+  );
+  const [anchorLoading, setAnchorLoading] = useState(!!anchorKey);
+
+  useEffect(() => {
+    if (!anchorKey) return;
+    let active = true;
+    setAnchorLoading(true);
+    const query = new URLSearchParams({ epoch, eventKey: anchorKey });
+    void api(`/api/matches/${encodeURIComponent(view.matchId)}/history-anchor?${query}`, AnchorResponse)
+      .then((result) => {
+        if (!active) return;
+
+        if ('reset' in result) {
+          refresh();
+
+          return;
+        }
+
+        if (result.matchId !== view.matchId || result.visibilityEpoch !== epoch) return;
+
+        if (result.cursor !== null) setThrough(Math.min(view.history.streamHead, result.cursor + 16));
+        else setError('The previous reading anchor is not available in this archive.');
+      })
+      .catch((cause: Error) => {
+        if (active) setError(cause.message);
+      })
+      .finally(() => {
+        if (active) setAnchorLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [anchorKey, view.matchId, epoch, retry]);
 
   useEffect(() => {
     let active = true;
@@ -52,6 +99,7 @@ export function SuccessionReplay({ view, refresh }: { view: Observation2; refres
   }, [view.matchId, epoch, retry]);
 
   useEffect(() => {
+    if (anchorLoading) return;
     const request = ++requests.current;
     setLoading(true);
     setError('');
@@ -104,7 +152,7 @@ export function SuccessionReplay({ view, refresh }: { view: Observation2; refres
       clearTimeout(timer);
       requests.current++;
     };
-  }, [view.matchId, epoch, through, retry]);
+  }, [view.matchId, epoch, through, retry, anchorLoading]);
 
   useEffect(() => {
     if (!playing || loading || !frame || frame.through !== through) return;
@@ -173,11 +221,13 @@ export function SuccessionReplay({ view, refresh }: { view: Observation2; refres
         />
         <small>
           Event {through} / {view.history.streamHead} ·{' '}
-          {loading
-            ? 'Loading selected frame'
-            : through === view.history.streamHead
-              ? 'End of record'
-              : 'At selected event'}
+          {anchorLoading
+            ? 'Loading archive disclosures at your reading position'
+            : loading
+              ? 'Loading selected frame'
+              : through === view.history.streamHead
+                ? 'End of record'
+                : 'At selected event'}
           {view.status === 'interrupted' && ' · Partial record · No rating changes'}
         </small>
         {error && (
@@ -258,6 +308,7 @@ export function SuccessionReplay({ view, refresh }: { view: Observation2; refres
             )}
           </div>
           <MatchFeed
+            memory={memory}
             events={events}
             seats={actualFrame?.seats ?? view.seats}
             ended

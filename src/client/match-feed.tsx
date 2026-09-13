@@ -1,5 +1,5 @@
 import { Fragment, useLayoutEffect, useRef, useState } from 'react';
-import { Schema } from 'effect';
+import { Option, Schema } from 'effect';
 import {
   Activity,
   ArrowDown,
@@ -22,10 +22,18 @@ import {
   Zap,
 } from 'lucide-react';
 import type { Observation } from '../game/types';
-import type { AuthorizedEvent2, CapEvidence2 } from '../shared/succession';
+import type { AuthorizedEvent2 } from '../shared/succession';
 import { useUnderlineMotion } from './motion';
 
 type GameEvent = Observation['events'][number] | AuthorizedEvent2;
+
+export interface FeedReadingMemory {
+  filter: string;
+  folds: Record<string, number>;
+  roundSelection: string;
+  following: boolean;
+  anchor: { identity: string; top: number; discussion?: boolean } | null;
+}
 
 function eventRound(event: GameEvent) {
   return 'act' in event ? `${event.act}:${event.round}` : String(event.round);
@@ -49,6 +57,20 @@ function eventIdentity(event: GameEvent) {
 
 const Ballots = Schema.Record(Schema.String, Schema.Boolean);
 
+const FeedDetailsSchema = Schema.Struct({
+  approve: Schema.optional(Schema.Boolean),
+  approved: Schema.optional(Schema.Boolean),
+  policy: Schema.optional(Schema.Literals(['safeguard', 'override'])),
+  role: Schema.optional(Schema.Literals(['cooperative', 'rogue', 'overlord'])),
+  votes: Schema.optional(Ballots),
+  safeguards: Schema.optional(Schema.Number),
+  overrides: Schema.optional(Schema.Number),
+});
+
+function feedDetails(event: GameEvent) {
+  return Option.getOrNull(Schema.decodeUnknownOption(FeedDetailsSchema)(event.data));
+}
+
 const privateEvents = new Set([
   'ballot',
   'role',
@@ -67,7 +89,7 @@ const filters = [
 ];
 
 function presentation(event: GameEvent, actor: string) {
-  const data: Record<string, Schema.Json | CapEvidence2> | undefined = event.data;
+  const data = feedDetails(event);
 
   switch (event.type) {
     case 'chat':
@@ -174,7 +196,7 @@ function FeedEvent({
   ended: boolean;
 }) {
   const actor = seats.find((seat) => seat.number === event.seat)?.name ?? 'Arena';
-  const data: Record<string, Schema.Json | CapEvidence2> | undefined = event.data;
+  const data = feedDetails(event);
   const { icon: Icon, label, tone, text } = presentation(event, actor);
   const votes = event.type === 'election' ? data?.votes : null;
   const ballots = Schema.is(Ballots)(votes) ? Object.values(votes) : null;
@@ -293,6 +315,7 @@ export function MatchFeed({
   partial = false,
   actRounds,
   onActRoundSelect,
+  memory,
 }: {
   events: GameEvent[];
   seats: Observation['seats'];
@@ -305,20 +328,32 @@ export function MatchFeed({
   partial?: boolean;
   actRounds?: { act: 1 | 2; round: number; cursor: number }[];
   onActRoundSelect?: (cursor: number) => void;
+  memory?: React.MutableRefObject<FeedReadingMemory | null>;
 }) {
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState(memory?.current?.filter ?? 'all');
   const underline = useUnderlineMotion(filter);
   const [unread, setUnread] = useState(0);
-  const [atLatest, setAtLatest] = useState(true);
-  const [folds, setFolds] = useState<Record<string, number>>({});
-  const [roundSelection, setRoundSelection] = useState('');
+  const [atLatest, setAtLatest] = useState(memory?.current?.following ?? true);
+  const [folds, setFolds] = useState<Record<string, number>>(memory?.current?.folds ?? {});
+  const [roundSelection, setRoundSelection] = useState(memory?.current?.roundSelection ?? '');
   const pendingRound = useRef<string | null>(null);
   const list = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const scrollTop = useRef(0);
-  const following = useRef(true);
-  const anchor = useRef<{ identity: string; top: number; discussion?: boolean } | null>(null);
+  const following = useRef(memory?.current?.following ?? true);
+  const anchor = useRef<FeedReadingMemory['anchor']>(memory?.current?.anchor ?? null);
   const previous = useRef({ id: 0, filter, ended });
+
+  function remember() {
+    if (memory)
+      memory.current = {
+        filter,
+        folds,
+        roundSelection,
+        following: following.current,
+        anchor: anchor.current,
+      };
+  }
 
   const visible = events.filter(
     (event) => filter === 'all' || (filter === 'chat' ? event.type === 'chat' : event.type !== 'chat'),
@@ -435,6 +470,7 @@ export function MatchFeed({
     }
 
     restorePosition();
+    remember();
     previous.current = { id: latest, filter, ended };
 
     // Fonts, expanded records and viewport changes can reflow without new events.
@@ -559,6 +595,7 @@ export function MatchFeed({
             row && event
               ? { identity: eventIdentity(event), top: row.getBoundingClientRect().top - top }
               : null;
+          remember();
         }}
       >
         <div ref={content}>

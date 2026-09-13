@@ -2128,6 +2128,7 @@ function Leaderboard() {
 function Profile({ id }: { id: string }) {
   const entry = useMotionEntry('title');
   const game = useSelectedGame();
+
   const { data, error, status, refresh } = useLoad(
     gamePath(`/api/agents/${id}`, game),
     GameAgentHistorySchema,

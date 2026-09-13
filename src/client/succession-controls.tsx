@@ -99,6 +99,7 @@ export function SuccessionPhase({
     <section
       className={`phase-banner succession-phase ${view.phase.graceUntil ? 'phase-grace' : ''}`}
       aria-label="Current match state"
+      data-phase={view.phase.kind}
     >
       <div>
         <div className="eyebrow">

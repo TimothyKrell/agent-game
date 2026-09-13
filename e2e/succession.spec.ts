@@ -36,19 +36,28 @@ async function gameFixture() {
     Date.now(),
     { random, salt: new Uint8Array(32).fill(7) },
   );
+
   let state = initial.state;
   const act1 = state;
   const facts: SuccessionEvent[] = [...initial.appendedEvents];
   const frames = new Map(initial.replayFrames.map((frame) => [frame.eventKey, frame.state]));
   const stages = new Map<string, SuccessionState>();
+  const heads = new Map<SuccessionState, { live: number; archive: number }>();
+  heads.set(state, {
+    live: facts.filter((event) => event.visibility === 'public').length,
+    archive: facts.length,
+  });
   let act2: SuccessionState | null = null;
 
   for (let step = 0; state.status === 'active' && step < 6000; step++) {
     stages.set(state.phase.kind, state);
+
     const decision = state.seats
       .map((seat) => observeSuccession(state, seat.number))
       .find((view) => view.decision);
+
     const action = decision && previewSuccessionAction(decision, random.random);
+
     const evolution =
       decision?.you && action
         ? evolveSuccession(
@@ -73,8 +82,13 @@ async function gameFixture() {
             { type: 'advance', now: state.phase.deadline ?? state.phase.startedAt + 30_000 },
             random,
           );
+
     state = evolution.state;
     facts.push(...evolution.appendedEvents);
+    heads.set(state, {
+      live: facts.filter((event) => event.visibility === 'public').length,
+      archive: facts.length,
+    });
 
     for (const frame of evolution.replayFrames) frames.set(frame.eventKey, frame.state);
 
@@ -93,7 +107,7 @@ async function gameFixture() {
     return result;
   };
 
-  return { act1, act2, terminal: state, events, frames, stages };
+  return { act1, act2, terminal: state, events, frames, stages, heads };
 }
 
 type Fixture = Awaited<ReturnType<typeof gameFixture>>;
@@ -106,7 +120,12 @@ test.beforeAll(async () => {
 
 async function routes(page: Page, initial: Observation2) {
   let current = initial;
+
   let send = (_view: Observation2): void => {
+    throw new Error('No connected fixture socket');
+  };
+
+  let corrupt: () => void = () => {
     throw new Error('No connected fixture socket');
   };
 
@@ -123,6 +142,7 @@ async function routes(page: Page, initial: Observation2) {
         }),
       );
     send(current);
+    corrupt = () => socket.send('{');
   });
   await page.route('**/api/matches/succession-ui/history?*', (route) => {
     const url = new URL(route.request().url());
@@ -131,10 +151,12 @@ async function routes(page: Page, initial: Observation2) {
     const after = Number(url.searchParams.get('after'));
     const through = Number(url.searchParams.get('through'));
     const archive = epoch === 'archive';
+
     const events = fixture
       .events(archive)
       .filter((event) => event.id > after && event.id <= through)
       .slice(0, 32);
+
     const cursor = events.at(-1)?.id ?? after;
 
     return route.fulfill({
@@ -194,6 +216,20 @@ async function routes(page: Page, initial: Observation2) {
       },
     });
   });
+  await page.route('**/api/matches/succession-ui/history-anchor?*', (route) => {
+    const url = new URL(route.request().url());
+    const event = fixture.events(true).find((entry) => entry.eventKey === url.searchParams.get('eventKey'));
+
+    return route.fulfill({
+      json: {
+        protocolVersion: '2',
+        gameId: 'succession',
+        matchId: 'succession-ui',
+        visibilityEpoch: 'archive',
+        cursor: event?.id ?? null,
+      },
+    });
+  });
 
   return {
     pageRequests,
@@ -201,14 +237,22 @@ async function routes(page: Page, initial: Observation2) {
       current = view;
       send(view);
     },
+    deliver: (view: Observation2) => send(view),
+    corrupt: () => corrupt(),
   };
 }
 
 function viewOf(state: SuccessionState, archive = false) {
-  return observeSuccession(state, null, {
+  const view = observeSuccession(state, null, {
     visibilityEpoch: archive ? 'archive' : 'live',
-    streamHead: fixture.events(archive).length,
+    streamHead: fixture.heads.get(state)?.[archive ? 'archive' : 'live'] ?? 0,
   });
+
+  // Engine decisions use a deterministic fast virtual clock. Visual captures rebase
+  // only the displayed current deadline to an ordinary 30-second window.
+  if (view.status === 'active' && view.phase.deadline !== null) view.phase.deadline = Date.now() + 30_000;
+
+  return view;
 }
 
 test('actual engine boards preserve all ten identities, transition, public stages and spectator privacy', async ({
@@ -227,18 +271,14 @@ test('actual engine boards preserve all ten identities, transition, public stage
   await expect(page.getByRole('region', { name: 'Your private controller state' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'One champion.' })).toHaveCount(0);
 
-  for (const kind of [
-    'act-2:action',
-    'act-2:challenge',
-    'act-2:block',
-    'act-2:loss',
-    'act-2:exchange',
-  ] as const) {
-    const state = fixture.stages.get(kind);
+  const stages = [...fixture.stages.values()]
+    .filter((state) => state.stage.act === 2)
+    .sort((a, b) => (fixture.heads.get(a)?.live ?? 0) - (fixture.heads.get(b)?.live ?? 0));
 
+  for (const state of stages) {
     if (state) {
       transport.publish(viewOf(state));
-      await expect(page.locator('.phase-banner')).not.toBeEmpty();
+      await expect(page.locator('.phase-banner')).toHaveAttribute('data-phase', state.phase.kind);
       await expect(page.locator('.legal-actions')).toHaveCount(0);
     }
   }
@@ -287,4 +327,53 @@ test('game scope survives rules navigation and back without changing actual matc
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: '/tmp/opencode/succession-ui/rules-390.png', fullPage: true });
+});
+
+test('archive expansion preserves the opaque reading anchor and rejects delayed live snapshots', async ({
+  page,
+}) => {
+  const live = viewOf(fixture.act2);
+  const transport = await routes(page, live);
+  await page.setViewportSize({ width: 1600, height: 1120 });
+  await page.goto('/matches/succession-ui');
+  const timeline = page.getByLabel('Match timeline', { exact: true });
+  await expect(timeline.locator('[data-event-id]').first()).toBeVisible();
+  await timeline.evaluate((element) => {
+    element.scrollTop = 300;
+  });
+  await expect(page.getByRole('button', { name: /Jump to latest/ })).toBeVisible();
+
+  const before = await timeline.evaluate((element) => {
+    const top = element.getBoundingClientRect().top;
+    const row = [...element.querySelectorAll<HTMLElement>('[data-event-id]')].find(
+      (entry) => entry.getBoundingClientRect().bottom > top,
+    );
+
+    if (!row) throw new Error('No visible reading anchor');
+
+    return { id: Number(row.dataset.eventId), offset: row.getBoundingClientRect().top - top };
+  });
+
+  const key = fixture.events(false).find((event) => event.id === before.id)?.eventKey;
+
+  if (!key) throw new Error('Missing public event key');
+  const archived = fixture.events(true).find((event) => event.eventKey === key);
+
+  if (!archived) throw new Error('Missing archived event key');
+  transport.publish(viewOf(fixture.terminal, true));
+  await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
+  const restored = timeline.locator(`[data-event-id="${archived.id}"]`).first();
+  await expect(restored).toBeVisible();
+  await expect
+    .poll(async () =>
+      restored.evaluate(
+        (row) => row.getBoundingClientRect().top - row.closest('.event-list')!.getBoundingClientRect().top,
+      ),
+    )
+    .toBeCloseTo(before.offset, 0);
+  transport.deliver(live);
+  await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
+  await expect(page.locator('.phase-banner')).toHaveCount(0);
+  expect(transport.pageRequests.length).toBeLessThan(8);
+  await page.screenshot({ path: '/tmp/opencode/succession-ui/archive-anchor-1600.png', fullPage: true });
 });
