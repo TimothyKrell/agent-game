@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { accountUsage, loadLedger, lockLedger, remainingBudget, saveLedger } from './ledger.mjs';
-import { acceptCurrent, validateCurrent, validateIdentity } from './current.mjs';
+import { acceptCurrent, validateCurrent, validateIdentity, connectionIdentity } from './current.mjs';
 
 // Coordinator decision 2026-09-13; bounded resource profile, not a completion guarantee.
 // Evidence: docs/evidence/succession-supervisor.md.
@@ -40,7 +40,7 @@ const progress = (view) =>
   ]);
 
 /** Publish only assignment identity; concurrent current/history cache remains owned by the CLI. */
-async function persistAssignment(config, ledger, timeoutMs) {
+async function persistAssignment(config, ledger, timeoutMs, connection) {
   const deadline = performance.now() + Math.min(1000, Math.max(0, timeoutMs));
   let unlock;
 
@@ -68,12 +68,27 @@ async function persistAssignment(config, ledger, timeoutMs) {
     if (identity !== ledger.identity)
       throw new Error('Installation changed while publishing the match assignment.');
 
+    if (connectionIdentity(latest) !== connectionIdentity(connection))
+      throw new Error('Controller authorization changed while publishing the match assignment.');
+    const pending = latest.pendingJoin?.requestId ?? latest.joinRequest;
+
+    if (
+      (pending && pending !== ledger.pendingJoin?.requestId) ||
+      (latest.matchId && latest.matchId !== ledger.matchId && latest.matchId !== connection.matchId)
+    )
+      throw new Error('A newer participation superseded this supervisor assignment.');
+
     if (
       latest.matchId === ledger.matchId &&
       latest.participation?.matchId === ledger.matchId &&
       latest.participation.gameId === ledger.gameId
     )
       return;
+
+    if (latest.matchId !== ledger.matchId) {
+      for (const key of ['observation', 'historyWalk', 'currentNotification', 'pending']) delete latest[key];
+      latest.cursor = 0;
+    }
 
     latest.matchId = ledger.matchId;
     latest.participation = { gameId: ledger.gameId, matchId: ledger.matchId };
@@ -551,7 +566,14 @@ export async function supervise(options, invoke = invokeHarness) {
             interruptionReason: view.interruptionReason,
             winner: view.winner,
             you: view.you,
-            controller: view.controller,
+            controller: view.you
+              ? {
+                  house:
+                    view.seats?.find((seat) => seat.number === view.you.seat)?.house ?? view.you.forfeited,
+                  generation: view.you.generation,
+                  forfeited: view.you.forfeited,
+                }
+              : null,
           },
         };
       const created = timestamp(view.createdAt);
@@ -741,7 +763,7 @@ export async function supervise(options, invoke = invokeHarness) {
       if (ledger.errors >= 3 || ledger.premature >= 3)
         return output(ledger.errors >= 3 ? 'execution-error' : 'no-progress');
 
-      await persistAssignment(config, ledger, remaining());
+      await persistAssignment(config, ledger, remaining(), connection);
 
       if (remaining() <= 0) return output('runtime-exhausted');
 

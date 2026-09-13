@@ -356,9 +356,10 @@ it.each(['cancelled', 'assigned', 'other-game-assigned', 'network-failed'] as co
     f.options.queueAllowanceMs = 1000;
     let deleted = false;
     f.options.request = async (_connection, path, body, method) => {
-      if (path !== '/api/queue') return race === 'other-game-assigned'
-        ? { ...f.view, gameId: 'secret-overlord', protocolVersion: '1', rulesVersion: 'secret-overlord-1' }
-        : f.view;
+      if (path !== '/api/queue')
+        return race === 'other-game-assigned'
+          ? { ...f.view, gameId: 'secret-overlord', protocolVersion: '1', rulesVersion: 'secret-overlord-1' }
+          : f.view;
 
       if (method === 'DELETE') {
         expect(body).toEqual({ gameId: 'succession', requestId: 'join_one', joinedAt: f.origin });
@@ -367,7 +368,14 @@ it.each(['cancelled', 'assigned', 'other-game-assigned', 'network-failed'] as co
         if (race === 'network-failed') throw new Error('lost response');
 
         if (race === 'other-game-assigned')
-          return { ...f.queue, gameId: 'secret-overlord', protocolVersion: '1', rulesVersion: 'secret-overlord-1', requestId: 'replacement' };
+          return {
+            ...f.queue,
+            gameId: 'secret-overlord',
+            protocolVersion: '1',
+            rulesVersion: 'secret-overlord-1',
+            requestId: 'replacement',
+          };
+
         return race === 'assigned' ? f.queue : { status: 'idle', matchId: null };
       }
 
@@ -612,16 +620,21 @@ it('makes a parent-created assignment usable by the first child CLI command', as
   let joined = false;
   f.options.request = async (_connection, path, _body, method) => {
     if (path !== '/api/queue') return f.view;
+
     if (method === undefined && _body) joined = true;
+
     return joined ? f.queue : { status: 'idle', gameId: null, matchId: null };
   };
+
   const result = await supervise(f.options, async () => {
     const saved = JSON.parse(await readFile(f.configPath, 'utf8'));
     expect(saved.matchId).toBe('match_new');
     expect(saved.participation).toEqual({ gameId: 'succession', matchId: 'match_new' });
     f.view.status = 'finished';
+
     return { outcome: 'returned', exitCode: 0, costUsd: 0.01 };
   });
+
   expect(joined).toBe(true);
   expect(result.status).toBe('finished');
   expect(result.invocations).toBe(1);

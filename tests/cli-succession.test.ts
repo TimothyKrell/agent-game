@@ -43,118 +43,150 @@ beforeAll(async () => {
   bin = `${installation}/node_modules/.bin/agent-game`;
 });
 
-it('rejects delayed live current and history after accepting a terminal archive page', async () => {
-  const directory = await mkdtemp('/tmp/opencode/succession-delayed-');
-  const heldCurrent = deferred();
-  const heldPage = deferred();
-  const releaseCurrent = deferred();
-  const releasePage = deferred();
-  const heldReceipt = deferred();
-  const releaseReceipt = deferred();
-  let reads = 0;
-  let finished = false;
+it.each([false, true])(
+  'rejects delayed queue/current/receipt/history after terminal acceptance (reset=%s)',
+  async (reset) => {
+    const directory = await mkdtemp('/tmp/opencode/succession-delayed-');
+    const heldCurrent = deferred();
+    const heldPage = deferred();
+    const releaseCurrent = deferred();
+    const releasePage = deferred();
+    const heldReceipt = deferred();
+    const releaseReceipt = deferred();
+    const heldQueue = deferred();
+    const releaseQueue = deferred();
+    let reads = 0;
+    let finished = false;
 
-  const final: Observation2 = {
-    ...current,
-    status: 'finished',
-    decision: null,
-    history: { visibilityEpoch: 'archive', streamHead: 200 },
-  };
+    const final: Observation2 = {
+      ...current,
+      status: 'finished',
+      decision: null,
+      history: { visibilityEpoch: 'archive', streamHead: 200 },
+    };
 
-  const server = createServer(async (request, response) => {
-    const url = new URL(request.url!, 'http://localhost');
+    const server = createServer(async (request, response) => {
+      const url = new URL(request.url!, 'http://localhost');
 
-    if (url.pathname.endsWith('/actions')) {
-      let body = '';
+      if (url.pathname === '/api/queue') {
+        heldQueue.resolve();
+        await releaseQueue.promise;
+        response.setHeader('content-type', 'application/json');
+        response.end(
+          JSON.stringify({ ...identity, status: 'matched', gameId: 'succession', matchId: 'match_two' }),
+        );
 
-      for await (const chunk of request) body += chunk;
-      heldReceipt.resolve();
-      await releaseReceipt.promise;
+        return;
+      }
+
+      if (url.pathname.endsWith('/actions')) {
+        let body = '';
+
+        for await (const chunk of request) body += chunk;
+        heldReceipt.resolve();
+        await releaseReceipt.promise;
+        response.setHeader('content-type', 'application/json');
+        response.end(
+          JSON.stringify({ accepted: true, actionId: JSON.parse(body).actionId, observation: current }),
+        );
+
+        return;
+      }
+
+      let value: Observation2 | HistoryPage2;
+
+      if (url.pathname.endsWith('/history')) {
+        const epoch = url.searchParams.get('epoch') ?? 'live';
+        value = {
+          ...identity,
+          matchId: 'match_two',
+          visibilityEpoch: epoch,
+          streamHead: epoch === 'live' ? 150 : 200,
+          after: 0,
+          through: epoch === 'live' ? 150 : 200,
+          cursor: 1,
+          events: [{ id: 1, eventKey: 'fact', text: 'fact', at: 0, act: 2, round: 1, type: 'chat' }],
+          hasMore: true,
+          reset: false,
+        };
+
+        if (epoch === 'live') {
+          heldPage.resolve();
+          await releasePage.promise;
+
+          if (reset)
+            value = {
+              ...value,
+              visibilityEpoch: 'archive',
+              streamHead: 200,
+              through: 200,
+              cursor: 0,
+              events: [],
+              reset: true,
+            };
+        }
+      } else {
+        value = finished ? final : current;
+
+        if (++reads === 1) {
+          heldCurrent.resolve();
+          await releaseCurrent.promise;
+        }
+      }
+
       response.setHeader('content-type', 'application/json');
-      response.end(
-        JSON.stringify({ accepted: true, actionId: JSON.parse(body).actionId, observation: current }),
-      );
+      response.end(JSON.stringify(value));
+    });
 
-      return;
-    }
-
-    let value: Observation2 | HistoryPage2;
-
-    if (url.pathname.endsWith('/history')) {
-      const epoch = url.searchParams.get('epoch') ?? 'live';
-      value = {
-        ...identity,
-        matchId: 'match_two',
-        visibilityEpoch: epoch,
-        streamHead: epoch === 'live' ? 150 : 200,
-        after: 0,
-        through: epoch === 'live' ? 150 : 200,
-        cursor: 1,
-        events: [{ id: 1, eventKey: 'fact', text: 'fact', at: 0, act: 2, round: 1, type: 'chat' }],
-        hasMore: true,
-        reset: false,
-      };
-
-      if (epoch === 'live') {
-        heldPage.resolve();
-        await releasePage.promise;
-      }
-    } else {
-      value = finished ? final : current;
-
-      if (++reads === 1) {
-        heldCurrent.resolve();
-        await releaseCurrent.promise;
-      }
-    }
-
-    response.setHeader('content-type', 'application/json');
-    response.end(JSON.stringify(value));
-  });
-
-  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
-  const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
-  const config = `${directory}/connection.json`;
-  await writeFile(
-    config,
-    JSON.stringify({ server: `http://127.0.0.1:${address.port}`, matchId: 'match_two' }),
-  );
-
-  const cli = async (...commands: string[]) =>
-    JSON.parse(
-      (await run(process.execPath, [bin, ...commands, '--config', config], { cwd: installation })).stdout,
+    await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+    const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
+    const config = `${directory}/connection.json`;
+    await writeFile(
+      config,
+      JSON.stringify({ server: `http://127.0.0.1:${address.port}`, matchId: 'match_two' }),
     );
 
-  try {
-    const oldCurrent = cli('observe');
-    await heldCurrent.promise;
-    const oldPage = cli('history');
-    await heldPage.promise;
-    const oldReceipt = cli('act', '--choice', '0');
-    await heldReceipt.promise;
-    finished = true;
-    expect((await cli('observe')).status).toBe('finished');
-    expect((await cli('history')).cursor).toBe(1);
-    releaseCurrent.resolve();
-    releasePage.resolve();
-    releaseReceipt.resolve();
-    expect((await oldCurrent).status).toBe('finished');
-    expect((await oldPage).status).toBe('stale-page');
-    const receipt = await oldReceipt;
-    expect(receipt.accepted).toBe(true);
-    expect(receipt.observation.status).toBe('finished');
-    const saved = JSON.parse(await readFile(config, 'utf8'));
-    expect(saved.observation.status).toBe('finished');
-    expect(saved.observation.history.visibilityEpoch).toBe('archive');
-    expect(saved.historyWalk).toEqual({ epoch: 'archive', cursor: 1, through: 200 });
-  } finally {
-    releaseCurrent.resolve();
-    releasePage.resolve();
-    releaseReceipt.resolve();
-    await new Promise<void>((done) => server.close(() => done()));
-    await rm(directory, { recursive: true, force: true });
-  }
-});
+    const cli = async (...commands: string[]) =>
+      JSON.parse(
+        (await run(process.execPath, [bin, ...commands, '--config', config], { cwd: installation })).stdout,
+      );
+
+    try {
+      const oldQueue = cli('status');
+      await heldQueue.promise;
+      const oldCurrent = cli('observe');
+      await heldCurrent.promise;
+      const oldPage = cli('history');
+      await heldPage.promise;
+      const oldReceipt = cli('act', '--choice', '0');
+      await heldReceipt.promise;
+      finished = true;
+      expect((await cli('observe')).status).toBe('finished');
+      expect((await cli('history')).cursor).toBe(1);
+      releaseCurrent.resolve();
+      releasePage.resolve();
+      releaseReceipt.resolve();
+      releaseQueue.resolve();
+      expect((await oldQueue).matchId).toBe('match_two');
+      expect((await oldCurrent).status).toBe('finished');
+      expect((await oldPage).status).toBe('stale-page');
+      const receipt = await oldReceipt;
+      expect(receipt.accepted).toBe(true);
+      expect(receipt.observation.status).toBe('finished');
+      const saved = JSON.parse(await readFile(config, 'utf8'));
+      expect(saved.observation.status).toBe('finished');
+      expect(saved.observation.history.visibilityEpoch).toBe('archive');
+      expect(saved.historyWalk).toEqual({ epoch: 'archive', cursor: 1, through: 200 });
+    } finally {
+      releaseCurrent.resolve();
+      releasePage.resolve();
+      releaseReceipt.resolve();
+      releaseQueue.resolve();
+      await new Promise<void>((done) => server.close(() => done()));
+      await rm(directory, { recursive: true, force: true });
+    }
+  },
+);
 
 it('honors the exported child deadline before starting network work', async () => {
   const directory = await mkdtemp('/tmp/opencode/succession-deadline-');

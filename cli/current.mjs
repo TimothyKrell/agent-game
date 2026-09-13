@@ -45,6 +45,17 @@ export function validateCurrent(value) {
 
 export const notification = (view) => createHash('sha256').update(JSON.stringify(view)).digest('hex');
 
+export const connectionIdentity = (state) =>
+  notification([
+    state.server ?? null,
+    state.token ?? null,
+    state.agentId ?? null,
+    state.connectionId ?? null,
+  ]);
+
+export const participationIdentity = (state) =>
+  JSON.stringify([state.matchId ?? null, state.pendingJoin?.requestId ?? state.joinRequest ?? null]);
+
 export function acceptCurrent(previous, next) {
   if (!previous || previous.matchId !== next.matchId) return next;
 
@@ -71,11 +82,28 @@ export function acceptCurrent(previous, next) {
   return next;
 }
 
-export function consumePage(walk, page, current) {
+export function consumePage(walk, page, current, request) {
+  if (!current?.history) return walk;
+
   if (page.matchId !== current.matchId || page.visibilityEpoch !== current.history.visibilityEpoch)
     return walk;
 
-  if (page.reset) return { epoch: page.visibilityEpoch, cursor: 0, through: page.through };
+  if (request && request.matchId !== current.matchId) return walk;
+
+  if (page.reset) {
+    // Reset metadata delivers nothing. A prior request cannot reset an epoch already adopted by this reader.
+    if (walk?.epoch === page.visibilityEpoch) return walk;
+
+    return { epoch: page.visibilityEpoch, cursor: 0, through: page.through };
+  }
+
+  if (
+    request &&
+    (request.epoch !== page.visibilityEpoch ||
+      request.after !== page.after ||
+      request.through !== page.through)
+  )
+    return walk;
   const cursor = walk?.epoch === page.visibilityEpoch ? walk.cursor : 0;
 
   if (page.after !== cursor) return walk;

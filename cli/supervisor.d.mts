@@ -1,5 +1,9 @@
 import type { Observation } from '../src/game/types';
+import type { QueueCancelSchema, QueueJoinSchema, QueueStatus } from '../src/shared/api';
+import type { IndividualResult2 } from '../src/shared/succession';
+
 export type HarnessJson = string | number | boolean | null | HarnessJson[] | { [key: string]: HarnessJson };
+
 export type Outcome =
   | 'rotated'
   | 'returned'
@@ -8,6 +12,7 @@ export type Outcome =
   | 'runtime-exhausted'
   | 'budget-exhausted'
   | 'accounting-unavailable';
+
 export type HarnessEvent =
   | { type: 'harness-event'; harness: string; event: HarnessJson }
   | { type: 'harness-diagnostic'; harness: string; text: string }
@@ -18,7 +23,9 @@ export type HarnessEvent =
       invocations: number;
       costUsd: number | null;
     };
+
 export type UsageReport = { scope: 'invocation' | 'session'; total: number; final?: boolean };
+
 export type Invocation = {
   harness: string;
   model?: string;
@@ -34,6 +41,7 @@ export type Invocation = {
   onSession: (id: string) => Promise<void>;
   onUsage: (report: UsageReport) => Promise<void>;
 };
+
 export type InvocationResult = {
   exitCode?: number;
   outcome?: Outcome;
@@ -41,6 +49,7 @@ export type InvocationResult = {
   costUsd?: number;
   acceptedDecision?: boolean;
 };
+
 export type SupervisorOptions = {
   configPath: string;
   harness: string;
@@ -56,23 +65,24 @@ export type SupervisorOptions = {
   request?: (
     connection: { server: string; token?: string },
     path: string,
-    body: unknown,
+    body: typeof QueueJoinSchema.Type | typeof QueueCancelSchema.Type | undefined,
     method: string | undefined,
     signal: AbortSignal,
-  ) => Promise<unknown>;
+  ) => Promise<HarnessJson>;
 };
+
 export type SupervisorResult = {
   status: string;
   reason: string | null;
   gameId: string;
   matchId: string | null;
   winner: string | null;
-  result: unknown;
+  result: IndividualResult2 | null;
   winningSeat: number | null;
   originalAgentResult: { won: boolean; forfeited: boolean } | null;
   overallReason: string | null;
   you: Observation['you'] | null;
-  controller: unknown;
+  controller: { house: boolean; generation: number; forfeited: boolean } | null;
   serverStatus: string | null;
   observedAt: number | null;
   snapshotStale: boolean;
@@ -91,14 +101,16 @@ export type SupervisorResult = {
   };
   durationMs: number;
   queueDurationMs: number;
-  queue: unknown;
+  queue: (QueueStatus & { observedAt: number }) | null;
 };
+
 export const SUCCESSION_CANDIDATE: Readonly<{
   maxRuntimeMs: number;
   queueAllowanceMs: number;
   childSliceMs: number;
   frozen: true;
 }>;
+
 export function interruptSession(sessionId: string, runDir: string, timeoutMs: number): Promise<void>;
 export function invokeHarness(input: Invocation): Promise<InvocationResult>;
 export function supervise(

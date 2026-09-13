@@ -3,7 +3,7 @@ import { homedir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { GameClient, save } from './agent-game.mjs';
+import { GameClient, save, updateCurrent } from './agent-game.mjs';
 import { gameId } from './current.mjs';
 
 const digest = (value) => createHash('sha256').update(value).digest('hex');
@@ -96,7 +96,15 @@ export async function setup(flags) {
   state.server = server;
   state.harness = flags.harness;
   state.installation ??= String(flags.name ?? `${flags.harness} installation`);
-  await save(path, state);
+  await updateCurrent(path, (latest) => {
+    if ((latest.server && latest.server !== server) || (latest.harness && latest.harness !== flags.harness))
+      throw new Error('This installation changed during setup. Use its current arena and harness.');
+    latest.server = server;
+    latest.harness = flags.harness;
+    latest.installation ??= state.installation;
+    latest.selectedGame = gameId(flags.game ?? latest.selectedGame);
+    state.selectedGame = latest.selectedGame;
+  });
   manifest.connections = [
     ...manifest.connections.filter((item) => item.configPath !== path),
     { configPath: path, server },

@@ -14,6 +14,8 @@ import {
   validateIdentity,
   validateCurrent,
   validatePage,
+  connectionIdentity,
+  participationIdentity,
   terminal,
 } from './current.mjs';
 
@@ -249,7 +251,7 @@ export async function save(path, data) {
   await chmod(path, 0o600);
 }
 
-async function updateCurrent(path, update) {
+export async function updateCurrent(path, update) {
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
   let unlock;
 
@@ -393,10 +395,32 @@ export async function main(argv = process.argv.slice(2)) {
       'Arena URL missing. Use setup --server URL --harness opencode|claude, or pair --server URL. Ask the owner for the arena URL if it was not supplied.',
     );
   const client = new GameClient(String(server), state.token);
+  let baseline = structuredClone(state);
+
+  const change = (update) => {
+    const identity = connectionIdentity(baseline);
+
+    return updateCurrent(path, (latest) => {
+      if (connectionIdentity(latest) !== identity)
+        throw new ApiError(
+          409,
+          'connection-changed',
+          'The installation changed while this command was running.',
+        );
+      const result = update(latest);
+      baseline = structuredClone(latest);
+
+      for (const key of Object.keys(state)) delete state[key];
+      Object.assign(state, latest);
+
+      return result;
+    });
+  };
+
   state.selectedGame = gameId(flags.game ?? state.selectedGame);
 
   if (['start', 'pair', 'join', 'play'].includes(command))
-    await updateCurrent(path, (latest) => {
+    await change((latest) => {
       latest.selectedGame = state.selectedGame;
     });
 
@@ -420,32 +444,55 @@ export async function main(argv = process.argv.slice(2)) {
     return;
   }
 
-  const persist = () =>
-    updateCurrent(path, (latest) => {
-      const sameMatch = latest.matchId === state.matchId;
+  const persist = (fields) => {
+    const before = participationIdentity(baseline);
+    const incoming = structuredClone(state);
 
-      const view =
-        sameMatch && latest.observation
-          ? state.observation
-            ? acceptCurrent(latest.observation, state.observation)
-            : latest.observation
-          : state.observation;
+    return change((latest) => {
+      if (
+        participationIdentity(latest) !== before &&
+        participationIdentity(latest) !== participationIdentity(incoming) &&
+        !(latest.matchId && latest.matchId === incoming.matchId && baseline.matchId !== latest.matchId)
+      )
+        throw new ApiError(
+          409,
+          'stale-participation',
+          'A newer command changed the participation. Run status again.',
+        );
 
-      const walk = sameMatch ? latest.historyWalk : undefined;
+      if (
+        fields.includes('pending') &&
+        incoming.pending &&
+        latest.pending?.request.actionId !== incoming.pending.request.actionId
+      ) {
+        const current = latest.observation;
 
-      for (const key of Object.keys(latest)) delete latest[key];
-      Object.assign(latest, state);
-
-      if (view) {
-        latest.observation = view;
-
-        if (view.protocolVersion === '2') latest.currentNotification = notification(view);
-        else latest.cursor = view.cursor;
+        if (
+          current &&
+          (terminal(current) ||
+            current.phase.id !== incoming.pending.request.phaseId ||
+            current.you?.generation !== incoming.observation?.you?.generation ||
+            current.decision?.id !== incoming.pending.request.decisionId)
+        )
+          throw new ApiError(
+            409,
+            'stale-decision',
+            'The current decision changed before submission. Run observe.',
+          );
       }
 
-      if (walk) latest.historyWalk = walk;
-      Object.assign(state, latest);
+      if (fields.includes('matchId') && latest.matchId !== incoming.matchId) {
+        for (const key of ['observation', 'historyWalk', 'currentNotification', 'pending'])
+          delete latest[key];
+        latest.cursor = 0;
+      }
+
+      for (const key of fields) {
+        if (incoming[key] === undefined) delete latest[key];
+        else latest[key] = key === 'lastPairPoll' ? Math.max(latest[key] ?? 0, incoming[key]) : incoming[key];
+      }
     });
+  };
 
   if (command === 'start') {
     if (!state.agentId) {
@@ -462,7 +509,7 @@ export async function main(argv = process.argv.slice(2)) {
         ]);
       await delay(Math.max(0, (state.lastPairPoll ?? 0) + 5000 - Date.now()));
       state.lastPairPoll = Date.now();
-      await persist();
+      await persist(['lastPairPoll']);
       const result = await client.request('/api/pairing/status');
 
       if (result.status !== 'approved') {
@@ -478,7 +525,7 @@ export async function main(argv = process.argv.slice(2)) {
 
       Object.assign(state, result);
       delete state.pairing;
-      await persist();
+      await persist(['status', 'connectionId', 'agentId', 'agentName', 'expiresAt', 'pairing']);
     }
 
     return main(['join', '--config', path, ...(flags.game ? ['--game', flags.game] : [])]);
@@ -492,7 +539,7 @@ export async function main(argv = process.argv.slice(2)) {
     state.token ??= `agk_${randomBytes(32).toString('base64url')}`;
     state.server = client.server;
     client.token = state.token;
-    await persist();
+    await persist(['token', 'server']);
 
     const result = await client.request(
       '/api/pairing',
@@ -505,7 +552,7 @@ export async function main(argv = process.argv.slice(2)) {
     );
 
     state.pairing = result;
-    await persist();
+    await persist(['pairing']);
     print({
       status: 'pending',
       ...result,
@@ -519,13 +566,13 @@ export async function main(argv = process.argv.slice(2)) {
   if (command === 'pair-status') {
     await delay(Math.max(0, (state.lastPairPoll ?? 0) + 5000 - Date.now()));
     state.lastPairPoll = Date.now();
-    await persist();
+    await persist(['lastPairPoll']);
     const result = await client.request('/api/pairing/status');
 
     if (result.status === 'approved') {
       Object.assign(state, result);
       delete state.pairing;
-      await persist();
+      await persist(['status', 'connectionId', 'agentId', 'agentName', 'expiresAt', 'pairing']);
     }
 
     print({
@@ -548,7 +595,7 @@ export async function main(argv = process.argv.slice(2)) {
 
       if (state.pendingJoin.gameId !== state.selectedGame)
         throw new Error('A pending join belongs to another game. Resume or cancel it first.');
-      await persist();
+      await persist(['joinRequest', 'pendingJoin']);
     }
 
     if (current.status !== 'idle' && flags.game && gameId(current.gameId) !== flags.game)
@@ -588,7 +635,7 @@ export async function main(argv = process.argv.slice(2)) {
       delete state.pendingJoin;
     }
 
-    await persist();
+    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin']);
 
     const assignment = {
       ...result,
@@ -637,7 +684,7 @@ export async function main(argv = process.argv.slice(2)) {
       delete state.pendingJoin;
     }
 
-    await persist();
+    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin']);
     print(result);
 
     return;
@@ -649,22 +696,26 @@ export async function main(argv = process.argv.slice(2)) {
     throw new Error('No match selected. Run status after joining, or use --match ID.');
 
   if (state.matchId !== matchId) {
+    const before = participationIdentity(baseline);
     state.matchId = matchId;
     state.cursor = 0;
     delete state.observation;
-    await updateCurrent(path, (latest) => {
+    await change((latest) => {
+      if (participationIdentity(latest) !== before)
+        throw new ApiError(409, 'stale-match', 'A newer command selected another participation.');
       latest.matchId = matchId;
       latest.cursor = 0;
       delete latest.observation;
       delete latest.historyWalk;
       delete latest.currentNotification;
+      delete latest.pending;
     });
   }
 
   const remember = async (view) => {
     validateCurrent(view);
 
-    return updateCurrent(path, (latest) => {
+    return change((latest) => {
       if (latest.matchId && latest.matchId !== matchId) {
         if (latest.observation) return latest.observation;
         throw new ApiError(409, 'stale-match', 'A newer command selected another match.');
@@ -701,13 +752,17 @@ export async function main(argv = process.argv.slice(2)) {
       const pageAfter = automatic ? (walk?.cursor ?? 0) : after;
       const pageThrough = automatic && walk?.through > pageAfter ? walk.through : accepted.history.streamHead;
 
-      const page = await client.history(matchId, {
+      const pageRequest = {
+        matchId,
         epoch: flags.epoch ?? accepted.history.visibilityEpoch,
         after: pageAfter,
         through: flags.through === undefined ? pageThrough : Number(flags.through),
         limit,
         maxBytes: Number(flags['max-bytes'] ?? 12288),
-      });
+      };
+
+      const { matchId: requestedMatch, ...parameters } = pageRequest;
+      const page = await client.history(requestedMatch, parameters);
 
       if (page.reset && page.visibilityEpoch !== accepted.history.visibilityEpoch)
         await remember(await client.observation(matchId));
@@ -720,8 +775,8 @@ export async function main(argv = process.argv.slice(2)) {
       }
 
       if (automatic) {
-        const applied = await updateCurrent(path, (latestState) => {
-          const next = consumePage(latestState.historyWalk, page, latestState.observation);
+        const applied = await change((latestState) => {
+          const next = consumePage(latestState.historyWalk, page, latestState.observation, pageRequest);
 
           if (next === latestState.historyWalk) return false;
           latestState.historyWalk = next;
@@ -826,11 +881,11 @@ export async function main(argv = process.argv.slice(2)) {
 
       if (state.pending?.signature === signature) request = state.pending.request;
       else state.pending = { signature, request };
-      await persist();
+      await persist(['pending']);
     }
 
     const result = await client.action(matchId, request);
-    await updateCurrent(path, (latest) => {
+    await change((latest) => {
       if (latest.pending?.request.actionId === request.actionId) delete latest.pending;
     });
     delete state.pending;
