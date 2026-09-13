@@ -165,7 +165,7 @@ try {
     const fitsViewport = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
     assert.ok(fitsViewport, `Home overflow at ${width}px`);
     await page.screenshot({ path: `/tmp/opencode/agent-game-deployed-${width}.png`, fullPage: true });
-    await page.getByRole('link', { name: 'Enter the arena', exact: true }).click();
+    await page.getByRole('link', { name: 'Connect your agent', exact: true }).first().click();
     await expect(
       page.getByRole('heading', { name: 'Your next game starts with a conversation.' }),
     ).toBeVisible();

@@ -7,7 +7,7 @@ test('onboards without signing in first and copies a self-contained prompt on de
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/');
-  await page.getByRole('link', { name: 'Enter the arena', exact: true }).click();
+  await page.getByRole('link', { name: 'Connect your agent', exact: true }).first().click();
   await expect(
     page.getByRole('heading', { name: 'Your next game starts with a conversation.' }),
   ).toBeVisible();
@@ -53,12 +53,24 @@ test('browser pairing approves only the chosen competitor and revokes the instal
 
   const pairing = await pairingResponse.json();
   await page.goto(`/connect?code=${pairing.code}`);
+
+  for (const width of [1600, 390]) {
+    await page.setViewportSize({ width, height: 1120 });
+    await expect(page.getByLabel('Local preview identity')).toBeVisible();
+    await page.screenshot({ path: `/tmp/opencode/sitewide-state-local-auth-${width}.png`, fullPage: true });
+  }
+
   await page.getByLabel('Local preview identity').fill(`Pairing owner ${Date.now()}`);
   await page.getByRole('button', { name: 'Enter local preview' }).click();
   await expect(page.getByRole('heading', { name: 'Authorize an installation' })).toBeVisible();
   await page.getByLabel('Agent name', { exact: true }).fill('Paired Contender');
   await page.getByRole('button', { name: 'Create competitor' }).click();
   await expect(page.getByLabel('Competitor profile')).toContainText('Paired Contender');
+  await page.setViewportSize({ width: 1600, height: 1120 });
+  await page.screenshot({ path: '/tmp/opencode/luminous-pairing-desktop.png', fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: '/tmp/opencode/luminous-pairing-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Approve connection' }).click();
   await expect(page.getByRole('heading', { name: 'Your agent is connected.' })).toBeVisible();
   await expect(page.getByText(/Return to your agent’s chat/)).toBeVisible();
@@ -71,11 +83,16 @@ test('browser pairing approves only the chosen competitor and revokes the instal
   );
 });
 
-test('owner creates a persistent competitor and sees it on its public profile', async ({ page }) => {
-  await page.goto('/dashboard');
-  await page.getByLabel('Local preview identity').fill(`Browser owner ${Date.now()}`);
+test('owner creates and retires a persistent competitor, signs out and returns to the same roster', async ({
+  page,
+}) => {
+  const ownerName = `Browser owner ${Date.now()}`;
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Sign in', exact: true }).click();
+  await page.getByLabel('Local preview identity').fill(ownerName);
   await page.getByRole('button', { name: 'Enter local preview' }).click();
   await expect(page.getByRole('heading', { name: 'Your roster.' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toHaveCount(0);
   await page.getByLabel('Agent name', { exact: true }).fill('Browser Contender');
   await page.getByLabel('A little personality').fill('A patient strategist with a very long memory.');
   await page.getByRole('button', { name: 'Create competitor' }).click();
@@ -83,6 +100,19 @@ test('owner creates a persistent competitor and sees it on its public profile', 
   await expect(page.getByRole('heading', { name: 'Browser Contender' })).toBeVisible();
   await expect(page.getByText('Provisional · 0/10 placement games')).toBeVisible();
   await expect(page.getByText('A patient strategist with a very long memory.')).toBeVisible();
+  const profile = page.url();
+  await page.getByRole('link', { name: 'Your roster', exact: true }).click();
+  await page.getByRole('button', { name: 'Retire', exact: true }).click();
+  await expect(page.locator('.roster-card').getByText('RETIRED', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Retire', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Enter local preview' })).toBeVisible();
+  await page.getByLabel('Local preview identity').fill(ownerName);
+  await page.getByRole('button', { name: 'Enter local preview' }).click();
+  await expect(page.locator('.roster-card').getByText('RETIRED', { exact: true })).toBeVisible();
+  await page.goto(profile);
+  await expect(page.getByRole('heading', { name: 'Browser Contender' })).toBeVisible();
+  await expect(page.getByText('Retired', { exact: true })).toBeVisible();
 });
 
 test('spectates a live exhibition and scrubs its completed private replay', async ({ page }) => {
@@ -92,8 +122,8 @@ test('spectates a live exhibition and scrubs its completed private replay', asyn
   await expect(page.getByRole('heading', { name: 'Your agent. Their next great rival.' })).toBeVisible();
   await page.screenshot({ path: '/tmp/opencode/agent-game-desktop.png', fullPage: true });
   await page.getByRole('button', { name: 'Start local exhibition' }).click();
-  await expect(page.getByText('Public spectator')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Table feed' })).toBeVisible();
+  await expect(page.getByText('Public spectator', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Match timeline' })).toBeVisible();
   await expect(page.locator('.seat')).toHaveCount(10);
   await page.screenshot({ path: '/tmp/opencode/agent-game-table.png', fullPage: true });
   await expect(page.getByText('Replay timeline', { exact: true })).toBeVisible({ timeout: 50_000 });
@@ -107,12 +137,13 @@ test('spectates a live exhibition and scrubs its completed private replay', asyn
 test('mobile arena and live table fit the viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await expect(page.getByRole('link', { name: 'Enter the arena', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Connect your agent', exact: true }).first()).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
     .toBe(true);
   await page.screenshot({ path: '/tmp/opencode/agent-game-mobile.png', fullPage: true });
-  const replay = page.locator('.match-card').first();
+  const replay = page.getByRole('link', { name: 'Open replay', exact: true }).first();
 
   if (await replay.count()) {
     await replay.click();

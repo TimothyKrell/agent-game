@@ -3,6 +3,92 @@ import { createMatch } from '../src/game/engine';
 import { observe } from '../src/game/observation';
 import type { Observation } from '../src/game/types';
 
+test('discussion folds preserve chronology, stay closed on arrival, and survive filters and archive IDs', async ({
+  page,
+}) => {
+  const state = createMatch(
+    'match_folds',
+    Array.from({ length: 10 }, (_, i) => ({
+      agentId: `fold-${i}`,
+      ownerId: `owner-${i}`,
+      name: `Mind ${i}`,
+      house: false,
+      rating: 1000,
+    })),
+    Date.now(),
+  );
+
+  for (const [type, text] of [
+    ['chat', 'First discussion'],
+    ['nomination', 'Mind 0 nominated Mind 1'],
+    ['chat', 'Second discussion'],
+  ]) {
+    state.events.push({
+      id: state.events.length + 1,
+      at: state.createdAt + state.events.length * 1000,
+      round: 1,
+      type,
+      text,
+      seat: 0,
+      visibility: 'public',
+    });
+  }
+
+  const initial = observe(state);
+  let cursor = initial.cursor;
+
+  let send = (_value: Observation): void => {
+    throw new Error('Socket not connected');
+  };
+
+  await page.route('**/api/matches/match_folds', (route) => route.fulfill({ json: initial }));
+  await page.routeWebSocket('**/api/matches/match_folds/events?*', (socket) => {
+    send = (value) => socket.send(JSON.stringify({ type: 'observation', observation: value }));
+  });
+  await page.goto('/matches/match_folds');
+  const timeline = page.getByLabel('Match timeline');
+  await expect(timeline.locator('.discussion-toggle')).toHaveCount(2);
+  const second = timeline.locator('.discussion-toggle').nth(1);
+  await second.click();
+  await expect(second).toHaveAttribute('aria-expanded', 'false');
+  state.events.push({
+    id: state.events.length + 1,
+    at: state.createdAt + 9000,
+    round: 1,
+    type: 'chat',
+    text: 'A new message in the folded discussion',
+    seat: 1,
+    visibility: 'public',
+  });
+  const update = observe(state, null, cursor);
+  cursor = update.cursor;
+  send(update);
+  await expect(second).toContainText('2 messages');
+  await expect(second).toContainText('1 new');
+  await expect(second).toHaveAttribute('aria-expanded', 'false');
+  await expect(timeline.getByText('Mind 0 nominated Mind 1')).toBeVisible();
+  await page.getByRole('button', { name: 'Discussion', exact: true }).click();
+  await expect(timeline.locator('.discussion-toggle')).toHaveCount(2);
+  await expect(second).toHaveAttribute('aria-expanded', 'false');
+  await expect(timeline.getByText('Mind 0 nominated Mind 1')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Everything', exact: true }).click();
+  state.phase.kind = 'finished';
+  state.finishedAt = state.createdAt + 10000;
+  state.winner = 'cooperative';
+  state.winReason = 'five safeguards enacted';
+  send(observe(state));
+  await expect(second).toHaveAttribute('aria-expanded', 'false');
+  await second.click();
+  await expect(timeline.getByText('A new message in the folded discussion')).toBeVisible();
+  await page.getByRole('button', { name: 'Collapse discussions', exact: true }).click();
+  await expect(timeline.locator('.discussion-toggle[aria-expanded="false"]')).toHaveCount(2);
+  await expect(timeline.getByText('Mind 0 nominated Mind 1')).toBeVisible();
+  await page.getByRole('button', { name: 'Expand discussions', exact: true }).click();
+  await expect(timeline.locator('.event-chat')).toHaveCount(3);
+  await page.getByLabel('Browse by round').selectOption('1');
+  await expect(timeline.locator('[data-round="1"]')).toBeInViewport();
+});
+
 test('timeline preserves reading position on live updates and names archived voters', async ({ page }) => {
   const state = createMatch(
     'match_feed',
@@ -36,6 +122,7 @@ test('timeline preserves reading position on live updates and names archived vot
 
   await page.routeWebSocket('**/api/matches/match_feed/events?*', (socket) => {
     send = (value) => socket.send(JSON.stringify({ type: 'observation', observation: value }));
+    send({ ...observation, events: [] });
   });
   await page.goto('/matches/match_feed');
   const list = page.getByLabel('Match timeline');
@@ -224,6 +311,7 @@ test('timeline attributes public actions and archived investigation recipients',
 
   await page.routeWebSocket('**/api/matches/match_actors/events?*', (socket) => {
     send = (value) => socket.send(JSON.stringify({ type: 'observation', observation: value }));
+    send({ ...observe(state), events: [] });
   });
   await page.goto('/matches/match_actors');
   await expect(page.getByText('Connected', { exact: true })).toBeVisible();

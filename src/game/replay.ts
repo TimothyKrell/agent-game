@@ -20,13 +20,17 @@ const ReplayEventData = Schema.Struct({
   chaos: Schema.optional(Schema.Boolean),
 });
 
+type ReplayFrame = Omit<Observation, 'phase' | 'coordinator'> & {
+  phase: Observation['phase'] | null;
+  coordinator: number | null;
+};
+
 /** Rebuild the table at a replay cursor; final role disclosures stay visible throughout. */
-export function replayFrame(record: Observation, through: number | null): Observation {
+export function replayFrame(record: Observation, through: number | null): ReplayFrame {
   if (through === null || record.status === 'active') return record;
-  const view = structuredClone(record);
+  const view: ReplayFrame = { ...structuredClone(record), phase: null, coordinator: null };
   view.events = record.events.slice(0, through);
   view.round = 1;
-  view.coordinator = 0;
   view.executor = null;
   view.lastGovernment = null;
   view.tracks = {
@@ -58,7 +62,8 @@ export function replayFrame(record: Observation, through: number | null): Observ
 
       if (data.executor !== undefined) view.executor = data.executor;
 
-      if (data.phase !== undefined) view.phase.kind = data.phase;
+      if (data.phase !== undefined)
+        view.phase = { id: `replay-${event.id}`, kind: data.phase, deadline: null, graceUntil: null };
     }
 
     if (event.type === 'nomination' && data.target !== undefined) {

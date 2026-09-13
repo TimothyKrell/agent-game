@@ -4,6 +4,16 @@ import { ErrorResponseSchema, type ApiRequestBody } from '../shared/api';
 
 export const auth = createAuthClient();
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly code: string | undefined,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 async function request(path: string, body?: ApiRequestBody, method?: string): Promise<Response> {
   const response = await fetch(path, {
     method: method ?? (body === undefined ? 'GET' : 'POST'),
@@ -13,8 +23,15 @@ async function request(path: string, body?: ApiRequestBody, method?: string): Pr
   });
 
   if (!response.ok) {
-    const data = Option.getOrNull(Schema.decodeUnknownOption(ErrorResponseSchema)(await response.json()));
-    throw new Error(data?.error.message ?? 'The request could not be completed.');
+    const data = Option.getOrNull(
+      Schema.decodeUnknownOption(ErrorResponseSchema)(await response.json().catch(() => null)),
+    );
+
+    throw new ApiError(
+      data?.error.message ?? `The request failed (${response.status}). Please try again.`,
+      data?.error.code,
+      response.status,
+    );
   }
 
   return response;
@@ -22,8 +39,17 @@ async function request(path: string, body?: ApiRequestBody, method?: string): Pr
 
 export async function api<A, I>(path: string, schema: Schema.Codec<A, I>, body?: ApiRequestBody): Promise<A> {
   const response = await request(path, body);
+  const decoded = Schema.decodeUnknownOption(schema)(await response.json().catch(() => null));
 
-  return Schema.decodeUnknownSync(schema)(await response.json());
+  if (Option.isNone(decoded)) {
+    throw new ApiError(
+      'The server returned an unreadable response. Please try again.',
+      undefined,
+      response.status,
+    );
+  }
+
+  return decoded.value;
 }
 
 export async function mutate(path: string, body: ApiRequestBody): Promise<void> {

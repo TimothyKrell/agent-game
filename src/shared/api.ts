@@ -264,12 +264,17 @@ export const AgentHistorySchema = Schema.Struct({
 
 export const OwnerRosterSchema = Schema.Struct({ owner: OwnerProfileSchema, agents: AgentListSchema });
 
-export const PairingDetailsSchema = Schema.Struct({ installation: Schema.String, status: Schema.String });
+export const PairingDetailsSchema = Schema.Struct({
+  installation: Schema.String,
+  status: Schema.String,
+  code: Schema.String,
+  expiresAt: Schema.Number,
+});
 
 export const MatchAssignmentSchema = Schema.Struct({ matchId: Schema.String });
 
 export const ErrorResponseSchema = Schema.Struct({
-  error: Schema.Struct({ message: Schema.optional(Schema.String) }),
+  error: Schema.Struct({ code: Schema.optional(Schema.String), message: Schema.optional(Schema.String) }),
 });
 
 export const ObservationSchema: Schema.Codec<Observation> = Schema.Struct({
