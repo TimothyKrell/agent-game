@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { getPlatformProxy } from 'wrangler';
-import { readFile } from 'node:fs/promises';
+import { applyPlatformMigrations } from './platform-migrations';
 import { act, createMatch, decisionId, interruptMatch } from '../src/game/engine';
 import { ratingChanges } from '../src/game/rating';
 import { finalizeRatings, findAgent, type RepositoryEnv } from '../src/server/repository';
@@ -16,14 +16,7 @@ describe('D1 settlement of durable results', () => {
 
     env = platform.env;
     dispose = platform.dispose;
-    const migration = await readFile('migrations/0001_initial.sql', 'utf8');
-    await env.DB.batch(
-      migration
-        .split(/;\s*(?=\n|$)/)
-        .map((sql) => sql.trim())
-        .filter(Boolean)
-        .map((sql) => env.DB.prepare(sql)),
-    );
+    await applyPlatformMigrations(env.DB);
     await env.DB.batch([
       env.DB.prepare(
         `INSERT INTO user (id,name,email,emailVerified,createdAt,updatedAt) VALUES ('u','Owner','owner@example.test',1,0,0)`,
