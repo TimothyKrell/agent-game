@@ -97,6 +97,9 @@ test('native-size motion review scenes', async ({ page }, info) => {
   await page.waitForTimeout(3000);
   await page.screenshot({ path: info.outputPath('splash-settled.png') });
   const entranceTrace = await page.evaluate(() => window.motionTrace);
+  expect(entranceTrace.filter((entry) => entry.target.startsWith('art-'))).toHaveLength(
+    info.project.use.reducedMotion === 'reduce' ? 0 : 3,
+  );
   const action = page.locator('.splash-copy').getByRole('link', { name: 'Connect your agent' });
   await action.scrollIntoViewIfNeeded();
   mark('control-hover');

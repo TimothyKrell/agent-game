@@ -21,6 +21,7 @@ Responsive easing: `cubic-bezier(.2,.8,.2,1)`. Ceremonial easing: `cubic-bezier(
 - Reduced motion, hidden state, restored history and hash/focus skips **consume entrances**. Returning or changing the preference back does not replay them. Hover requires fresh pointer movement after a hidden/reduced interruption.
 - `src/client/motion.css` contains property-specific control feedback and settled underline geometry. No-JS/default styling is the settled state. Reduced motion also disables existing busy-icon rotation and smooth scrolling; explanatory status text remains.
 - `src/client/deco.tsx` exposes separate SVG framing/center/terminal groups while retaining authored geometry. Transform wrappers preserve native SVG transforms.
+- MV01 correction: artwork entry observes the stable center wrapper at 50% visibility. Static top seats entering the compact viewport cannot consume the center's entrance while it is below the fold. Title entry remains independent; revisiting the artwork stays static.
 - `src/client/main.tsx` opts in titles/results and explicit arena choices. `app:navigate` distinguishes intentional in-app navigation from browser restoration; modifier links retain native behavior. `src/client/match-feed.tsx` opts in only the existing filter underline.
 - Game handlers, engine execution, transport, privacy, authority, timers, replay reconstruction and rating rules retain their Phase 1 contracts.
 

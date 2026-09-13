@@ -200,10 +200,13 @@ export function useMotionEntry(scene: Entry) {
           element.dataset.motionSettled = 'true';
         });
       },
-      { threshold: 0.15 },
+      { threshold: scene === 'artwork' ? 0.5 : 0.15 },
     );
 
-    observer.observe(scene === 'artwork' ? element : (element.querySelector('h1') ?? element));
+    observer.observe(
+      (scene === 'artwork' ? element.querySelector('.art-center-hover') : element.querySelector('h1')) ??
+        element,
+    );
 
     return () => {
       observer.disconnect();

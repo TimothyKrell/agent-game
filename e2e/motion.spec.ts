@@ -175,6 +175,9 @@ test('changing motion preference stops decoration immediately and keeps loading 
   await arena(page);
   await page.goto('/');
   await expect(page.locator('.table-artwork')).toBeVisible();
+  expect(
+    await page.evaluate(() => window.motionTrace.filter((entry) => entry.target.startsWith('art-'))),
+  ).toEqual([]);
   await page.locator('.splash-art').scrollIntoViewIfNeeded();
   await expect
     .poll(() => page.locator('.art-rings-entry').evaluate((element) => element.getAnimations().length))
