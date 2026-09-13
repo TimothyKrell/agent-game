@@ -11,25 +11,32 @@ export async function commitmentDigest(
   const bytes = new TextEncoder().encode(
     JSON.stringify(['succession-tie-v1', matchId, 'succession-1', saltBase64url, priority]),
   );
+
   const digest = await crypto.subtle.digest('SHA-256', bytes);
+
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+
 export async function createCommitment(
   matchId: string,
   random = secureRandom,
   salt: Uint8Array = crypto.getRandomValues(new Uint8Array(32)),
 ) {
   if (salt.length !== 32) throw new Error('Tie commitment requires a 32-byte salt.');
+
   const priority = shuffle(
     Array.from({ length: 10 }, (_, seat) => seat),
     random.random,
   );
+
   const saltBase64url = btoa(String.fromCharCode(...salt))
     .replaceAll('+', '-')
     .replaceAll('/', '_')
     .replaceAll('=', '');
+
   return { priority, saltBase64url, digest: await commitmentDigest(matchId, saltBase64url, priority) };
 }
+
 export async function verifyCommitment(
   matchId: string,
   value: { digest: string; saltBase64url: string; priority: number[] },

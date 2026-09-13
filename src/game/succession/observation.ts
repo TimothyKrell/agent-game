@@ -18,6 +18,7 @@ export function observeSuccession(
   const seat = seatNumber === null ? null : (state.seats[seatNumber] ?? null);
   const permitted = seat && (!seat.forfeited || houseController) ? seat : null;
   const ended = state.status !== 'active';
+
   const base: Observation2 = {
     protocolVersion: '2',
     gameId: 'succession',
@@ -38,19 +39,24 @@ export function observeSuccession(
           ? state.phase.deadline + state.snapshot.timing.grace
           : null,
     },
-    seats: state.seats.map((entry) => ({
-      number: entry.number,
-      agentId: entry.entrant.agentId,
-      ownerId: entry.entrant.ownerId,
-      name: entry.entrant.name,
-      house: entry.houseProfile !== null,
-      originalHouse: entry.entrant.house,
-      alive: entry.alive,
-      forfeited: entry.forfeited,
-      rating: entry.entrant.rating,
-      generation: entry.generation,
-      ...(state.stage.act === 2 || ended ? { role: entry.role } : {}),
-    })),
+    seats: state.seats.map((entry) => {
+      const visible: Observation2['seats'][number] = {
+        number: entry.number,
+        agentId: entry.entrant.agentId,
+        ownerId: entry.entrant.ownerId,
+        name: entry.entrant.name,
+        house: entry.houseProfile !== null,
+        originalHouse: entry.entrant.house,
+        alive: entry.alive,
+        forfeited: entry.forfeited,
+        rating: entry.entrant.rating,
+        generation: entry.generation,
+      };
+
+      if (state.stage.act === 2 || ended) visible.role = entry.role;
+
+      return visible;
+    }),
     board: {
       act: 1,
       coordinator: 0,
@@ -95,6 +101,7 @@ export function observeSuccession(
     },
     history: { ...history },
   };
+
   if (state.stage.act === 1) {
     // Only the active child can be projected here. Its terminal victory is intercepted atomically.
     const child = observe(
@@ -103,6 +110,7 @@ export function observeSuccession(
       0,
       houseController,
     );
+
     base.board = {
       act: 1,
       coordinator: child.coordinator,
@@ -111,23 +119,30 @@ export function observeSuccession(
       tracks: child.tracks,
       lastGovernment: child.lastGovernment,
     };
-    base.seats = base.seats.map((entry, index) => ({
-      ...entry,
-      ...(child.seats[index].vote === undefined ? {} : { vote: child.seats[index].vote }),
-    }));
+
+    for (const [index, entry] of base.seats.entries()) {
+      const vote = child.seats[index].vote;
+
+      if (vote !== undefined) entry.vote = vote;
+    }
+
     base.chat = { ...child.chat, open: child.chat.open && (!seat || seat.alive) };
     base.private = child.private ? { act: 1, ...child.private } : null;
     base.decision = ended ? null : child.decision;
+
     if (base.decision)
       base.decision.actions = base.decision.actions.map(({ action, label }) => ({
         action,
         label: 'target' in action ? `${action.type} seat ${action.target + 1}` : label,
       }));
+
     return base;
   }
+
   const board = state.stage.board;
   const pending = board.pending;
   const target = pending && 'target' in pending.action ? pending.action.target : null;
+
   const publicPending: PendingAction2 | null = pending
     ? {
         actor: pending.actor,
@@ -138,6 +153,7 @@ export function observeSuccession(
         block: pending.block && target !== null ? { seat: target, capability: pending.block } : null,
       }
     : null;
+
   base.board = {
     act: 2,
     firstSeat: board.firstSeat,
@@ -155,6 +171,7 @@ export function observeSuccession(
     revealed: board.resources[entry.number].revealed.map((card) => card.capability),
   }));
   base.chat.open = !ended && board.phase !== 'exchange' && (!seat || seat.alive);
+
   if (permitted) {
     const hand = board.resources[permitted.number].hand;
     base.private = {
@@ -167,6 +184,7 @@ export function observeSuccession(
       reaction: pending?.challenge?.responses[permitted.number] ?? null,
     };
     const actions = ended ? [] : legalAct2(board, permitted.number);
+
     if (actions.length) {
       const replacement = state.phase.replacements[String(permitted.number)];
       const deadline = replacement ?? state.phase.deadline ?? 0;
@@ -190,17 +208,21 @@ export function observeSuccession(
       };
     }
   }
+
   return base;
 }
 
 export function inspectSuccession(state: SuccessionState): RuntimeInspection {
   const active = state.status === 'active';
+
   const pending = active
     ? state.stage.act === 1
       ? pendingSeats({ ...state.stage.board, seats: state.seats, events: [] })
       : pendingAct2(state.stage.board)
     : [];
+
   let deadline: number | null = null;
+
   if (active && state.stage.act === 1)
     deadline = nextDeadline({ ...state.stage.board, seats: state.seats, events: [] });
   else if (active && state.phase.deadline !== null)
@@ -213,11 +235,13 @@ export function inspectSuccession(state: SuccessionState): RuntimeInspection {
             ),
           )
         : state.phase.deadline;
+
   const discussion =
     active &&
     (state.stage.act === 1
       ? ['nomination-discussion', 'government-discussion', 'executive-discussion'].includes(state.phase.kind)
       : state.stage.board.phase === 'discussion');
+
   return {
     status: state.status,
     phaseId: state.phase.id,

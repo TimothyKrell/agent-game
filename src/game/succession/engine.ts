@@ -29,7 +29,9 @@ const legacyActions = new Set([
   'special-election',
   'execute',
 ]);
+
 type EventContext = RandomContext & { capture?(eventKey: string, state: SuccessionState): void };
+
 function isLegacyAction(
   action: SuccessionCommand & { type: 'act' },
 ): action is SuccessionCommand & { type: 'act'; request: { action: GameAction } } {
@@ -37,14 +39,17 @@ function isLegacyAction(
 }
 
 function legacyEvents(events: GameEvent[], random: RandomContext): SuccessionEvent[] {
-  return events
-    .filter((event) => !(event.type === 'phase' && event.data?.phase === 'finished'))
-    .map(({ id: _id, ...event }) => ({
-      ...event,
-      eventKey: random.id(),
-      act: 1,
-      ...(event.type === 'victory' ? { type: 'act-ended', text: `Act 1 ended: ${event.text}` } : {}),
-    }));
+  return events.flatMap(({ id: _id, ...entry }) => {
+    if (entry.type === 'phase' && entry.data?.phase === 'finished') return [];
+    const translated: SuccessionEvent = { ...entry, eventKey: random.id(), act: 1 };
+
+    if (entry.type === 'victory') {
+      translated.type = 'act-ended';
+      translated.text = `Act 1 ended: ${entry.text}`;
+    }
+
+    return [translated];
+  });
 }
 
 export async function createSuccession(
@@ -55,11 +60,13 @@ export async function createSuccession(
 ): Promise<Evolution> {
   const random = options.random ?? secureRandom;
   const descriptor = gameDescriptor('succession');
+
   const snapshot = options.snapshot ?? {
     ...descriptor,
     mode: 'ranked',
     houseModel: { provider: 'preview', model: 'scripted', policyVersion: descriptor.housePolicyVersion },
   };
+
   if (
     snapshot.gameId !== 'succession' ||
     snapshot.rulesVersion !== 'succession-1' ||
@@ -70,6 +77,7 @@ export async function createSuccession(
     throw new GameError('game-mismatch', 'Unsupported Succession snapshot.', 400);
   const commitment = await createCommitment(id, random, options.salt);
   const childFrames: LegacyBoard[] = [];
+
   const child = createMatch(id, entrants, now, {
     timing: snapshot.timing,
     mode: snapshot.mode,
@@ -79,7 +87,9 @@ export async function createSuccession(
       childFrames.push(board);
     },
   });
+
   const { seats, events, ...board } = child;
+
   const state: SuccessionState = {
     storageVersion: 1,
     gameId: 'succession',
@@ -98,6 +108,7 @@ export async function createSuccession(
     commitment,
     lastChat: null,
   };
+
   const appendedEvents: SuccessionEvent[] = [
     {
       eventKey: random.id(),
@@ -111,11 +122,14 @@ export async function createSuccession(
     },
     ...legacyEvents(events, random),
   ];
+
   const replayFrames = appendedEvents.map((entry, index) => ({
     eventKey: entry.eventKey,
     state: legacyFrame(state, childFrames[Math.max(0, index - 1)]),
   }));
+
   replayFrames[replayFrames.length - 1].state = structuredClone(state);
+
   return { state, appendedEvents, replay: null, replayFrames };
 }
 
@@ -129,6 +143,7 @@ function legacyFrame(template: SuccessionState, child: LegacyBoard): SuccessionS
   frame.status = board.phase.kind === 'interrupted' ? 'interrupted' : 'active';
   frame.finishedAt = frame.status === 'interrupted' ? board.finishedAt : null;
   frame.interruptionReason = frame.status === 'interrupted' ? board.winReason : null;
+
   return frame;
 }
 
@@ -136,14 +151,17 @@ function recordRandom(context: RandomContext, facts: RealizedRandom[]): RandomCo
   return {
     random(size) {
       const value = context.random(size);
+
       if (!Number.isInteger(value) || value < 0 || value >= size)
         throw new Error('Invalid injected random index');
       facts.push({ kind: 'index', size, value });
+
       return value;
     },
     id() {
       const value = context.id();
       facts.push({ kind: 'id', value });
+
       return value;
     },
   };
@@ -156,42 +174,52 @@ export function evolveSuccession(
 ): Evolution {
   const randomness: RealizedRandom[] = [];
   const replayFrames: Evolution['replayFrames'] = [];
+
   const random: EventContext = {
     ...recordRandom(context, randomness),
     capture(eventKey, state) {
       replayFrames.push({ eventKey, state: structuredClone(state) });
     },
   };
+
   if (input.status !== 'active') {
     if (command.type === 'act') throw new GameError('not-playing', 'This match has ended.');
+
     return { state: input, appendedEvents: [], replay: null, replayFrames: [] };
   }
+
   if (command.type === 'act' && command.request.gameId !== 'succession')
     throw new GameError('game-mismatch', 'This match uses Succession.');
   const state = structuredClone(input);
   const appendedEvents: SuccessionEvent[] = [];
+
   if (state.stage.act === 1) {
     let childCommand: LegacyCommand;
+
     if (command.type === 'act') {
       if (!isLegacyAction(command))
         throw new GameError('illegal-action', 'Act 2 actions are unavailable in Act 1.', 400);
       childCommand = { ...command, request: { ...command.request, action: command.request.action } };
     } else childCommand = command;
     const childFrames: LegacyBoard[] = [];
+
     const child = evolveLegacy({ ...state.stage.board, seats: state.seats }, childCommand, {
       ...random,
       onEvent(board) {
         childFrames.push(board);
       },
     });
+
     const { seats, ...board } = child.state;
     state.seats = seats;
     state.stage.board = board;
     state.phase = board.phase;
     const translated = legacyEvents(child.appendedEvents, random);
+
     const retained = child.appendedEvents.filter(
       (entry) => !(entry.type === 'phase' && entry.data?.phase === 'finished'),
     );
+
     for (const [index, entry] of translated.entries())
       if (entry.type !== 'chat')
         replayFrames.push({
@@ -199,14 +227,17 @@ export function evolveSuccession(
           state: legacyFrame(input, childFrames[retained[index].id - 1]),
         });
     appendedEvents.push(...translated);
+
     if (board.phase.kind === 'interrupted') {
       state.status = 'interrupted';
       state.finishedAt = command.now;
       state.interruptionReason = board.winReason;
     } else if (board.phase.kind === 'finished') transition(state, board, command.now, random, appendedEvents);
   } else evolveAct2(state, command, random, appendedEvents);
+
   if (command.type === 'act' && command.request.action.type === 'chat') {
     state.lastChat = { seat: command.seat, at: command.now };
+
     return {
       state,
       appendedEvents,
@@ -214,7 +245,9 @@ export function evolveSuccession(
       replayFrames: [],
     };
   }
+
   if (replayFrames.length) replayFrames[replayFrames.length - 1].state = structuredClone(state);
+
   return {
     state,
     appendedEvents,
@@ -249,10 +282,12 @@ function transition(
       vetoUnlocked: archive.overrides >= 5,
     },
   };
+
   for (const seat of state.seats) {
     seat.alive = true;
     seat.lastChatAt = null;
   }
+
   startAct2(state, archive, bonuses, now, random, events);
 }
 
@@ -275,12 +310,16 @@ function event(
     visibility: 'public',
     ...extra,
   };
+
   events.push(entry);
+
   if (type !== 'chat') random.capture?.(entry.eventKey, state);
 }
+
 function syncAct2Phase(state: SuccessionState, now: number): void {
   if (state.stage.act !== 2) return;
   const board = state.stage.board;
+
   if (state.phase.id === board.phaseId) return;
   state.phase = {
     id: board.phaseId,
@@ -297,6 +336,7 @@ function syncAct2Phase(state: SuccessionState, now: number): void {
     replacements: {},
   };
 }
+
 function startAct2(
   state: SuccessionState,
   archive: Act1Board,
@@ -318,6 +358,7 @@ function startAct2(
       firstSeat: state.stage.board.firstSeat,
     },
   });
+
   for (const seat of state.seats)
     event(state, now, random, events, 'capability-deal', 'Your fresh capability hand.', {
       seat: seat.number,
@@ -333,6 +374,7 @@ function startAct2(
     data: { phase: state.phase.kind, deadline: state.phase.deadline },
   });
 }
+
 function act2Context(
   state: SuccessionState,
   now: number,
@@ -346,19 +388,22 @@ function act2Context(
       if (state.stage.act === 2) {
         for (const seat of state.seats) seat.alive = state.stage.board.resources[seat.number].hand.length > 0;
         syncAct2Phase(state, now);
+
         if (state.stage.board.winner !== null)
           finishAct2(state, state.stage.board.winner, state.stage.board.capEvidence, now);
       }
-      event(state, now, random, events, fact.type, fact.type.replaceAll('-', ' '), {
-        data: { ...fact },
-        ...('seat' in fact ? { seat: fact.seat } : {}),
-      });
+
+      const extra: Partial<Pick<SuccessionEvent, 'seat' | 'data'>> = { data: { ...fact } };
+
+      if ('seat' in fact) extra.seat = fact.seat;
+      event(state, now, random, events, fact.type, fact.type.replaceAll('-', ' '), extra);
     },
     onFinish(winner, tieBreak) {
       finishAct2(state, winner, tieBreak, now);
     },
   };
 }
+
 function finishAct2(
   state: SuccessionState,
   winner: number,
@@ -376,6 +421,7 @@ function finishAct2(
     tieBreak,
   };
 }
+
 function interrupt(
   state: SuccessionState,
   now: number,
@@ -396,6 +442,7 @@ function interrupt(
   };
   event(state, now, random, events, 'interrupted', reason);
 }
+
 function evolveAct2(
   state: SuccessionState,
   command: SuccessionCommand,
@@ -407,14 +454,18 @@ function evolveAct2(
   assertAct2Integrity(board);
   const now = command.now;
   const context = act2Context(state, now, random, events);
+
   if (command.type === 'interrupt') {
     interrupt(state, now, command.reason, random, events);
+
     return;
   }
+
   if (command.type === 'recover') {
     const replacements = Object.keys(state.phase.replacements);
     board.phaseId = random.id();
     syncAct2Phase(state, now);
+
     for (const seat of replacements) state.phase.replacements[seat] = now + state.snapshot.timing.action;
     event(
       state,
@@ -424,17 +475,24 @@ function evolveAct2(
       'recovered',
       'The current choice has a fresh platform-recovery window.',
     );
+
     return;
   }
+
   if (command.type === 'advance') {
     const deadline = state.phase.deadline;
+
     if (deadline === null || now < deadline) return;
+
     if (board.phase === 'discussion') {
       advanceAct2Discussion(board, context);
       syncAct2Phase(state, now);
+
       return;
     }
+
     const pending = pendingAct2(board);
+
     if (!state.phase.graceAnnounced && pending.length) {
       state.phase.graceAnnounced = true;
       event(
@@ -447,8 +505,10 @@ function evolveAct2(
         { data: { graceUntil: deadline + state.snapshot.timing.grace } },
       );
     }
+
     for (const number of pending) {
       const replacementEnd = state.phase.replacements[String(number)];
+
       if (
         (replacementEnd !== undefined && now >= replacementEnd) ||
         (replacementEnd === undefined &&
@@ -462,9 +522,11 @@ function evolveAct2(
           random,
           events,
         );
+
         return;
       }
     }
+
     for (const number of pending) {
       if (
         state.phase.replacements[String(number)] !== undefined ||
@@ -486,33 +548,45 @@ function evolveAct2(
         { seat: number, data: { agentId: seat.entrant.agentId, generation: seat.generation } },
       );
     }
+
     return;
   }
+
   const seat = state.seats[command.seat];
+
   if (!seat || !seat.alive) throw new GameError('not-playing', 'This seat cannot act.');
+
   if (seat.generation !== command.generation)
     throw new GameError('controller-replaced', 'This controller has been replaced.');
+
   if (command.request.phaseId !== state.phase.id)
     throw new GameError('stale-phase', 'The phase has changed; observe again.');
   const action = command.request.action;
+
   if (action.type === 'chat') {
     if (board.phase === 'exchange')
       throw new GameError('chat-closed', 'The table is silent during private exchange.');
     const text = action.text.trim();
+
     if (!text || [...text].length > 1000)
       throw new GameError('invalid-message', 'Messages must contain 1–1,000 Unicode characters.', 400);
+
     if (seat.lastChatAt !== null && now < seat.lastChatAt + state.snapshot.timing.chatCooldown)
       throw new GameError('chat-cooldown', 'Wait for your speaking cooldown.', 429);
     seat.lastChatAt = now;
     event(state, now, random, events, 'chat', text, { seat: command.seat });
+
     return;
   }
+
   if (command.request.decisionId !== `${state.phase.id}:${seat.number}:${seat.generation}`)
     throw new GameError('stale-decision', 'The decision has changed; observe again.');
+
   if (!isAct2Action(action))
     throw new GameError('illegal-action', 'Act 1 actions are unavailable in Act 2.', 400);
   const priorHands = board.resources.map((resource) => JSON.stringify(resource.hand));
   const priorExchange = JSON.stringify(board.pending?.exchange ?? null);
+
   try {
     applyAct2(board, command.seat, action, context);
   } catch (error) {
@@ -520,8 +594,10 @@ function evolveAct2(
       throw new GameError('illegal-action', 'Choose a current legal action.', 400);
     throw error;
   }
+
   for (const participant of state.seats) {
     const hand = board.resources[participant.number].hand;
+
     if (priorHands[participant.number] !== JSON.stringify(hand))
       event(state, now, random, events, 'hand-updated', 'Your current capability hand.', {
         seat: participant.number,
@@ -529,6 +605,7 @@ function evolveAct2(
         data: { cards: hand.map(({ id, capability }) => ({ id, capability })) },
       });
   }
+
   if (board.pending?.exchange && JSON.stringify(board.pending.exchange) !== priorExchange)
     event(
       state,
@@ -543,17 +620,20 @@ function evolveAct2(
         data: { cards: board.pending.exchange.map(({ id, capability }) => ({ id, capability })) },
       },
     );
+
   if (action.type === 'pass' || action.type === 'challenge')
     event(state, now, random, events, 'reaction', 'Your sealed response is committed.', {
       seat: seat.number,
       visibility: seat.number,
       data: { choice: action.type },
     });
+
   for (const participant of state.seats)
     participant.alive = board.resources[participant.number].hand.length > 0;
   syncAct2Phase(state, now);
   assertAct2Integrity(board);
 }
+
 function isAct2Action(action: import('../../shared/succession').Action2): action is Act2Action {
   return [
     'income',

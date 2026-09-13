@@ -12,46 +12,74 @@ import { ratingChanges } from './rating';
 import { gameDescriptor } from './descriptors';
 import type { RuntimeInspection, MatchSnapshot, SettlementParticipant } from './contracts';
 import type { MatchState, Entrant, ActionRequest } from './types';
+import { GameError } from './types';
+import { Match } from 'effect';
 
 export type SecretOverlordState = MatchState & { gameId: 'secret-overlord'; snapshot: MatchSnapshot };
+
 export type SecretOverlordCommand =
   | { type: 'act'; seat: number; generation: number; request: ActionRequest; now: number }
   | { type: 'advance' | 'recover'; now: number }
   | { type: 'interrupt'; now: number; reason: string };
+
 export function normalizeSecretOverlord(state: MatchState, snapshot?: MatchSnapshot): SecretOverlordState {
-  if (snapshot) return { ...state, gameId: 'secret-overlord', snapshot: structuredClone(snapshot) };
+  if (snapshot) {
+    validateSecretOverlordSnapshot(snapshot);
+
+    return { ...state, gameId: 'secret-overlord', snapshot: structuredClone(snapshot) };
+  }
+
   return {
     ...state,
     gameId: 'secret-overlord',
     snapshot: {
       ...gameDescriptor('secret-overlord'),
+      housePolicyVersion: state.houseModel?.policyVersion ?? 'house-4',
       mode: state.mode,
       timing: state.timing,
       houseModel: state.houseModel ?? {
-        provider: 'preview',
-        model: 'scripted',
-        policyVersion: 'secret-overlord-1',
+        provider: 'legacy',
+        model: 'unknown',
+        policyVersion: 'house-4',
       },
     },
   };
 }
+
 export function createSecretOverlord(
   id: string,
   entrants: Entrant[],
   now: number,
   snapshot?: MatchSnapshot,
 ): SecretOverlordState {
+  if (snapshot) validateSecretOverlordSnapshot(snapshot);
+
   const state = normalizeSecretOverlord(
     createMatch(id, entrants, now, { timing: snapshot?.timing, mode: snapshot?.mode }),
   );
+
   if (snapshot) {
     state.snapshot = structuredClone(snapshot);
     state.houseModel = structuredClone(snapshot.houseModel);
   }
+
   return state;
 }
+
+function validateSecretOverlordSnapshot(snapshot: MatchSnapshot): void {
+  if (
+    snapshot.gameId !== 'secret-overlord' ||
+    snapshot.rulesVersion !== 'secret-overlord-1' ||
+    snapshot.ratingPoolId !== 'secret-overlord-1' ||
+    snapshot.ratingVersion !== 'team-elo-1' ||
+    snapshot.protocolVersion !== '1'
+  )
+    throw new GameError('game-mismatch', 'Unsupported Secret Overlord snapshot.', 400);
+}
+
 export function evolveSecretOverlord(input: SecretOverlordState, command: SecretOverlordCommand) {
   let state: MatchState;
+
   switch (command.type) {
     case 'act':
       state = act(input, command.seat, command.generation, command.request, command.now);
@@ -66,19 +94,22 @@ export function evolveSecretOverlord(input: SecretOverlordState, command: Secret
       state = interruptMatch(input, command.now, command.reason);
       break;
   }
+
   return {
     state: { ...state, gameId: input.gameId, snapshot: input.snapshot },
     appendedEvents: state.events.slice(input.events.length),
   };
 }
+
 export function inspectSecretOverlord(state: SecretOverlordState): RuntimeInspection {
-  const status =
-    state.phase.kind === 'finished'
-      ? 'finished'
-      : state.phase.kind === 'interrupted'
-        ? 'interrupted'
-        : 'active';
+  const status = Match.value(state.phase.kind).pipe(
+    Match.when('finished', () => 'finished' as const),
+    Match.when('interrupted', () => 'interrupted' as const),
+    Match.orElse(() => 'active' as const),
+  );
+
   const chat = state.events.findLast((event) => event.type === 'chat' && event.seat !== undefined);
+
   return {
     status,
     phaseId: state.phase.id,
@@ -99,11 +130,14 @@ export function inspectSecretOverlord(state: SecretOverlordState): RuntimeInspec
       : null,
   };
 }
+
 export function settleSecretOverlord(state: SecretOverlordState) {
   if (!['finished', 'interrupted'].includes(state.phase.kind)) return null;
   const changes = ratingChanges(state);
+
   const participants: SettlementParticipant[] = state.seats.map((seat) => {
     const change = changes.find((entry) => entry.agentId === seat.entrant.agentId);
+
     return {
       seat: seat.number,
       entrant: seat.entrant,
@@ -114,6 +148,7 @@ export function settleSecretOverlord(state: SecretOverlordState) {
       placement: state.mode === 'ranked' && (change?.placement ?? false),
     };
   });
+
   return {
     gameId: state.gameId,
     ratingPoolId: state.snapshot.ratingPoolId,
@@ -125,4 +160,5 @@ export function settleSecretOverlord(state: SecretOverlordState) {
     participants,
   };
 }
+
 export const observeSecretOverlord = observe;

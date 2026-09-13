@@ -38,6 +38,7 @@ export type PhaseKind2 =
   | 'act-2:loss'
   | 'act-2:exchange'
   | 'act-2:finished';
+
 export interface Act1Result2 {
   team: Team;
   reason: string;

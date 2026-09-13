@@ -1,7 +1,9 @@
 import type { Timing, Entrant } from './types';
 
 export type GameId = 'secret-overlord' | 'succession';
+
 export type MatchMode = 'preview' | 'ranked' | 'evaluation';
+
 export interface GameDescriptor {
   gameId: GameId;
   displayName: string;
@@ -15,10 +17,12 @@ export interface GameDescriptor {
   timing: Timing;
   housePolicyVersion: string;
 }
+
 export interface MatchSnapshot extends GameDescriptor {
   mode: MatchMode;
   houseModel: { provider: string; model: string; policyVersion: string };
 }
+
 export interface SettlementParticipant {
   seat: number;
   entrant: Entrant;
@@ -28,6 +32,7 @@ export interface SettlementParticipant {
   ratingDelta: number;
   placement: boolean;
 }
+
 export interface RuntimeInspection {
   status: 'active' | 'finished' | 'interrupted';
   phaseId: string;

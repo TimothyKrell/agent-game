@@ -13,7 +13,7 @@ export const GAME_DESCRIPTORS: Record<GameId, GameDescriptor> = {
     rulesUrl: '/rules.md',
     ratingUrl: '/rating-method.md',
     timing: DEFAULT_TIMING,
-    housePolicyVersion: 'secret-overlord-1',
+    housePolicyVersion: 'house-4',
   },
   succession: {
     gameId: 'succession',
@@ -29,6 +29,7 @@ export const GAME_DESCRIPTORS: Record<GameId, GameDescriptor> = {
     housePolicyVersion: 'succession-1',
   },
 };
+
 export function gameDescriptor(gameId: GameId): GameDescriptor {
   return structuredClone(GAME_DESCRIPTORS[gameId]);
 }
