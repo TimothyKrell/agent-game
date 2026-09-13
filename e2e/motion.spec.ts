@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { interruptMatch } from '../src/game/engine';
 import { observe } from '../src/game/observation';
 import type { Observation } from '../src/game/types';
-import { observeMotion, visibility } from './motion-observer';
+import { expectUniqueLiveTimeline, observeMotion, visibility } from './motion-observer';
 import { arena } from './motion-fixture';
 
 test.use({ video: 'on' });
@@ -70,6 +70,14 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
 
     if (reducedMotion === 'reduce') expect(await page.evaluate(() => window.motionTrace)).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+
+    await page.goto('/connect?code=MOTION-PAIRING');
+    await expect(page.locator('.sign-in-page')).toHaveAttribute('data-motion-settled', 'true');
+    const beforeQueryChange = await page.evaluate(() => window.motionTrace.length);
+    await page.getByRole('link', { name: 'Start with your agent' }).click();
+    await expect(page).toHaveURL(/\/connect$/);
+    await expect(page.locator('.onboarding-page')).toHaveAttribute('data-motion-settled', 'true');
+    expect(await page.evaluate(() => window.motionTrace.length)).toBe(beforeQueryChange);
   });
 
   test(`live reading and replay remain stable with motion (${reducedMotion})`, async ({ page }) => {
@@ -98,10 +106,11 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await page.route('**/api/matches/motion-table', (route) => route.fulfill({ json: initial }));
     await page.routeWebSocket('**/api/matches/motion-table/events?*', (socket) => {
       send = (view) => socket.send(JSON.stringify({ type: 'observation', observation: view }));
-      send(initial);
+      send({ ...initial, reset: true });
     });
     await page.goto('/matches/motion-table');
     await expect(page.getByText('Connected', { exact: true })).toBeVisible();
+    await expectUniqueLiveTimeline(page);
     const list = page.getByLabel('Match timeline', { exact: true });
     await list.scrollIntoViewIfNeeded();
     await list.evaluate((element) => {

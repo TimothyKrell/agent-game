@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 declare global {
   interface Window {
@@ -32,4 +32,18 @@ export async function visibility(page: Page, state: DocumentVisibilityState) {
     Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => value });
     document.dispatchEvent(new Event('visibilitychange'));
   }, state);
+}
+
+export async function expectUniqueLiveTimeline(page: Page) {
+  const list = page.getByLabel('Match timeline', { exact: true });
+
+  const ids = await list
+    .locator('.game-event')
+    .evaluateAll((elements) => elements.map((element) => element.getAttribute('data-event-id')));
+
+  expect(new Set(ids).size, 'A full snapshot replaces rather than duplicates the HTTP chronology').toBe(
+    ids.length,
+  );
+  await expect(list.getByText('Match begins', { exact: true })).toHaveCount(1);
+  await expect(list.getByText('Phase change', { exact: true })).toHaveCount(1);
 }

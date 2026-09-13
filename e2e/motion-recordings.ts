@@ -6,7 +6,7 @@ import { interruptMatch } from '../src/game/engine';
 import { observe } from '../src/game/observation';
 import type { Observation } from '../src/game/types';
 import { arena, completed } from './motion-fixture';
-import { observeMotion, visibility } from './motion-observer';
+import { expectUniqueLiveTimeline, observeMotion, visibility } from './motion-observer';
 import { expectTimelineFiltersBounded } from './timeline-bounds';
 
 test('native-size motion review scenes', async ({ page }, info) => {
@@ -46,7 +46,7 @@ test('native-size motion review scenes', async ({ page }, info) => {
   await page.context().route('**/api/matches/motion-table', (route) => route.fulfill({ json: record }));
   await page.routeWebSocket('**/api/matches/motion-table/events?*', (socket) => {
     send = (view) => socket.send(JSON.stringify({ type: 'observation', observation: view }));
-    send(record);
+    send({ ...record, reset: true });
   });
 
   // Real-time holds are intentional review evidence, not synchronization for functional assertions.
@@ -140,9 +140,22 @@ test('native-size motion review scenes', async ({ page }, info) => {
   await page.waitForTimeout(500);
   const controlTrace = await page.evaluate(() => window.motionTrace);
 
+  await page.goto('/connect?code=MOTION-PAIRING');
+  await expect(page.locator('.sign-in-page')).toHaveAttribute('data-motion-settled', 'true');
+  const beforeQuery = await page.evaluate(() => window.motionTrace.length);
+  mark('query-only-pairing-recovery');
+  await page.getByRole('link', { name: 'Start with your agent' }).click();
+  await expect(page).toHaveURL(/\/connect$/);
+  await expect(page.locator('.onboarding-page')).toHaveAttribute('data-motion-settled', 'true');
+  const queryTrace = await page.evaluate(() => window.motionTrace);
+  expect(queryTrace).toHaveLength(beforeQuery);
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: info.outputPath('query-recovery-static.png') });
+
   mark('live-record');
   await page.goto('/matches/motion-table');
   const list = page.getByLabel('Match timeline', { exact: true });
+  await expectUniqueLiveTimeline(page);
   await list.scrollIntoViewIfNeeded();
   await list.evaluate((element) => {
     element.scrollTop = 350;
@@ -175,6 +188,7 @@ test('native-size motion review scenes', async ({ page }, info) => {
   await page.waitForTimeout(300);
   await page.getByRole('button', { name: 'Everything', exact: true }).click();
   await expectTimelineFiltersBounded(page);
+  await expectUniqueLiveTimeline(page);
   await page.getByLabel('Browse by round').selectOption('1');
   await page.waitForTimeout(500);
 
@@ -281,6 +295,7 @@ test('native-size motion review scenes', async ({ page }, info) => {
         scenes,
         entranceTrace,
         controlTrace,
+        queryTrace,
         liveTrace,
         finalTrace: await page.evaluate(() => window.motionTrace),
         visibility:

@@ -45,6 +45,7 @@ export function MotionProvider({ children }: { children: ReactNode }) {
 
   useLayoutEffect(() => {
     const media = matchMedia('(prefers-reduced-motion: no-preference)');
+    let pathname = location.pathname;
 
     const update = () => {
       const allowed = media.matches && document.visibilityState === 'visible';
@@ -59,8 +60,15 @@ export function MotionProvider({ children }: { children: ReactNode }) {
       setEnabled(allowed);
     };
 
-    const restored = () => setEntries(false);
-    const navigated = () => setEntries(!location.hash);
+    const restored = () => {
+      pathname = location.pathname;
+      setEntries(false);
+    };
+
+    const navigated = () => {
+      setEntries(!location.hash && location.pathname !== pathname);
+      pathname = location.pathname;
+    };
 
     const pointer = () => {
       if (document.documentElement.dataset.motion === 'enabled')
