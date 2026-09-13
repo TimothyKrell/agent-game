@@ -481,13 +481,50 @@
 @media (max-width: 400px) {
   .header nav {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 0.18fr) minmax(max-content, 0.34fr) minmax(0, 0.24fr) minmax(0, 0.24fr);
     gap: 0;
   }
   .header nav a {
     min-width: 0;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
     white-space: normal;
     padding-inline: 4px;
+    min-height: 48px;
+  }
+}
+@media (max-width: 640px) {
+  .cap-evidence {
+    overflow: visible;
+  }
+  .cap-evidence table,
+  .cap-evidence tbody {
+    display: block;
+    width: 100%;
+  }
+  .cap-evidence thead {
+    display: none;
+  }
+  .cap-evidence tbody tr {
+    display: block;
+    border: 1px solid var(--line);
+    padding: 16px;
+    margin-top: 12px;
+  }
+  .cap-evidence tbody th {
+    display: block;
+    padding: 0 0 12px;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .cap-evidence tbody td {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+  }
+  .cap-evidence tbody td::before {
+    content: attr(data-label);
+    color: var(--muted);
   }
 }

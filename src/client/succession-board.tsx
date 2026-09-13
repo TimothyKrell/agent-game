@@ -251,9 +251,9 @@ export function SuccessionResult({ view }: { view: Observation2 }) {
                   <th scope="row">
                     {view.seats.find((seat) => seat.number === score.seat)?.name ?? `Seat ${score.seat + 1}`}
                   </th>
-                  <td>{score.influence}</td>
-                  <td>{score.coins}</td>
-                  <td>{score.priority}</td>
+                  <td data-label="Influence">{score.influence}</td>
+                  <td data-label="Coins">{score.coins}</td>
+                  <td data-label="Priority">{score.priority}</td>
                 </tr>
               ))}
             </tbody>

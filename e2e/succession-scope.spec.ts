@@ -71,7 +71,7 @@ function summary(game: GameId): GameMatchSummary {
       };
 }
 
-async function scopeRoutes(page: Page) {
+async function scopeRoutes(page: Page, signedIn = true) {
   const gameFor = (url: string): GameId =>
     new URL(url).searchParams.get('gameId') === 'succession' ? 'succession' : 'secret-overlord';
 
@@ -91,7 +91,7 @@ async function scopeRoutes(page: Page) {
       mode: 'preview',
       authProviders: [],
       localLogin: true,
-      owner,
+      owner: signedIn ? owner : null,
       live: [],
       recent: [summary(game)],
       leaderboard: [profile(game)],
@@ -145,7 +145,7 @@ for (const width of [320, 390, 768, 1600]) {
   test(`scoped pages keep full identities, selected-game contrast, rule facts and global participation at ${width}px`, async ({
     page,
   }) => {
-    await page.setViewportSize({ width, height: width >= 768 ? 1120 : 844 });
+    await page.setViewportSize({ width, height: width === 768 ? 1024 : width > 768 ? 1120 : 844 });
     await scopeRoutes(page);
 
     for (const reducedMotion of ['no-preference', 'reduce'] as const) {
@@ -208,6 +208,47 @@ for (const width of [320, 390, 768, 1600]) {
         path: `/tmp/opencode/succession-ui/${path.replaceAll('/', '-').slice(1)}-${width}.png`,
         fullPage: true,
       });
+    }
+  });
+}
+
+for (const width of [320, 390]) {
+  test(`compact navigation keeps complete words and targets at ${width}`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+
+    for (const signedIn of [false, true]) {
+      await scopeRoutes(page, signedIn);
+
+      for (const path of ['/', '/leaderboard', '/dashboard', '/how-to-play']) {
+        await page.goto(`${path}?gameId=succession`);
+        await page.evaluate(() => document.fonts.ready);
+
+        for (const zoom of [1, 1.25]) {
+          await page.evaluate((value) => {
+            document.documentElement.style.zoom = String(value);
+          }, zoom);
+          const link = page.locator('.header nav').getByRole('link', { name: 'Leaderboard', exact: true });
+          await expect(link).toBeVisible();
+
+          const geometry = await link.evaluate((node) => {
+            const range = document.createRange();
+            range.selectNodeContents(node);
+
+            return {
+              lines: range.getClientRects().length,
+              height: node.getBoundingClientRect().height,
+              fits: node.scrollWidth <= node.clientWidth,
+            };
+          });
+
+          expect(geometry.lines).toBe(1);
+          expect(geometry.fits).toBe(true);
+          expect(geometry.height).toBeGreaterThanOrEqual(48 * zoom);
+          await page.screenshot({
+            path: `/tmp/opencode/succession-ui/nav-${width}-${signedIn ? 'in' : 'out'}-${path.replaceAll('/', '') || 'arena'}-${zoom}.png`,
+          });
+        }
+      }
     }
   });
 }

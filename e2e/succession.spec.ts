@@ -500,6 +500,15 @@ test('cap criteria, forfeited champion and interrupted acts retain their separat
     await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
     await expect(page.getByRole('heading', { name: `Cap tiebreak · Decided by ${criterion}` })).toBeVisible();
     await expect(page.locator('.cap-evidence tbody tr')).toHaveCount(10);
+    await expect(page.getByRole('region', { name: 'Historical match state' })).toBeVisible();
+    await expect(page.getByText('Updating historical frame…')).toHaveCount(0);
+    expect(await page.locator('.cap-evidence').evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(
+      true,
+    );
+
+    for (const label of ['Influence', 'Coins', 'Priority']) {
+      await expect(page.locator(`.cap-evidence td[data-label="${label}"]`)).toHaveCount(10);
+    }
 
     if (criterion === 'priority') await expect(page.locator('.forfeit-result')).toContainText('forfeit loss');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -571,7 +580,7 @@ test('a replaced controller loses private cards and controls and delayed private
 for (const width of [320, 390, 768, 1600]) {
   for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     test.describe(`native capture ${width} ${reducedMotion}`, () => {
-      const viewport = { width, height: width < 768 ? 844 : 1120 };
+      const viewport = { width, height: width < 768 ? 844 : width === 768 ? 1024 : 1120 };
       test(`live resources and sealed challenge stay readable at ${width}px (${reducedMotion})`, async ({
         browser,
         baseURL,
@@ -586,7 +595,7 @@ for (const width of [320, 390, 768, 1600]) {
         const page = await context.newPage();
 
         try {
-          await page.setViewportSize({ width, height: width < 768 ? 844 : 1120 });
+          await page.setViewportSize(viewport);
           await page.emulateMedia({ reducedMotion });
           const state = fixture.stages.get('act-2:challenge');
 
