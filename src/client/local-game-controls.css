@@ -166,6 +166,9 @@
     width: calc(100% - 40px);
     gap: 16px;
   }
+  .game-discovery .game-introduction {
+    padding-inline: 0;
+  }
   .local-game-select {
     flex-direction: column;
     align-items: flex-start;

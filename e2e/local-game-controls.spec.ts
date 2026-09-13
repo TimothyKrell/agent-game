@@ -68,7 +68,7 @@ for (const route of ['/agents/local-agent', '/owners/shape-review']) {
   });
 }
 
-for (const width of [320, 760, 768, 800, 1024, 1600]) {
+for (const width of [320, 390, 760, 768, 800, 1024, 1600]) {
   test(`Arena home and toolbar fit their actual ${width}px viewport`, async ({ page }, testInfo) => {
     await navigationFixture(page, false);
     await page.setViewportSize({ width, height: 1024 });
@@ -92,6 +92,18 @@ for (const width of [320, 760, 768, 800, 1024, 1600]) {
       });
 
       expect.soft(labelLines).toBe(1);
+
+      const gameNameLines = await page
+        .locator('.game-discovery')
+        .getByRole('heading', { name: 'Succession', exact: true })
+        .evaluate((heading) => {
+          const range = document.createRange();
+          range.selectNodeContents(heading);
+
+          return range.getClientRects().length;
+        });
+
+      expect.soft(gameNameLines).toBe(1);
 
       const boxes = await page
         .locator(
