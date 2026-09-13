@@ -1,6 +1,6 @@
 import { spawn, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, readFile, writeFile, readdir } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, readdir, open, rename, rm } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
@@ -38,6 +38,71 @@ const progress = (view) =>
     view?.status,
     view?.result,
   ]);
+
+/** Publish only assignment identity; concurrent current/history cache remains owned by the CLI. */
+async function persistAssignment(config, ledger, timeoutMs) {
+  const deadline = performance.now() + Math.min(1000, Math.max(0, timeoutMs));
+  let unlock;
+
+  for (;;) {
+    try {
+      unlock = await lockLedger(`${config}.current`);
+      break;
+    } catch (error) {
+      const left = deadline - performance.now();
+
+      if (error.code !== 'ELOCKED' || left <= 0) throw error;
+      await clock.sleep(Math.min(25, left));
+    }
+  }
+
+  try {
+    const latest = JSON.parse(await readFile(config, 'utf8'));
+
+    const identity = JSON.stringify([
+      latest.server,
+      latest.installationId ?? latest.installation,
+      latest.agentId,
+    ]);
+
+    if (identity !== ledger.identity)
+      throw new Error('Installation changed while publishing the match assignment.');
+
+    if (
+      latest.matchId === ledger.matchId &&
+      latest.participation?.matchId === ledger.matchId &&
+      latest.participation.gameId === ledger.gameId
+    )
+      return;
+
+    latest.matchId = ledger.matchId;
+    latest.participation = { gameId: ledger.gameId, matchId: ledger.matchId };
+    const temporary = `${config}.${randomUUID()}.assignment`;
+    const file = await open(temporary, 'wx', 0o600);
+
+    try {
+      await file.writeFile(JSON.stringify(latest, null, 2));
+      await file.sync();
+    } finally {
+      await file.close();
+    }
+
+    try {
+      await rename(temporary, config);
+      const directory = await open(dirname(config), 'r');
+
+      try {
+        await directory.sync();
+      } finally {
+        await directory.close();
+      }
+    } finally {
+      await rm(temporary, { force: true });
+    }
+  } finally {
+    await unlock();
+  }
+}
 
 async function api(args, cwd, timeout) {
   return promisify(execFile)('opencode2', ['api', ...args], {
@@ -333,7 +398,8 @@ export async function supervise(options, invoke = invokeHarness) {
       const newTicket =
         initialQueue?.requestId &&
         ledger.pendingJoin?.requestId &&
-        initialQueue.requestId !== ledger.pendingJoin.requestId;
+        initialQueue.requestId !== ledger.pendingJoin.requestId &&
+        (!initialQueue.matchId || initialQueue.matchId !== ledger.matchId);
 
       const newMatch = initialQueue?.matchId && ledger.matchId && initialQueue.matchId !== ledger.matchId;
 
@@ -374,12 +440,12 @@ export async function supervise(options, invoke = invokeHarness) {
         pendingJoin: initialQueue?.requestId
           ? { gameId, requestId: initialQueue.requestId }
           : (connection.pendingJoin ?? null),
-        matchId: null,
+        matchId: initialQueue?.matchId ?? null,
         harness,
         model: model ?? null,
         allowances,
         requestStartedAt: time.now(),
-        joinedAt: null,
+        joinedAt: Number.isFinite(initialQueue?.joinedAt) ? initialQueue.joinedAt : null,
         createdAt: null,
         elapsedMs: 0,
         queueElapsedMs: 0,
@@ -580,6 +646,7 @@ export async function supervise(options, invoke = invokeHarness) {
 
             if (cancelled.matchId) {
               ledger.matchId = cancelled.matchId;
+              ledger.gameId = cancelled.gameId ?? ledger.gameId;
               await observe(cancelled.matchId, 1000);
             }
           }
@@ -661,6 +728,10 @@ export async function supervise(options, invoke = invokeHarness) {
       if (ledger.errors >= 3 || ledger.premature >= 3)
         return output(ledger.errors >= 3 ? 'execution-error' : 'no-progress');
 
+      await persistAssignment(config, ledger, remaining());
+
+      if (remaining() <= 0) return output('runtime-exhausted');
+
       if (!ledger.runDir) {
         const installed = dirname(fileURLToPath(import.meta.url));
         ledger.runDir = await mkdtemp(`${dirname(config)}/run-`);
@@ -698,6 +769,8 @@ export async function supervise(options, invoke = invokeHarness) {
       );
 
       const before = progress(view);
+
+      if (remaining() <= 0) return output('runtime-exhausted');
       const duration = Math.min(remaining(), ledger.allowances.childSliceMs);
       const deadline = now() + duration;
       const grant = remainingBudget(ledger);

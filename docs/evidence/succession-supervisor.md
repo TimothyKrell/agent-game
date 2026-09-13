@@ -12,7 +12,7 @@ No model invocation, paid trial, provider request, deployment, or budget increas
 
 ## Actual supervisor continuity experiment
 
-`tests/supervisor.test.ts` exercises exported `supervise`, with real private ledger files, injected clocks, injected arena responses, and injected child outcomes. It does not substitute a standalone timing/accounting calculator for the supervisor.
+`tests/supervisor.test.ts` packages the CLI archive, extracts it outside the checkout, and imports that installed archive's exported `supervise`, with real private ledger files, injected clocks, injected arena responses, and injected child outcomes. It does not substitute a standalone timing/accounting calculator for the supervisor. The CLI owner added installed first-child assignment and different-game cancellation-race assertions during integration.
 
 The adversarial Act 2 timing construction is 120 turns × (10 seconds discussion + four nearly-30-second windows), approaching **260 minutes / 4h20m** and **2,400 required submissions** (actor, nine claim reactions, target block, nine block reactions per turn). Our supervisor timeline uses the conservative 130-second-per-turn envelope. It supplies phase movement and an overall terminal observation at the end; this fixture tests supervisor continuity and resource stops, not a second implementation of the game engine.
 
@@ -55,6 +55,18 @@ The implemented suite covers:
 
 `cli/supervisor.mjs` copies all installed `.mjs` modules into the persisted run directory, selects the correct packaged game rules, and passes the absolute tool deadline through `AGENT_GAME_CHILD_DEADLINE`. The CLI owner added deadline clamps to requests, retries, and waits. Protocol-2 current validation and monotonic acceptance use the shared `cli/current.mjs` boundary; the ledger retains a bounded authority/progress snapshot, not history or private replay.
 
+Before the first child and subsequent invocations, the parent publishes actual `matchId` and `participation: {gameId, matchId}` into the connection file under the shared `config.current` lock. It reads the latest config inside that lock and changes only assignment identity, preserving any concurrently updated observation/history cache. The replacement file is private and synced before rename. Thus an autonomous parent-owned join is immediately usable by the child's ordinary `observe --config` command. If a conditional cancellation returns an assigned match in another game, the stopped supervisor adopts that actual game before its bounded observation; the already-selected queue stop remains durable for that same assigned match.
+
+## Legacy supervisor migration and missing evidence
+
+The old supervisor did not persist session IDs or usage in the connection file. Its surviving local evidence is the `run-*` directory it created beside that file. Before creating a first D14 ledger, the supervisor checks the config parent for any `run-*` entry. With no existing D14 ledger, that evidence marks prior accounting **unknown**, even when the connection contains no session or usage fields. Explicit legacy `sessionId` or `supervisedSessionId` fields, if present, also mark it unknown.
+
+For Claude, this recognized legacy state returns `client-stopped / accounting-unavailable` before launching a child. It reports `costUsd: null`, `accounting.observed: false`, `accounting.unknown: true`, and zero spendable remainder. The internal `known: 0` is the amount of newly verified consumption recorded in this ledger, **not a reconstruction or assertion that the old run cost zero**. The nominal $2 limit cannot be spent while the historical accounting is unavailable. Restarting this new ledger preserves that stop. The migration does not invent an old child grant, session watermark, or historical invoice amount.
+
+The scan is deliberately conservative: old directories cannot reliably be attributed to a particular config or match when several configs share a parent. It may therefore block a fresh config in such a shared directory. An ordinary first play immediately after joining, with no prior ledger, no legacy session marker, and no `run-*` evidence in its config parent, receives the legitimate existing $2 default; joining alone does not create a supervisor run directory. A server-confirmed genuinely new participation following an existing D14 ledger receives new per-participation allowances and archives the prior ledger.
+
+If all old run directories and other local evidence were removed or the connection was copied without them, historical supervision is unobservable to this implementation. It cannot distinguish that state from an installation never supervised before, and it cannot recover or claim knowledge of prior cost. There is no claim that local accounting survives deletion of all its evidence. The legacy test covers surviving `run-*` evidence without any saved usage; separate before-spawn tests verify the legitimate initial $2 reservation.
+
 ## Accounting/API sources checked during implementation
 
 - [OpenCode V2 API](https://opencode.ai/v2/docs/api) and [V2 OpenAPI](https://opencode.ai/v2/openapi.json): `POST /api/session/{sessionID}/interrupt` interrupts active service-owned execution; killing the `run` client alone is insufficient. `GET /api/session/{sessionID}` provides the session-cumulative `cost` and idle timestamp. Available cost is checkpointed against the durable session watermark; unavailable values stay unknown. Interrupt failures stop automatic resumption rather than pretending the service stopped.
@@ -69,4 +81,4 @@ npx prettier --check cli/supervisor.mjs cli/supervisor.d.mts cli/ledger.mjs test
 npx tsc --noEmit
 ```
 
-The final scoped run passed **31 tests** (28 supervisor lifecycle and 3 native-adapter tests), with zero scoped lint errors. Scoped Prettier checks and `npx tsc --noEmit` also passed. The earlier unrelated `PhaseKind2` fixture error was fixed by its owner before this final check. No real model or paid trial was used.
+The final integration scoped run passed **33 tests** (30 installed-supervisor lifecycle and 3 native-adapter tests), with zero scoped lint errors. Scoped Prettier checks and `npx tsc --noEmit` also passed. The earlier unrelated `PhaseKind2` fixture error was fixed by its owner before this final check. No real model or paid trial was used.
