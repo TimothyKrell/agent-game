@@ -1,11 +1,45 @@
 import { createServer } from 'node:http';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { expect, it } from 'vitest';
+import { afterAll, beforeAll, expect, it } from 'vitest';
 import { Schema } from 'effect';
-import { supervise, SUCCESSION_CANDIDATE, type SupervisorOptions } from '../cli/supervisor.mjs';
+import type { SupervisorOptions } from '../cli/supervisor.mjs';
+import { version } from '../package.json';
+
+let supervise: typeof import('../cli/supervisor.mjs').supervise;
+
+let SUCCESSION_CANDIDATE: typeof import('../cli/supervisor.mjs').SUCCESSION_CANDIDATE;
+
+let installedDirectory: string;
+
+let supervisorURL: string;
+
+beforeAll(async () => {
+  installedDirectory = await mkdtemp('/tmp/opencode/packaged-supervisor-');
+  const run = promisify(execFile);
+  await run(process.execPath, ['scripts/package-cli.mjs']);
+  await run('npm', [
+    'install',
+    '--prefix',
+    installedDirectory,
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    resolve(`public/downloads/agent-game-cli-${version}.tgz`),
+  ]);
+  supervisorURL = pathToFileURL(`${installedDirectory}/node_modules/agent-game-cli/cli/supervisor.mjs`).href;
+  const installed: typeof import('../cli/supervisor.mjs') = await import(supervisorURL);
+  supervise = installed.supervise;
+  SUCCESSION_CANDIDATE = installed.SUCCESSION_CANDIDATE;
+});
+
+afterAll(async () => {
+  await rm(installedDirectory, { recursive: true, force: true });
+});
 
 const minute = 60_000;
 
@@ -314,7 +348,7 @@ it('reports provider-managed unknown dollars without manufacturing a zero or enf
   await expect(supervise({ ...f.options, maxBudget: 2 })).rejects.toThrow('provider-managed');
 });
 
-it.each(['cancelled', 'assigned', 'network-failed'] as const)(
+it.each(['cancelled', 'assigned', 'other-game-assigned', 'network-failed'] as const)(
   'keeps queue exhaustion selected when cancellation is %s',
   async (race) => {
     const f = await fixture();
@@ -322,7 +356,9 @@ it.each(['cancelled', 'assigned', 'network-failed'] as const)(
     f.options.queueAllowanceMs = 1000;
     let deleted = false;
     f.options.request = async (_connection, path, body, method) => {
-      if (path !== '/api/queue') return f.view;
+      if (path !== '/api/queue') return race === 'other-game-assigned'
+        ? { ...f.view, gameId: 'secret-overlord', protocolVersion: '1', rulesVersion: 'secret-overlord-1' }
+        : f.view;
 
       if (method === 'DELETE') {
         expect(body).toEqual({ gameId: 'succession', requestId: 'join_one', joinedAt: f.origin });
@@ -330,6 +366,8 @@ it.each(['cancelled', 'assigned', 'network-failed'] as const)(
 
         if (race === 'network-failed') throw new Error('lost response');
 
+        if (race === 'other-game-assigned')
+          return { ...f.queue, gameId: 'secret-overlord', protocolVersion: '1', rulesVersion: 'secret-overlord-1', requestId: 'replacement' };
         return race === 'assigned' ? f.queue : { status: 'idle', matchId: null };
       }
 
@@ -343,7 +381,8 @@ it.each(['cancelled', 'assigned', 'network-failed'] as const)(
     expect(deleted).toBe(true);
     expect(result.invocations).toBe(0);
     expect(result.reason).toBe('queue-exhausted');
-    expect(result.matchId).toBe(race === 'assigned' ? 'match_new' : null);
+    expect(result.matchId).toBe(race === 'assigned' || race === 'other-game-assigned' ? 'match_new' : null);
+    expect(result.gameId).toBe(race === 'other-game-assigned' ? 'secret-overlord' : 'succession');
   },
 );
 
@@ -471,7 +510,7 @@ it('uses fresh allowances only for an authoritative new join, retaining the old 
 it('recovers the dead-process lock without refunding a grant after actual supervisor process death', async () => {
   const f = await fixture();
 
-  const script = `import { supervise } from ${JSON.stringify(new URL('../cli/supervisor.mjs', import.meta.url).href)};
+  const script = `import { supervise } from ${JSON.stringify(supervisorURL)};
     await supervise({configPath:${JSON.stringify(f.configPath)},harness:'claude',maxRuntimeMs:7200000,
       clock:{now:()=>${f.origin},monotonic:()=>0,sleep:()=>new Promise(r=>setTimeout(r,1))},
       request:async(_c,path)=>path==='/api/queue'?${JSON.stringify(f.queue)}:${JSON.stringify(f.view)}},
@@ -566,4 +605,24 @@ it('joins an idle installation in the parent using a durable stable request befo
   expect(joined).toBe(true);
   expect(result.invocations).toBe(0);
   expect(result.status).toBe('finished');
+});
+
+it('makes a parent-created assignment usable by the first child CLI command', async () => {
+  const f = await fixture();
+  let joined = false;
+  f.options.request = async (_connection, path, _body, method) => {
+    if (path !== '/api/queue') return f.view;
+    if (method === undefined && _body) joined = true;
+    return joined ? f.queue : { status: 'idle', gameId: null, matchId: null };
+  };
+  const result = await supervise(f.options, async () => {
+    const saved = JSON.parse(await readFile(f.configPath, 'utf8'));
+    expect(saved.matchId).toBe('match_new');
+    expect(saved.participation).toEqual({ gameId: 'succession', matchId: 'match_new' });
+    f.view.status = 'finished';
+    return { outcome: 'returned', exitCode: 0, costUsd: 0.01 };
+  });
+  expect(joined).toBe(true);
+  expect(result.status).toBe('finished');
+  expect(result.invocations).toBe(1);
 });

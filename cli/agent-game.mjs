@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-import { mkdir, readFile, writeFile, rename, chmod, realpath, open, unlink } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rename, chmod, realpath } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { randomBytes, createHash, randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
+import { lockLedger } from './ledger.mjs';
 import {
   acceptCurrent,
   consumePage,
@@ -250,14 +251,13 @@ export async function save(path, data) {
 
 async function updateCurrent(path, update) {
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-  const lockPath = `${path}.current-lock`;
-  let lock;
+  let unlock;
 
-  for (let attempt = 0; !lock; attempt++) {
+  for (let attempt = 0; !unlock; attempt++) {
     try {
-      lock = await open(lockPath, 'wx', 0o600);
+      unlock = await lockLedger(`${path}.current`);
     } catch (error) {
-      if (error.code !== 'EEXIST' || attempt >= 100) throw error;
+      if (error.code !== 'ELOCKED' || attempt >= 100) throw error;
       await delay(10);
     }
   }
@@ -275,8 +275,7 @@ async function updateCurrent(path, update) {
 
     return result;
   } finally {
-    await lock.close();
-    await unlink(lockPath);
+    await unlock();
   }
 }
 
@@ -396,7 +395,10 @@ export async function main(argv = process.argv.slice(2)) {
   const client = new GameClient(String(server), state.token);
   state.selectedGame = gameId(flags.game ?? state.selectedGame);
 
-  if (['start', 'pair', 'join', 'play'].includes(command)) await save(path, state);
+  if (['start', 'pair', 'join', 'play'].includes(command))
+    await updateCurrent(path, (latest) => {
+      latest.selectedGame = state.selectedGame;
+    });
 
   if (command === 'play') {
     const { supervise } = await import('./supervisor.mjs');
@@ -418,7 +420,32 @@ export async function main(argv = process.argv.slice(2)) {
     return;
   }
 
-  const persist = () => save(path, state);
+  const persist = () =>
+    updateCurrent(path, (latest) => {
+      const sameMatch = latest.matchId === state.matchId;
+
+      const view =
+        sameMatch && latest.observation
+          ? state.observation
+            ? acceptCurrent(latest.observation, state.observation)
+            : latest.observation
+          : state.observation;
+
+      const walk = sameMatch ? latest.historyWalk : undefined;
+
+      for (const key of Object.keys(latest)) delete latest[key];
+      Object.assign(latest, state);
+
+      if (view) {
+        latest.observation = view;
+
+        if (view.protocolVersion === '2') latest.currentNotification = notification(view);
+        else latest.cursor = view.cursor;
+      }
+
+      if (walk) latest.historyWalk = walk;
+      Object.assign(state, latest);
+    });
 
   if (command === 'start') {
     if (!state.agentId) {
@@ -783,8 +810,19 @@ export async function main(argv = process.argv.slice(2)) {
       if (view.decision) request.decisionId = view.decision.id;
 
       if (view.protocolVersion === '2') request.gameId = 'succession';
+
       // Persist before sending: rerunning the identical command after a transport failure reuses the receipt ID.
-      const signature = JSON.stringify({ matchId, phaseId: view.phase.id, action });
+      const signature =
+        view.protocolVersion === '2'
+          ? JSON.stringify({
+              matchId,
+              gameId: view.gameId,
+              phaseId: view.phase.id,
+              decisionId: view.decision?.id,
+              generation: view.you?.generation,
+              action,
+            })
+          : JSON.stringify({ matchId, phaseId: view.phase.id, action });
 
       if (state.pending?.signature === signature) request = state.pending.request;
       else state.pending = { signature, request };
