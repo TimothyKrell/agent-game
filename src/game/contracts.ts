@@ -20,12 +20,36 @@ export interface MatchSnapshot extends GameDescriptor {
   houseModel: { provider: string; model: string; policyVersion: string };
 }
 export interface SettlementParticipant {
-  seat: number; entrant: Entrant; forfeited: boolean; won: boolean | null;
-  ratingBefore: number; ratingDelta: number; placement: boolean;
+  seat: number;
+  entrant: Entrant;
+  forfeited: boolean;
+  won: boolean | null;
+  ratingBefore: number;
+  ratingDelta: number;
+  placement: boolean;
 }
 export interface RuntimeInspection {
-  status: 'active' | 'finished' | 'interrupted'; phaseId: string; nextDeadline: number | null;
+  status: 'active' | 'finished' | 'interrupted';
+  phaseId: string;
+  nextDeadline: number | null;
+  phase: {
+    id: string;
+    kind: string;
+    startedAt: number;
+    deadline: number | null;
+    graceAnnounced: boolean;
+    replacements: Record<string, number>;
+  };
+  timing: Timing;
+  lastChat: { seat: number; at: number } | null;
   pendingSeats: number[];
   discussion: { seats: number[]; anchor: number; key: string } | null;
-  participants: { number: number; entrant: Entrant; alive: boolean; forfeited: boolean; generation: number; houseProfile: string | null }[];
+  participants: {
+    number: number;
+    entrant: Entrant;
+    alive: boolean;
+    forfeited: boolean;
+    generation: number;
+    houseProfile: string | null;
+  }[];
 }
