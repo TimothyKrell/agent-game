@@ -188,6 +188,139 @@ it.each([false, true])(
   },
 );
 
+it.each(['observe', 'terminal', 'act', 'history'])(
+  'fences a held %s response after a new queued participation',
+  async (kind) => {
+    const directory = await mkdtemp('/tmp/opencode/succession-new-queue-');
+    const held = deferred();
+    const release = deferred();
+
+    const server = createServer(async (request, response) => {
+      const url = new URL(request.url!, 'http://localhost');
+      response.setHeader('content-type', 'application/json');
+
+      if (url.pathname === '/api/queue') {
+        let body = '';
+
+        for await (const chunk of request) body += chunk;
+        response.end(
+          JSON.stringify(
+            request.method === 'GET'
+              ? { status: 'idle' }
+              : {
+                  ...identity,
+                  status: 'queued',
+                  requestId: JSON.parse(body).requestId,
+                },
+          ),
+        );
+
+        return;
+      }
+
+      const isReceipt = url.pathname.endsWith('/actions');
+      const isPage = url.pathname.endsWith('/history');
+      let body = '';
+
+      if (isReceipt) for await (const chunk of request) body += chunk;
+
+      if (kind === 'observe' || kind === 'terminal' || isReceipt || isPage) {
+        held.resolve();
+        await release.promise;
+      }
+
+      const view =
+        kind === 'terminal'
+          ? {
+              ...current,
+              status: 'finished',
+              decision: null,
+              history: { visibilityEpoch: 'archive', streamHead: 200 },
+            }
+          : current;
+
+      response.end(
+        JSON.stringify(
+          isReceipt
+            ? {
+                accepted: true,
+                actionId: JSON.parse(body).actionId,
+                observation: view,
+              }
+            : isPage
+              ? {
+                  ...identity,
+                  matchId: current.matchId,
+                  visibilityEpoch: 'live',
+                  streamHead: 150,
+                  after: 0,
+                  through: 150,
+                  cursor: 1,
+                  events: [{ id: 1, eventKey: 'old', text: 'old', at: 0, act: 2, round: 1, type: 'chat' }],
+                  hasMore: true,
+                  reset: false,
+                }
+              : view,
+        ),
+      );
+    });
+
+    await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+    const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
+    const config = `${directory}/connection.json`;
+    await writeFile(
+      config,
+      JSON.stringify({
+        server: `http://127.0.0.1:${address.port}`,
+        selectedGame: 'succession',
+        matchId: current.matchId,
+        observation: current,
+        participation: { gameId: 'succession', matchId: current.matchId },
+      }),
+    );
+
+    const cli = (...args: string[]) =>
+      run(process.execPath, [bin, ...args, '--config', config], { cwd: installation }).then(
+        (result) => JSON.parse(result.stdout),
+        (error) => JSON.parse(error.stdout),
+      );
+
+    try {
+      const delayed = cli(
+        ...(kind === 'act' ? ['act', '--choice', '0'] : [kind === 'terminal' ? 'observe' : kind]),
+      );
+
+      await held.promise;
+      expect((await cli('join')).status).toBe('queued');
+      const queued = JSON.parse(await readFile(config, 'utf8'));
+      expect(queued.matchId).toBeUndefined();
+      expect(queued.pendingJoin.requestId).toBeTruthy();
+      release.resolve();
+      const result = await delayed;
+
+      if (kind === 'history') expect(result.status).toBe('stale-page');
+      else if (kind === 'act') {
+        expect(result.accepted).toBe(true);
+        expect(result.actionId).toBeTruthy();
+        expect(result.status).toBe('stale-current');
+        expect(result.observation).toBeUndefined();
+      } else expect(result.error.code).toBe('stale-match');
+      const saved = JSON.parse(await readFile(config, 'utf8'));
+      expect(saved.pendingJoin).toEqual(queued.pendingJoin);
+      expect(saved.joinRequest).toBe(queued.joinRequest);
+      expect(saved.matchId).toBeUndefined();
+      expect(saved.participation).toBeUndefined();
+      expect(saved.observation).toBeUndefined();
+      expect(saved.historyWalk).toBeUndefined();
+      expect(saved.pending).toBeUndefined();
+    } finally {
+      release.resolve();
+      await new Promise<void>((done) => server.close(() => done()));
+      await rm(directory, { recursive: true, force: true });
+    }
+  },
+);
+
 it('honors the exported child deadline before starting network work', async () => {
   const directory = await mkdtemp('/tmp/opencode/succession-deadline-');
 

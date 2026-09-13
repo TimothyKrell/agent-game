@@ -712,11 +712,16 @@ export async function main(argv = process.argv.slice(2)) {
     });
   }
 
+  let currentParticipation = participationIdentity(state);
+
   const remember = async (view) => {
     validateCurrent(view);
 
     return change((latest) => {
-      if (latest.matchId && latest.matchId !== matchId) {
+      if (
+        participationIdentity(latest) !== currentParticipation ||
+        (latest.matchId && latest.matchId !== matchId)
+      ) {
         if (latest.observation) return latest.observation;
         throw new ApiError(409, 'stale-match', 'A newer command selected another match.');
       }
@@ -731,6 +736,7 @@ export async function main(argv = process.argv.slice(2)) {
       else latest.cursor = view.cursor;
 
       if (terminal(view)) delete latest.joinRequest;
+      currentParticipation = participationIdentity(latest);
       Object.assign(state, latest);
 
       return view;
@@ -768,8 +774,12 @@ export async function main(argv = process.argv.slice(2)) {
         await remember(await client.observation(matchId));
       const latest = JSON.parse(await readFile(path, 'utf8')).observation;
 
-      if (page.matchId !== latest.matchId || page.visibilityEpoch !== latest.history.visibilityEpoch) {
-        print({ status: 'stale-page', matchId, history: latest.history });
+      if (
+        !latest?.history ||
+        page.matchId !== latest.matchId ||
+        page.visibilityEpoch !== latest.history.visibilityEpoch
+      ) {
+        print({ status: 'stale-page', matchId, history: latest?.history });
 
         return;
       }
@@ -892,7 +902,16 @@ export async function main(argv = process.argv.slice(2)) {
 
     if (result.observation.protocolVersion !== '2' && !result.observation.reset)
       result.observation.events = result.observation.events.slice(state.cursor ?? 0);
-    result.observation = await remember(result.observation);
+
+    try {
+      result.observation = await remember(result.observation);
+    } catch (error) {
+      if (error.code !== 'stale-match') throw error;
+      print({ accepted: result.accepted, actionId: result.actionId, status: 'stale-current', matchId });
+
+      return;
+    }
+
     print({ ...result, observation: display(result.observation) });
 
     return;
