@@ -381,15 +381,19 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
   it('recovers durably paid attacks, pending influence losses and private exchanges without repeating effects', async () => {
     provider = 'openai';
     const { matchId, controllers } = await admitted(10);
+
     const payment = await drive(matchId, controllers, (_public, seats) =>
       seats.some((view) => view.decision?.actions.some((option) => option.action.type === 'assassinate')),
     );
+
     const assassin = payment.seats.find((view) =>
       view.decision?.actions.some((option) => option.action.type === 'assassinate'),
     )!;
+
     const assassinController = controllers.find(
       (controller) => controller.agentId === assassin.you?.agentId,
     )!;
+
     const paidRequest = specificAction(assassin, 'assassinate');
     const paid = await submit(matchId, assassinController, paidRequest);
     expect(paid.observation.board).toMatchObject({ act: 2, pending: { action: 'assassinate', paid: 3 } });
@@ -401,12 +405,15 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     const paidRetry = await submit(matchId, assassinController, paidRequest);
     expect(paidRetry.observation.board).toEqual(paidRecovered.board);
     expect(paidRetry.observation.seats).toEqual(paidRecovered.seats);
+
     const losing = await drive(matchId, controllers, (_public, seats) =>
       seats.some((view) => view.decision?.actions.some((option) => option.action.type === 'lose-influence')),
     );
+
     const loser = losing.seats.find((view) =>
       view.decision?.actions.some((option) => option.action.type === 'lose-influence'),
     )!;
+
     const loserController = controllers.find((controller) => controller.agentId === loser.you?.agentId)!;
     const lossRecovered = await recoverPending(matchId, loserController, loser);
     const lossRequest = specificAction(lossRecovered, 'lose-influence');
@@ -418,22 +425,28 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     const lossRetry = await submit(matchId, loserController, lossRequest);
     expect(lossRetry.observation.private).toEqual(lost.observation.private);
     expect(lossRetry.observation.seats).toEqual(lost.observation.seats);
+
     const exchanging = await drive(matchId, controllers, (_public, seats) =>
       seats.some((view) => view.decision?.actions.some((option) => option.action.type === 'exchange')),
     );
+
     const exchanger = exchanging.seats.find((view) =>
       view.decision?.actions.some((option) => option.action.type === 'exchange'),
     )!;
+
     const exchangeController = controllers.find(
       (controller) => controller.agentId === exchanger.you?.agentId,
     )!;
+
     const declaration = specificAction(exchanger, 'exchange');
     await submit(matchId, exchangeController, declaration);
+
     const choosing = await drive(matchId, controllers, (_public, seats) =>
       seats.some((view) =>
         view.decision?.actions.some((option) => option.action.type === 'return-influence'),
       ),
     );
+
     const choices = choosing.seats.find((view) => view.you?.agentId === exchangeController.agentId)!;
     expect(choices.board).toMatchObject({ act: 2, courtCount: 3 });
     expect(choices.private?.act).toBe(2);
@@ -449,10 +462,12 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     expect(returnRetry.observation.private).toEqual(returned.observation.private);
     expect(returnRetry.observation.board).toEqual(returned.observation.board);
     await drive(matchId, controllers, (view) => view.status === 'finished');
+
     const settled = await until(
       () => data<Settlement>(`/__fixture/matches/${matchId}/settlement`),
       (value) => value.record?.result_applied === 1,
     );
+
     expect(settled.inference.calls).toBe(0);
     expect(settled.participants.filter((participant) => participant.won === 1)).toHaveLength(1);
     expect(settled.participants.every((participant) => participant.forfeited === 0)).toBe(true);

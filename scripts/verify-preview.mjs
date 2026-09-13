@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { waitForDeployment } from './deployment-ready.mjs';
 
 const server = new URL(process.argv[2]).origin;
@@ -131,6 +133,8 @@ const successionDeadline = Date.now() + 300_000;
 
 const acts = new Set();
 
+let maxCurrentBytes = 0;
+
 let individual;
 
 do {
@@ -140,7 +144,9 @@ do {
   assert.equal(individual.mode, 'preview');
   assert.equal(individual.you, null);
   assert.equal(individual.private, null);
-  assert.ok(Buffer.byteLength(JSON.stringify(individual)) <= 14_336);
+  maxCurrentBytes = Math.max(maxCurrentBytes, Buffer.byteLength(JSON.stringify(individual)));
+  assert.ok(maxCurrentBytes <= 14_336);
+  assert.ok(!('events' in individual) && !('cursor' in individual));
   acts.add(individual.act);
 
   if (individual.status !== 'active') break;
@@ -161,6 +167,37 @@ const successionSocket = await finishSuccessionSocket();
 
 const epoch = individual.history.visibilityEpoch;
 
+const archive = { pages: 0, events: 0, maxPageBytes: 0, maxEventBytes: 0 };
+
+let cursor = 0;
+
+while (cursor < individual.history.streamHead) {
+  const page = await request(
+    `/api/matches/${succession.matchId}/history?epoch=${epoch}&after=${cursor}&through=${individual.history.streamHead}&limit=64&maxBytes=12288`,
+    200,
+  );
+
+  assert.equal(page.visibilityEpoch, epoch);
+  assert.equal(page.reset, false);
+  assert.equal(page.streamHead, individual.history.streamHead);
+  assert.equal(page.through, individual.history.streamHead);
+  assert.equal(page.after, cursor);
+  assert.ok(page.events.length > 0 && page.events.length <= 64);
+
+  for (const event of page.events) {
+    assert.equal(event.id, ++cursor);
+    archive.maxEventBytes = Math.max(archive.maxEventBytes, Buffer.byteLength(JSON.stringify(event)));
+  }
+
+  assert.equal(page.cursor, cursor);
+  assert.equal(page.hasMore, cursor < page.through);
+  archive.pages++;
+  archive.events += page.events.length;
+  archive.maxPageBytes = Math.max(archive.maxPageBytes, Buffer.byteLength(JSON.stringify(page)));
+  assert.ok(archive.maxPageBytes <= 12_288);
+  assert.ok(archive.maxEventBytes <= 8192);
+}
+
 const rounds = await request(`/api/matches/${succession.matchId}/rounds?epoch=${epoch}`, 200);
 
 assert.ok(rounds.rounds.length <= 42);
@@ -177,28 +214,46 @@ for (const act of [1, 2]) {
   assert.equal(frame.act, act);
   assert.equal(frame.archive.act, act);
   assert.ok(Buffer.byteLength(JSON.stringify(frame)) <= 32_768);
+
+  const anchor = await request(
+    `/api/matches/${succession.matchId}/history-anchor?epoch=${epoch}&eventKey=${encodeURIComponent(round.eventKey)}`,
+    200,
+  );
+
+  assert.equal(anchor.visibilityEpoch, epoch);
+  assert.equal(anchor.cursor, round.through);
 }
 
-console.log(
-  JSON.stringify({
-    server,
-    matches: [
-      {
-        gameId: 'secret-overlord',
-        matchId,
-        status: view.status,
-        winner: view.winner,
-        socket: originalSocket,
-      },
-      {
-        gameId: 'succession',
-        matchId: succession.matchId,
-        status: individual.status,
-        winnerSeat: individual.result.winnerSeat,
-        archiveHead: individual.history.streamHead,
-        rounds: rounds.rounds.length,
-        socket: successionSocket,
-      },
-    ],
-  }),
-);
+const result = {
+  at: new Date().toISOString(),
+  sourceCommit: process.env.PR_HEAD_SHA ?? process.env.GITHUB_SHA ?? null,
+  server,
+  matches: [
+    {
+      gameId: 'secret-overlord',
+      matchId,
+      status: view.status,
+      winner: view.winner,
+      socket: originalSocket,
+    },
+    {
+      gameId: 'succession',
+      matchId: succession.matchId,
+      status: individual.status,
+      winnerSeat: individual.result.winnerSeat,
+      maxCurrentBytes,
+      archiveHead: individual.history.streamHead,
+      archive,
+      rounds: rounds.rounds.length,
+      socket: successionSocket,
+    },
+  ],
+};
+
+const output = process.env.SMOKE_OUTPUT ?? '.agent-game/preview-smoke.json';
+
+await mkdir(dirname(output), { recursive: true });
+
+await writeFile(output, JSON.stringify(result, null, 2) + '\n');
+
+console.log(JSON.stringify(result, null, 2));

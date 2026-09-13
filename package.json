@@ -20,6 +20,7 @@
     "format:check": "prettier --check src tests e2e cli scripts .github *.ts *.json *.jsonc skills public README.md",
     "test": "vitest run",
     "test:api": "vitest run --config vitest.api.config.ts",
+    "test:provider": "tsc --noEmit -p tsconfig.succession-provider.json && vitest run --config vitest.succession-provider.config.ts",
     "test:browser": "playwright test",
     "cf:types": "wrangler types --strict-vars=false",
     "db:local": "wrangler d1 migrations apply agent-game --local",

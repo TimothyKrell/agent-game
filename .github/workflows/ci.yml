@@ -44,9 +44,30 @@ jobs:
             playwright-report
           retention-days: 7
 
+  provider:
+    name: Verify production provider transport
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npm run build
+      - name: Exercise actual house runners against the local synthetic provider
+        shell: bash
+        run: npm run test:provider 2>&1 | tee provider-verification.log
+      - name: Save provider verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: provider-${{ github.run_id }}-${{ github.run_attempt }}
+          path: provider-verification.log
+          retention-days: 7
+
   production:
     name: Deploy production
-    needs: verify
+    needs: [verify, provider]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -114,7 +135,7 @@ jobs:
 
   preview:
     name: Deploy preview
-    needs: verify
+    needs: [verify, provider]
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -192,3 +213,11 @@ jobs:
         run: node scripts/preview-comment.mjs deployed
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Save both-game preview evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: preview-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .agent-game/preview-smoke.json
+          include-hidden-files: true
+          retention-days: 30

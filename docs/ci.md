@@ -27,14 +27,15 @@ An earlier attempt with sustained health still returned a structured 500 on exhi
 `.github/workflows/ci.yml` runs on pushes to `main`, open pull requests, and manual dispatch:
 
 1. **Verify** installs the lockfile with dependency lifecycle scripts disabled, then runs lint (including warnings), formatting, all TypeScript checks, the production build, unit/storage tests, real Worker API/recovery tests, Playwright desktop/mobile tests, and a Worker bundle dry run.
-2. **Deploy production** runs only after Verify passes for `main`. It deploys the existing `agent-game` / `prod` Alchemy stack and runs the public HTTP/OAuth-initiation/CLI/browser smoke check. The `production` GitHub environment is restricted to `main`.
-3. **Deploy preview** runs after Verify passes for same-repository PRs. It checks that the PR is still open at the tested head, then creates or updates stage `pr-<number>` and comments its URL. Each stage has a separate Worker, D1 database, Durable Object namespaces, and generated auth secret.
+2. **Verify production provider transport** runs the separate `npm run test:provider` suite against an isolated local HTTP Responses API. The actual Worker/HouseSeat/structured-provider path completes both Succession acts, validates accounting and stale-job fences, and exercises saved-response retry plus invalid-response/deadline interruption. Provider usage is synthetic; no paid model is invoked. Bash pipeline failure propagation preserves the test exit status while retaining the log.
+3. **Deploy production** runs only after both verification jobs pass for `main`. It deploys the existing `agent-game` / `prod` Alchemy stack and runs the public HTTP/OAuth-initiation/CLI/browser smoke check. The `production` GitHub environment is restricted to `main`.
+4. **Deploy preview** runs after both verification jobs pass for same-repository PRs. It checks that the PR is still open at the tested head, then creates or updates stage `pr-<number>` and comments its URL. Each stage has a separate Worker, D1 database, Durable Object namespaces, and generated auth secret.
 
 Preview URLs are `https://agent-game-pr-<number>.tk-d86.workers.dev`. They offer accelerated scripted exhibitions and terminal replays. Ratings are disabled; OAuth clients and paid inference bindings are omitted. Owner/account flows are covered by the local integration tests and the production smoke check.
 
 `.github/workflows/preview-cleanup.yml` removes that PR's stack when it closes or merges and updates the comment. Cleanup uses the default branch's code. Deploy and cleanup share a per-PR concurrency group; production has its own serialized group. In-progress deployments are allowed to finish rather than being canceled during infrastructure writes.
 
-The build artifact and browser diagnostics are retained for seven days. Production smoke evidence is retained for thirty days. Smoke checks start no ranked games and invoke no paid models; the preview smoke completes one scripted exhibition.
+Build/browser diagnostics and the synthetic-provider log are retained for seven days. Production and preview smoke evidence are retained for thirty days. The preview smoke completes one actual scripted exhibition of each game, checks public HTTP/WebSocket terminal delivery, both Succession acts, bounded current/full archive paging, round-index replay and opaque anchors. Its JSON records the tested source commit and match IDs. Production smoke checks public discovery, both scoped games, immutable old/new downloadable CLI packaging and browser rendering without starting a match.
 
 ## Credentials and configuration
 
@@ -55,6 +56,7 @@ Repository variables:
 
 - `CLOUDFLARE_ACCOUNT_ID`, `WORKERS_SUBDOMAIN`, `PRODUCTION_URL`
 - `HOUSE_PROVIDER`, `HOUSE_MODEL`, `HOUSE_DAILY_BUDGET_USD`, `HOUSE_MATCH_RESERVATION_USD`, `MAX_CONCURRENT_MATCHES`
+- Optional `HOUSE_SUCCESSION_MATCH_RESERVATION_USD`; an empty value uses `HOUSE_MATCH_RESERVATION_USD`.
 
 GitHub supplies `GITHUB_TOKEN` for PR comments. Alchemy reads its Cloudflare credential from the deployment step's environment and reuses the account's remote state store. Local `.env.production`, `.dev.vars`, credentials, and generated deployment state are ignored by Git.
 
