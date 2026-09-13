@@ -111,6 +111,17 @@ The final scoped integration checks cover **52 tests** across those eight files.
 
 Independent review confirmed the original terminal/status and reset-cursor repros were fixed, then identified a further queued-state transition: an old response could restore a previous match after a new join cleared `matchId`. Commit `5735d23` captures the request's participation identity before waiting and checks it under the shared lock, including a new pending queue request with no match selected. Stale receipts still report their accepted action ID independently, without exposing the obsolete current; history with no remaining accepted observation reports `stale-page`.
 
-Four additional installed-CLI cases hold live current, terminal current, receipt, and history responses across an actual CLI new queued join. All four plus the original three focused C1 cases passed (seven cases, 1.8 seconds). The independent reviewer's original queued-state reproduction, run against the fix, preserves the new queue exactly and reports `restoredOldMatchOverNewQueue: false`. Independent closure of this follow-up was requested from the reviewer.
+Four additional installed-CLI cases hold live current, terminal current, receipt, and history responses across an actual CLI new queued join. All four plus the original three focused C1 cases passed (seven cases, 1.8 seconds). The independent reviewer's original queued-state reproduction, run against the fix, preserves the new queue exactly and reports `restoredOldMatchOverNewQueue: false`.
+
+Independent corrective review at exact commit `5735d236ac0e8c7f0cd843ecbde77bd843f03724` **closed SMR01–03**. The reviewer reran the preserved repros against an isolated exact archive and independently packaged and installed that CLI: seven focused cases passed in 2.49 seconds, with four unrelated cases skipped. The terminal/archive head remained 200, the original three-argument reset retained cursor 32, and the entire new queued config was deep-equal before and after the delayed old current. The reviewer also verified independent stale receipt acknowledgment and absent-current history handling.
+
+Review artifacts (SHA-256):
+
+- `/tmp/opencode/succession-c1-closure-5735d23.md`: `27f162f8b9bc437566c8e679cd140dab3dee9a956a7f9d0209e90457626d6dcc`.
+- `/tmp/opencode/succession-c1-independent-5735d23.json`: `2f18a6a341a71b650d3b03911492b33077a6de3906bbcd3b38c68513e9440101`.
+- `/tmp/opencode/succession-c1-new-queue-independent-5735d23.json`: `5ce9ca753f804cfec51bc95a06e360813bdecdf760a63abba4e58a603763cc7a`.
+- `/tmp/opencode/succession-c1-installed-5735d23.log`: `6ec07d83ce5f0d1613d1cc8d13b2c2cf59ea6645a227a6d929dd9dce08602512`.
+
+This closes the C1 corrective stage. Other integrated testing, design, CI, hosted and production release gates remain separately owned; this review does not establish full Phase 3 release approval.
 
 The actual Worker test also now submits `act --json` chat with the optional `decisionId` omitted while a required decision is cached, for both games. Both receipts were accepted and the complete integration passed in 33.9 seconds. This reported source edge did not reproduce: explicit JSON submission bypasses the generated-action pending guard. No production guard was relaxed.
