@@ -7,6 +7,8 @@ import type { AnyMatchState } from '../../src/game/registry';
 import type { Entrant } from '../../src/game/types';
 import { DEFAULT_TIMING } from '../../src/game/types';
 import { hashSecret, randomSecret, stableJson } from '../../src/server/http';
+import { MatchHistory } from '../../src/server/history';
+import { BoundsMeter } from './succession-worker-metrics';
 
 export { HouseSeatObject } from '../../src/server/house-seat';
 
@@ -28,6 +30,58 @@ export interface FixtureInspection {
 
 /** Production rules, receipts, outbox, projections and alarms run unchanged. Only clocks are controlled. */
 export class MatchObject extends ApplicationMatch {
+  private readonly meter: BoundsMeter;
+
+  constructor(ctx: DurableObjectState, env: Env) {
+    const meter = new BoundsMeter();
+    meter.reset();
+    super(meter.wrap(ctx), env);
+    this.meter = meter;
+  }
+
+  fixtureMetrics(reset: boolean) {
+    const report = this.meter.report();
+
+    if (reset) this.meter.reset();
+
+    return report;
+  }
+
+  async fixtureAlarm() {
+    await this.alarm();
+  }
+
+  fixturePopulate(offset: number, count: number, escaping: boolean) {
+    if (!Number.isInteger(count) || count < 1 || count > 64) throw new Error('Invalid bounded batch');
+    this.meter.reset(false);
+    const history = new MatchHistory(this.ctx.storage.sql);
+    const text = escaping ? '\u0000\\"\n'.repeat(250) : '🦊'.repeat(1000);
+
+    const appended = this.ctx.storage.transactionSync(() =>
+      history.append(
+        Array.from({ length: count }, (_, index) => ({
+          eventKey: `bounds-${escaping ? 'escape' : 'unicode'}-${offset + index}`,
+          visibility: 'public' as const,
+          at: Date.now(),
+          act: 1 as const,
+          round: 1,
+          type: 'chat',
+          text,
+          data: { seat: (offset + index) % 10 },
+        })),
+      ),
+    );
+
+    return { count, ...appended };
+  }
+
+  async fixtureHouseContext(seat: number) {
+    const row = this.ctx.storage.sql.exec<{ data: string }>('SELECT data FROM game WHERE id=1').one();
+    const state: AnyMatchState = JSON.parse(row.data);
+
+    return this.houseObservation(seat, state.seats[seat].generation, state.phase.id);
+  }
+
   async fixtureClock(kind: 'discussion' | 'grace' | 'late-alarm', phaseId: string): Promise<void> {
     const row = this.ctx.storage.sql.exec<{ data: string }>('SELECT data FROM game WHERE id=1').one();
     const state: AnyMatchState = JSON.parse(row.data);
@@ -296,9 +350,34 @@ export default {
       return Response.json(await env.TEST_MATCHES.getByName(id).fixtureLegacy(id, [...input.controllers]));
     }
 
-    const match = url.pathname.match(/^\/__fixture\/matches\/(match_[\w-]+)(?:\/(clock|settlement))?$/);
+    const match = url.pathname.match(
+      /^\/__fixture\/matches\/(match_[\w-]+)(?:\/(clock|settlement|metrics|populate|alarm|house-context))?$/,
+    );
 
     if (match) {
+      const stub = env.TEST_MATCHES.getByName(match[1]);
+
+      if (match[2] === 'metrics')
+        return Response.json(await stub.fixtureMetrics(url.searchParams.has('reset')));
+
+      if (match[2] === 'populate')
+        return Response.json(
+          await stub.fixturePopulate(
+            Number(url.searchParams.get('offset')),
+            Number(url.searchParams.get('count')),
+            url.searchParams.has('escaping'),
+          ),
+        );
+
+      if (match[2] === 'alarm') {
+        await stub.fixtureAlarm();
+
+        return Response.json({ alarm: true });
+      }
+
+      if (match[2] === 'house-context')
+        return Response.json(await stub.fixtureHouseContext(Number(url.searchParams.get('seat'))));
+
       if (match[2] === 'clock') {
         const kind = url.searchParams.get('kind');
 
