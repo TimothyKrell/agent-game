@@ -1,0 +1,148 @@
+
+> agent-game@0.1.1 lint
+> oxlint . --deny-warnings
+
+Found 0 warnings and 0 errors.
+Finished in 515ms on 73 files with 120 rules using 32 threads.
+
+> agent-game@0.1.1 format:check
+> prettier --check src tests e2e cli scripts .github *.ts *.json *.jsonc skills public README.md
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> agent-game@0.1.1 typecheck
+> tsc --noEmit && tsc --noEmit -p tsconfig.infra.json && tsc --noEmit -p tsconfig.oxlint.json
+
+
+> agent-game@0.1.1 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/timothykrell/Code/agent-games-motion[39m
+
+ [32m✓[39m tests/supervisor.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m tests/deployment-ready.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 651[2mms[22m[39m
+   [33m[2m✓[22m[39m fails within its readiness budget when the route never becomes healthy [33m 420[2mms[22m[39m
+ [32m✓[39m tests/cli-output.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 344[2mms[22m[39m
+   [33m[2m✓[22m[39m keeps current legal choices visible within harness output limits and pages the remaining history [33m 343[2mms[22m[39m
+ [32m✓[39m tests/house-model.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m tests/cli-install.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2133[2mms[22m[39m
+   [33m[2m✓[22m[39m rejects missing string flag values at the CLI boundary [33m 375[2mms[22m[39m
+   [33m[2m✓[22m[39m installs the real archive, saves discoverable skills for both harnesses, and preserves existing identities [33m 1658[2mms[22m[39m
+ [32m✓[39m tests/evaluate-live-match.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2275[2mms[22m[39m
+   [33m[2m✓[22m[39m records the server model and policy version when HOUSE_MODEL is omitted [33m 1568[2mms[22m[39m
+   [33m[2m✓[22m[39m rejects mismatched HOUSE_MODEL and retains evidence and the full reservation [33m 427[2mms[22m[39m
+ [32m✓[39m tests/game.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 2186[2mms[22m[39m
+     [33m[2m✓[22m[39m completes many independently shuffled games within the derived 30-election bound [33m 2123[2mms[22m[39m
+ [32m✓[39m tests/worker-errors.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1640[2mms[22m[39m
+   [33m[2m✓[22m[39m serves copyable onboarding with an explicit origin, versioned archive and UTF-8 Markdown [33m 1114[2mms[22m[39m
+ [32m✓[39m tests/rating-storage.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2076[2mms[22m[39m
+     [33m[2m✓[22m[39m applies competing settlement retries exactly once, and unlocks rank on the tenth participation [33m 684[2mms[22m[39m
+     [33m[2m✓[22m[39m interrupted and preview records preserve history without adding rating or placement [33m 303[2mms[22m[39m
+ [32m✓[39m tests/preview-worker.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 33039[2mms[22m[39m
+   [33m[2m✓[22m[39m hosts an unranked scripted preview while keeping owner login disabled [33m 30652[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m10 passed[39m[22m[90m (10)[39m
+[2m      Tests [22m [1m[32m42 passed[39m[22m[90m (42)[39m
+[2m   Start at [22m 02:28:02
+[2m   Duration [22m 34.75s[2m (transform 1.93s, setup 0ms, import 8.57s, tests 44.46s, environment 1ms)[22m
+
+
+> agent-game@0.1.1 test:browser
+> playwright test
+
+
+Running 29 tests using 1 worker
+
+  ✓   1 e2e/arena.spec.ts:4:1 › onboards without signing in first and copies a self-contained prompt on desktop and mobile (2.4s)
+  ✓   2 e2e/arena.spec.ts:41:1 › browser pairing approves only the chosen competitor and revokes the installation (3.0s)
+  ✓   3 e2e/arena.spec.ts:86:1 › owner creates and retires a persistent competitor, signs out and returns to the same roster (2.6s)
+[WebServer] ▲ [WARNING] NOSENTRY SQLite alarm overdue, running despite AlarmManager mismatch; scheduledTime = 1789280933.238s; localAlarmTime = 1789280933.246s; currentTime = 1789280933.248412674s; actorId = 7760919a1da81c253058f9eb57d1ef655785bc49718ad724a7271c4e835d1b65
+[WebServer] 
+[WebServer] 
+  ✓   4 e2e/arena.spec.ts:118:1 › spectates a live exhibition and scrubs its completed private replay (9.7s)
+  ✓   5 e2e/arena.spec.ts:137:1 › mobile arena and live table fit the viewport (294ms)
+  ✓   6 e2e/feed.spec.ts:6:1 › discussion folds preserve chronology, stay closed on arrival, and survive filters and archive IDs (731ms)
+  ✓   7 e2e/feed.spec.ts:92:1 › timeline preserves reading position on live updates and names archived voters (870ms)
+  ✓   8 e2e/feed.spec.ts:267:1 › timeline attributes public actions and archived investigation recipients (366ms)
+  ✓   9 e2e/luminous.spec.ts:47:1 › pairing retries a failed request, excludes retired identities and waits for approval success (356ms)
+  ✓  10 e2e/luminous.spec.ts:123:1 › arena selects real summaries and switches to replay records on desktop and mobile (655ms)
+  ✓  11 e2e/luminous.spec.ts:153:1 › live and revealed records use real phase timers, outcomes, and accessible mobile participants (3.8s)
+  ✓  12 e2e/runtime-states.spec.ts:10:1 › all phases, powers and simultaneous seat facts survive compact layouts and stale reconnection (2.1s)
+  ✓  13 e2e/runtime-states.spec.ts:172:1 › engine-produced archives show setup and proposed offices at the selected event (1.3s)
+  ✓  14 e2e/sitewide.spec.ts:70:1 › all public compositions preserve their links and fit desktop, tablet and narrow phones (7.5s)
+  ✓  15 e2e/sitewide.spec.ts:211:1 › long valid identities and installations wrap without overlapping metrics or clipping controls (874ms)
+  ✓  16 e2e/sitewide.spec.ts:273:1 › owner queue reasons, retired records, expired grants and provider linking use returned state (380ms)
+  ✓  17 e2e/sitewide.spec.ts:354:1 › sign-in uses configured providers, preserves pairing callback and surfaces auth failure (581ms)
+  ✓  18 e2e/sitewide.spec.ts:384:1 › expired pairing uses a fresh-link recovery for both load and approval failures (477ms)
+  ✓  19 e2e/sitewide.spec.ts:431:1 › route errors retry, static onboarding survives bootstrap failure and unknown routes recover (1.8s)
+  ✓  20 e2e/sitewide.spec.ts:484:1 › profile history retains every result, role boundary, mode and nullable rating delta (794ms)
+  ✓  21 e2e/sitewide.spec.ts:559:1 › failed sign-out and retirement remain recoverable and duplicate pending mutations are blocked (402ms)
+  ✓  22 e2e/sitewide.spec.ts:609:1 › malformed responses, retained refresh failures and session expiry have usable recovery (758ms)
+  ✓  23 e2e/sitewide.spec.ts:651:1 › pairing and owner controls remain internally bounded across tablet breakpoints (2.6s)
+  ✓  24 e2e/motion.spec.ts:13:3 › motion preserves keyboard selection and settled geometry (no-preference) (2.3s)
+  ✓  25 e2e/motion.spec.ts:83:3 › live reading and replay remain stable with motion (no-preference) (2.3s)
+  ✓  26 e2e/motion.spec.ts:13:3 › motion preserves keyboard selection and settled geometry (reduce) (695ms)
+  ✓  27 e2e/motion.spec.ts:83:3 › live reading and replay remain stable with motion (reduce) (1.6s)
+  ✓  28 e2e/motion.spec.ts:179:1 › changing motion preference stops decoration immediately and keeps loading understandable (636ms)
+  ✓  29 e2e/motion.spec.ts:229:1 › hidden entrances are consumed and an authoritative arena fallback stays still (16.4s)
+
+  29 passed (1.3m)
+
+> agent-game@0.1.1 build
+> node scripts/package-cli.mjs && vite build
+
+CLI archive: /downloads/agent-game-cli-0.1.1.tgz (16380 bytes)
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 2083 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/index.html                   0.61 kB │ gzip:   0.38 kB
+dist/client/assets/index-AR6fswqn.css   95.13 kB │ gzip:  19.58 kB
+dist/client/assets/index-xlFhdM34.js   383.28 kB │ gzip: 121.47 kB
+
+✓ built in 2.67s
+
+ ⛅️ wrangler 4.129.1 (update available 4.131.1)
+───────────────────────────────────────────────
+✨ Read 14 files from the assets directory /home/timothykrell/Code/agent-games-motion/dist/client
+Total Upload: 3133.38 KiB / gzip: 580.35 KiB
+Your Worker has access to the following bindings:
+Binding                                                                           Resource                  
+env.MATCHES (MatchObject)                                                         Durable Object            
+env.MATCHMAKING (MatchmakingObject)                                               Durable Object            
+env.HOUSE_SEATS (HouseSeatObject)                                                 Durable Object            
+env.DB (agent-game)                                                               D1 Database               
+env.AI                                                                            AI                        
+env.ASSETS                                                                        Assets                    
+env.ENVIRONMENT ("development")                                                   Environment Variable      
+env.APP_URL ("http://localhost:8790")                                             Environment Variable      
+env.HOUSE_PROVIDER ("preview")                                                    Environment Variable      
+env.HOUSE_MODEL ("@cf/meta/llama-3.3-70b-instruct-fp8-f...")                      Environment Variable      
+env.OPENAI_BASE_URL ("https://api.openai.com/v1")                                 Environment Variable      
+env.TIME_SCALE ("1")                                                              Environment Variable      
+env.QUEUE_WAIT_SECONDS ("30")                                                     Environment Variable      
+env.MAX_CONCURRENT_MATCHES ("3")                                                  Environment Variable      
+env.HOUSE_DAILY_BUDGET_USD ("5")                                                  Environment Variable      
+env.HOUSE_MATCH_RESERVATION_USD ("1.5")                                           Environment Variable      
+
+--dry-run: exiting now.
+
+Running 6 tests using 1 worker
+
+
+  ✓  1 [1600-no-preference] › e2e/motion-recordings.ts:12:1 › native-size motion review scenes (41.0s)
+
+  ✓  2 [1600-reduce] › e2e/motion-recordings.ts:12:1 › native-size motion review scenes (33.2s)
+
+  ✓  3 [390-no-preference] › e2e/motion-recordings.ts:12:1 › native-size motion review scenes (30.8s)
+
+  ✓  4 [390-reduce] › e2e/motion-recordings.ts:12:1 › native-size motion review scenes (29.3s)
+
+  ✓  5 [320-no-preference] › e2e/motion-recordings.ts:12:1 › native-size motion review scenes (30.5s)
+
+  ✓  6 [320-reduce] › e2e/motion-recordings.ts:12:1 › native-size motion review scenes (29.8s)
+
+  6 passed (3.5m)

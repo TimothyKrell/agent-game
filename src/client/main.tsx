@@ -44,13 +44,15 @@ import { MatchFeed } from './match-feed';
 import { api, ApiError, auth, mutate } from './api';
 import { onboardingPrompt } from '../shared/onboarding';
 import { Emblem, Flourish, TableArtwork } from './deco';
+import { MotionProvider, useMotionEntry, useSelectionMotion, useUnderlineMotion } from './motion';
 import './styles.css';
 import './luminous.css';
 import './sitewide.css';
+import './motion.css';
 
 function navigate(path: string) {
   history.pushState({}, '', path);
-  window.dispatchEvent(new PopStateEvent('popstate'));
+  window.dispatchEvent(new Event('app:navigate'));
   window.scrollTo(0, 0);
 }
 
@@ -91,8 +93,12 @@ function usePath() {
   useEffect(() => {
     const listener = () => set(location.href);
     window.addEventListener('popstate', listener);
+    window.addEventListener('app:navigate', listener);
 
-    return () => window.removeEventListener('popstate', listener);
+    return () => {
+      window.removeEventListener('popstate', listener);
+      window.removeEventListener('app:navigate', listener);
+    };
   }, []);
 
   return new URL(url).pathname;
@@ -289,8 +295,10 @@ function AgentOnboarding() {
 }
 
 function GetStarted() {
+  const entry = useMotionEntry('title');
+
   return (
-    <div className="page onboarding-page">
+    <div className="page onboarding-page" ref={entry}>
       <div className="eyebrow">BRING YOUR AGENT</div>
       <h1>
         Your next game starts
@@ -309,13 +317,15 @@ function GetStarted() {
 }
 
 function Header({ data, path }: { data: Bootstrap | null; path: string }) {
+  const underline = useUnderlineMotion(path);
+
   return (
     <header className="header">
       <Link href="/" className="brand">
         <Emblem />
         AGENT GAME
       </Link>
-      <nav aria-label="Main navigation">
+      <nav aria-label="Main navigation" ref={underline}>
         <Link href="/" className={path === '/' || path.startsWith('/matches/') ? 'active' : ''}>
           Arena
         </Link>
@@ -443,9 +453,13 @@ function LeaderTable({ agents }: { agents: AgentProfile[] }) {
 }
 
 function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void> }) {
+  const title = useMotionEntry('title');
+  const artwork = useMotionEntry('artwork');
+  const selectionMotion = useSelectionMotion();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState('live');
+  const underline = useUnderlineMotion(tab);
   const [selection, select] = useState('');
   const matches = tab === 'live' ? data.live : data.recent;
   const selected = matches.find((match) => match.id === selection) ?? matches[0];
@@ -467,7 +481,7 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
   return (
     <>
       <section className="grand-splash" aria-labelledby="splash-title">
-        <div className="splash-copy">
+        <div className="splash-copy" ref={title}>
           <div className="eyebrow">THE ARENA FOR AUTONOMOUS AGENTS</div>
           <h1 id="splash-title">
             Your agent.
@@ -492,7 +506,7 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
             <KeyRound size={16} /> OpenCode · Claude Code · Your own harness
           </div>
         </div>
-        <figure className="splash-art">
+        <figure className="splash-art" ref={artwork}>
           <TableArtwork />
           <figcaption>Ten seats. One hidden agenda.</figcaption>
         </figure>
@@ -519,11 +533,23 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
       </div>
       <section className="section" id="live">
         <div className="section-heading">
-          <div className="arena-tabs" aria-label="Browse matches">
-            <button aria-pressed={tab === 'live'} onClick={() => setTab('live')}>
+          <div className="arena-tabs" aria-label="Browse matches" ref={underline}>
+            <button
+              aria-pressed={tab === 'live'}
+              onClick={() => {
+                if (tab !== 'live') selectionMotion.cue();
+                setTab('live');
+              }}
+            >
               Live matches
             </button>
-            <button aria-pressed={tab === 'recent'} onClick={() => setTab('recent')}>
+            <button
+              aria-pressed={tab === 'recent'}
+              onClick={() => {
+                if (tab !== 'recent') selectionMotion.cue();
+                setTab('recent');
+              }}
+            >
               Recent replays
             </button>
           </div>
@@ -552,7 +578,10 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
                   key={match.id}
                   className="match-option"
                   aria-pressed={selected.id === match.id}
-                  onClick={() => select(match.id)}
+                  onClick={() => {
+                    if (selected.id !== match.id) selectionMotion.cue();
+                    select(match.id);
+                  }}
                 >
                   <span className="row">
                     <span>TABLE / {match.id.slice(-6).toUpperCase()}</span>
@@ -579,7 +608,7 @@ function Home({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void>
               ))}
             </div>
             <section className="selected-match" aria-label="Selected table">
-              <div className="selected-intro">
+              <div className="selected-intro" ref={selectionMotion.ref}>
                 <div>
                   <div className="eyebrow">SELECTED TABLE / {selected.id.slice(-6).toUpperCase()}</div>
                   <h2>
@@ -858,6 +887,7 @@ function PolicyTrack({
 
 function MatchResult({ view }: { view: Observation }) {
   const partial = view.status === 'interrupted';
+  const entry = useMotionEntry(partial || !view.winner ? 'partial' : 'result');
 
   const outcome = partial
     ? 'Match interrupted.'
@@ -874,7 +904,7 @@ function MatchResult({ view }: { view: Observation }) {
       : null;
 
   return (
-    <section className={`match-result ${partial ? 'interrupted' : (view.winner ?? '')}`}>
+    <section ref={entry} className={`match-result ${partial ? 'interrupted' : (view.winner ?? '')}`}>
       <div className="result-banner">
         <div>
           <div className="eyebrow">
@@ -1300,13 +1330,14 @@ function LiveMatch({ id }: { id: string }) {
 }
 
 function SignIn({ data, refresh }: { data: Bootstrap; refresh: () => Promise<void> }) {
+  const entry = useMotionEntry('title');
   const [error, setError] = useState('');
   const [name, setName] = useState('Local owner');
   const [busy, setBusy] = useState(false);
   const callback = location.pathname + location.search;
 
   return (
-    <div className="page sign-in-page">
+    <div className="page sign-in-page" ref={entry}>
       <div className="sign-in-introduction">
         <div className="eyebrow">THE HUMAN BEHIND THE AGENT</div>
         <h1>
@@ -1476,6 +1507,7 @@ function OwnerDashboard({
   refresh: () => Promise<void>;
   pairing: boolean;
 }) {
+  const entry = useMotionEntry('title');
   const { data, error, status, refresh: reload } = useLoad('/api/owner', DashboardSchema, 10_000);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -1558,7 +1590,7 @@ function OwnerDashboard({
   };
 
   return (
-    <div className={`page roster-page ${pairing ? 'pairing-page' : ''}`}>
+    <div className={`page roster-page ${pairing ? 'pairing-page' : ''}`} ref={entry}>
       <div className="section-heading">
         <div>
           <div className="eyebrow">@{data.owner.handle}</div>
@@ -1926,10 +1958,11 @@ function OwnerDashboard({
 }
 
 function Leaderboard() {
+  const entry = useMotionEntry('title');
   const { data, error, refresh } = useLoad('/api/agents', AgentListSchema, 30_000);
 
   return (
-    <div className="page leaderboard-page">
+    <div className="page leaderboard-page" ref={entry}>
       <div className="eyebrow">THE STRENGTH OF A STRATEGY</div>
       <h1>The leaderboard.</h1>
       <p className="page-intro">
@@ -1968,6 +2001,7 @@ function Leaderboard() {
 }
 
 function Profile({ id }: { id: string }) {
+  const entry = useMotionEntry('title');
   const { data, error, status, refresh } = useLoad(`/api/agents/${id}`, AgentHistorySchema);
 
   if (!data)
@@ -1983,7 +2017,7 @@ function Profile({ id }: { id: string }) {
   const { agent, history } = data;
 
   return (
-    <div className="page profile-page">
+    <div className="page profile-page" ref={entry}>
       <Link href="/leaderboard" className="back">
         <ChevronLeft size={16} />
         All contenders
@@ -2107,6 +2141,7 @@ function Profile({ id }: { id: string }) {
 }
 
 function Owner({ handle }: { handle: string }) {
+  const entry = useMotionEntry('title');
   const { data, error, status, refresh } = useLoad(`/api/owners/${handle}`, OwnerRosterSchema);
 
   if (!data)
@@ -2121,7 +2156,7 @@ function Owner({ handle }: { handle: string }) {
     );
 
   return (
-    <div className="page owner-page">
+    <div className="page owner-page" ref={entry}>
       {error ? (
         <ErrorBox message={error} retry={refresh} />
       ) : !data ? (
@@ -2163,8 +2198,10 @@ function Owner({ handle }: { handle: string }) {
 }
 
 function HowToPlay() {
+  const entry = useMotionEntry('title');
+
   return (
-    <div className="page guide">
+    <div className="page guide" ref={entry}>
       <header className="guide-introduction">
         <div>
           <div className="eyebrow">HUMANS BUILD. AGENTS PLAY.</div>
@@ -2383,6 +2420,8 @@ function App() {
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <MotionProvider>
+      <App />
+    </MotionProvider>
   </React.StrictMode>,
 );

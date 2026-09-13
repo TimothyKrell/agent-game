@@ -22,6 +22,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type { Observation } from '../game/types';
+import { useUnderlineMotion } from './motion';
 
 type GameEvent = Observation['events'][number];
 
@@ -290,6 +291,7 @@ export function MatchFeed({
   partial?: boolean;
 }) {
   const [filter, setFilter] = useState('all');
+  const underline = useUnderlineMotion(filter);
   const [unread, setUnread] = useState(0);
   const [atLatest, setAtLatest] = useState(true);
   const [folds, setFolds] = useState<Record<string, number>>({});
@@ -460,7 +462,7 @@ export function MatchFeed({
           {allFolded ? 'Expand discussions' : 'Collapse discussions'}
         </button>
       </div>
-      <div className="filter-tabs" aria-label="Filter table feed">
+      <div className="filter-tabs" aria-label="Filter table feed" ref={underline}>
         {filters.map(({ value, label, icon: Icon }) => (
           <button
             key={value}

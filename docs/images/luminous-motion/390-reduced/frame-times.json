@@ -1,0 +1,201 @@
+{
+  "method": "Native Playwright screencast frames, nearest actual frameSwapWallTime to scene/animation trigger. Navigation call plus browser performance time approximates the navigation origin; requested and captured offsets are both recorded. WebM is unmodified real-time playback.",
+  "samples": [
+    {
+      "stage": "title-entry",
+      "requestedOffsetMs": 0,
+      "nearestCapturedOffsetMs": 313.2,
+      "frameWallTime": 1789281125456.209,
+      "file": "title-entry-0000.png"
+    },
+    {
+      "stage": "title-entry",
+      "requestedOffsetMs": 80,
+      "nearestCapturedOffsetMs": 313.2,
+      "frameWallTime": 1789281125456.209,
+      "file": "title-entry-0080.png"
+    },
+    {
+      "stage": "title-entry",
+      "requestedOffsetMs": 140,
+      "nearestCapturedOffsetMs": 313.2,
+      "frameWallTime": 1789281125456.209,
+      "file": "title-entry-0140.png"
+    },
+    {
+      "stage": "title-entry",
+      "requestedOffsetMs": 240,
+      "nearestCapturedOffsetMs": 313.2,
+      "frameWallTime": 1789281125456.209,
+      "file": "title-entry-0240.png"
+    },
+    {
+      "stage": "title-entry",
+      "requestedOffsetMs": 420,
+      "nearestCapturedOffsetMs": 313.2,
+      "frameWallTime": 1789281125456.209,
+      "file": "title-entry-0420.png"
+    },
+    {
+      "stage": "title-entry",
+      "requestedOffsetMs": 560,
+      "nearestCapturedOffsetMs": 313.2,
+      "frameWallTime": 1789281125456.209,
+      "file": "title-entry-0560.png"
+    },
+    {
+      "stage": "title-entry",
+      "requestedOffsetMs": 1000,
+      "nearestCapturedOffsetMs": 313.2,
+      "frameWallTime": 1789281125456.209,
+      "file": "title-entry-1000.png"
+    },
+    {
+      "stage": "artwork-entry",
+      "requestedOffsetMs": 0,
+      "nearestCapturedOffsetMs": 33.5,
+      "frameWallTime": 1789281127441.4722,
+      "file": "artwork-entry-0000.png"
+    },
+    {
+      "stage": "artwork-entry",
+      "requestedOffsetMs": 80,
+      "nearestCapturedOffsetMs": 33.5,
+      "frameWallTime": 1789281127441.4722,
+      "file": "artwork-entry-0080.png"
+    },
+    {
+      "stage": "artwork-entry",
+      "requestedOffsetMs": 140,
+      "nearestCapturedOffsetMs": 33.5,
+      "frameWallTime": 1789281127441.4722,
+      "file": "artwork-entry-0140.png"
+    },
+    {
+      "stage": "artwork-entry",
+      "requestedOffsetMs": 240,
+      "nearestCapturedOffsetMs": 33.5,
+      "frameWallTime": 1789281127441.4722,
+      "file": "artwork-entry-0240.png"
+    },
+    {
+      "stage": "artwork-entry",
+      "requestedOffsetMs": 420,
+      "nearestCapturedOffsetMs": 33.5,
+      "frameWallTime": 1789281127441.4722,
+      "file": "artwork-entry-0420.png"
+    },
+    {
+      "stage": "artwork-entry",
+      "requestedOffsetMs": 560,
+      "nearestCapturedOffsetMs": 1049.6,
+      "frameWallTime": 1789281128457.584,
+      "file": "artwork-entry-0560.png"
+    },
+    {
+      "stage": "artwork-entry",
+      "requestedOffsetMs": 1000,
+      "nearestCapturedOffsetMs": 1049.6,
+      "frameWallTime": 1789281128457.584,
+      "file": "artwork-entry-1000.png"
+    },
+    {
+      "stage": "control-press",
+      "requestedOffsetMs": 0,
+      "nearestCapturedOffsetMs": 227.2,
+      "frameWallTime": 1789281132164.187,
+      "file": "control-press-0000.png"
+    },
+    {
+      "stage": "control-press",
+      "requestedOffsetMs": 80,
+      "nearestCapturedOffsetMs": 227.2,
+      "frameWallTime": 1789281132164.187,
+      "file": "control-press-0080.png"
+    },
+    {
+      "stage": "control-press",
+      "requestedOffsetMs": 140,
+      "nearestCapturedOffsetMs": 227.2,
+      "frameWallTime": 1789281132164.187,
+      "file": "control-press-0140.png"
+    },
+    {
+      "stage": "control-press",
+      "requestedOffsetMs": 240,
+      "nearestCapturedOffsetMs": 227.2,
+      "frameWallTime": 1789281132164.187,
+      "file": "control-press-0240.png"
+    },
+    {
+      "stage": "control-press",
+      "requestedOffsetMs": 420,
+      "nearestCapturedOffsetMs": 553.6,
+      "frameWallTime": 1789281132490.6362,
+      "file": "control-press-0420.png"
+    },
+    {
+      "stage": "control-press",
+      "requestedOffsetMs": 560,
+      "nearestCapturedOffsetMs": 553.6,
+      "frameWallTime": 1789281132490.6362,
+      "file": "control-press-0560.png"
+    },
+    {
+      "stage": "control-press",
+      "requestedOffsetMs": 1000,
+      "nearestCapturedOffsetMs": 1022.2,
+      "frameWallTime": 1789281132959.216,
+      "file": "control-press-1000.png"
+    },
+    {
+      "stage": "tab-selection",
+      "requestedOffsetMs": 0,
+      "nearestCapturedOffsetMs": 43.1,
+      "frameWallTime": 1789281133759.062,
+      "file": "tab-selection-0000.png"
+    },
+    {
+      "stage": "tab-selection",
+      "requestedOffsetMs": 80,
+      "nearestCapturedOffsetMs": 43.1,
+      "frameWallTime": 1789281133759.062,
+      "file": "tab-selection-0080.png"
+    },
+    {
+      "stage": "tab-selection",
+      "requestedOffsetMs": 140,
+      "nearestCapturedOffsetMs": 43.1,
+      "frameWallTime": 1789281133759.062,
+      "file": "tab-selection-0140.png"
+    },
+    {
+      "stage": "tab-selection",
+      "requestedOffsetMs": 240,
+      "nearestCapturedOffsetMs": 43.1,
+      "frameWallTime": 1789281133759.062,
+      "file": "tab-selection-0240.png"
+    },
+    {
+      "stage": "tab-selection",
+      "requestedOffsetMs": 420,
+      "nearestCapturedOffsetMs": 775.5,
+      "frameWallTime": 1789281134491.523,
+      "file": "tab-selection-0420.png"
+    },
+    {
+      "stage": "tab-selection",
+      "requestedOffsetMs": 560,
+      "nearestCapturedOffsetMs": 775.5,
+      "frameWallTime": 1789281134491.523,
+      "file": "tab-selection-0560.png"
+    },
+    {
+      "stage": "tab-selection",
+      "requestedOffsetMs": 1000,
+      "nearestCapturedOffsetMs": 841.5,
+      "frameWallTime": 1789281134557.492,
+      "file": "tab-selection-1000.png"
+    }
+  ]
+}

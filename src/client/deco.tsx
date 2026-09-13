@@ -70,13 +70,17 @@ export function TableArtwork() {
       aria-label="Illustration of ten autonomous agents around a table"
     >
       <g fill="none" stroke="#518f90">
-        {[194, 222, 246].map((radius) => (
-          <path
-            key={radius}
-            d={`M330 ${330 - radius}L${330 + radius} 330 330 ${330 + radius} ${330 - radius} 330Z`}
-            opacity={radius === 222 ? 0.85 : 0.35}
-          />
-        ))}
+        <g className="art-rings-hover">
+          <g className="art-rings-entry">
+            {[194, 222, 246].map((radius) => (
+              <path
+                key={radius}
+                d={`M330 ${330 - radius}L${330 + radius} 330 330 ${330 + radius} ${330 - radius} 330Z`}
+                opacity={radius === 222 ? 0.85 : 0.35}
+              />
+            ))}
+          </g>
+        </g>
         {Array.from({ length: 10 }, (_, index) => {
           const angle = ((-90 + index * 36) * Math.PI) / 180;
           const x = 330 + 294 * Math.cos(angle);
@@ -115,15 +119,19 @@ export function TableArtwork() {
         })}
       </g>
       <path d="M209 237h242v233H209Z" fill="#071113" />
-      <g transform="translate(258 180) scale(1.8)" fill="none" stroke="#bbf3ee" strokeWidth=".9">
-        <path d="m40 3 37 37-37 37L3 40Z" opacity=".45" />
-        <path d="m40 8 32 32-32 32L8 40Z" opacity=".72" />
-        <path d="M13 24v-9h10M57 15h10v9M13 56v9h10M57 65h10v-9" opacity=".55" />
-        <path d="m40-1 2 2-2 2-2-2Zm39 39 2 2-2 2-2-2ZM40 77l2 2-2 2-2-2ZM1 38l2 2-2 2-2-2Z" />
-        <path d={centers[0]} strokeWidth="1.5" />
-        <circle cx="40" cy="19" r="2" />
-        <circle cx="24" cy="48" r="2" />
-        <circle cx="56" cy="48" r="2" />
+      <g className="art-center-hover">
+        <g className="art-center-entry">
+          <g transform="translate(258 180) scale(1.8)" fill="none" stroke="#bbf3ee" strokeWidth=".9">
+            <path d="m40 3 37 37-37 37L3 40Z" opacity=".45" />
+            <path d="m40 8 32 32-32 32L8 40Z" opacity=".72" />
+            <path d="M13 24v-9h10M57 15h10v9M13 56v9h10M57 65h10v-9" opacity=".55" />
+            <path d="m40-1 2 2-2 2-2-2Zm39 39 2 2-2 2-2-2ZM40 77l2 2-2 2-2-2ZM1 38l2 2-2 2-2-2Z" />
+            <path d={centers[0]} strokeWidth="1.5" />
+            <circle cx="40" cy="19" r="2" />
+            <circle cx="24" cy="48" r="2" />
+            <circle cx="56" cy="48" r="2" />
+          </g>
+        </g>
       </g>
       <g textAnchor="middle" fill="#e8f1ed">
         <text x="330" y="354" fontSize="21">
@@ -137,20 +145,22 @@ export function TableArtwork() {
         </text>
       </g>
       <path d="M250 420h160" stroke="#518f90" />
-      {[
-        [9, 0.035],
-        [4, 0.09],
-        [1, 1],
-      ].map(([width, opacity]) => (
-        <path
-          key={width}
-          d="M300 117h60M117 300v60M543 300v60M300 543h60"
-          fill="none"
-          stroke="#bbf3ee"
-          strokeWidth={width}
-          opacity={opacity}
-        />
-      ))}
+      <g className="art-terminals">
+        {[
+          [9, 0.035],
+          [4, 0.09],
+          [1, 1],
+        ].map(([width, opacity]) => (
+          <path
+            key={width}
+            d="M300 117h60M117 300v60M543 300v60M300 543h60"
+            fill="none"
+            stroke="#bbf3ee"
+            strokeWidth={width}
+            opacity={opacity}
+          />
+        ))}
+      </g>
     </svg>
   );
 }
