@@ -32,10 +32,11 @@
   transform: scaleX(0.72);
 }
 .header nav a::after {
-  left: 15%;
-  width: 70%;
-  height: 2px;
-  background: var(--green);
+  left: var(--nav-rule-inset);
+  width: calc(100% - 2 * var(--nav-rule-inset));
+  height: var(--nav-rule-height);
+  bottom: var(--nav-rule-bottom);
+  background: var(--nav-rule-paint);
 }
 .arena-tabs button,
 .filter-tabs button {
