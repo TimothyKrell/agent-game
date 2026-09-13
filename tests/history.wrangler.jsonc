@@ -1,0 +1,11 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "agent-game-history-test",
+  "main": "fixtures/history-worker.ts",
+  "compatibility_date": "2026-09-07",
+  "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": {
+    "bindings": [{ "name": "HISTORY", "class_name": "HistoryFixture" }],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["HistoryFixture"] }],
+}
