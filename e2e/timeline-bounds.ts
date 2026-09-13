@@ -15,8 +15,12 @@ export async function expectTimelineFiltersBounded(page: Page) {
 
       return box.left < target.left - 1 ||
         box.right > target.right + 1 ||
+        box.top < target.top - 1 ||
+        box.bottom > target.bottom + 1 ||
         text.left < box.left - 1 ||
-        text.right > box.right + 1
+        text.right > box.right + 1 ||
+        text.top < box.top - 1 ||
+        text.bottom > box.bottom + 1
         ? [button.textContent]
         : [];
     });

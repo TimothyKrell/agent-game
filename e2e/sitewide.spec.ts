@@ -135,6 +135,12 @@ test('all public compositions preserve their links and fit desktop, tablet and n
     ]) {
       await page.goto(path);
       await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+
+      if (path.startsWith('/agents/') || path.startsWith('/owners/'))
+        await expect(page.locator('.header nav').getByRole('link', { name: 'Leaderboard' })).toHaveAttribute(
+          'aria-current',
+          'location',
+        );
       await page.evaluate(() => document.fonts.ready);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
@@ -738,6 +744,15 @@ test('pairing and owner controls remain internally bounded across tablet breakpo
           `Pairing identity sections retain breathing room at ${width}: ${gaps}`,
         ).toBe(true);
       }
+
+      const queueTimes = page.locator('.queue-detail small');
+      await expect(queueTimes).toHaveCount(2);
+      expect(
+        await queueTimes.evaluateAll(
+          (elements) => elements[1].getBoundingClientRect().top >= elements[0].getBoundingClientRect().bottom,
+        ),
+        `Queue eligibility and queued-since are distinct lines at ${width}`,
+      ).toBe(true);
     }
   }
 });

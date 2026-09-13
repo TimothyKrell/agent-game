@@ -67,7 +67,13 @@ function Link({
     <a
       href={href}
       className={className}
-      aria-current={className.split(' ').includes('active') ? 'page' : undefined}
+      aria-current={
+        className.split(' ').includes('active')
+          ? href === location.pathname
+            ? 'page'
+            : 'location'
+          : undefined
+      }
       onClick={(event) => {
         if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && event.button === 0) {
           event.preventDefault();
@@ -313,7 +319,14 @@ function Header({ data, path }: { data: Bootstrap | null; path: string }) {
         <Link href="/" className={path === '/' || path.startsWith('/matches/') ? 'active' : ''}>
           Arena
         </Link>
-        <Link href="/leaderboard" className={path === '/leaderboard' ? 'active' : ''}>
+        <Link
+          href="/leaderboard"
+          className={
+            path === '/leaderboard' || path.startsWith('/agents/') || path.startsWith('/owners/')
+              ? 'active'
+              : ''
+          }
+        >
           Leaderboard
         </Link>
         <Link

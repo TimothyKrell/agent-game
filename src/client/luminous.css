@@ -1589,6 +1589,7 @@ label {
   margin: 8px 0;
 }
 .queue-detail small {
+  display: block;
   color: var(--muted);
 }
 .error {
