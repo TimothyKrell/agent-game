@@ -81,26 +81,26 @@ Each finding has both a behavioral obligation and a native-design obligation. Fi
 
 ## Verification record
 
-**Implementation and local verification: complete. Independent visual/code approval and fresh PR checks: pending.** Local checkpoint `0b016e9` preserved batches 1–3/runtime parity. Implementation checkpoint **`7b16016`** completes the final native rules/results/state compositions. The required consolidated pass after the last functional/layout edit passed in full. No finding is finally approved until exact-commit full-site visual review and independent review are recorded.
+**Implementation and local verification: complete. Independent correction approval and fresh PR checks: pending.** Local checkpoint `0b016e9` preserved batches 1–3/runtime parity; `7b16016` completed the native rules/results/state compositions. Implementation checkpoint **`4f51cfa98cb44bd3b54d61a6b901b791386ccc76`** includes all five Design corrections and the independent replay correction. The required consolidated pass after the last functional/layout edit passed in full. Broad full-site visual and code reviews are complete; final approval awaits exact-commit correction review.
 
 Required widths: **320, 390, 760, 768, 1024, 1600 px**. Browser assertions cover internal text/control bounds and section intersections as well as route behavior, keyboard access, document overflow and uncaught errors. Native screenshot review covers composition fidelity. Real local/API tests establish state and authority behavior. Visual fixtures use illustrative records only in tests.
 
 Required checks: lint with denied warnings, Prettier, application/infrastructure/plugin typecheck, unit suite, real-Worker API/recovery suite, browser suite on **8797**, production build and deployment dry-run, then PR CI/preview. Final API platform server uses **8798**; recovery owns **8811**. Use command timeout ≥600000 ms. Independent review and coordinator approval precede merge.
 
-Final consolidated verification on **`7b16016`**:
+Final consolidated verification on implementation **`4f51cfa`**:
 
-| Check                                             | Result                                                                         |
-| ------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `npm run lint -- --deny-warnings`                 | 0 warnings / 0 errors                                                          |
-| `npm run format:check`                            | Passed                                                                         |
-| `npm run typecheck`                               | Application, infrastructure and lint-plugin projects passed                    |
-| `npm test`                                        | **42/42**, 10 files                                                            |
-| `TEST_URL=http://127.0.0.1:8798 npm run test:api` | **6/6**: five platform tests + real restart/recovery on 8811                   |
-| `PORT=8797 npm run test:browser`                  | **22/22**, including six responsive widths and native result/replay regression |
-| `npm run build`                                   | Passed                                                                         |
-| `npx wrangler deploy --dry-run`                   | Passed, Wrangler 4.129.1                                                       |
+| Check                                             | Result                                                                                                |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `npm run lint -- --deny-warnings`                 | 0 warnings / 0 errors                                                                                 |
+| `npm run format:check`                            | Passed                                                                                                |
+| `npm run typecheck`                               | Application, infrastructure and lint-plugin projects passed                                           |
+| `npm test`                                        | **42/42**, 10 files                                                                                   |
+| `TEST_URL=http://127.0.0.1:8798 npm run test:api` | **6/6**: five platform tests + real restart/recovery on 8811                                          |
+| `PORT=8797 npm run test:browser`                  | **23/23**, including six responsive widths and engine-produced complete/interrupted replay regression |
+| `npm run build`                                   | Passed                                                                                                |
+| `npx wrangler deploy --dry-run`                   | Passed, Wrangler 4.129.1                                                                              |
 
-The complete sequential command exited **0**; local transcript: `/tmp/opencode/sitewide-final-checks.log`. The first final attempt found an explicit round-seek viewport regression, fixed before this successful full rerun. Earlier API verification also encountered a port collision; the final pass used separate platform/recovery ports and passed without it. Never run a separate platform server on 8811 concurrently with the recovery fixture.
+The complete sequential command exited **0**; current local transcript: `/tmp/opencode/sitewide-review-final-checks.log`. The previous `7b16016` pass is preserved in `/tmp/opencode/sitewide-final-checks.log`. The current pass includes the round-seek correction, all V01–V05 visual corrections and R1 replay reconstruction. API platform and recovery used separate ports. Never run a separate platform server on 8811 concurrently with the recovery fixture.
 
 ## Complete current screenshot manifest
 
@@ -118,16 +118,19 @@ Quick inspection: [homepage desktop](images/luminous-ui/sitewide/sitewide---1600
 | Live phases / grace / seat facts                  | `luminous-live-{desktop,mobile}.png`, `sitewide-match-status-320.png`                                                                    |
 | Complete result / fixed tracks                    | `sitewide-result-complete-{1600,1024,768,760,390,320}.png`                                                                               |
 | Rogue / interrupted result                        | `sitewide-result-{finished,interrupted}-{1600,390,320}.png`                                                                              |
+| Engine-produced replay proposals                  | `sitewide-replay-proposal-{finished,interrupted}.png`                                                                                    |
 | Authentication / expiry                           | `sitewide-state-{local-auth,provider-failure,no-provider,expired-pairing}-{1600,390}.png`                                                |
 | Empty / errors / recovery                         | `sitewide-state-{empty-live,empty-archive,empty-ranking,empty-owner,initial-error,stale-ranking,not-found,missing-agent}-{1600,390}.png` |
 
-The full review set is frozen at `/tmp/opencode/sitewide-review-7b16016/` (**68 PNGs**, implementation commit `7b16016`). Designer review was requested against that exact source checkpoint. The consolidated verification rerun includes the explicit round-seek fix: selecting a round reveals its heading in both the timeline scroll area and outer page viewport; passive updates still preserve reading position.
+The current full review set is frozen at `/tmp/opencode/sitewide-review-4f51cfa/` (**70 PNGs**, implementation commit `4f51cfa`). All original 68 images were regenerated in the final browser pass; two engine-produced complete/interrupted proposal captures extend the set. The earlier 68-image set remains frozen at `/tmp/opencode/sitewide-review-7b16016/`. The consolidated verification includes explicit round seeking in both the timeline scroll area and outer page viewport; passive updates preserve reading position.
 
 All routes are native-composition review candidates. Source labels/crops adapt to actual data; full ten-seat rails, all returned lists and authorized private chronology remain reachable. Pairing uses the accepted whole-page stacked adaptation at 768 px.
 
 ## Independent review correction batch
 
-The completed exact-head review of `f43703c` found five visual corrections and one selected-event correctness issue. They are implemented in the follow-up; final consolidated re-verification and refreshed exact-head signoff are pending. The independent reviewer found no further parity, privacy, authority, lifecycle or documented-standards blockers. Its report is `/tmp/opencode/phase1-exact-head-review-f43703c.md`, SHA-256 `84ac69061a773d122af66ad8bf875a741f62a18d957266ff9bd555e3c12eef23`.
+The completed exact-head review of `f43703c` found five visual corrections and one selected-event correctness issue. All are implemented and locally verified at `4f51cfa`; refreshed exact-head signoff is pending. The independent reviewer found no further parity, privacy, authority, lifecycle or documented-standards blockers. Its report is `/tmp/opencode/phase1-exact-head-review-f43703c.md`, SHA-256 `84ac69061a773d122af66ad8bf875a741f62a18d957266ff9bd555e3c12eef23`.
+
+Design inspected all 68 original frozen images and their full-page chunks. The supplemental 320 px leaderboard ordinary/provisional and valid 40-character unbroken-name review passed, with bounded identity/metric/navigation text and no overflow or page errors. The durable review is in the design worktree at `design/figma/luminous-deco/full-site/implementation-visual-review.md`, SHA-256 `833df6b03a2b369b2aa0b6a4799e1bb906ae78f354d51faed59d3e7b24f4ed02`. That review requests only V01–V05; it does not yet approve the correction checkpoint.
 
 | Finding                                                                       | Correction and regression evidence                                                                                                                                                                                                                                                                                              |
 | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -138,7 +141,7 @@ The completed exact-head review of `f43703c` found five visual corrections and o
 | V04 — public record pages lose parent-section selection                       | Agent and owner routes keep Leaderboard selected, with `aria-current="location"` for parent sections and `page` for exact routes. Existing six-width public tests check the contextual selection.                                                                                                                               |
 | V05 — queue times run together                                                | Eligibility and queued-since facts render on distinct lines. Account tests check their text rectangles at all six widths.                                                                                                                                                                                                       |
 
-The follow-up browser suite has **23 tests** (the original 22 plus the engine-produced replay regression). No server engine, authorization or privacy projection contract changed. Initial focused verification passed six browser regressions, all 22 game-unit tests, typechecks, formatting and lint with 0 warnings/errors. The successful `f43703c` CI/preview run remains [34735337594](https://github.com/TimothyKrell/agent-game/actions/runs/34735337594); a fresh run is required after publishing this correction batch.
+The follow-up browser suite has **23 tests** (the original 22 plus the engine-produced replay regression), all passed in the final consolidated run. The replay regression covers the setup prefix, first nomination discussion, proposed government, voting and terminal state, alongside fixed final tracks. No server engine, authorization or privacy projection contract changed. The prior `f43703c` CI/preview run is [34735337594](https://github.com/TimothyKrell/agent-game/actions/runs/34735337594); a fresh run is required after publishing this correction batch.
 
 ## Residual verification boundary
 

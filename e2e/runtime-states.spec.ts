@@ -243,6 +243,10 @@ test('engine-produced archives show setup and proposed offices at the selected e
       await expect(page.locator('.seat small').filter({ hasText: 'Coordinator' })).toHaveCount(0);
     }
 
+    await slider.fill(String(firstPhase + 1));
+    await expect(page.getByLabel('At selected event')).toContainText(
+      'Nomination discussion · Discussion open',
+    );
     await slider.fill(String(proposal + 1));
     await expect(page.getByLabel('At selected event')).toContainText(
       'Government discussion · Discussion open',
@@ -255,5 +259,26 @@ test('engine-produced archives show setup and proposed offices at the selected e
       path: `/tmp/opencode/sitewide-replay-proposal-${archive.status}.png`,
       fullPage: true,
     });
+
+    const voting = archive.events.findIndex(
+      (event) => event.type === 'phase' && event.data?.phase === 'voting',
+    );
+
+    if (archive.status === 'finished') {
+      expect(voting).toBeGreaterThan(proposal);
+      await slider.fill(String(voting + 1));
+      await expect(page.getByLabel('At selected event')).toContainText('Voting · Discussion open');
+      await expect(page.locator('.seat').nth(nominee)).toContainText('Executor nominee');
+    }
+
+    await slider.fill(String(archive.events.length));
+    await expect(page.getByLabel('At selected event')).toContainText(
+      archive.status === 'finished'
+        ? 'Complete record · Discussion closed'
+        : 'Interrupted match · Discussion closed',
+    );
+    await expect(page.locator('.seat small').filter({ hasText: 'Executor nominee' })).toHaveCount(0);
+    await expect(page.locator('.final-track.safeguard b')).toHaveText(String(archive.tracks.safeguards));
+    await expect(page.locator('.final-track.override b')).toHaveText(String(archive.tracks.overrides));
   }
 });
