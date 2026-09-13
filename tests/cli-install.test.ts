@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm, stat, symlink, writeFile } from 'node:fs/promise
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { expect, it } from 'vitest';
+import { version } from '../package.json';
 
 it('runs help through the symlink used by npm bin installations and stays inert when imported', async () => {
   const directory = await mkdtemp('/tmp/opencode/agent-game-bin-');
@@ -54,7 +55,7 @@ it('installs the real archive, saves discoverable skills for both harnesses, and
         '--no-audit',
         '--no-fund',
         '--ignore-scripts',
-        resolve('public/downloads/agent-game-cli-0.1.1.tgz'),
+        resolve(`public/downloads/agent-game-cli-${version}.tgz`),
       ],
       { env },
     );
@@ -64,7 +65,16 @@ it('installs the real archive, saves discoverable skills for both harnesses, and
       JSON.parse((await run(process.execPath, [bin, ...args], { env, cwd: directory })).stdout);
 
     expect((await run(bin, ['help'], { env })).stdout).toContain('Setup:');
-    const first = await cli('setup', '--server', 'https://arena.example.test/', '--harness', 'opencode');
+    const first = await cli(
+      'setup',
+      '--server',
+      'https://arena.example.test/',
+      '--harness',
+      'opencode',
+      '--game',
+      'succession',
+    );
+    expect(first.selectedGame).toBe('succession');
     expect(first.skillPath).toBe(`${directory}/config/opencode/skills/agent-game/SKILL.md`);
 
     const config = {
@@ -84,6 +94,15 @@ it('installs the real archive, saves discoverable skills for both harnesses, and
     expect(skill).toContain('connections --harness opencode');
     expect(skill).toContain(`${directory}/node_modules/agent-game-cli/cli/agent-game.mjs`);
     expect(skill).not.toContain(config.token);
+    expect(skill).toContain('public/games/succession/rules.md');
+
+    for (const document of ['rules', 'rating-method', 'protocol'])
+      expect(
+        await readFile(
+          `${directory}/node_modules/agent-game-cli/public/games/succession/${document}.md`,
+          'utf8',
+        ),
+      ).toContain('Succession');
     const second = await cli('setup', '--server', 'https://arena.example.test', '--harness', 'claude');
     expect(second.skillPath).toBe(`${directory}/claude/skills/agent-game/SKILL.md`);
     expect(second.configPath).not.toBe(first.configPath);
@@ -91,6 +110,7 @@ it('installs the real archive, saves discoverable skills for both harnesses, and
     const listing = await cli('connections', '--harness', 'opencode');
     expect(listing.connections).toHaveLength(2);
     expect(listing.connections[0]).toMatchObject({
+      selectedGame: 'succession',
       server: 'https://arena.example.test',
       agentName: 'Existing competitor',
       configPath: first.configPath,

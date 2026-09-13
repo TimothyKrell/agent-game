@@ -5,17 +5,44 @@ import { resolve, dirname } from 'node:path';
 import { randomBytes, createHash, randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { acceptCurrent, gameId, notification, validateIdentity, terminal } from './current.mjs';
+import {
+  acceptCurrent,
+  consumePage,
+  gameId,
+  notification,
+  validateIdentity,
+  validateCurrent,
+  terminal,
+} from './current.mjs';
 
 export class ApiError extends Error {
-  constructor(status, code, message) {
+  constructor(status, code, message, details = {}) {
     super(message);
     this.status = status;
     this.code = code;
+    this.details = Object.fromEntries(
+      ['gameId', 'matchId', 'requiredProtocolVersion', 'rulesUrl', 'cliUrl', 'cliDownloadUrl'].flatMap(
+        (key) => (details[key] === undefined ? [] : [[key, details[key]]]),
+      ),
+    );
   }
 }
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+function boundedTime(ms) {
+  const configured = process.env.AGENT_GAME_CHILD_DEADLINE;
+
+  if (configured === undefined) return ms;
+  const deadline = Number(configured);
+
+  if (!Number.isFinite(deadline)) throw new Error('Invalid AGENT_GAME_CHILD_DEADLINE.');
+  const remaining = Math.floor(deadline - Date.now());
+
+  if (remaining <= 0) throw new ApiError(408, 'runtime-exhausted', 'Child runtime allowance exhausted.');
+
+  return Math.min(ms, remaining);
+}
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, boundedTime(ms)));
 
 export class GameClient {
   constructor(server, token = null) {
@@ -46,13 +73,18 @@ export class GameClient {
           redirect: 'error',
           headers,
           body: body === undefined ? undefined : JSON.stringify(body),
-          signal: AbortSignal.timeout(10_000),
+          signal: AbortSignal.timeout(boundedTime(10_000)),
         });
 
         const data = await response.json();
 
         if (!response.ok)
-          throw new ApiError(response.status, data.error?.code, data.error?.message ?? 'Request failed');
+          throw new ApiError(
+            response.status,
+            data.error?.code,
+            data.error?.message ?? 'Request failed',
+            data.error,
+          );
 
         return data;
       } catch (error) {
@@ -69,8 +101,10 @@ export class GameClient {
   }
   async history(matchId, parameters) {
     const query = new URLSearchParams();
+
     for (const [key, value] of Object.entries(parameters))
       if (value !== undefined) query.set(key, String(value));
+
     return this.request(`/api/matches/${matchId}/history?${query}`);
   }
   async connect(matchId, after = 0, protocolVersion = '1') {
@@ -78,6 +112,7 @@ export class GameClient {
     const url = new URL(`/api/matches/${matchId}/events`, this.server);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.searchParams.set('after', String(after));
+
     if (protocolVersion === '2') url.searchParams.set('protocol', '2');
 
     if (ticket) url.searchParams.set('ticket', ticket);
@@ -86,13 +121,14 @@ export class GameClient {
   }
   /** Resolves on an observation, even across socket failures. A pending tool call carries it back into the model loop. */
   async wait(matchId, after, timeoutMs = 20_000, seen) {
-    const until = Date.now() + timeoutMs;
+    const until = Date.now() + boundedTime(timeoutMs);
     const first = await this.observation(matchId, after);
 
     const changed = (view) =>
       view.protocolVersion === '2'
         ? notification(view) !== (seen ?? notification(first))
         : view.cursor !== after;
+
     if (changed(first) || first.decision || terminal(first)) return first;
 
     return new Promise((resolve, reject) => {
@@ -215,6 +251,7 @@ async function updateCurrent(path, update) {
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
   const lockPath = `${path}.current-lock`;
   let lock;
+
   for (let attempt = 0; !lock; attempt++) {
     try {
       lock = await open(lockPath, 'wx', 0o600);
@@ -223,6 +260,7 @@ async function updateCurrent(path, update) {
       await delay(10);
     }
   }
+
   try {
     const latest = await readFile(path, 'utf8')
       .then(JSON.parse)
@@ -230,8 +268,10 @@ async function updateCurrent(path, update) {
         if (error.code === 'ENOENT') return {};
         throw error;
       });
+
     const result = update(latest);
     await save(path, latest);
+
     return result;
   } finally {
     await lock.close();
@@ -243,13 +283,41 @@ function print(data) {
   process.stdout.write(`${JSON.stringify(data)}\n`);
 }
 
+function minutes(value) {
+  if (value === undefined) return undefined;
+  const ms = Number(value) * 60000;
+
+  if (!Number.isSafeInteger(ms) || ms <= 0) throw new Error('Allowances must be positive minutes.');
+
+  return ms;
+}
+
 // Keep critical state intact inside common tool-output ceilings. History remains retrievable in pages.
 function display(view) {
   if (view.protocolVersion === '2') {
     if (Buffer.byteLength(JSON.stringify(view)) > 14336 || 'events' in view || 'cursor' in view)
       throw new Error('Invalid bounded protocol-2 current observation.');
-    return { ...view, historyCommand: 'history --limit 10 --max-bytes 12288' };
+
+    const output = {
+      ...view,
+      historyCommand: 'history --limit 10 --max-bytes 12288',
+    };
+
+    if (terminal(view)) {
+      output.winningSeat = view.result?.winnerSeat ?? null;
+      output.originalAgentResult =
+        view.you && view.result
+          ? {
+              won: view.you.seat === view.result.winnerSeat && !view.you.forfeited,
+              forfeited: view.you.forfeited,
+            }
+          : null;
+      output.overallReason = view.result?.reason ?? view.interruptionReason ?? null;
+    }
+
+    return output;
   }
+
   const { events, decision, ...state } = view;
 
   const output = {
@@ -323,6 +391,7 @@ export async function main(argv = process.argv.slice(2)) {
     );
   const client = new GameClient(String(server), state.token);
   state.selectedGame = gameId(flags.game ?? state.selectedGame);
+
   if (['start', 'pair', 'join', 'play'].includes(command)) await save(path, state);
 
   if (command === 'play') {
@@ -331,8 +400,12 @@ export async function main(argv = process.argv.slice(2)) {
     const result = await supervise({
       configPath: path,
       harness: String(flags.harness ?? 'claude'),
+      requestedGame: flags.game,
       model: flags.model,
-      maxBudget: Number(flags.budget ?? 2),
+      maxBudget: flags.budget === undefined ? undefined : Number(flags.budget),
+      maxRuntimeMs: minutes(flags.runtime),
+      queueAllowanceMs: minutes(flags['queue-timeout']),
+      childSliceMs: minutes(flags['child-slice']),
       onEvent: (event) => process.stderr.write(JSON.stringify(event) + '\n'),
     });
 
@@ -441,20 +514,24 @@ export async function main(argv = process.argv.slice(2)) {
     if (current.status === 'idle') {
       state.joinRequest ??= randomUUID();
       state.pendingJoin ??= { gameId: state.selectedGame, requestId: state.joinRequest };
+
       if (state.pendingJoin.gameId !== state.selectedGame)
         throw new Error('A pending join belongs to another game. Resume or cancel it first.');
       await persist();
     }
+
     if (current.status !== 'idle' && flags.game && gameId(current.gameId) !== flags.game)
       throw new Error(`Agent busy in ${gameId(current.gameId)}.`);
 
-    const result =
-      current.status === 'idle'
-        ? await client.request('/api/queue', {
-            requestId: state.pendingJoin.requestId,
-            ...(state.pendingJoin.gameId === 'succession' ? { gameId: 'succession' } : {}),
-          })
-        : current;
+    let result = current;
+
+    if (current.status === 'idle') {
+      const request = { requestId: state.pendingJoin.requestId };
+
+      if (state.pendingJoin.gameId === 'succession') request.gameId = 'succession';
+      result = await client.request('/api/queue', request);
+    }
+
     if (result.status !== 'idle') validateIdentity(result);
 
     if (result.status === 'queued') {
@@ -498,6 +575,7 @@ export async function main(argv = process.argv.slice(2)) {
     }
 
     const result = await client.request('/api/queue', undefined, command === 'leave' ? 'DELETE' : 'GET');
+
     if (result.status !== 'idle') validateIdentity(result);
 
     if (result.matchId) {
@@ -512,6 +590,7 @@ export async function main(argv = process.argv.slice(2)) {
       delete state.joinRequest;
       delete state.pendingJoin;
     }
+
     await persist();
     print(result);
 
@@ -527,20 +606,36 @@ export async function main(argv = process.argv.slice(2)) {
     state.matchId = matchId;
     state.cursor = 0;
     delete state.observation;
+    await updateCurrent(path, (latest) => {
+      latest.matchId = matchId;
+      latest.cursor = 0;
+      delete latest.observation;
+      delete latest.historyWalk;
+      delete latest.currentNotification;
+    });
   }
 
   const remember = async (view) => {
-    validateIdentity(view);
+    validateCurrent(view);
+
     return updateCurrent(path, (latest) => {
+      if (latest.matchId && latest.matchId !== matchId) {
+        if (latest.observation) return latest.observation;
+        throw new ApiError(409, 'stale-match', 'A newer command selected another match.');
+      }
+
       view = acceptCurrent(latest.observation, view);
       latest.server ??= client.server;
       latest.matchId = view.matchId;
       latest.observation = view;
       latest.participation = { gameId: gameId(view.gameId), matchId: view.matchId };
+
       if (view.protocolVersion === '2') latest.currentNotification = notification(view);
       else latest.cursor = view.cursor;
+
       if (terminal(view)) delete latest.joinRequest;
       Object.assign(state, latest);
+
       return view;
     });
   };
@@ -548,28 +643,61 @@ export async function main(argv = process.argv.slice(2)) {
   if (command === 'history') {
     const after = Number(flags.after ?? 0);
     const limit = Number(flags.limit ?? 10);
-    const current = await client.observation(matchId);
+    const current = await client.observation(matchId, after);
+
     if (current.protocolVersion === '2') {
       const accepted = await remember(current);
+      const automatic = flags.after === undefined && flags.epoch === undefined && flags.through === undefined;
+
+      const walk =
+        state.historyWalk?.epoch === accepted.history.visibilityEpoch ? state.historyWalk : undefined;
+
+      const pageAfter = automatic ? (walk?.cursor ?? 0) : after;
+      const pageThrough = automatic && walk?.through > pageAfter ? walk.through : accepted.history.streamHead;
+
       const page = await client.history(matchId, {
         epoch: flags.epoch ?? accepted.history.visibilityEpoch,
-        after,
-        through: flags.through === undefined ? accepted.history.streamHead : Number(flags.through),
+        after: pageAfter,
+        through: flags.through === undefined ? pageThrough : Number(flags.through),
         limit,
         maxBytes: Number(flags['max-bytes'] ?? 12288),
       });
+
+      if (page.reset && page.visibilityEpoch !== accepted.history.visibilityEpoch)
+        await remember(await client.observation(matchId));
       const latest = JSON.parse(await readFile(path, 'utf8')).observation;
-      if (page.visibilityEpoch !== latest.history.visibilityEpoch) {
+
+      if (page.matchId !== latest.matchId || page.visibilityEpoch !== latest.history.visibilityEpoch) {
         print({ status: 'stale-page', matchId, history: latest.history });
+
         return;
       }
+
+      if (automatic) {
+        const applied = await updateCurrent(path, (latestState) => {
+          const next = consumePage(latestState.historyWalk, page, latestState.observation);
+
+          if (next === latestState.historyWalk) return false;
+          latestState.historyWalk = next;
+
+          return true;
+        });
+
+        if (!applied) {
+          print({ status: 'stale-page', matchId, history: latest.history });
+
+          return;
+        }
+      }
+
       print(page);
+
       return;
     }
 
     if (!Number.isSafeInteger(after) || after < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 40)
       throw new Error('Use a nonnegative --after and a --limit of 1–40.');
-    const view = await client.observation(matchId, after);
+    const view = current;
     const events = [];
     let bytes = 500;
 
@@ -634,6 +762,7 @@ export async function main(argv = process.argv.slice(2)) {
       };
 
       if (view.decision) request.decisionId = view.decision.id;
+
       if (view.protocolVersion === '2') request.gameId = 'succession';
       // Persist before sending: rerunning the identical command after a transport failure reuses the receipt ID.
       const signature = JSON.stringify({ matchId, phaseId: view.phase.id, action });
@@ -662,6 +791,7 @@ export async function main(argv = process.argv.slice(2)) {
       const view = await remember(
         await client.wait(matchId, state.cursor ?? 0, 20000, state.currentNotification),
       );
+
       print(display(view));
 
       if (view.status !== 'active') break;
@@ -676,7 +806,7 @@ export async function main(argv = process.argv.slice(2)) {
 // npm bin entries are symlinks; Node resolves import.meta.url to the target file.
 if (process.argv[1] && import.meta.url === pathToFileURL(await realpath(resolve(process.argv[1]))).href)
   main().catch((error) => {
-    const problem = { code: error.code ?? 'client-error', message: error.message };
+    const problem = { ...error.details, code: error.code ?? 'client-error', message: error.message };
 
     if (error.status) problem.status = error.status;
     print({ error: problem });

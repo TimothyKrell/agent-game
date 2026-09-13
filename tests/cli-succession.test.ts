@@ -2,32 +2,220 @@ import { createServer } from 'node:http';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { expect, it } from 'vitest';
+import { resolve } from 'node:path';
+import { afterAll, beforeAll, expect, it } from 'vitest';
+import { version } from '../package.json';
+import { Schema } from 'effect';
+import type { ActionRequest2, HistoryPage2, Observation2 } from '../src/shared/succession';
 
 const run = promisify(execFile);
-const identity = { gameId: 'succession', rulesVersion: 'succession-1', protocolVersion: '2' };
-const current = {
+
+function deferred() {
+  let resolve = () => {};
+
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+
+  return { resolve, promise };
+}
+
+let installation: string;
+
+let bin: string;
+
+beforeAll(async () => {
+  installation = await mkdtemp('/tmp/opencode/succession-installed-');
+  await run(process.execPath, ['scripts/package-cli.mjs']);
+  await run('npm', [
+    'install',
+    '--prefix',
+    installation,
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    resolve(`public/downloads/agent-game-cli-${version}.tgz`),
+  ]);
+  bin = `${installation}/node_modules/.bin/agent-game`;
+});
+
+it('rejects delayed live current and history after accepting a terminal archive page', async () => {
+  const directory = await mkdtemp('/tmp/opencode/succession-delayed-');
+  const heldCurrent = deferred();
+  const heldPage = deferred();
+  const releaseCurrent = deferred();
+  const releasePage = deferred();
+  let reads = 0;
+  let finished = false;
+
+  const final: Observation2 = {
+    ...current,
+    status: 'finished',
+    decision: null,
+    history: { visibilityEpoch: 'archive', streamHead: 200 },
+  };
+
+  const server = createServer(async (request, response) => {
+    const url = new URL(request.url!, 'http://localhost');
+    let value: Observation2 | HistoryPage2;
+
+    if (url.pathname.endsWith('/history')) {
+      const epoch = url.searchParams.get('epoch') ?? 'live';
+      value = {
+        ...identity,
+        matchId: 'match_two',
+        visibilityEpoch: epoch,
+        streamHead: epoch === 'live' ? 150 : 200,
+        after: 0,
+        through: epoch === 'live' ? 150 : 200,
+        cursor: 1,
+        events: [{ id: 1, eventKey: 'fact', text: 'fact', at: 0, act: 2, round: 1, type: 'chat' }],
+        hasMore: true,
+        reset: false,
+      };
+
+      if (epoch === 'live') {
+        heldPage.resolve();
+        await releasePage.promise;
+      }
+    } else {
+      value = finished ? final : current;
+
+      if (++reads === 1) {
+        heldCurrent.resolve();
+        await releaseCurrent.promise;
+      }
+    }
+
+    response.setHeader('content-type', 'application/json');
+    response.end(JSON.stringify(value));
+  });
+
+  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+  const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
+  const config = `${directory}/connection.json`;
+  await writeFile(
+    config,
+    JSON.stringify({ server: `http://127.0.0.1:${address.port}`, matchId: 'match_two' }),
+  );
+
+  const cli = async (command: string) =>
+    JSON.parse(
+      (await run(process.execPath, [bin, command, '--config', config], { cwd: installation })).stdout,
+    );
+
+  try {
+    const oldCurrent = cli('observe');
+    await heldCurrent.promise;
+    const oldPage = cli('history');
+    await heldPage.promise;
+    finished = true;
+    expect((await cli('observe')).status).toBe('finished');
+    expect((await cli('history')).cursor).toBe(1);
+    releaseCurrent.resolve();
+    releasePage.resolve();
+    expect((await oldCurrent).status).toBe('finished');
+    expect((await oldPage).status).toBe('stale-page');
+    const saved = JSON.parse(await readFile(config, 'utf8'));
+    expect(saved.observation.status).toBe('finished');
+    expect(saved.observation.history.visibilityEpoch).toBe('archive');
+    expect(saved.historyWalk).toEqual({ epoch: 'archive', cursor: 1, through: 200 });
+  } finally {
+    releaseCurrent.resolve();
+    releasePage.resolve();
+    await new Promise<void>((done) => server.close(() => done()));
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+it('honors the exported child deadline before starting network work', async () => {
+  const directory = await mkdtemp('/tmp/opencode/succession-deadline-');
+
+  try {
+    await expect(
+      run(
+        process.execPath,
+        [
+          bin,
+          'observe',
+          '--server',
+          'http://127.0.0.1:1',
+          '--match',
+          'match_expired',
+          '--config',
+          `${directory}/connection.json`,
+        ],
+        {
+          cwd: installation,
+          env: { ...process.env, AGENT_GAME_CHILD_DEADLINE: String(Date.now() - 1) },
+        },
+      ),
+    ).rejects.toMatchObject({ stdout: expect.stringContaining('runtime-exhausted') });
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+afterAll(async () => {
+  await rm(installation, { recursive: true, force: true });
+});
+
+const identity: Pick<Observation2, 'gameId' | 'rulesVersion' | 'protocolVersion'> = {
+  gameId: 'succession',
+  rulesVersion: 'succession-1',
+  protocolVersion: '2',
+};
+
+const current: Observation2 = {
   ...identity,
   matchId: 'match_two',
   status: 'active',
   act: 2,
   round: 1,
+  mode: 'preview',
+  createdAt: 0,
+  finishedAt: null,
+  seats: [],
+  act1Result: null,
+  board: {
+    act: 2,
+    firstSeat: 0,
+    activeSeat: 0,
+    tableRound: 1,
+    slot: 0,
+    roundCap: 12,
+    courtCount: 5,
+    pending: null,
+  },
+  chat: { open: true, maxCharacters: 1000, cooldownMs: 5000, nextSpeakAt: null },
+  you: { seat: 0, agentId: 'agent_a', alive: true, forfeited: false, generation: 0 },
+  result: null,
+  interruptionReason: null,
+  commitment: { digest: 'digest', reveal: null },
   phase: { id: 'phase_a', kind: 'action', deadline: 1000, graceUntil: 2000 },
   private: { act: 2, hand: [{ id: 'opaque', capability: 'thief' }], exchangePool: [], reaction: null },
   history: { visibilityEpoch: 'live', streamHead: 150 },
-  decision: { id: 'decision_a', actions: [{ label: 'Income', action: { type: 'income' } }] },
+  decision: {
+    id: 'decision_a',
+    deadline: 1000,
+    graceUntil: 2000,
+    actions: [{ label: 'Income', action: { type: 'income' } }],
+  },
 };
 
 it('preserves selected game through first pairing and start recursion, then copies the exact action envelope', async () => {
   const directory = await mkdtemp('/tmp/opencode/succession-cli-');
-  const bodies: { path: string; data: Record<string, unknown> }[] = [];
+  const bodies: { path: string; data: Partial<ActionRequest2> & { requestId?: string } }[] = [];
   let queued = false;
+
   const server = createServer(async (request, response) => {
     expect(request.headers['x-agent-game-protocols']).toBe('1,2');
     let body = '';
+
     for await (const chunk of request) body += chunk;
     bodies.push({ path: request.url!, data: body ? JSON.parse(body) : {} });
     let value;
+
     if (request.url === '/api/pairing')
       value = { expiresAt: Date.now() + 60000, verificationUrl: 'https://approval.test' };
     else if (request.url === '/api/pairing/status') value = { status: 'approved', agentId: 'agent_a' };
@@ -40,23 +228,22 @@ it('preserves selected game through first pairing and start recursion, then copi
     response.setHeader('content-type', 'application/json');
     response.end(JSON.stringify(value));
   });
+
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
-  const address = server.address();
-  if (!address || typeof address === 'string') throw new Error('No server address');
+  const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
   const config = `${directory}/connection.json`;
+
   const cli = async (...args: string[]) =>
     JSON.parse(
       (
-        await run(process.execPath, [
-          'cli/agent-game.mjs',
-          ...args,
-          '--server',
-          `http://127.0.0.1:${address.port}`,
-          '--config',
-          config,
-        ])
+        await run(
+          process.execPath,
+          [bin, ...args, '--server', `http://127.0.0.1:${address.port}`, '--config', config],
+          { cwd: installation },
+        )
       ).stdout,
     );
+
   try {
     await cli('start', '--game', 'succession');
     expect(JSON.parse(await readFile(config, 'utf8')).selectedGame).toBe('succession');
@@ -89,9 +276,11 @@ it('preserves selected game through first pairing and start recursion, then copi
 it('requests a bounded server page without advancing a delivered cursor to the current head', async () => {
   const directory = await mkdtemp('/tmp/opencode/succession-page-');
   let query = new URLSearchParams();
+
   const server = createServer((request, response) => {
     const url = new URL(request.url!, 'http://localhost');
-    let value: unknown = current;
+    let value: Observation2 | HistoryPage2 = current;
+
     if (url.pathname.endsWith('/history')) {
       query = url.searchParams;
       value = {
@@ -102,27 +291,29 @@ it('requests a bounded server page without advancing a delivered cursor to the c
         after: 4,
         through: 100,
         cursor: 5,
-        events: [{ id: 5, eventKey: 'key', text: 'fact' }],
+        events: [{ id: 5, eventKey: 'key', text: 'fact', at: 0, act: 2, round: 1, type: 'chat' }],
         hasMore: true,
         reset: false,
       };
     }
+
     response.setHeader('content-type', 'application/json');
     response.end(JSON.stringify(value));
   });
+
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
-  const address = server.address();
-  if (!address || typeof address === 'string') throw new Error('No server address');
+  const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
   const config = `${directory}/connection.json`;
   await writeFile(
     config,
     JSON.stringify({ server: `http://127.0.0.1:${address.port}`, matchId: 'match_two', cursor: 9 }),
   );
+
   try {
     const page = JSON.parse(
       (
         await run(process.execPath, [
-          'cli/agent-game.mjs',
+          bin,
           'history',
           '--config',
           config,
@@ -139,6 +330,7 @@ it('requests a bounded server page without advancing a delivered cursor to the c
         ])
       ).stdout,
     );
+
     expect(Object.fromEntries(query)).toEqual({
       epoch: 'live',
       after: '4',

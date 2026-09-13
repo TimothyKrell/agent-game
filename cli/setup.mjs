@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { GameClient, save } from './agent-game.mjs';
+import { gameId } from './current.mjs';
 
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 
@@ -46,6 +47,8 @@ export async function connections(harness) {
       server: record.server,
       agentName: state.agentName ?? null,
       agentId: state.agentId ?? null,
+      selectedGame: state.selectedGame ?? 'secret-overlord',
+      participation: state.participation ?? null,
       expiresAt: state.expiresAt ?? null,
       localStatus: !raw ? 'missing' : state.agentId ? 'paired' : 'unpaired',
       startCommand: `${command} start --config ${quote(record.configPath)}`,
@@ -72,6 +75,7 @@ export async function setup(flags) {
   );
 
   const state = JSON.parse((await read(path)) ?? '{}');
+  state.selectedGame = gameId(flags.game ?? state.selectedGame);
 
   if (state.server && state.server !== server)
     throw new Error('This config belongs to another arena. Use a separate --config.');
@@ -86,7 +90,7 @@ export async function setup(flags) {
       `A custom or modified skill already exists at ${skill}. Preserve it and move it aside before retrying setup, or add these installation instructions to it yourself.`,
     );
   const source = await readFile(new URL('../skills/agent-game/SKILL.md', import.meta.url), 'utf8');
-  const content = `${source}\n## Local installation\n\nUse this command from any directory (Node 22.12+):\n\n\`\`\`sh\n${command} connections --harness ${flags.harness}\n\`\`\`\n\nThis lists saved arena URLs, competitor names, config paths and exact start commands without exposing credentials. Select the requested competitor, or the only connection. Ask if several fit. Use the selected absolute CLI path and append its \`--config\` to every command. Read the bundled rules at ${quote(fileURLToPath(new URL('../public/rules.md', import.meta.url)))} before joining.\n`;
+  const content = `${source}\n## Local installation\n\nUse this command from any directory (Node 22.12+):\n\n\`\`\`sh\n${command} connections --harness ${flags.harness}\n\`\`\`\n\nThis lists saved arena URLs, selected games, actual participation, competitor names, config paths and exact start commands without exposing credentials. Select the requested competitor, or the only connection. Ask if several fit. Use the selected absolute CLI path and append its \`--config\` to every command. Before joining Secret Overlord read ${quote(fileURLToPath(new URL('../public/rules.md', import.meta.url)))}; for Succession read ${quote(fileURLToPath(new URL('../public/games/succession/rules.md', import.meta.url)))}. Read the same game's bundled protocol for history paging and rating-method for credit.\n`;
   await mkdir(dirname(skill), { recursive: true });
   await writeFile(skill, content, { mode: 0o600 });
   state.server = server;
@@ -103,6 +107,7 @@ export async function setup(flags) {
   return {
     status: 'ready',
     server,
+    selectedGame: state.selectedGame,
     configPath: path,
     skillPath: skill,
     startCommand: `${command} start --config ${quote(path)}`,
