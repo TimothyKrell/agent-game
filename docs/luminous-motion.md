@@ -35,7 +35,20 @@ Source companions are `motion/screens/44-motion-response.svg` and `45-motion-rec
 
 ## Verification and review evidence
 
-Status: implementation and targeted verification in progress; Design recording signoff, final checks and PR preview are pending.
+Implementation and final local verification passed on clean application source **`a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5`**. The [published evidence index](images/luminous-motion/README.md) contains all six real-time walkthroughs, settled screenshots, timing contact sheets and served-asset provenance. Exact-head Design and independent review verdicts, CI and hosted preview verification are recorded in the motion PR.
+
+| Check                                                    | Final result                                                     |
+| -------------------------------------------------------- | ---------------------------------------------------------------- |
+| Lint with `--deny-warnings`                              | 0 warnings / 0 errors                                            |
+| Prettier                                                 | Passed                                                           |
+| Client/server, infrastructure and lint-plugin typechecks | All three passed                                                 |
+| Unit suite                                               | 42/42, 10 files                                                  |
+| Browser suite                                            | 29/29, including all 23 Phase 1 regressions and six motion tests |
+| Production build                                         | Passed                                                           |
+| Wrangler deployment dry-run                              | Passed                                                           |
+| Native-size motion recordings                            | 6/6, normal/reduced at all three widths                          |
+
+The final sequential run exited **0**; its [transcript](images/luminous-motion/verification.log) is retained. The local API suite was not repeated for this frontend-only delta; CI runs the complete API suite. Earlier captures are superseded: the first recording tail was intentionally interrupted to extend coverage, and a later intermediate capture was rejected by its clean-source guard while a review correction was being edited. Neither intermediate set is the final evidence.
 
 - `e2e/motion.spec.ts`: enabled/reduced keyboard control and selection behavior; back/query restoration; one-shot cancellation; pending loading text; live reading anchors; hidden observation updates; replay stability; retained automatic arena fallback.
 - `e2e/motion-observer.ts`: records actual animation calls/timings without changing animation playback. The visibility boundary is explicitly simulated because headless Chromium keeps background tabs visible; application subscriptions/cancellation and observation updates are exercised normally.
@@ -47,4 +60,4 @@ PORT=8799 npm run test:browser
 PORT=8799 npx playwright test --config playwright.motion.config.ts
 ```
 
-Interactive review server: **8800**, serving the current built client. Recording output defaults to `/tmp/opencode/luminous-motion-recordings/`. Video frame samples/contact sheets and the exact implementation/evidence commit will be frozen for Design review before publication.
+Interactive review server: **8800**, serving the current built client. Recording output defaults to `/tmp/opencode/luminous-motion-recordings/`. The full immutable final evidence is `/tmp/opencode/luminous-motion-review-a8dd5d6/`; its inventory SHA-256 is `f51317f263e5ab3ae0aa0b03e1e578cca851f48aa39073c85fd3d3f512fe2327`. Published files are byte-identical copies with a separate [inventory](images/luminous-motion/inventory.json). Trace archives and individual native frame samples remain in the full frozen set; the repo includes their timing metadata and contact sheets.

@@ -1,0 +1,847 @@
+{
+  "applicationSource": "a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5",
+  "fullFrozenEvidence": "/tmp/opencode/luminous-motion-review-a8dd5d6",
+  "fullInventorySha256": "f51317f263e5ab3ae0aa0b03e1e578cca851f48aa39073c85fd3d3f512fe2327",
+  "scenes": [
+    {
+      "name": "1600-normal",
+      "source": "a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5",
+      "viewport": {
+        "width": 1600,
+        "height": 1120
+      },
+      "reducedMotion": "no-preference",
+      "servedAssets": [
+        {
+          "path": "/assets/index-xlFhdM34.js",
+          "sha256": "ed415d40c3b47e70cc884abcdfee2b1f57cf169b8850cc386c45b96e980e8338"
+        },
+        {
+          "path": "/assets/index-AR6fswqn.css",
+          "sha256": "843e49e2ca3f6d97a071092ba21a425a9a2f38efec9cf98a7033a522801fdd08"
+        }
+      ],
+      "video": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1600,
+            "height": 1120,
+            "r_frame_rate": "25/1"
+          }
+        ],
+        "format": {
+          "duration": "39.200000"
+        }
+      },
+      "files": [
+        {
+          "path": "1600-normal/artwork-entry-contact.png",
+          "bytes": 151215,
+          "sha256": "80e905062806454048563f9b9b79db483d877b8700b3afc17e4b16994b086d79"
+        },
+        {
+          "path": "1600-normal/control-press-contact.png",
+          "bytes": 125412,
+          "sha256": "ea450c5580b5c9ef5b0d52fd0b38057378fff5f4593d86532d2966579c33d2d2"
+        },
+        {
+          "path": "1600-normal/finished-full-record.png",
+          "bytes": 580878,
+          "sha256": "12b139e07aafb3fcb3c3e2ca9485d4566985abb064bb0b14a6f56230ade975e1"
+        },
+        {
+          "path": "1600-normal/finished-recorded-data.png",
+          "bytes": 94813,
+          "sha256": "547ceb7095ec5a3b595da143283a96ec218940d9c69f214c7c0e89a9aed6511f"
+        },
+        {
+          "path": "1600-normal/finished-result-settled.png",
+          "bytes": 72717,
+          "sha256": "6de9619e708db2705d799b9cabd51d3ebf8f6066753619633ede6f8a335cc07c"
+        },
+        {
+          "path": "1600-normal/frame-times.json",
+          "bytes": 5816,
+          "sha256": "9cbcf3f607cc161ba863422b69ab74a5a31a805fa0c89a5c5138063b400464a1"
+        },
+        {
+          "path": "1600-normal/hidden-return-settled.png",
+          "bytes": 64592,
+          "sha256": "5876136d90aad914d7f9476ce40a1fdf3701f000d44f130141e7cd682e2b641f"
+        },
+        {
+          "path": "1600-normal/interrupted-full-record.png",
+          "bytes": 344207,
+          "sha256": "f9ce73f7b5068a84197f23bdd1991e977a72b089a5871aa10fe355d169a4ce0b"
+        },
+        {
+          "path": "1600-normal/interrupted-recorded-data.png",
+          "bytes": 94014,
+          "sha256": "7728c2aa539c348d38773c57d701f71bd925cf11d0424f00c470e00d83c754ba"
+        },
+        {
+          "path": "1600-normal/interrupted-result-settled.png",
+          "bytes": 64595,
+          "sha256": "830eab3bbe78b979aa0fd3b3af37e20f2fc80d14ae6e21032caf36cee985711a"
+        },
+        {
+          "path": "1600-normal/keyboard-focus.png",
+          "bytes": 103819,
+          "sha256": "97ee2e535cf0f24cf87d57a6f95bd939c77d7ae1a45e7fe5135d2acf5169189d"
+        },
+        {
+          "path": "1600-normal/preference-return-settled.png",
+          "bytes": 103772,
+          "sha256": "ba31732a47d96fdd063ee1e72bbf7c4d8772dabdbd84bdfbc80727d2bc5bfde4"
+        },
+        {
+          "path": "1600-normal/query-recovery-static.png",
+          "bytes": 115850,
+          "sha256": "9b9ab6f7c0ada13d873f7aa5bc07d2d9de99b8f6907162d4b3a75d689ec75326"
+        },
+        {
+          "path": "1600-normal/scenes.json",
+          "bytes": 5478,
+          "sha256": "c646ef5b39ba022163c0e768c6d66821bf4dbe556582af6f4276b8c081e43eec"
+        },
+        {
+          "path": "1600-normal/selection-settled.png",
+          "bytes": 100417,
+          "sha256": "8788d9eed655a4fb1441e45d08c6a825532e2a66f8191130b980bc80bade39f2"
+        },
+        {
+          "path": "1600-normal/splash-settled.png",
+          "bytes": 103772,
+          "sha256": "ba31732a47d96fdd063ee1e72bbf7c4d8772dabdbd84bdfbc80727d2bc5bfde4"
+        },
+        {
+          "path": "1600-normal/tab-selection-contact.png",
+          "bytes": 151632,
+          "sha256": "ca3f3929856f9564d5a02b82c35ab3e263a688d1369637622a4ca9a9cf53af82"
+        },
+        {
+          "path": "1600-normal/title-entry-contact.png",
+          "bytes": 150653,
+          "sha256": "a7ca4e8a76c874cdd1956ecde29483ea04be887652ac353ad3571e6fb43fb789"
+        },
+        {
+          "path": "1600-normal/video-1.webm",
+          "bytes": 410433,
+          "sha256": "3b8e3030bc2c6ce13b19fb149d3aaeac9b9f0ed1b98e6a3aecbf6b87a7c96ac4"
+        },
+        {
+          "path": "1600-normal/video-2.webm",
+          "bytes": 120166,
+          "sha256": "87c9821e1dabf93c6172d8381eedc9792a58cf740aa9c6d4ca9e7566ba4f116f"
+        },
+        {
+          "path": "1600-normal/video.webm",
+          "bytes": 4435790,
+          "sha256": "3aac9bce7d23b34413e28b62cf828e5dff243ab7ff53053024bfa97a2de6285b"
+        }
+      ]
+    },
+    {
+      "name": "1600-reduced",
+      "source": "a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5",
+      "viewport": {
+        "width": 1600,
+        "height": 1120
+      },
+      "reducedMotion": "reduce",
+      "servedAssets": [
+        {
+          "path": "/assets/index-xlFhdM34.js",
+          "sha256": "ed415d40c3b47e70cc884abcdfee2b1f57cf169b8850cc386c45b96e980e8338"
+        },
+        {
+          "path": "/assets/index-AR6fswqn.css",
+          "sha256": "843e49e2ca3f6d97a071092ba21a425a9a2f38efec9cf98a7033a522801fdd08"
+        }
+      ],
+      "video": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1600,
+            "height": 1120,
+            "r_frame_rate": "25/1"
+          }
+        ],
+        "format": {
+          "duration": "33.920000"
+        }
+      },
+      "files": [
+        {
+          "path": "1600-reduced/artwork-entry-contact.png",
+          "bytes": 119480,
+          "sha256": "f8e4cd5a83d97017bb5d044d5c30ebd84135d71e8747a4529b6582df96152e80"
+        },
+        {
+          "path": "1600-reduced/control-press-contact.png",
+          "bytes": 120147,
+          "sha256": "23c7c5cc2771987506b4d41055f50f451671f8f103f722e3a0e0ed98145b7912"
+        },
+        {
+          "path": "1600-reduced/finished-full-record.png",
+          "bytes": 576949,
+          "sha256": "701ecf4a53b1a14742d9f2de71b213a3f3c0230fff30b6af0126a55766f44115"
+        },
+        {
+          "path": "1600-reduced/finished-recorded-data.png",
+          "bytes": 95161,
+          "sha256": "c39ff8bd1c56acc47bd50d03e370b85a02154eae8d18adaed55301159424a9f4"
+        },
+        {
+          "path": "1600-reduced/finished-result-settled.png",
+          "bytes": 72760,
+          "sha256": "f63be454b217c2f31b54ced3ed6bbf14340242a8dceefc46bb577ccb1ab47746"
+        },
+        {
+          "path": "1600-reduced/frame-times.json",
+          "bytes": 5837,
+          "sha256": "d0087f0c20eeec639544ac1cf9d4897609985d19821745a64c57caf9f4eac961"
+        },
+        {
+          "path": "1600-reduced/hidden-return-settled.png",
+          "bytes": 64905,
+          "sha256": "0d2067814f9958c26247a0be6fcc2fb727423dc08a172060464eb6228d0fad45"
+        },
+        {
+          "path": "1600-reduced/interrupted-full-record.png",
+          "bytes": 342908,
+          "sha256": "e8e9eebaaeea6ef6f1987f1d8af7213adc995565d016c11498d07f9569792f02"
+        },
+        {
+          "path": "1600-reduced/interrupted-recorded-data.png",
+          "bytes": 94364,
+          "sha256": "550c8bac1e9161d11f4e04087b4fbc874aaca5df25d51573c2f28cbf342dea29"
+        },
+        {
+          "path": "1600-reduced/interrupted-result-settled.png",
+          "bytes": 64909,
+          "sha256": "e34660916f684420aed2e81ba1d9088b48cb7652ada2de3f8ab771689b3c36ca"
+        },
+        {
+          "path": "1600-reduced/keyboard-focus.png",
+          "bytes": 103819,
+          "sha256": "97ee2e535cf0f24cf87d57a6f95bd939c77d7ae1a45e7fe5135d2acf5169189d"
+        },
+        {
+          "path": "1600-reduced/preference-return-settled.png",
+          "bytes": 103772,
+          "sha256": "ba31732a47d96fdd063ee1e72bbf7c4d8772dabdbd84bdfbc80727d2bc5bfde4"
+        },
+        {
+          "path": "1600-reduced/query-recovery-static.png",
+          "bytes": 115850,
+          "sha256": "9b9ab6f7c0ada13d873f7aa5bc07d2d9de99b8f6907162d4b3a75d689ec75326"
+        },
+        {
+          "path": "1600-reduced/scenes.json",
+          "bytes": 2522,
+          "sha256": "e7abc53f2e5aa17d8729b144d722c7248b0a13e503acc71798f464a1f67d4c94"
+        },
+        {
+          "path": "1600-reduced/selection-settled.png",
+          "bytes": 100417,
+          "sha256": "8788d9eed655a4fb1441e45d08c6a825532e2a66f8191130b980bc80bade39f2"
+        },
+        {
+          "path": "1600-reduced/splash-settled.png",
+          "bytes": 103772,
+          "sha256": "ba31732a47d96fdd063ee1e72bbf7c4d8772dabdbd84bdfbc80727d2bc5bfde4"
+        },
+        {
+          "path": "1600-reduced/tab-selection-contact.png",
+          "bytes": 121111,
+          "sha256": "16283f6c27840c63b4e4de7c2a708a5e713f0abc492fc6db1321ebcca2126fea"
+        },
+        {
+          "path": "1600-reduced/title-entry-contact.png",
+          "bytes": 118947,
+          "sha256": "3078219ca3dcf614a8ea5f707c26a56958339651dc5b6f389a1c11d4d734b6d7"
+        },
+        {
+          "path": "1600-reduced/video-1.webm",
+          "bytes": 4871,
+          "sha256": "21eff490cd719c09457f546d26997463b54c45e2332b9e3abac3ad1e3a8efad6"
+        },
+        {
+          "path": "1600-reduced/video-2.webm",
+          "bytes": 237353,
+          "sha256": "6523ff85d781ffa68d8b0b0fcb29e87061af21c8b4764d7c2c52332dec164b73"
+        },
+        {
+          "path": "1600-reduced/video.webm",
+          "bytes": 3555367,
+          "sha256": "ca159a60f08ea6cf6ad657221d876cfde3a7239ba5e85f1192a4044d74828c7c"
+        }
+      ]
+    },
+    {
+      "name": "320-normal",
+      "source": "a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5",
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "reducedMotion": "no-preference",
+      "servedAssets": [
+        {
+          "path": "/assets/index-xlFhdM34.js",
+          "sha256": "ed415d40c3b47e70cc884abcdfee2b1f57cf169b8850cc386c45b96e980e8338"
+        },
+        {
+          "path": "/assets/index-AR6fswqn.css",
+          "sha256": "843e49e2ca3f6d97a071092ba21a425a9a2f38efec9cf98a7033a522801fdd08"
+        }
+      ],
+      "video": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 320,
+            "height": 844,
+            "r_frame_rate": "25/1"
+          }
+        ],
+        "format": {
+          "duration": "30.080000"
+        }
+      },
+      "files": [
+        {
+          "path": "320-normal/artwork-entry-contact.png",
+          "bytes": 153233,
+          "sha256": "64a7555dd1c647308a89a6e3035c40ef2e6cbb7e8fe689e518bf768838bc06ed"
+        },
+        {
+          "path": "320-normal/control-press-contact.png",
+          "bytes": 111022,
+          "sha256": "592c087bc30695f99e3d485412a309d29af9503774914c90f894685536fe6454"
+        },
+        {
+          "path": "320-normal/finished-full-record.png",
+          "bytes": 91277,
+          "sha256": "8c66ca72e30072c59b3e0b8484c89190dd3280d718386fa5c0335bfcebcd658d"
+        },
+        {
+          "path": "320-normal/finished-recorded-data.png",
+          "bytes": 31557,
+          "sha256": "bafb8dffd3b212609443a26c7bd4cd5e3fb34396bb5e7b7aa9dcf57e898c8e62"
+        },
+        {
+          "path": "320-normal/finished-result-settled.png",
+          "bytes": 34345,
+          "sha256": "be5dedce798bdd6596272593002b07d447bac9f7e6c50d1248e4661b5d07b4cc"
+        },
+        {
+          "path": "320-normal/frame-times.json",
+          "bytes": 5805,
+          "sha256": "ebe55346f1a84be29749c414fb082c83fa0c0e9d5f07f36718dd1f78cada62c3"
+        },
+        {
+          "path": "320-normal/hidden-return-settled.png",
+          "bytes": 30265,
+          "sha256": "8c8182d1a94058a076f912005f7500d16cb8edf1f68517b4b7bdf39c7dd7609f"
+        },
+        {
+          "path": "320-normal/interrupted-full-record.png",
+          "bytes": 86328,
+          "sha256": "3f580da9db804c96d32ef64a57c48b92ecf123f2468bf12ade6f21ffe25a0a68"
+        },
+        {
+          "path": "320-normal/interrupted-recorded-data.png",
+          "bytes": 33563,
+          "sha256": "4babbc63a9758c58d15c9dafa70685d60fdf651084a03b4ed74f0bd9eaab3b46"
+        },
+        {
+          "path": "320-normal/interrupted-result-settled.png",
+          "bytes": 33305,
+          "sha256": "0a8df92f32ff4b64cc6c5db06aab1e752939ffd60138e6a1134deb4c8b621b06"
+        },
+        {
+          "path": "320-normal/keyboard-focus.png",
+          "bytes": 41480,
+          "sha256": "c8612d7c97422418b9ccc78aba8a043cf33f3939b9971a51f7953ac41381e079"
+        },
+        {
+          "path": "320-normal/preference-return-settled.png",
+          "bytes": 41403,
+          "sha256": "19b17ab58484930a86f4e4b1d768eb6b16b99004da15b01d85e61c273029954a"
+        },
+        {
+          "path": "320-normal/query-recovery-static.png",
+          "bytes": 44085,
+          "sha256": "6723cda97607269c31808afafc15749a86cd6f7a4b781ed37fb98e2925cde78c"
+        },
+        {
+          "path": "320-normal/scenes.json",
+          "bytes": 5057,
+          "sha256": "d93d71b3633a20db4590646e754433246f7147abad351417653f9079e0934bb1"
+        },
+        {
+          "path": "320-normal/selection-settled.png",
+          "bytes": 36665,
+          "sha256": "116796beb785169fa40d2963b4bd8e71b404e97136ffb17cbba6d5b917126547"
+        },
+        {
+          "path": "320-normal/splash-settled.png",
+          "bytes": 41403,
+          "sha256": "19b17ab58484930a86f4e4b1d768eb6b16b99004da15b01d85e61c273029954a"
+        },
+        {
+          "path": "320-normal/tab-selection-contact.png",
+          "bytes": 176570,
+          "sha256": "89c5ce4f10c3e1031dbb9493594c0b42329237262495bb2f1249153023db3d75"
+        },
+        {
+          "path": "320-normal/title-entry-contact.png",
+          "bytes": 121292,
+          "sha256": "b4330a69ef13198d8285a151881f355b1e1daf02f822273332c1f2b9c7ed5d1c"
+        },
+        {
+          "path": "320-normal/video-1.webm",
+          "bytes": 3836,
+          "sha256": "1b22794c7328dbd179eb0c5bd8bb800cb42f2a38e290fa28ae89e07fd2a9597c"
+        },
+        {
+          "path": "320-normal/video-2.webm",
+          "bytes": 3836,
+          "sha256": "70d07f57a9a781f0599d54dfc260d3c80872ac6e02d91575ddffd3e7eb4b374a"
+        },
+        {
+          "path": "320-normal/video.webm",
+          "bytes": 2553444,
+          "sha256": "b3fe62503401badaa35a7870eade271f86c35cfc7d0ecc957b0e4ff0c21994c4"
+        }
+      ]
+    },
+    {
+      "name": "320-reduced",
+      "source": "a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5",
+      "viewport": {
+        "width": 320,
+        "height": 844
+      },
+      "reducedMotion": "reduce",
+      "servedAssets": [
+        {
+          "path": "/assets/index-xlFhdM34.js",
+          "sha256": "ed415d40c3b47e70cc884abcdfee2b1f57cf169b8850cc386c45b96e980e8338"
+        },
+        {
+          "path": "/assets/index-AR6fswqn.css",
+          "sha256": "843e49e2ca3f6d97a071092ba21a425a9a2f38efec9cf98a7033a522801fdd08"
+        }
+      ],
+      "video": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 320,
+            "height": 844,
+            "r_frame_rate": "25/1"
+          }
+        ],
+        "format": {
+          "duration": "28.520000"
+        }
+      },
+      "files": [
+        {
+          "path": "320-reduced/artwork-entry-contact.png",
+          "bytes": 138202,
+          "sha256": "b8c6f96efabb5698534f2d67bfcf6bb0594943ccafb2543d877557768d269c90"
+        },
+        {
+          "path": "320-reduced/control-press-contact.png",
+          "bytes": 137027,
+          "sha256": "709deeb3c6668f05254cb647f8243dbb9cc52d18e72ba9652b775326a16b7da6"
+        },
+        {
+          "path": "320-reduced/finished-full-record.png",
+          "bytes": 93059,
+          "sha256": "3cfe58dc34162b25fc0b910f1ff391095c04e36a9c5a59d19f98998764eaf07d"
+        },
+        {
+          "path": "320-reduced/finished-recorded-data.png",
+          "bytes": 31635,
+          "sha256": "072736dada8dbb2288585bf2f9f2576ecfddb81ed98015d34b40f8203089c633"
+        },
+        {
+          "path": "320-reduced/finished-result-settled.png",
+          "bytes": 34708,
+          "sha256": "d4a13a33891e1335b8f8019bde5b8addd252263ac62810702d7ffb243864a58a"
+        },
+        {
+          "path": "320-reduced/frame-times.json",
+          "bytes": 5820,
+          "sha256": "c3fc6f81afd8f01d6c38779b5953b07ca527c9b52a59a6294bea368d909e0d6f"
+        },
+        {
+          "path": "320-reduced/hidden-return-settled.png",
+          "bytes": 30433,
+          "sha256": "d399ff82fb0e38b87a566d31cf68e40e66ebef4d08068e9c209f5e59b77d4b3a"
+        },
+        {
+          "path": "320-reduced/interrupted-full-record.png",
+          "bytes": 85778,
+          "sha256": "fd8e9cdf443cf25b54ac9b0364228c8208ce290d1a1d4335e009294bae83a2b7"
+        },
+        {
+          "path": "320-reduced/interrupted-recorded-data.png",
+          "bytes": 33634,
+          "sha256": "ee170a1969fca3ddcf23e6854a855c05332de3f7038a0eb4b374fc70252392d3"
+        },
+        {
+          "path": "320-reduced/interrupted-result-settled.png",
+          "bytes": 33472,
+          "sha256": "05b2b78d5f9d42f9e41432e6afd6157e645fee7047d4292df79c620fdf9eb02e"
+        },
+        {
+          "path": "320-reduced/keyboard-focus.png",
+          "bytes": 41480,
+          "sha256": "c8612d7c97422418b9ccc78aba8a043cf33f3939b9971a51f7953ac41381e079"
+        },
+        {
+          "path": "320-reduced/preference-return-settled.png",
+          "bytes": 41403,
+          "sha256": "19b17ab58484930a86f4e4b1d768eb6b16b99004da15b01d85e61c273029954a"
+        },
+        {
+          "path": "320-reduced/query-recovery-static.png",
+          "bytes": 44085,
+          "sha256": "6723cda97607269c31808afafc15749a86cd6f7a4b781ed37fb98e2925cde78c"
+        },
+        {
+          "path": "320-reduced/scenes.json",
+          "bytes": 2402,
+          "sha256": "b484bd2552ec15d62b97bb7c1e481aae3cff87a38c9853d9a660e69f8cbe37d8"
+        },
+        {
+          "path": "320-reduced/selection-settled.png",
+          "bytes": 36665,
+          "sha256": "116796beb785169fa40d2963b4bd8e71b404e97136ffb17cbba6d5b917126547"
+        },
+        {
+          "path": "320-reduced/splash-settled.png",
+          "bytes": 41403,
+          "sha256": "19b17ab58484930a86f4e4b1d768eb6b16b99004da15b01d85e61c273029954a"
+        },
+        {
+          "path": "320-reduced/tab-selection-contact.png",
+          "bytes": 102362,
+          "sha256": "61deb0ba2211b6c43289a0be28e2e9605df7be12027e137057116d12304f5002"
+        },
+        {
+          "path": "320-reduced/title-entry-contact.png",
+          "bytes": 97543,
+          "sha256": "18a5cdf22ee60c1986d56ea1138cc0c8552ba9319c00f926da7de70d90a0acec"
+        },
+        {
+          "path": "320-reduced/video-1.webm",
+          "bytes": 3836,
+          "sha256": "0aaba455f2bbc7e5c45fea6af5524addfa4c9db31c67c2cba854381b7b709278"
+        },
+        {
+          "path": "320-reduced/video-2.webm",
+          "bytes": 3836,
+          "sha256": "e4100779c665199580d6bf306b8a5b80476a323411b0583dfc87bd08016eb595"
+        },
+        {
+          "path": "320-reduced/video.webm",
+          "bytes": 1512238,
+          "sha256": "8ccac913210412351156ce97f848929fff41ec9690eb9ca11a6a06758e4ea766"
+        }
+      ]
+    },
+    {
+      "name": "390-normal",
+      "source": "a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "reducedMotion": "no-preference",
+      "servedAssets": [
+        {
+          "path": "/assets/index-xlFhdM34.js",
+          "sha256": "ed415d40c3b47e70cc884abcdfee2b1f57cf169b8850cc386c45b96e980e8338"
+        },
+        {
+          "path": "/assets/index-AR6fswqn.css",
+          "sha256": "843e49e2ca3f6d97a071092ba21a425a9a2f38efec9cf98a7033a522801fdd08"
+        }
+      ],
+      "video": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "r_frame_rate": "25/1"
+          }
+        ],
+        "format": {
+          "duration": "30.400000"
+        }
+      },
+      "files": [
+        {
+          "path": "390-normal/artwork-entry-contact.png",
+          "bytes": 172830,
+          "sha256": "1cfa64f021d88497f23e01c3a1eb865c84b5eab4088a70b56016cf0fa00d58d0"
+        },
+        {
+          "path": "390-normal/control-press-contact.png",
+          "bytes": 119371,
+          "sha256": "7da4d384d5ac2059a217939b5d4d592cd61d7e07c84d2905820d7cec16eb0e1b"
+        },
+        {
+          "path": "390-normal/finished-full-record.png",
+          "bytes": 133281,
+          "sha256": "cf3ea99d2d82d0152ca2f252eb4d20868403da158bbf890ff6a229866a05a746"
+        },
+        {
+          "path": "390-normal/finished-recorded-data.png",
+          "bytes": 37624,
+          "sha256": "4cf3640f21a29da0252c37a6c4a6f51e610f2863706509b4af7c8a3020e138aa"
+        },
+        {
+          "path": "390-normal/finished-result-settled.png",
+          "bytes": 35932,
+          "sha256": "4ad5b25eb8b1ed03e9445e594384e9bd829d4de27413caa0f16a3ac7f8ed5ec7"
+        },
+        {
+          "path": "390-normal/frame-times.json",
+          "bytes": 5811,
+          "sha256": "11960fe5e37907e4a0436e3ad7f09e13f633ed3ed4d38e269608b62ab11f4a2d"
+        },
+        {
+          "path": "390-normal/hidden-return-settled.png",
+          "bytes": 30523,
+          "sha256": "9f104fb137a0c03adfb08000ce4670f551cd3d71a347ea5b6817f57114f959e7"
+        },
+        {
+          "path": "390-normal/interrupted-full-record.png",
+          "bytes": 131065,
+          "sha256": "ad4a5ba81f699da82e1a4a27c02747275332974802acf40876148e0e647026d4"
+        },
+        {
+          "path": "390-normal/interrupted-recorded-data.png",
+          "bytes": 37759,
+          "sha256": "b86bbe0dc56c69a1410148a2e5034d27187245ecf95e4de05b1a3a0ea86d8d32"
+        },
+        {
+          "path": "390-normal/interrupted-result-settled.png",
+          "bytes": 34097,
+          "sha256": "f69ef3147947d9abd38709a6beead0f4db8fbaf12b9b00ba2cfb4621d7392656"
+        },
+        {
+          "path": "390-normal/keyboard-focus.png",
+          "bytes": 43373,
+          "sha256": "418511e7b479e5446b94d7dfb2934b00287e17607661f2accf9481a98c3af6a7"
+        },
+        {
+          "path": "390-normal/preference-return-settled.png",
+          "bytes": 43301,
+          "sha256": "e6a22194a6563c95b5ca1a4ddeb9662a57b14b9db1d3d9332bacba0c36759cfe"
+        },
+        {
+          "path": "390-normal/query-recovery-static.png",
+          "bytes": 48593,
+          "sha256": "0d60cb189bc94800b8c161ef838321d0a12aeadc804925eed9c3c2c006cb60c6"
+        },
+        {
+          "path": "390-normal/scenes.json",
+          "bytes": 5065,
+          "sha256": "bfde5e3b487a4289f0b46558ff60f04cb96a7396ff98d4345ce63cd96455a360"
+        },
+        {
+          "path": "390-normal/selection-settled.png",
+          "bytes": 38770,
+          "sha256": "40dd8ddc994f1842d68cbb5687839b3579f3404e0c9b38bd8b833a198e1dcf4a"
+        },
+        {
+          "path": "390-normal/splash-settled.png",
+          "bytes": 43301,
+          "sha256": "e6a22194a6563c95b5ca1a4ddeb9662a57b14b9db1d3d9332bacba0c36759cfe"
+        },
+        {
+          "path": "390-normal/tab-selection-contact.png",
+          "bytes": 191648,
+          "sha256": "57a0fadef8bc3baf156de11008258f4d33932d137ecdb9d7b0cb4f9ea5db897b"
+        },
+        {
+          "path": "390-normal/title-entry-contact.png",
+          "bytes": 134187,
+          "sha256": "68128f8e9d147fd41f168c367ac9b7c281eeba332df00b76e62d19e1a17b4eaa"
+        },
+        {
+          "path": "390-normal/video-1.webm",
+          "bytes": 1887,
+          "sha256": "3ccd26181243091a109ca22b1936a478c70a89550281a1bd8ba98822d3260038"
+        },
+        {
+          "path": "390-normal/video-2.webm",
+          "bytes": 1887,
+          "sha256": "2a6d23c976617cf1628e169f99b22478f42b85d56c191af000a8428669de621d"
+        },
+        {
+          "path": "390-normal/video.webm",
+          "bytes": 2695600,
+          "sha256": "5fd3d8579dc3a0d430a68804243e926ba5da6bb6d7767360e20aca85ab00a217"
+        }
+      ]
+    },
+    {
+      "name": "390-reduced",
+      "source": "a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "reducedMotion": "reduce",
+      "servedAssets": [
+        {
+          "path": "/assets/index-xlFhdM34.js",
+          "sha256": "ed415d40c3b47e70cc884abcdfee2b1f57cf169b8850cc386c45b96e980e8338"
+        },
+        {
+          "path": "/assets/index-AR6fswqn.css",
+          "sha256": "843e49e2ca3f6d97a071092ba21a425a9a2f38efec9cf98a7033a522801fdd08"
+        }
+      ],
+      "video": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "r_frame_rate": "25/1"
+          }
+        ],
+        "format": {
+          "duration": "28.880000"
+        }
+      },
+      "files": [
+        {
+          "path": "390-reduced/artwork-entry-contact.png",
+          "bytes": 150201,
+          "sha256": "6449bebf88d54f47afb161fcdcf8c4247367f5e232b1a582b75fd754015cf2e1"
+        },
+        {
+          "path": "390-reduced/control-press-contact.png",
+          "bytes": 149412,
+          "sha256": "9caaf3d3e5dca0bd7090645b112c8d28581415307eefabb76dfce595995b221e"
+        },
+        {
+          "path": "390-reduced/finished-full-record.png",
+          "bytes": 131388,
+          "sha256": "6cfaffc315e2fd0a9606f04775df5a9e37b1b672a80ef57941cef95301642fd7"
+        },
+        {
+          "path": "390-reduced/finished-recorded-data.png",
+          "bytes": 37775,
+          "sha256": "d54a4138d19d1ba01fac0af782fc55729ff0422f275e23e4c54c3c3dab3289f1"
+        },
+        {
+          "path": "390-reduced/finished-result-settled.png",
+          "bytes": 35534,
+          "sha256": "7d9ada54e9ed319de55942d0d78e4172e3a3127fda0081683670100f7f7bbd9b"
+        },
+        {
+          "path": "390-reduced/frame-times.json",
+          "bytes": 5815,
+          "sha256": "8ad43bbc875c6b2dde7b3857ca1e250acaf36ce975780e2e5a4a9f8d838f865c"
+        },
+        {
+          "path": "390-reduced/hidden-return-settled.png",
+          "bytes": 30647,
+          "sha256": "26dbd39399b47edecebd49acf1d969d79cb37cf728e31ae3abb1425296d88038"
+        },
+        {
+          "path": "390-reduced/interrupted-full-record.png",
+          "bytes": 130082,
+          "sha256": "aba79d998144e39d620ee95d08c7bdaf1391e914b0b4c6bc4050a68a829fc6aa"
+        },
+        {
+          "path": "390-reduced/interrupted-recorded-data.png",
+          "bytes": 38062,
+          "sha256": "88d413430c6d72349c2d839d4175ebae2316cdf092404cf34e16ce0a5435d1eb"
+        },
+        {
+          "path": "390-reduced/interrupted-result-settled.png",
+          "bytes": 34220,
+          "sha256": "a83810ed1a806ba0e56290abcf6eeac1b74df3713a28b4d84cf89609af5e47e2"
+        },
+        {
+          "path": "390-reduced/keyboard-focus.png",
+          "bytes": 43373,
+          "sha256": "418511e7b479e5446b94d7dfb2934b00287e17607661f2accf9481a98c3af6a7"
+        },
+        {
+          "path": "390-reduced/preference-return-settled.png",
+          "bytes": 43301,
+          "sha256": "e6a22194a6563c95b5ca1a4ddeb9662a57b14b9db1d3d9332bacba0c36759cfe"
+        },
+        {
+          "path": "390-reduced/query-recovery-static.png",
+          "bytes": 48593,
+          "sha256": "0d60cb189bc94800b8c161ef838321d0a12aeadc804925eed9c3c2c006cb60c6"
+        },
+        {
+          "path": "390-reduced/scenes.json",
+          "bytes": 2401,
+          "sha256": "fa042fc69d542975ad2ce2e62949c70e36a4fdeb178a0bc3b4d2a69ec91e5024"
+        },
+        {
+          "path": "390-reduced/selection-settled.png",
+          "bytes": 38770,
+          "sha256": "40dd8ddc994f1842d68cbb5687839b3579f3404e0c9b38bd8b833a198e1dcf4a"
+        },
+        {
+          "path": "390-reduced/splash-settled.png",
+          "bytes": 43301,
+          "sha256": "e6a22194a6563c95b5ca1a4ddeb9662a57b14b9db1d3d9332bacba0c36759cfe"
+        },
+        {
+          "path": "390-reduced/tab-selection-contact.png",
+          "bytes": 113360,
+          "sha256": "f3951440c6ade810b41b0d20d91358928943eb4058cdd890778e891b0fff6229"
+        },
+        {
+          "path": "390-reduced/title-entry-contact.png",
+          "bytes": 102349,
+          "sha256": "a8ff689afeecef9e4bac7bf06c52b3f6901b300659360c00838de61d0aeeffea"
+        },
+        {
+          "path": "390-reduced/video-1.webm",
+          "bytes": 1887,
+          "sha256": "930c99160f06247042097b5127fb44e4d41bed47bf56c8fb23b842d71f4ea523"
+        },
+        {
+          "path": "390-reduced/video-2.webm",
+          "bytes": 1887,
+          "sha256": "1d0226c9cfc196b56149b87c4699affcfcefe4f8376f6420206aa7e172b90ff7"
+        },
+        {
+          "path": "390-reduced/video.webm",
+          "bytes": 1668927,
+          "sha256": "75aaec60be282769db128b5482f597fbb1c9856f7adbed21230e3388e46582e8"
+        }
+      ]
+    }
+  ]
+}

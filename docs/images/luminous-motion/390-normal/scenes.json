@@ -1,0 +1,249 @@
+{
+  "source": "a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5",
+  "servedAssets": [
+    {
+      "path": "/assets/index-xlFhdM34.js",
+      "sha256": "ed415d40c3b47e70cc884abcdfee2b1f57cf169b8850cc386c45b96e980e8338"
+    },
+    {
+      "path": "/assets/index-AR6fswqn.css",
+      "sha256": "843e49e2ca3f6d97a071092ba21a425a9a2f38efec9cf98a7033a522801fdd08"
+    }
+  ],
+  "interruptedAnimations": 1,
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "reducedMotion": "no-preference",
+  "pointer": "coarse touch",
+  "started": 1789281093262,
+  "scenes": [
+    {
+      "name": "homepage-navigation",
+      "offsetMs": 43
+    },
+    {
+      "name": "artwork-first-viewport",
+      "offsetMs": 2323
+    },
+    {
+      "name": "control-hover",
+      "offsetMs": 6444
+    },
+    {
+      "name": "control-press",
+      "offsetMs": 6801
+    },
+    {
+      "name": "table-selection",
+      "offsetMs": 8677
+    },
+    {
+      "name": "tab-selection",
+      "offsetMs": 9422
+    },
+    {
+      "name": "public-route-entry",
+      "offsetMs": 11003
+    },
+    {
+      "name": "query-only-pairing-recovery",
+      "offsetMs": 12638
+    },
+    {
+      "name": "live-record",
+      "offsetMs": 13403
+    },
+    {
+      "name": "live-update-away-from-bottom",
+      "offsetMs": 14080
+    },
+    {
+      "name": "hidden-live-update",
+      "offsetMs": 16940
+    },
+    {
+      "name": "finished-result-navigation",
+      "offsetMs": 18274
+    },
+    {
+      "name": "finished-recorded-data",
+      "offsetMs": 22089
+    },
+    {
+      "name": "finished-full-record",
+      "offsetMs": 22747
+    },
+    {
+      "name": "interrupted-result-navigation",
+      "offsetMs": 22961
+    },
+    {
+      "name": "interrupted-recorded-data",
+      "offsetMs": 26151
+    },
+    {
+      "name": "interrupted-full-record",
+      "offsetMs": 26725
+    },
+    {
+      "name": "preference-interruption",
+      "offsetMs": 26895
+    },
+    {
+      "name": "visibility-entrance-interruption",
+      "offsetMs": 28791
+    }
+  ],
+  "entranceTrace": [
+    {
+      "target": "H1",
+      "at": 224.29999995231628,
+      "duration": "240",
+      "delay": 0
+    },
+    {
+      "target": "art-rings-entry",
+      "at": 2313.699999988079,
+      "duration": "520",
+      "delay": 40
+    },
+    {
+      "target": "art-center-entry",
+      "at": 2313.699999988079,
+      "duration": "420",
+      "delay": 120
+    },
+    {
+      "target": "art-terminals",
+      "at": 2313.699999988079,
+      "duration": "240",
+      "delay": 120
+    }
+  ],
+  "controlTrace": [
+    {
+      "target": "H1",
+      "at": 224.29999995231628,
+      "duration": "240",
+      "delay": 0
+    },
+    {
+      "target": "art-rings-entry",
+      "at": 2313.699999988079,
+      "duration": "520",
+      "delay": 40
+    },
+    {
+      "target": "art-center-entry",
+      "at": 2313.699999988079,
+      "duration": "420",
+      "delay": 120
+    },
+    {
+      "target": "art-terminals",
+      "at": 2313.699999988079,
+      "duration": "240",
+      "delay": 120
+    },
+    {
+      "target": "selected-intro",
+      "at": 8666.599999964237,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "selected-intro",
+      "at": 9400.099999964237,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "BUTTON",
+      "at": 9401.199999988079,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "selected-intro",
+      "at": 10132.599999964237,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "BUTTON",
+      "at": 10133.799999952316,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "selected-intro",
+      "at": 10167.899999976158,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "selected-intro",
+      "at": 10199.599999964237,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "active",
+      "at": 10985.5,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "H1",
+      "at": 10997.399999976158,
+      "duration": "240",
+      "delay": 0
+    },
+    {
+      "target": "active",
+      "at": 11700.699999988079,
+      "duration": "180",
+      "delay": 0
+    }
+  ],
+  "queryTrace": [
+    {
+      "target": "H1",
+      "at": 95,
+      "duration": "240",
+      "delay": 0
+    }
+  ],
+  "liveTrace": [
+    {
+      "target": "selected",
+      "at": 2327.199999988079,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "selected",
+      "at": 2644.800000011921,
+      "duration": "180",
+      "delay": 0
+    },
+    {
+      "target": "selected",
+      "at": 2978.600000023842,
+      "duration": "180",
+      "delay": 0
+    }
+  ],
+  "finalTrace": [
+    {
+      "target": "H1",
+      "at": 92.69999998807907,
+      "duration": "240",
+      "delay": 0
+    }
+  ],
+  "visibility": "Simulated visibilityState boundary; actual subscriptions, cancellation and observation updates.",
+  "frameTiming": "Unmodified real-time WebM. Scene clock begins after page creation; samples use nearest video frame. Animation traces record browser performance time and actual timing options."
+}

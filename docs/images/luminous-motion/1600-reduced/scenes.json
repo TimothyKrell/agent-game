@@ -1,0 +1,114 @@
+{
+  "source": "a8dd5d6d1d969fbf8ed75a5551b4a754873d56a5",
+  "servedAssets": [
+    {
+      "path": "/assets/index-xlFhdM34.js",
+      "sha256": "ed415d40c3b47e70cc884abcdfee2b1f57cf169b8850cc386c45b96e980e8338"
+    },
+    {
+      "path": "/assets/index-AR6fswqn.css",
+      "sha256": "843e49e2ca3f6d97a071092ba21a425a9a2f38efec9cf98a7033a522801fdd08"
+    }
+  ],
+  "interruptedAnimations": 0,
+  "viewport": {
+    "width": 1600,
+    "height": 1120
+  },
+  "reducedMotion": "reduce",
+  "pointer": "fine",
+  "started": 1789281059002,
+  "scenes": [
+    {
+      "name": "homepage-navigation",
+      "offsetMs": 52
+    },
+    {
+      "name": "artwork-first-viewport",
+      "offsetMs": 2341
+    },
+    {
+      "name": "art-hover",
+      "offsetMs": 3363
+    },
+    {
+      "name": "art-leave",
+      "offsetMs": 4400
+    },
+    {
+      "name": "control-hover",
+      "offsetMs": 7489
+    },
+    {
+      "name": "control-press",
+      "offsetMs": 7844
+    },
+    {
+      "name": "table-selection",
+      "offsetMs": 8905
+    },
+    {
+      "name": "tab-selection",
+      "offsetMs": 10020
+    },
+    {
+      "name": "public-route-entry",
+      "offsetMs": 12141
+    },
+    {
+      "name": "query-only-pairing-recovery",
+      "offsetMs": 13565
+    },
+    {
+      "name": "live-record",
+      "offsetMs": 14368
+    },
+    {
+      "name": "live-update-away-from-bottom",
+      "offsetMs": 15089
+    },
+    {
+      "name": "hidden-live-update",
+      "offsetMs": 17976
+    },
+    {
+      "name": "finished-result-navigation",
+      "offsetMs": 19367
+    },
+    {
+      "name": "finished-recorded-data",
+      "offsetMs": 23187
+    },
+    {
+      "name": "finished-full-record",
+      "offsetMs": 23842
+    },
+    {
+      "name": "interrupted-result-navigation",
+      "offsetMs": 24444
+    },
+    {
+      "name": "interrupted-recorded-data",
+      "offsetMs": 27714
+    },
+    {
+      "name": "interrupted-full-record",
+      "offsetMs": 28362
+    },
+    {
+      "name": "preference-interruption",
+      "offsetMs": 28757
+    },
+    {
+      "name": "visibility-entrance-interruption",
+      "offsetMs": 30703
+    }
+  ],
+  "entranceTrace": [],
+  "controlTrace": [],
+  "queryTrace": [],
+  "liveTrace": [],
+  "finalTrace": [],
+  "visibility": "Simulated visibilityState boundary; actual subscriptions, cancellation and observation updates.",
+  "frameTiming": "Unmodified real-time WebM. Scene clock begins after page creation; samples use nearest video frame. Animation traces record browser performance time and actual timing options."
+}
