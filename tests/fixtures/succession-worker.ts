@@ -65,6 +65,7 @@ export class MatchObject extends ApplicationMatch {
     const metadata = this.ctx.storage.sql
       .exec<{ key: string; value: string }>('SELECT key,value FROM meta')
       .toArray();
+
     const grants: Record<string, string> = JSON.parse(
       metadata.find((row) => row.key === 'grants')?.value ?? '{}',
     );
@@ -91,7 +92,7 @@ export class MatchObject extends ApplicationMatch {
     const entrants: Entrant[] = controllers.map((controller) => ({
       agentId: controller.agentId,
       ownerId: controller.ownerId,
-      name: controller.agentId,
+      name: controller.agentId.slice('agent_'.length),
       house: false,
       rating: 1000,
     }));
@@ -99,11 +100,13 @@ export class MatchObject extends ApplicationMatch {
     const now = Date.now();
     const initial = createMatch(id, entrants, now, { mode: 'preview', timing: DEFAULT_TIMING });
     const controller = controllers.find((entry) => entry.agentId === initial.seats[0].entrant.agentId)!;
+
     const request = {
       actionId: 'legacy-accepted-chat',
       phaseId: initial.phase.id,
       action: { type: 'chat' as const, text: 'A durably accepted legacy message.' },
     };
+
     const updated = act(initial, 0, 0, request, now + 1);
     const { events, ...record } = updated;
     const ticket = randomSecret();
@@ -187,6 +190,7 @@ export default {
 
       for (let index = 0; index < count; index++) {
         const id = crypto.randomUUID();
+
         const controller = {
           agentId: `agent_${id}`,
           ownerId: `owner_${id}`,
@@ -194,6 +198,7 @@ export default {
           token: `agk_${randomSecret()}`,
           expiresAt: Date.now() + 86_400_000,
         };
+
         const hash = await hashSecret(controller.token);
         await env.DB.batch([
           env.DB.prepare('INSERT INTO user(id,name,email,createdAt,updatedAt) VALUES (?,?,?,?,?)').bind(
@@ -213,8 +218,8 @@ export default {
           env.DB.prepare('INSERT INTO agents(id,owner_id,name,name_key,created_at) VALUES (?,?,?,?,?)').bind(
             controller.agentId,
             controller.ownerId,
-            controller.agentId,
-            controller.agentId,
+            id,
+            id,
             0,
           ),
           env.DB.prepare(
@@ -242,11 +247,13 @@ export default {
 
     if (url.pathname === '/__fixture/alternate-grant') {
       const agentId = url.searchParams.get('agentId') ?? '';
+
       const agent = await env.DB.prepare('SELECT owner_id FROM agents WHERE id=?')
         .bind(agentId)
         .first<{ owner_id: string }>();
 
       if (!agent) return new Response('Missing fixture agent', { status: 404 });
+
       const controller = {
         agentId,
         ownerId: agent.owner_id,
@@ -254,6 +261,7 @@ export default {
         token: `agk_${randomSecret()}`,
         expiresAt: Date.now() + 86_400_000,
       };
+
       await env.DB.prepare(
         'INSERT INTO agent_grants(id,agent_id,secret_hash,name,created_at,expires_at) VALUES (?,?,?,?,?,?)',
       )
@@ -296,13 +304,18 @@ export default {
         )
           .bind(match[1])
           .first();
+
         const participants = await env.DB.prepare(
           'SELECT agent_id,seat,won,forfeited,rating_delta,act1_json FROM match_participants WHERE match_id=? ORDER BY seat',
         )
           .bind(match[1])
           .all();
 
-        return Response.json({ record, participants: participants.results });
+        return Response.json({
+          record,
+          participants: participants.results,
+          inference: await env.TEST_QUEUE.getByName('secret-overlord').inferenceSummary(match[1]),
+        });
       }
 
       return Response.json(await env.TEST_MATCHES.getByName(match[1]).fixtureInspect());
