@@ -101,7 +101,8 @@ describe('real Worker, D1, durable matches, and CLI protocol', () => {
       }
 
       expect(invocation.sessionId).toBe('test-session');
-      expect(invocation.prompt).toContain('is ACTIVE');
+      expect(invocation.prompt).toContain(`Continue the same secret-overlord match ${matchId}`);
+      expect(invocation.prompt).toContain('Only server finished/interrupted ends the game.');
       let view = await client.observation(matchId);
 
       while (view.status === 'active') {

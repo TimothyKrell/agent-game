@@ -81,4 +81,28 @@ npx prettier --check cli/supervisor.mjs cli/supervisor.d.mts cli/ledger.mjs test
 npx tsc --noEmit
 ```
 
-The final integration scoped run passed **33 tests** (30 installed-supervisor lifecycle and 3 native-adapter tests), with zero scoped lint errors. Scoped Prettier checks and `npx tsc --noEmit` also passed. The earlier unrelated `PhaseKind2` fixture error was fixed by its owner before this final check. No real model or paid trial was used.
+The supervisor lifecycle gate passed **33 tests** (30 installed-supervisor lifecycle and 3 native-adapter tests). Five additional result tests cover winning-seat credit, a forfeited champion, a loser, interruption, and an active client stop. No real model or paid trial was used.
+
+## Packaged CLI and actual Worker integration
+
+`tests/cli-worker.test.ts` installs the actual `0.2.0` archive with npm into an unrelated `/tmp/opencode` directory, then invokes its npm bin against a real isolated local Worker. The reusable fixture from `ab2ebf7` delegates to the production Worker, MatchObject, MatchmakingObject, HouseSeatObject, D1 migrations, receipts, outbox, history and controller projection. It creates one external grant plus nine preview-house seats. Only discussion/fill clock expiration is fixture-controlled; required decision windows retain their normal rule timing.
+
+The integration passed in **22.7 seconds** on 2026-09-13. This is a local test duration with controlled discussion clocks, not a production match-duration measurement. It verifies:
+
+- Installed `setup --game succession`, real bearer-grant authorization, queue assignment and current/action/wait play through both acts to one individual result without an external forfeit.
+- The immutable installed `0.1.1` binary encounters the same Succession installation and receives `protocol-upgrade-required` through both status and observe.
+- Full actual terminal archive retrieval from the server with explicit epoch/after/through, 64-event count ceiling and 12,288-byte page budget. All IDs are contiguous, all opaque keys unique, and both acts are present.
+- The same saved profile and token subsequently join and finish standalone Secret Overlord through the installed CLI. New participation clears prior current/history state.
+
+`tests/cli-succession.test.ts` separately tests delayed live current, receipt and page arrival after accepted terminal/archive state, retained takeover entitlement, child deadline propagation, and a complete engine-backed HTTP fixture. `tests/cli-legacy-play.test.ts` installs both retained `0.1.1` and current `0.2.0` to complete original-game fixtures with unchanged protocol-1 action envelopes. `tests/cli-install.test.ts` checks both harness installations, credential redaction, selected rules and retained legacy archive publication on a clean package build.
+
+The complete CLI/supervisor set is:
+
+```sh
+npx vitest run tests/cli-worker.test.ts tests/cli-succession.test.ts tests/cli-legacy-play.test.ts tests/cli-install.test.ts tests/cli-output.test.ts tests/supervisor.test.ts tests/supervisor-native.test.ts tests/supervisor-result.test.ts
+npx oxlint cli scripts/package-cli.mjs src/shared/onboarding.ts tests/cli*.test.ts tests/supervisor*.test.ts
+```
+
+Native-adapter fake executables and observation-only house preview policies incur no model usage. Production paid-provider latency, model strategy and invoice costs were not measured.
+
+The final scoped integration checks cover **52 tests** across those eight files. The actual Worker case passed again after the C1 changes (25.4 seconds); the seven-case installed Succession suite passed after correcting its queue fixture to include the protocol identity. TypeScript and scoped lint/format checks passed. C1 now includes concurrent delayed queue/current/receipt responses and both old data pages and archive-targeting reset pages after another reader has advanced the archive walk. All config writers serialize owned-field updates under the same lock and check connection/participation identity.
