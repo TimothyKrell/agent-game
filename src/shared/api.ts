@@ -1,5 +1,7 @@
 import { Schema } from 'effect';
 import type { ActionRequest, Observation, Role } from '../game/types';
+import type { GameDescriptor, GameId } from '../game/contracts';
+import type { IndividualResult2 } from './succession';
 
 export const AuthProviderSchema = Schema.Literals(['github', 'google']);
 
@@ -31,7 +33,12 @@ export const PairStartSchema = Schema.Struct({ installation: Schema.String, toke
 
 export const PairApproveSchema = Schema.Struct({ code: Schema.String, agentId: Schema.String });
 
-export const QueueJoinSchema = Schema.Struct({ requestId: Schema.String });
+export const GameIdSchema = Schema.Literals(['secret-overlord', 'succession']);
+
+export const QueueJoinSchema = Schema.Struct({
+  requestId: Schema.String,
+  gameId: Schema.optional(GameIdSchema),
+});
 
 export type ApiRequestBody =
   | ActionRequest
@@ -84,6 +91,7 @@ export interface ConnectionInfo {
 }
 
 export interface MatchSummary {
+  gameId?: 'secret-overlord';
   id: string;
   status: 'active' | 'finished' | 'interrupted';
   mode: string;
@@ -98,7 +106,29 @@ export interface MatchSummary {
   names: string[];
 }
 
+export interface SuccessionSummary {
+  gameId: 'succession';
+  id: string;
+  status: 'active' | 'finished' | 'interrupted';
+  mode: 'preview' | 'ranked' | 'evaluation';
+  round: number;
+  act: 1 | 2;
+  createdAt: number;
+  finishedAt: number | null;
+  houseCount: number;
+  names: string[];
+  result: IndividualResult2 | null;
+  act1Winner: 'cooperative' | 'rogue' | null;
+  livingCount: number;
+  winReason: string | null;
+}
+
+export type GameMatchSummary = MatchSummary | SuccessionSummary;
+
 export interface QueueStatus {
+  gameId?: GameId | null;
+  rulesVersion?: 'secret-overlord-1' | 'succession-1' | null;
+  protocolVersion?: '1' | '2' | null;
   status: 'idle' | 'queued' | 'starting' | 'matched';
   matchId: string | null;
   joinedAt: number | null;
@@ -108,6 +138,8 @@ export interface QueueStatus {
 }
 
 export interface Bootstrap {
+  gameId?: GameId;
+  games?: GameDescriptor[];
   name: string;
   mode: string;
   authProviders: AuthProvider[];
@@ -124,6 +156,11 @@ export interface ApiFault {
   code: string;
   message: string;
   status: number;
+  gameId?: GameId;
+  matchId?: string;
+  requiredProtocolVersion?: '2';
+  rulesUrl?: string;
+  cliUrl?: string;
 }
 
 export type RpcResult<T> = { ok: true; value: T } | { ok: false; error: ApiFault };
@@ -192,6 +229,7 @@ export const AgentProfileSchema: Schema.Codec<AgentProfile> = Schema.Struct({
 export const AgentListSchema = Schema.mutable(Schema.Array(AgentProfileSchema));
 
 const MatchSummarySchema = Schema.Struct({
+  gameId: Schema.optional(Schema.Literal('secret-overlord')),
   id: Schema.String,
   status: Schema.Literals(['active', 'finished', 'interrupted']),
   mode: Schema.String,
@@ -207,6 +245,9 @@ const MatchSummarySchema = Schema.Struct({
 });
 
 export const QueueStatusSchema = Schema.Struct({
+  gameId: Schema.optional(Schema.NullOr(GameIdSchema)),
+  rulesVersion: Schema.optional(Schema.NullOr(Schema.Literals(['secret-overlord-1', 'succession-1']))),
+  protocolVersion: Schema.optional(Schema.NullOr(Schema.Literals(['1', '2']))),
   status: Schema.Literals(['idle', 'queued', 'starting', 'matched']),
   matchId: Schema.NullOr(Schema.String),
   joinedAt: Schema.NullOr(Schema.Number),
