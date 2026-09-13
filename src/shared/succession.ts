@@ -132,8 +132,23 @@ export interface AuthorizedEvent2 {
   type: string;
   text: string;
   seat?: number;
-  data?: Record<string, Schema.Json> | { type: 'finished'; winner: number; capEvidence: CapEvidence2 | null };
+  data?:
+    | Record<string, Schema.Json>
+    | { type: 'finished'; winner: number; capEvidence: CapEvidence2 | null }
+    | AuditFact2;
 }
+
+export type PhysicalInfluence2 = InfluenceCard & { physicalId: string };
+
+export type RealizedOutcome2 = { kind: 'index'; size: number; value: number } | { kind: 'id'; value: string };
+
+export type AuditFact2 =
+  | { kind: 'initial'; policies: Card[]; roles: Role[]; priority: number[]; saltBase64url: string }
+  | { kind: 'random-outcomes'; outcomes: RealizedOutcome2[] }
+  | { kind: 'policy-zones'; deck: Card[]; discards: Card[]; hand: Card[] }
+  | { kind: 'court-order'; cards: PhysicalInfluence2[] }
+  | { kind: 'capability-zones'; seat: number; hand: PhysicalInfluence2[]; revealed: PhysicalInfluence2[] }
+  | { kind: 'exchange-buffer'; seat: number; cards: PhysicalInfluence2[] };
 
 // Protocol 2 is self-contained: importing the protocol-1 API here would create a cycle.
 const Integer = Schema.Number.check(Schema.makeFilter((value) => Number.isSafeInteger(value) && value >= 0));
@@ -509,6 +524,52 @@ export const Observation2Schema = Schema.Struct({
   }),
 ) satisfies Schema.Codec<Observation2>;
 
+const PhysicalInfluenceSchema = Schema.Struct({ ...InfluenceCardSchema.fields, physicalId: Schema.String });
+
+export const AuditFact2Schema = Schema.Union([
+  Schema.Struct({
+    kind: Schema.Literal('initial'),
+    policies: Schema.mutable(Schema.Array(CardSchema)),
+    roles: Schema.mutable(Schema.Array(RoleSchema)),
+    priority: Schema.mutable(Schema.Array(Seat)),
+    saltBase64url: Schema.String,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('random-outcomes'),
+    outcomes: Schema.mutable(
+      Schema.Array(
+        Schema.Union([
+          Schema.Struct({ kind: Schema.Literal('index'), size: Integer, value: Integer }).check(
+            Schema.makeFilter((entry) => entry.size > 0 && entry.value < entry.size),
+          ),
+          Schema.Struct({ kind: Schema.Literal('id'), value: Schema.String }),
+        ]),
+      ),
+    ),
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('policy-zones'),
+    deck: Schema.mutable(Schema.Array(CardSchema)),
+    discards: Schema.mutable(Schema.Array(CardSchema)),
+    hand: Schema.mutable(Schema.Array(CardSchema)),
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('court-order'),
+    cards: Schema.mutable(Schema.Array(PhysicalInfluenceSchema)),
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('capability-zones'),
+    seat: Seat,
+    hand: Schema.mutable(Schema.Array(PhysicalInfluenceSchema)),
+    revealed: Schema.mutable(Schema.Array(PhysicalInfluenceSchema)),
+  }),
+  Schema.Struct({
+    kind: Schema.Literal('exchange-buffer'),
+    seat: Seat,
+    cards: Schema.mutable(Schema.Array(PhysicalInfluenceSchema)),
+  }),
+]) satisfies Schema.Codec<AuditFact2>;
+
 // Deep JSON retains legacy and nested replay facts without admitting undefined,
 // functions, or opaque runtime objects. Event names remain extensible for Act 1.
 export const AuthorizedEvent2Schema = Schema.Struct({
@@ -523,6 +584,7 @@ export const AuthorizedEvent2Schema = Schema.Struct({
   data: Schema.optional(
     Schema.Union([
       Schema.Record(Schema.String, Schema.Json),
+      AuditFact2Schema,
       Schema.Struct({
         type: Schema.Literal('finished'),
         winner: Seat,
@@ -530,7 +592,11 @@ export const AuthorizedEvent2Schema = Schema.Struct({
       }),
     ]),
   ),
-}).check(Schema.makeFilter((event) => bytes(event) <= 8192)) satisfies Schema.Codec<AuthorizedEvent2>;
+}).check(
+  Schema.makeFilter(
+    (event) => bytes(event) <= 8192 && (event.type !== 'audit' || Schema.is(AuditFact2Schema)(event.data)),
+  ),
+) satisfies Schema.Codec<AuthorizedEvent2>;
 
 export const HistoryPage2Schema = Schema.Struct({
   protocolVersion: Schema.Literal('2'),

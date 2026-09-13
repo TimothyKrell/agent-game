@@ -16,6 +16,7 @@ import type {
   SuccessionEvent,
   SuccessionState,
 } from './types';
+import type { AuditFact2 } from '../../shared/succession';
 
 const legacyActions = new Set([
   'chat',
@@ -129,6 +130,26 @@ export async function createSuccession(
   }));
 
   replayFrames[replayFrames.length - 1].state = structuredClone(state);
+
+  const audit: SuccessionEvent = {
+    eventKey: random.id(),
+    at: now,
+    act: 1,
+    round: 1,
+    type: 'audit',
+    text: 'Initial realized policy and commitment outcomes.',
+    visibility: 'archive',
+    data: {
+      kind: 'initial',
+      policies: structuredClone(board.deck),
+      roles: seats.map((seat) => seat.role),
+      priority: [...commitment.priority],
+      saltBase64url: commitment.saltBase64url,
+    },
+  };
+
+  appendedEvents.push(audit);
+  replayFrames.push({ eventKey: audit.eventKey, state: structuredClone(state) });
 
   return { state, appendedEvents, replay: null, replayFrames };
 }
@@ -246,6 +267,8 @@ export function evolveSuccession(
     };
   }
 
+  if (appendedEvents.length) appendAudit(input, state, command.now, random, appendedEvents, randomness);
+
   if (replayFrames.length) replayFrames[replayFrames.length - 1].state = structuredClone(state);
 
   return {
@@ -255,6 +278,66 @@ export function evolveSuccession(
       appendedEvents.length || randomness.length ? { command: structuredClone(command), randomness } : null,
     replayFrames,
   };
+}
+
+function appendAudit(
+  before: SuccessionState,
+  state: SuccessionState,
+  now: number,
+  random: EventContext,
+  events: SuccessionEvent[],
+  randomness: RealizedRandom[],
+): void {
+  const emit = (data: AuditFact2) =>
+    event(state, now, random, events, 'audit', data.kind, { visibility: 'archive', data });
+
+  if (state.stage.act === 1 && before.stage.act === 1) {
+    const board = state.stage.board;
+
+    if (
+      JSON.stringify([board.deck, board.discards, board.hand]) !==
+      JSON.stringify([before.stage.board.deck, before.stage.board.discards, before.stage.board.hand])
+    )
+      emit({
+        kind: 'policy-zones',
+        deck: structuredClone(board.deck),
+        discards: structuredClone(board.discards),
+        hand: structuredClone(board.hand),
+      });
+  } else if (state.stage.act === 2) {
+    const board = state.stage.board;
+    const prior = before.stage.act === 2 ? before.stage.board : null;
+
+    if (JSON.stringify(board.court) !== JSON.stringify(prior?.court))
+      emit({ kind: 'court-order', cards: structuredClone(board.court) });
+
+    for (const [seat, resource] of board.resources.entries()) {
+      const old = prior?.resources[seat];
+
+      if (
+        JSON.stringify([resource.hand, resource.revealed]) !==
+        JSON.stringify(old ? [old.hand, old.revealed] : null)
+      )
+        emit({
+          kind: 'capability-zones',
+          seat,
+          hand: structuredClone(resource.hand),
+          revealed: structuredClone(resource.revealed),
+        });
+    }
+
+    if (
+      board.pending?.exchange &&
+      JSON.stringify(board.pending.exchange) !== JSON.stringify(prior?.pending?.exchange)
+    )
+      emit({
+        kind: 'exchange-buffer',
+        seat: board.pending.actor,
+        cards: structuredClone(board.pending.exchange),
+      });
+  }
+
+  if (randomness.length) emit({ kind: 'random-outcomes', outcomes: structuredClone(randomness) });
 }
 
 function transition(

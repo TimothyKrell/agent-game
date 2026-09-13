@@ -194,6 +194,9 @@ export function summarySuccession(state: SuccessionState) {
     names: state.seats.map((seat) => seat.entrant.name),
     result: state.result,
     act1Result: state.act1Result,
+    act1Winner: state.act1Result?.team ?? null,
+    livingCount: state.seats.filter((seat) => seat.alive).length,
+    winReason: state.interruptionReason ?? state.result?.reason ?? null,
     board: view.board,
     seats: view.seats,
   };
