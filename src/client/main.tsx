@@ -1193,7 +1193,8 @@ function LiveMatch({ id }: { id: string }) {
                     {seat.number === board.coordinator && <span>Coordinator</span>}
                     {seat.number === board.executor && (
                       <span>
-                        {!ended && ['government-discussion', 'voting'].includes(view.phase.kind)
+                        {board.phase &&
+                        ['nomination', 'government-discussion', 'voting'].includes(board.phase.kind)
                           ? 'Executor nominee'
                           : 'Executor'}
                       </span>
@@ -1251,18 +1252,22 @@ function LiveMatch({ id }: { id: string }) {
                   Discard {board.tracks.discardCount} · Veto{' '}
                   {board.tracks.vetoUnlocked ? 'unlocked' : 'locked'}
                 </small>
-                <small>
-                  {phases[board.phase.kind][0]} · Discussion{' '}
-                  {[
-                    'finished',
-                    'interrupted',
-                    'coordinator-discard',
-                    'executor-policy',
-                    'veto-response',
-                  ].includes(board.phase.kind)
-                    ? 'closed'
-                    : 'open'}
-                </small>
+                {board.phase ? (
+                  <small>
+                    {phases[board.phase.kind][0]} · Discussion{' '}
+                    {[
+                      'finished',
+                      'interrupted',
+                      'coordinator-discard',
+                      'executor-policy',
+                      'veto-response',
+                    ].includes(board.phase.kind)
+                      ? 'closed'
+                      : 'open'}
+                  </small>
+                ) : (
+                  <small>Setup record · Awaiting the first recorded phase</small>
+                )}
               </div>
             ) : undefined
           }

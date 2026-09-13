@@ -720,6 +720,24 @@ test('pairing and owner controls remain internally bounded across tablet breakpo
         path: `/tmp/opencode/sitewide-${path === '/dashboard' ? 'roster' : 'pairing'}-${width}.png`,
         fullPage: true,
       });
+
+      if (path.startsWith('/connect') && width > 760) {
+        const gaps = await page
+          .locator('#competitors, #create-agent, #installations, #sign-in-methods')
+          .evaluateAll((elements) =>
+            elements
+              .slice(1)
+              .map(
+                (element, index) =>
+                  element.getBoundingClientRect().top - elements[index].getBoundingClientRect().bottom,
+              ),
+          );
+
+        expect(
+          gaps.every((gap) => gap >= 48),
+          `Pairing identity sections retain breathing room at ${width}: ${gaps}`,
+        ).toBe(true);
+      }
     }
   }
 });

@@ -418,6 +418,8 @@ describe('timing, controller replacement, and results', () => {
         const record = observe(state);
         expect(replayFrame(record, record.events.length).tracks).toEqual(record.tracks);
         const beginning = replayFrame(record, 1);
+        expect(beginning.phase).toBeNull();
+        expect(beginning.coordinator).toBeNull();
         expect(beginning.seats.every((seat) => seat.alive)).toBe(true);
         expect(beginning.tracks).toMatchObject({ safeguards: 0, overrides: 0, drawCount: 17 });
       }

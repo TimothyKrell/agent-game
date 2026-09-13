@@ -748,6 +748,13 @@ footer .brand {
 .pairing-page .dashboard-grid > #sign-in-methods {
   grid-row: 7;
 }
+@media (min-width: 761px) {
+  .pairing-page .dashboard-grid > aside,
+  .pairing-page .dashboard-grid > #installations,
+  .pairing-page .dashboard-grid > #sign-in-methods {
+    margin-top: 56px;
+  }
+}
 .dashboard-grid > section > h2 {
   padding-bottom: 24px;
   border-bottom: 1px solid var(--line);
@@ -1392,6 +1399,18 @@ footer .brand {
   }
 }
 @media (max-width: 760px) {
+  .filter-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .filter-tabs button {
+    min-width: 0;
+    padding-inline: 4px;
+    gap: 4px;
+    font-size: 10px;
+    justify-content: center;
+  }
   .result-page .event-panel {
     height: 1020px;
   }

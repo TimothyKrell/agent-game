@@ -1,7 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { createMatch } from '../src/game/engine';
+import { Schema } from 'effect';
+import { act, advance, createMatch, decisionId, interruptMatch, pendingSeats } from '../src/game/engine';
 import { observe } from '../src/game/observation';
+import { previewAction } from '../src/game/preview';
+import { terminal } from '../src/game/types';
 import type { Observation } from '../src/game/types';
+import { expectTimelineFiltersBounded } from './timeline-bounds';
 
 test('all phases, powers and simultaneous seat facts survive compact layouts and stale reconnection', async ({
   page,
@@ -129,6 +133,7 @@ test('all phases, powers and simultaneous seat facts survive compact layouts and
   await expect(page.locator('.countdown')).toHaveCount(0);
   send({ ...view, phase: { ...view.phase, deadline: Date.now() - 1000, graceUntil: Date.now() + 20_000 } });
   await expect(page.locator('.countdown')).toContainText('GRACE SEC');
+  await expectTimelineFiltersBounded(page);
   await page.screenshot({ path: '/tmp/opencode/sitewide-match-status-320.png', fullPage: true });
 
   for (const status of ['finished', 'interrupted'] as const) {
@@ -155,10 +160,100 @@ test('all phases, powers and simultaneous seat facts survive compact layouts and
 
     for (const width of [1600, 390, 320]) {
       await page.setViewportSize({ width, height: 1120 });
+      await expectTimelineFiltersBounded(page);
       await page.locator('.seat-grid').evaluate((element) => {
         element.scrollLeft = 0;
       });
       await page.screenshot({ path: `/tmp/opencode/sitewide-result-${status}-${width}.png`, fullPage: true });
     }
+  }
+});
+
+test('engine-produced archives show setup and proposed offices at the selected event', async ({ page }) => {
+  let state = createMatch(
+    'replay-phases',
+    Array.from({ length: 10 }, (_, index) => ({
+      agentId: `replay-agent-${index}`,
+      ownerId: `replay-owner-${index}`,
+      name: `Replay mind ${index}`,
+      house: false,
+      rating: 1000,
+    })),
+    1789250000000,
+    { random: (n) => n - 1 },
+  );
+
+  let now = state.createdAt;
+  let partial: Observation | null = null;
+
+  for (let step = 0; !terminal(state) && step < 1000; step++) {
+    if (!partial && state.phase.kind === 'government-discussion')
+      partial = observe(interruptMatch(state, now, 'Replay phase regression'));
+    const pending = pendingSeats(state);
+
+    if (!pending.length) {
+      now = state.phase.deadline!;
+      state = advance(state, now);
+    } else {
+      const seat = pending[0];
+      const action = previewAction(observe(state, seat));
+
+      if (!action) throw new Error('Engine decision has no preview action');
+      state = act(
+        state,
+        seat,
+        state.seats[seat].generation,
+        {
+          actionId: crypto.randomUUID(),
+          phaseId: state.phase.id,
+          decisionId: decisionId(state, seat),
+          action,
+        },
+        now,
+      );
+    }
+  }
+
+  expect(terminal(state)).toBe(true);
+  expect(partial).not.toBeNull();
+  const complete = observe(state);
+  let record = complete;
+  await page.route('**/api/matches/replay-phases', (route) => route.fulfill({ json: record }));
+  await page.routeWebSocket('**/api/matches/replay-phases/events?*', () => {});
+
+  for (const archive of [complete, partial!]) {
+    record = archive;
+    await page.goto('/matches/replay-phases');
+    const slider = page.getByRole('slider', { name: 'Replay event' });
+    const firstPhase = archive.events.findIndex((event) => event.type === 'phase');
+
+    const proposal = archive.events.findIndex(
+      (event) => event.type === 'phase' && event.data?.phase === 'government-discussion',
+    );
+
+    expect(firstPhase).toBeGreaterThan(0);
+    expect(proposal).toBeGreaterThan(firstPhase);
+
+    for (const cursor of [0, firstPhase]) {
+      await slider.fill(String(cursor));
+      await expect(page.getByLabel('At selected event')).toContainText(
+        'Setup record · Awaiting the first recorded phase',
+      );
+      await expect(page.getByLabel('At selected event')).not.toContainText('Complete record');
+      await expect(page.locator('.seat small').filter({ hasText: 'Coordinator' })).toHaveCount(0);
+    }
+
+    await slider.fill(String(proposal + 1));
+    await expect(page.getByLabel('At selected event')).toContainText(
+      'Government discussion · Discussion open',
+    );
+    const nominee = Schema.decodeUnknownSync(Schema.Number)(archive.events[proposal].data?.executor);
+    await expect(page.locator('.seat').nth(nominee)).toContainText('Executor nominee');
+    await expect(page.locator('.final-track.safeguard b')).toHaveText(String(archive.tracks.safeguards));
+    await expect(page.locator('.final-track.override b')).toHaveText(String(archive.tracks.overrides));
+    await page.screenshot({
+      path: `/tmp/opencode/sitewide-replay-proposal-${archive.status}.png`,
+      fullPage: true,
+    });
   }
 });

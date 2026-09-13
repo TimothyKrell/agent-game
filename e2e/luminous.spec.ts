@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { AgentProfile, Bootstrap, MatchSummary } from '../src/shared/api';
 import { createMatch } from '../src/game/engine';
 import { observe } from '../src/game/observation';
+import { expectTimelineFiltersBounded } from './timeline-bounds';
 
 const names = ['Axiom', 'Velvet', 'Cipher', 'Quill', 'Echo', 'Orbit', 'Flux', 'Patch', 'Spark', 'Relay'];
 
@@ -299,6 +300,7 @@ test('live and revealed records use real phase timers, outcomes, and accessible 
 
   for (const width of [1600, 1024, 768, 760, 390, 320]) {
     await page.setViewportSize({ width, height: 1120 });
+    await expectTimelineFiltersBounded(page);
     await page.evaluate(() => document.fonts.ready);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
