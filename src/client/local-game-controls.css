@@ -1,0 +1,194 @@
+.local-game-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  margin-block: 24px;
+  padding: 6px;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.local-game-select label {
+  margin: 0;
+  color: #aac4c1;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+}
+
+.section-heading > .local-game-select {
+  margin-block: 0;
+}
+
+.archive-card {
+  min-width: 0;
+}
+.archive-card h3 {
+  overflow-wrap: anywhere;
+}
+
+.local-game-select select {
+  width: 224px;
+  max-width: 100%;
+  min-height: 48px;
+  border: 1px solid #315d60;
+  border-radius: 0;
+  background-color: #0d2023;
+  color: #e8f1ed;
+  padding: 12px 36px 12px 12px;
+  font:
+    500 14px / 20px Montserrat,
+    sans-serif;
+}
+
+.local-game-select select:hover {
+  border-color: #1cd7c7;
+}
+
+.local-game-select select:focus-visible,
+.rules-game-tabs button:focus-visible {
+  outline: 2px solid #bbf3ee;
+  outline-offset: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.rules-game-tabs {
+  display: flex;
+  gap: 16px;
+  margin-block: 24px;
+  padding: 6px;
+  border-bottom: 1px solid #315d60;
+}
+
+.guide .guide-introduction {
+  margin-bottom: 24px;
+}
+.guide #rules-panel > .button {
+  margin-bottom: 24px;
+  max-width: 100%;
+  white-space: normal;
+}
+.succession-rules > h2 {
+  display: block;
+}
+
+.rules-game-tabs button {
+  position: relative;
+  min-height: 48px;
+  min-width: 0;
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #aac4c1;
+  font:
+    500 14px / 20px Montserrat,
+    sans-serif;
+}
+
+.rules-game-tabs button[aria-selected='true'] {
+  color: #bbf3ee;
+  font-weight: 600;
+}
+.rules-game-tabs button[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  inset: auto 8px 0;
+  height: 2px;
+  background: #1cd7c7;
+}
+
+.game-discovery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  max-width: 1504px;
+  margin: 48px auto;
+  width: calc(100% - 96px);
+}
+.game-discovery .game-introduction {
+  display: grid;
+  width: 100%;
+  margin: 0;
+  padding: 24px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+.game-discovery .game-introduction > .deco-emblem {
+  width: 96px;
+  height: 96px;
+  margin: 0;
+  justify-self: end;
+}
+.game-discovery .game-introduction > div {
+  min-width: 0;
+}
+.game-discovery .game-introduction .button {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+}
+.game-discovery .game-introduction h2 {
+  overflow-wrap: anywhere;
+}
+#live > .section-heading {
+  flex-wrap: wrap;
+  gap: 24px;
+}
+#live .arena-tabs {
+  flex-shrink: 0;
+}
+
+@media (min-width: 761px) and (max-width: 1000px) {
+  #live > .section-heading > .local-game-select {
+    flex-basis: 100%;
+  }
+  .game-discovery {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.game-discovery .game-introduction .text-link {
+  display: flex;
+  margin-top: 16px;
+}
+
+@media (max-width: 760px) {
+  .guide .guide-introduction {
+    margin-bottom: 16px;
+  }
+  .guide #rules-panel > .button {
+    margin-bottom: 16px;
+  }
+  .game-discovery {
+    grid-template-columns: minmax(0, 1fr);
+    width: calc(100% - 40px);
+    gap: 16px;
+  }
+  .game-discovery .game-introduction {
+    padding-inline: 0;
+  }
+  .local-game-select {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-block: 16px;
+  }
+  .local-game-select select {
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .section-heading:has(> .local-game-select) {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .rules-game-tabs {
+    gap: 12px;
+    margin-block: 16px;
+  }
+  .rules-game-tabs button {
+    font-size: 13px;
+    line-height: 18px;
+  }
+}
