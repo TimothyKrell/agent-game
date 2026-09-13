@@ -7,6 +7,10 @@ import { afterAll, beforeAll, expect, it } from 'vitest';
 import { version } from '../package.json';
 import { Schema } from 'effect';
 import type { ActionRequest2, HistoryPage2, Observation2 } from '../src/shared/succession';
+import { ActionRequest2Schema, Observation2Schema } from '../src/shared/succession';
+import { createSuccession, evolveSuccession } from '../src/game/succession/engine';
+import { inspectSuccession, observeSuccession } from '../src/game/succession/observation';
+import { previewSuccessionAction } from '../src/game/succession/preview';
 
 const run = promisify(execFile);
 
@@ -45,6 +49,8 @@ it('rejects delayed live current and history after accepting a terminal archive 
   const heldPage = deferred();
   const releaseCurrent = deferred();
   const releasePage = deferred();
+  const heldReceipt = deferred();
+  const releaseReceipt = deferred();
   let reads = 0;
   let finished = false;
 
@@ -57,6 +63,21 @@ it('rejects delayed live current and history after accepting a terminal archive 
 
   const server = createServer(async (request, response) => {
     const url = new URL(request.url!, 'http://localhost');
+
+    if (url.pathname.endsWith('/actions')) {
+      let body = '';
+
+      for await (const chunk of request) body += chunk;
+      heldReceipt.resolve();
+      await releaseReceipt.promise;
+      response.setHeader('content-type', 'application/json');
+      response.end(
+        JSON.stringify({ accepted: true, actionId: JSON.parse(body).actionId, observation: current }),
+      );
+
+      return;
+    }
+
     let value: Observation2 | HistoryPage2;
 
     if (url.pathname.endsWith('/history')) {
@@ -99,9 +120,9 @@ it('rejects delayed live current and history after accepting a terminal archive 
     JSON.stringify({ server: `http://127.0.0.1:${address.port}`, matchId: 'match_two' }),
   );
 
-  const cli = async (command: string) =>
+  const cli = async (...commands: string[]) =>
     JSON.parse(
-      (await run(process.execPath, [bin, command, '--config', config], { cwd: installation })).stdout,
+      (await run(process.execPath, [bin, ...commands, '--config', config], { cwd: installation })).stdout,
     );
 
   try {
@@ -109,13 +130,19 @@ it('rejects delayed live current and history after accepting a terminal archive 
     await heldCurrent.promise;
     const oldPage = cli('history');
     await heldPage.promise;
+    const oldReceipt = cli('act', '--choice', '0');
+    await heldReceipt.promise;
     finished = true;
     expect((await cli('observe')).status).toBe('finished');
     expect((await cli('history')).cursor).toBe(1);
     releaseCurrent.resolve();
     releasePage.resolve();
+    releaseReceipt.resolve();
     expect((await oldCurrent).status).toBe('finished');
     expect((await oldPage).status).toBe('stale-page');
+    const receipt = await oldReceipt;
+    expect(receipt.accepted).toBe(true);
+    expect(receipt.observation.status).toBe('finished');
     const saved = JSON.parse(await readFile(config, 'utf8'));
     expect(saved.observation.status).toBe('finished');
     expect(saved.observation.history.visibilityEpoch).toBe('archive');
@@ -123,6 +150,7 @@ it('rejects delayed live current and history after accepting a terminal archive 
   } finally {
     releaseCurrent.resolve();
     releasePage.resolve();
+    releaseReceipt.resolve();
     await new Promise<void>((done) => server.close(() => done()));
     await rm(directory, { recursive: true, force: true });
   }
@@ -155,6 +183,211 @@ it('honors the exported child deadline before starting network work', async () =
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+it('keeps replacement entitlement when an older private response arrives late', async () => {
+  const directory = await mkdtemp('/tmp/opencode/succession-entitlement-');
+  const held = deferred();
+  const release = deferred();
+  let reads = 0;
+
+  const replacement: Observation2 = {
+    ...current,
+    private: null,
+    decision: null,
+    you: { seat: 0, agentId: 'agent_a', alive: true, forfeited: true, generation: 1 },
+  };
+
+  const server = createServer(async (_request, response) => {
+    const value = reads++ === 0 ? current : replacement;
+
+    if (value === current) {
+      held.resolve();
+      await release.promise;
+    }
+
+    response.setHeader('content-type', 'application/json');
+    response.end(JSON.stringify(value));
+  });
+
+  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+  const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
+  const config = `${directory}/connection.json`;
+  await writeFile(
+    config,
+    JSON.stringify({ server: `http://127.0.0.1:${address.port}`, matchId: 'match_two' }),
+  );
+
+  const cli = async () =>
+    JSON.parse(
+      (await run(process.execPath, [bin, 'observe', '--config', config], { cwd: installation })).stdout,
+    );
+
+  try {
+    const old = cli();
+    await held.promise;
+    expect((await cli()).you.forfeited).toBe(true);
+    release.resolve();
+    expect((await old).private).toBeNull();
+    const saved = JSON.parse(await readFile(config, 'utf8'));
+    expect(saved.observation.you.generation).toBe(1);
+    expect(saved.observation.private).toBeNull();
+  } finally {
+    release.resolve();
+    await new Promise<void>((done) => server.close(() => done()));
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+it('plays a complete real two-act engine through the installed CLI and an HTTP fixture', async () => {
+  let serial = 0;
+  let seed = 123;
+
+  const random = {
+    random(size: number) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
+      return Math.floor((seed / 4294967296) * size);
+    },
+    id: () => `opaque-${serial++}`,
+  };
+
+  let { state } = await createSuccession(
+    'match_packaged_engine',
+    Array.from({ length: 10 }, (_, seat) => ({
+      agentId: `agent-${seat}`,
+      ownerId: `owner-${seat}`,
+      name: `Seat ${seat}`,
+      house: seat !== 0,
+      rating: 1000,
+    })),
+    0,
+    { random, salt: new Uint8Array(32) },
+  );
+
+  const currentView = () =>
+    observeSuccession(state, 0, {
+      visibilityEpoch: state.status === 'active' ? 'live' : 'archive',
+      streamHead: 0,
+    });
+
+  let houseDecisions = 0;
+
+  const pump = () => {
+    for (let steps = 0; state.status === 'active'; steps++) {
+      if (steps > 10000) throw new Error('Fixture failed to progress');
+      const runtime = inspectSuccession(state);
+
+      if (runtime.pendingSeats.includes(0)) return;
+      const seat = runtime.pendingSeats[0];
+
+      if (seat !== undefined) {
+        const view = observeSuccession(state, seat, undefined, true);
+        const action = previewSuccessionAction(view, random.random);
+
+        if (!action || !view.decision) throw new Error('Required fixture action missing');
+        state = evolveSuccession(
+          state,
+          {
+            type: 'act',
+            seat,
+            generation: state.seats[seat].generation,
+            now: state.phase.startedAt + 1,
+            request: {
+              gameId: 'succession',
+              actionId: random.id(),
+              phaseId: view.phase.id,
+              decisionId: view.decision.id,
+              action,
+            },
+          },
+          random,
+        ).state;
+        houseDecisions++;
+      } else {
+        if (state.phase.deadline === null) throw new Error('Fixture phase has no deadline');
+        state = evolveSuccession(state, { type: 'advance', now: state.phase.deadline }, random).state;
+      }
+    }
+  };
+
+  const server = createServer(async (request, response) => {
+    try {
+      let actionId: string | undefined;
+
+      if (request.url?.endsWith('/actions')) {
+        let body = '';
+
+        for await (const chunk of request) body += chunk;
+        const action = Schema.decodeUnknownSync(ActionRequest2Schema)(JSON.parse(body));
+        actionId = action.actionId;
+        state = evolveSuccession(
+          state,
+          {
+            type: 'act',
+            seat: 0,
+            generation: state.seats[0].generation,
+            now: state.phase.startedAt + 1,
+            request: action,
+          },
+          random,
+        ).state;
+      }
+
+      pump();
+      const view = currentView();
+      response.setHeader('content-type', 'application/json');
+      response.end(JSON.stringify(actionId ? { accepted: true, actionId, observation: view } : view));
+    } catch (error) {
+      response.statusCode = 500;
+      response.end(JSON.stringify({ error: { message: String(error) } }));
+    }
+  });
+
+  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+  const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
+  const directory = await mkdtemp('/tmp/opencode/cli-real-engine-');
+  const config = `${directory}/connection.json`;
+  await writeFile(
+    config,
+    JSON.stringify({ server: `http://127.0.0.1:${address.port}`, matchId: state.id, agentId: 'agent-0' }),
+  );
+
+  const cli = async (...args: string[]) =>
+    JSON.parse(
+      (await run(process.execPath, [bin, ...args, '--config', config], { cwd: installation })).stdout,
+    );
+
+  try {
+    let view = Schema.decodeUnknownSync(Observation2Schema)(await cli('observe'));
+    const acts = new Set<number>([view.act]);
+    let choices = 0;
+
+    while (view.status === 'active') {
+      if (++choices > 1000 || !view.decision) throw new Error('Fixture expected a live external decision');
+      const action = previewSuccessionAction(view, random.random);
+
+      const choice = view.decision.actions.findIndex(
+        (entry) => JSON.stringify(entry.action) === JSON.stringify(action),
+      );
+
+      expect(choice).toBeGreaterThanOrEqual(0);
+      const result = await cli('act', '--choice', String(choice));
+      view = Schema.decodeUnknownSync(Observation2Schema)(result.observation);
+      acts.add(view.act);
+    }
+
+    expect(acts).toEqual(new Set([1, 2]));
+    expect(view.status).toBe('finished');
+    expect(view.result?.kind).toBe('individual');
+    expect(view.you?.forfeited).toBe(false);
+    expect(houseDecisions).toBeGreaterThan(100);
+    expect(choices).toBeGreaterThan(10);
+    expect(JSON.parse(await readFile(config, 'utf8')).observation.result).toEqual(view.result);
+  } finally {
+    await new Promise<void>((done) => server.close(() => done()));
+    await rm(directory, { recursive: true, force: true });
+  }
+}, 30000);
 
 afterAll(async () => {
   await rm(installation, { recursive: true, force: true });
@@ -192,7 +425,7 @@ const current: Observation2 = {
   result: null,
   interruptionReason: null,
   commitment: { digest: 'digest', reveal: null },
-  phase: { id: 'phase_a', kind: 'action', deadline: 1000, graceUntil: 2000 },
+  phase: { id: 'phase_a', kind: 'act-2:action', deadline: 1000, graceUntil: 2000 },
   private: { act: 2, hand: [{ id: 'opaque', capability: 'thief' }], exchangePool: [], reaction: null },
   history: { visibilityEpoch: 'live', streamHead: 150 },
   decision: {

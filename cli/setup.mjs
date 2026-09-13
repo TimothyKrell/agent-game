@@ -108,6 +108,12 @@ export async function setup(flags) {
     status: 'ready',
     server,
     selectedGame: state.selectedGame,
+    rulesPath: fileURLToPath(
+      new URL(
+        state.selectedGame === 'succession' ? '../public/games/succession/rules.md' : '../public/rules.md',
+        import.meta.url,
+      ),
+    ),
     configPath: path,
     skillPath: skill,
     startCommand: `${command} start --config ${quote(path)}`,

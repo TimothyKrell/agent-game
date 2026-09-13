@@ -12,6 +12,9 @@ export function gameId(value = 'secret-overlord') {
 export function validateIdentity(value) {
   const id = gameId(value.gameId);
 
+  if (value.protocolVersion === '2' && id !== 'succession')
+    throw new Error('Protocol 2 requires an explicit Succession identity.');
+
   if (id === 'succession' && (value.protocolVersion !== '2' || value.rulesVersion !== 'succession-1'))
     throw new Error('Unsupported Succession protocol/rules. Upgrade the CLI.');
 
@@ -20,6 +23,9 @@ export function validateIdentity(value) {
 
 export function validateCurrent(value) {
   validateIdentity(value);
+
+  if (!['active', 'finished', 'interrupted'].includes(value.status))
+    throw new Error('Unsupported server lifecycle.');
 
   if (value.protocolVersion !== '2') return;
 
@@ -75,4 +81,35 @@ export function consumePage(walk, page, current) {
   if (page.after !== cursor) return walk;
 
   return { epoch: page.visibilityEpoch, cursor: page.cursor, through: page.through };
+}
+
+export function validatePage(page, parameters) {
+  const maximum = Number(parameters.maxBytes ?? 16384);
+  const limit = Number(parameters.limit ?? 32);
+  const cursor = page.events?.at(-1)?.id ?? page.after;
+
+  if (
+    page.protocolVersion !== '2' ||
+    page.gameId !== 'succession' ||
+    Buffer.byteLength(JSON.stringify(page)) > maximum ||
+    !Array.isArray(page.events) ||
+    page.events.length > limit ||
+    ![page.after, page.cursor, page.through, page.streamHead].every(Number.isSafeInteger) ||
+    page.after < 0 ||
+    page.after > page.cursor ||
+    page.cursor > page.through ||
+    page.through > page.streamHead ||
+    page.cursor !== cursor ||
+    page.hasMore !== page.cursor < page.through ||
+    page.events.some(
+      (event, index) =>
+        event.id !== page.after + index + 1 || Buffer.byteLength(JSON.stringify(event)) > 8192,
+    ) ||
+    (page.reset
+      ? page.after !== 0 || page.cursor !== 0 || page.events.length !== 0
+      : page.after < page.through && page.events.length === 0)
+  )
+    throw new Error('Invalid bounded protocol-2 history page.');
+
+  return page;
 }

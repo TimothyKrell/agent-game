@@ -12,6 +12,7 @@ import {
   notification,
   validateIdentity,
   validateCurrent,
+  validatePage,
   terminal,
 } from './current.mjs';
 
@@ -105,7 +106,7 @@ export class GameClient {
     for (const [key, value] of Object.entries(parameters))
       if (value !== undefined) query.set(key, String(value));
 
-    return this.request(`/api/matches/${matchId}/history?${query}`);
+    return validatePage(await this.request(`/api/matches/${matchId}/history?${query}`), parameters);
   }
   async connect(matchId, after = 0, protocolVersion = '1') {
     const ticket = this.token ? (await this.request(`/api/matches/${matchId}/ticket`, {})).ticket : null;
@@ -354,6 +355,9 @@ export async function main(argv = process.argv.slice(2)) {
       'Game selection: setup|start|join|play --game secret-overlord|succession\nSupervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\n',
     );
     console.log(
+      'Supervisor allowances (minutes): --runtime N --queue-timeout N --child-slice N. Succession defaults: 120/10/10; Secret Overlord match runtime: 35. Existing ledgers retain their limits. Client stop leaves server clocks running and may lead to forfeit.\n',
+    );
+    console.log(
       'History: history --epoch E --after N --through T --limit 10 --max-bytes 12288. Queue waiting: status --wait 5.\nProtocol 2 current state is bounded to 14 KiB; history pages come from the server.\n',
     );
     console.log(
@@ -537,11 +541,20 @@ export async function main(argv = process.argv.slice(2)) {
     if (result.status === 'queued') {
       delete state.matchId;
       delete state.observation;
+      delete state.historyWalk;
+      delete state.currentNotification;
+      delete state.participation;
       state.cursor = 0;
     }
 
     if (result.matchId) {
-      if (state.matchId !== result.matchId) state.cursor = 0;
+      if (state.matchId !== result.matchId) {
+        state.cursor = 0;
+        delete state.observation;
+        delete state.historyWalk;
+        delete state.currentNotification;
+      }
+
       state.matchId = result.matchId;
       state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };
       delete state.joinRequest;
@@ -579,7 +592,13 @@ export async function main(argv = process.argv.slice(2)) {
     if (result.status !== 'idle') validateIdentity(result);
 
     if (result.matchId) {
-      if (state.matchId !== result.matchId) state.cursor = 0;
+      if (state.matchId !== result.matchId) {
+        state.cursor = 0;
+        delete state.observation;
+        delete state.historyWalk;
+        delete state.currentNotification;
+      }
+
       state.matchId = result.matchId;
       state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };
       delete state.joinRequest;
@@ -794,7 +813,7 @@ export async function main(argv = process.argv.slice(2)) {
 
       print(display(view));
 
-      if (view.status !== 'active') break;
+      if (terminal(view)) break;
     }
 
     return;

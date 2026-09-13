@@ -46,6 +46,9 @@ it('installs the real archive, saves discoverable skills for both harnesses, and
 
   try {
     await run(process.execPath, ['scripts/package-cli.mjs']);
+    expect(await readFile('public/downloads/agent-game-cli-0.1.1.tgz')).toEqual(
+      await readFile('cli/releases/agent-game-cli-0.1.1.tgz'),
+    );
     await run(
       'npm',
       [
@@ -65,6 +68,7 @@ it('installs the real archive, saves discoverable skills for both harnesses, and
       JSON.parse((await run(process.execPath, [bin, ...args], { env, cwd: directory })).stdout);
 
     expect((await run(bin, ['help'], { env })).stdout).toContain('Setup:');
+
     const first = await cli(
       'setup',
       '--server',
@@ -74,6 +78,7 @@ it('installs the real archive, saves discoverable skills for both harnesses, and
       '--game',
       'succession',
     );
+
     expect(first.selectedGame).toBe('succession');
     expect(first.skillPath).toBe(`${directory}/config/opencode/skills/agent-game/SKILL.md`);
 

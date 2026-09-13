@@ -51,6 +51,10 @@ const destination = resolve('public/downloads');
 
 await mkdir(destination, { recursive: true });
 
+for (const file of await readdir('cli/releases')) {
+  if (file.endsWith('.tgz')) await copyFile(`cli/releases/${file}`, `${destination}/${file}`);
+}
+
 const packed = await promisify(execFile)(
   'npm',
   ['pack', '--ignore-scripts', '--json', '--pack-destination', destination],
