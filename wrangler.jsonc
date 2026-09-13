@@ -40,6 +40,7 @@
     "MAX_CONCURRENT_MATCHES": "3",
     "HOUSE_DAILY_BUDGET_USD": "5",
     "HOUSE_MATCH_RESERVATION_USD": "1.5",
+    "HOUSE_SUCCESSION_MATCH_RESERVATION_USD": "",
   },
   "observability": { "enabled": true, "head_sampling_rate": 1 },
 }

@@ -62,6 +62,7 @@ export default Alchemy.Stack(
           MAX_CONCURRENT_MATCHES: '2',
           HOUSE_DAILY_BUDGET_USD: '0',
           HOUSE_MATCH_RESERVATION_USD: '0',
+          HOUSE_SUCCESSION_MATCH_RESERVATION_USD: '',
           BETTER_AUTH_SECRET: (yield* Alchemy.Random('PreviewAuth')).text,
         }
       : {
@@ -74,6 +75,7 @@ export default Alchemy.Stack(
           MAX_CONCURRENT_MATCHES: process.env.MAX_CONCURRENT_MATCHES ?? '3',
           HOUSE_DAILY_BUDGET_USD: process.env.HOUSE_DAILY_BUDGET_USD ?? '5',
           HOUSE_MATCH_RESERVATION_USD: process.env.HOUSE_MATCH_RESERVATION_USD ?? '1.5',
+          HOUSE_SUCCESSION_MATCH_RESERVATION_USD: process.env.HOUSE_SUCCESSION_MATCH_RESERVATION_USD ?? '',
           ...secret('BETTER_AUTH_SECRET'),
           ...secret('GITHUB_CLIENT_ID'),
           ...secret('GITHUB_CLIENT_SECRET'),

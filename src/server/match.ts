@@ -166,9 +166,12 @@ export class MatchObject extends DurableObject<Env> {
 
     if (!row) throw new GameError('match-not-found', 'Match not found.', 404);
     // Application-owned persistence is strictly version-decoded by its game adapter.
-    const raw: { rulesVersion?: string; events?: GameEvent[] } = JSON.parse(row.data);
+    const raw: { gameId?: string; rulesVersion?: string; events?: GameEvent[] } = JSON.parse(row.data);
 
-    if (raw.rulesVersion === 'secret-overlord-1')
+    if (
+      (raw.gameId === undefined || raw.gameId === 'secret-overlord') &&
+      raw.rulesVersion === 'secret-overlord-1'
+    )
       raw.events = this.ctx.storage.sql
         .exec<{ data: string }>('SELECT data FROM events ORDER BY id')
         .toArray()

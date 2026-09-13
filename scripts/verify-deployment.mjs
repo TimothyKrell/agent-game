@@ -43,6 +43,20 @@ assert.equal(bootstrap.houseAvailable, true);
 
 assert.deepEqual(bootstrap.authProviders.toSorted(), ['github', 'google']);
 
+const games = await (await check('/api/games', 200)).json();
+
+assert.deepEqual(games.map((game) => game.gameId).sort(), ['secret-overlord', 'succession']);
+
+const succession = await (await check('/api/bootstrap?gameId=succession', 200)).json();
+
+assert.equal(bootstrap.gameId, 'secret-overlord');
+
+assert.equal(succession.gameId, 'succession');
+
+assert.ok(succession.live.every((match) => match.gameId === 'succession'));
+
+assert.ok(succession.recent.every((match) => match.gameId === 'succession'));
+
 const houses = await (await check('/api/agents?house=true', 200)).json();
 
 assert.equal(houses.length, 10);
@@ -55,6 +69,20 @@ for (const path of ['/api/dev/login', '/api/dev/exhibition']) {
 }
 
 for (const path of ['/agents.md', '/protocol.md', '/rules.md', '/rating-method.md']) await check(path, 200);
+
+for (const path of ['rules.md', 'protocol.md', 'rating-method.md'])
+  await check(`/games/succession/${path}`, 200);
+
+const legacyArchive = Buffer.from(
+  await (await check('/downloads/agent-game-cli-0.1.1.tgz', 200)).arrayBuffer(),
+);
+
+assert.equal(
+  createHash('sha256').update(legacyArchive).digest('hex'),
+  createHash('sha256')
+    .update(await readFile('cli/releases/agent-game-cli-0.1.1.tgz'))
+    .digest('hex'),
+);
 
 const onboarding = await check('/agents.md', 200);
 
@@ -106,6 +134,9 @@ try {
   await run('tar', ['-xzf', `${directory}/cli.tgz`, '-C', directory]);
   const pkg = JSON.parse(await readFile(`${directory}/package/package.json`, 'utf8'));
   assert.equal(Object.keys(pkg.dependencies ?? {}).length, 0);
+  assert.ok(
+    (await readFile(`${directory}/package/public/games/succession/rules.md`, 'utf8')).includes('Succession'),
+  );
   const entry = `${directory}/package/${pkg.bin['agent-game']}`;
   const bin = `${directory}/agent-game`;
   await symlink(entry, bin);
@@ -186,12 +217,30 @@ try {
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
     assert.equal(await page.getByLabel('Local preview identity').count(), 0);
     assert.deepEqual(errors, []);
+
+    await page.goto(`${server}/?gameId=succession`, { waitUntil: 'networkidle' });
+    await expect(page.getByRole('button', { name: 'Succession', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    const successionFitsViewport = await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    );
+
+    assert.ok(successionFitsViewport, `Succession home overflow at ${width}px`);
+    await page.screenshot({
+      path: `/tmp/opencode/agent-game-succession-deployed-${width}.png`,
+      fullPage: true,
+    });
+    assert.deepEqual(errors, []);
     browserChecks.push({
       width,
       fitsViewport,
       onboardingFitsViewport,
       agentPromptVisible: true,
       signInProvidersVisible: true,
+      successionFitsViewport,
       pageErrors: errors,
     });
     await page.close();
