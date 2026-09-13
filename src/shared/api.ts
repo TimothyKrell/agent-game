@@ -1,7 +1,8 @@
 import { Schema } from 'effect';
 import type { ActionRequest, Observation, Role } from '../game/types';
 import type { GameDescriptor, GameId } from '../game/contracts';
-import type { IndividualResult2 } from './succession';
+import type { ActionRequest2, IndividualResult2 } from './succession';
+import { Action2Schema, Observation2Schema } from './succession';
 
 export const AuthProviderSchema = Schema.Literals(['github', 'google']);
 
@@ -27,6 +28,27 @@ export const ActionRequestSchema = Schema.Struct({
   action: GameActionSchema,
 });
 
+export const TransportActionRequestSchema = Schema.Struct({
+  gameId: Schema.optional(Schema.Literals(['secret-overlord', 'succession'])),
+  actionId: Schema.String,
+  phaseId: Schema.String,
+  decisionId: Schema.optional(Schema.String),
+  action: Action2Schema,
+});
+
+export type TransportActionRequest = typeof TransportActionRequestSchema.Type;
+
+export const ObservationPacket2Schema = Schema.Struct({
+  type: Schema.Literal('observation'),
+  observation: Observation2Schema,
+});
+
+export const ActionReceipt2Schema = Schema.Struct({
+  accepted: Schema.Literal(true),
+  actionId: Schema.String,
+  observation: Observation2Schema,
+});
+
 export const NameSchema = Schema.Struct({ name: Schema.String, description: Schema.optional(Schema.String) });
 
 export const PairStartSchema = Schema.Struct({ installation: Schema.String, tokenHash: Schema.String });
@@ -35,13 +57,44 @@ export const PairApproveSchema = Schema.Struct({ code: Schema.String, agentId: S
 
 export const GameIdSchema = Schema.Literals(['secret-overlord', 'succession']);
 
+export const GameDescriptorSchema: Schema.Codec<GameDescriptor> = Schema.Struct({
+  gameId: GameIdSchema,
+  displayName: Schema.String,
+  rulesVersion: Schema.Literals(['secret-overlord-1', 'succession-1']),
+  ratingPoolId: Schema.Literals(['secret-overlord-1', 'succession-1']),
+  ratingVersion: Schema.Literals(['team-elo-1', 'winner-softmax-1']),
+  protocolVersion: Schema.Literals(['1', '2']),
+  playerCount: Schema.Literal(10),
+  rulesUrl: Schema.String,
+  ratingUrl: Schema.String,
+  housePolicyVersion: Schema.String,
+  timing: Schema.Struct({
+    nomination: Schema.Number,
+    debate: Schema.Number,
+    executive: Schema.Number,
+    action: Schema.Number,
+    grace: Schema.Number,
+    chatCooldown: Schema.Number,
+  }),
+});
+
+export const GamesSchema = Schema.mutable(Schema.Array(GameDescriptorSchema));
+
 export const QueueJoinSchema = Schema.Struct({
   requestId: Schema.String,
   gameId: Schema.optional(GameIdSchema),
 });
 
+export const QueueCancelSchema = Schema.Struct({
+  gameId: GameIdSchema,
+  requestId: Schema.String,
+  joinedAt: Schema.optional(Schema.Number),
+});
+
 export type ApiRequestBody =
   | ActionRequest
+  | ActionRequest2
+  | { gameId?: GameId }
   | typeof NameSchema.Type
   | typeof PairStartSchema.Type
   | typeof PairApproveSchema.Type
@@ -126,6 +179,7 @@ export interface SuccessionSummary {
 export type GameMatchSummary = MatchSummary | SuccessionSummary;
 
 export interface QueueStatus {
+  requestId?: string | null;
   gameId?: GameId | null;
   rulesVersion?: 'secret-overlord-1' | 'succession-1' | null;
   protocolVersion?: '1' | '2' | null;
@@ -150,6 +204,13 @@ export interface Bootstrap {
   leaderboard: AgentProfile[];
   queueCount: number;
   houseAvailable: boolean;
+}
+
+export interface GameBootstrap extends Omit<Bootstrap, 'live' | 'recent'> {
+  gameId: GameId;
+  games: GameDescriptor[];
+  live: GameMatchSummary[];
+  recent: GameMatchSummary[];
 }
 
 export interface ApiFault {
@@ -244,7 +305,27 @@ const MatchSummarySchema = Schema.Struct({
   names: Schema.mutable(Schema.Array(Schema.String)),
 });
 
+export const SuccessionSummarySchema = Schema.Struct({
+  gameId: Schema.Literal('succession'),
+  id: Schema.String,
+  status: Schema.Literals(['active', 'finished', 'interrupted']),
+  mode: Schema.Literals(['preview', 'ranked', 'evaluation']),
+  round: Schema.Number,
+  act: Schema.Literals([1, 2]),
+  createdAt: Schema.Number,
+  finishedAt: Schema.NullOr(Schema.Number),
+  houseCount: Schema.Number,
+  names: Schema.mutable(Schema.Array(Schema.String)),
+  result: Observation2Schema.fields.result,
+  act1Winner: Schema.NullOr(TeamSchema),
+  livingCount: Schema.Number,
+  winReason: Schema.NullOr(Schema.String),
+}) satisfies Schema.Codec<SuccessionSummary>;
+
+export const GameMatchSummarySchema = Schema.Union([SuccessionSummarySchema, MatchSummarySchema]);
+
 export const QueueStatusSchema = Schema.Struct({
+  requestId: Schema.optional(Schema.NullOr(Schema.String)),
   gameId: Schema.optional(Schema.NullOr(GameIdSchema)),
   rulesVersion: Schema.optional(Schema.NullOr(Schema.Literals(['secret-overlord-1', 'succession-1']))),
   protocolVersion: Schema.optional(Schema.NullOr(Schema.Literals(['1', '2']))),
@@ -257,6 +338,8 @@ export const QueueStatusSchema = Schema.Struct({
 });
 
 export const BootstrapSchema: Schema.Codec<Bootstrap> = Schema.Struct({
+  gameId: Schema.optional(GameIdSchema),
+  games: Schema.optional(GamesSchema),
   name: Schema.String,
   mode: Schema.String,
   authProviders: Schema.mutable(Schema.Array(AuthProviderSchema)),
@@ -268,6 +351,21 @@ export const BootstrapSchema: Schema.Codec<Bootstrap> = Schema.Struct({
   queueCount: Schema.Number,
   houseAvailable: Schema.Boolean,
 });
+
+export const GameBootstrapSchema = Schema.Struct({
+  gameId: GameIdSchema,
+  games: GamesSchema,
+  name: Schema.String,
+  mode: Schema.String,
+  authProviders: Schema.mutable(Schema.Array(AuthProviderSchema)),
+  localLogin: Schema.Boolean,
+  owner: Schema.NullOr(OwnerProfileSchema),
+  live: Schema.mutable(Schema.Array(GameMatchSummarySchema)),
+  recent: Schema.mutable(Schema.Array(GameMatchSummarySchema)),
+  leaderboard: AgentListSchema,
+  queueCount: Schema.Number,
+  houseAvailable: Schema.Boolean,
+}) satisfies Schema.Codec<GameBootstrap>;
 
 export const DashboardSchema = Schema.Struct({
   owner: OwnerProfileSchema,
@@ -299,6 +397,36 @@ export const AgentHistorySchema = Schema.Struct({
         forfeited: Schema.Boolean,
         delta: Schema.NullOr(Schema.Number),
       }),
+    ),
+  ),
+});
+
+const ParticipationFields = {
+  role: Schema.NullOr(RoleSchema),
+  won: Schema.NullOr(Schema.Boolean),
+  forfeited: Schema.Boolean,
+  delta: Schema.NullOr(Schema.Number),
+};
+
+export const GameAgentHistorySchema = Schema.Struct({
+  agent: AgentProfileSchema,
+  history: Schema.mutable(
+    Schema.Array(
+      Schema.Union([
+        Schema.Struct({ ...MatchSummarySchema.fields, ...ParticipationFields }),
+        Schema.Struct({
+          ...SuccessionSummarySchema.fields,
+          ...ParticipationFields,
+          act1: Schema.optional(
+            Schema.NullOr(Schema.Struct({ role: RoleSchema, winner: Schema.NullOr(TeamSchema) })),
+          ),
+          agentResult: Schema.optional(
+            Schema.NullOr(
+              Schema.Struct({ winningSeat: Schema.Boolean, creditedWin: Schema.NullOr(Schema.Boolean) }),
+            ),
+          ),
+        }),
+      ]),
     ),
   ),
 });
