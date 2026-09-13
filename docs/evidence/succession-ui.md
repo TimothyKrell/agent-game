@@ -1,5 +1,22 @@
 # Succession application evidence
 
+## Final Design approval — PASS
+
+Design formally approved the application visual gate at PR #7 head **`9c68e7a42fc4e34daef15cdfc87bfad8c6818e7f`**, using capture source `bdc7172bec4e4d17a7ff3d460e7ba23a63bc0016`, the prior frozen evidence, and the reviewed onboarding supplement.
+
+All findings are closed: SU01–SU07, issue #6 Design presentation, and SM01–SM03. This includes supplemental zoom containment, exact title/spire/neutral motion, zero reduced-motion animations, active cancellation and restore, and growing-record backward-paging proof. Visibility was explicitly **simulated**; media-query subscriptions and animation cancellation were real.
+
+The retained [approval record](succession-application-visual-approval.json) has SHA-256 `819b03b8651617b8bff30022b2be14d1345d47deed9172f0a98737346e95acf4`. Design independently verified all 79 final artifact hashes, the previous 128 and 62 artifacts, and presentation equivalence to the approved integrated head.
+
+Approved integrated assets:
+
+| Asset                | Bytes  | SHA-256                                                            |
+| -------------------- | ------ | ------------------------------------------------------------------ |
+| `index-DBOoobtC.js`  | 442154 | `1e273e1e5a529d123740536fe8c5274c1c30b54866e8f896922de85f5670b817` |
+| `index-DDog0Idy.css` | 103981 | `7613fcd0243ce9c26207c619c2076869edc57cb9850f72bc4f374b84e66d2cae` |
+
+There are no remaining Design findings or UI capture requests for this reviewed presentation. Current-head CI, hosted verification of both games, and release closure remain with the lead/reviewer. The sections below preserve the milestone evidence history.
+
 ## Application identity
 
 Correction source: `67726d6` (`Close compact Succession presentation and historical phase gaps`).
@@ -28,7 +45,7 @@ Typechecking, scoped Oxlint, formatting, and all four UI stream unit tests pass.
 
 The frozen delivery contains 128 artifacts. Its `inventory.json` SHA-256 is `830418e09a7f3d8d78173d75ae5bdc489206e79252608537eaaa9ef6c881a3b3`. Design received this exact folder for independent review. Curated durable stills are retained under `docs/images/succession/`; full recordings remain in the frozen directory.
 
-Design independently verified all 128 artifact hashes and closed SU01 (compact picker), SU02 (complete action cards), SU03 (phase identities), SU04 presentation (paging alongside chronology), SU05 (historical phase presentation), and issue #6 (painted divider join and containing surface) at `67726d6`. The overall application visual gate remains open for expanded-coverage findings and targeted interaction evidence.
+Design independently verified all 128 artifact hashes and closed SU01 (compact picker), SU02 (complete action cards), SU03 (phase identities), SU04 presentation (paging alongside chronology), SU05 (historical phase presentation), and issue #6 (painted divider join and containing surface) at `67726d6`. At that milestone, the overall application visual gate remained open for expanded-coverage findings and targeted interaction evidence.
 
 ### Compact follow-up: `902c4d2`
 
@@ -36,7 +53,7 @@ Design independently verified all 128 artifact hashes and closed SU01 (compact p
 - SU07: compact cap tuples are normal-flow cards retaining each full survivor name and all three labeled metrics. The ten-row fixture is preserved. Captures wait for the selected historical replay frame to settle.
 - The 768-pixel native context and recording now use the required 1024-pixel height. These live challenge recordings establish dimensions and static phase presentation; they do not establish picker interactions, champion entrance motion, or hidden/reduced lifecycle behavior.
 
-Follow-up evidence uses a separate frozen directory, `/tmp/opencode/succession-ui-final-902c4d2`, containing 62 artifacts with inventory SHA-256 `fa99f1a04dc4587d436a6dd84d900a2b79baf40f8e5c67397409b80e22082e8a`. Targeted browser checks passed 11/11. `native-video-dimensions.json` records ffprobe verification of all eight native recordings. The original 128-artifact folder is unchanged. Explicit Design closure of SU06/SU07 and remaining interaction evidence is pending.
+Follow-up evidence uses a separate frozen directory, `/tmp/opencode/succession-ui-final-902c4d2`, containing 62 artifacts with inventory SHA-256 `fa99f1a04dc4587d436a6dd84d900a2b79baf40f8e5c67397409b80e22082e8a`. Targeted browser checks passed 11/11. `native-video-dimensions.json` records ffprobe verification of all eight native recordings. The original 128-artifact folder is unchanged. Design closure of SU06/SU07 and remaining interaction evidence followed in the final approval above.
 
 Served follow-up assets were again fetched over HTTP and compared byte-for-byte with build output:
 
@@ -57,7 +74,7 @@ Eight composite clips cover SM01–SM03 at 1600×1120, 768×1024, 390×844, and 
 
 Two additional native growing-record clips reproduce a delayed initial history page followed by a newer current head. Explicit bounded paging remains intentional; the footer now reports undelivered events, and its catch-up button distinguishes the latest **loaded** event from the stream head. Captures show the delayed boundary, bounded catch-up, and earlier-page reading.
 
-Evidence directory: `/tmp/opencode/succession-ui-final-bdc7172`. `served-assets.json` records HTTP/build byte equality. The composite and zoom run passed 12/12 cases at this application source; `capture-source.diff` records test-only blank-line cleanup. A separate growing-history supplement uses a later live discussion fixture and requires the earlier-page control, ensuring cache eviction and backward paging are visibly exercised; its exact test delta is retained separately. Earlier frozen directories remain unchanged. Actual visual closure remains Design's decision on these supplied bytes.
+Evidence directory: `/tmp/opencode/succession-ui-final-bdc7172`. `served-assets.json` records HTTP/build byte equality. The composite and zoom run passed 12/12 cases at this application source; `capture-source.diff` records test-only blank-line cleanup. A separate growing-history supplement uses a later live discussion fixture and requires the earlier-page control, ensuring cache eviction and backward paging are visibly exercised; its exact test delta is retained separately. Earlier frozen directories remain unchanged. Design's final approval covers these supplied bytes.
 
 The frozen delivery contains 79 artifacts; inventory SHA-256 `d5a54996e91bcdf699dcfd93624d7f101a5c41c1009379ae240081cb1642ccd5`. The later growing-history supplement passed 2/2. Its clips under `growing-history-supplement/` supersede the first two growing-history recordings for backward-paging proof. `scene-index.json` indexes action timestamps for the eight composite clips; offsets are relative to the first recorded blank-page action, not re-timed video. `native-video-dimensions.json` verifies native dimensions and 25fps encoding.
 
