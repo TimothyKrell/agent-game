@@ -8,6 +8,8 @@ All findings are closed: SU01–SU07, issue #6 Design presentation, and SM01–S
 
 The retained [approval record](succession-application-visual-approval.json) has SHA-256 `819b03b8651617b8bff30022b2be14d1345d47deed9172f0a98737346e95acf4`. Design independently verified all 79 final artifact hashes, the previous 128 and 62 artifacts, and presentation equivalence to the approved integrated head.
 
+The final authoritative Design report, `design/figma/luminous-deco/succession/implementation-visual-review.md` in the Design worktree, has SHA-256 `b2c6c5b639204b32182282d11dea1f1a6efc516b25d570210f4520649eff9dad`. Its final audit is `implementation-review/final-report-verification-9c68e7a.json`. This formal report supersedes the intermediate review hash recorded in the milestone history below; the approval JSON remains unchanged.
+
 Approved integrated assets:
 
 | Asset                | Bytes  | SHA-256                                                            |
