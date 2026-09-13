@@ -1,11 +1,11 @@
 import { createServer } from 'node:http';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { Schema } from 'effect';
 import type { SupervisorOptions } from '../cli/supervisor.mjs';
 import { version } from '../package.json';
@@ -541,6 +541,124 @@ it('recovers the dead-process lock without refunding a grant after actual superv
   expect(result.durationMs).toBe(11 * minute);
   expect(result.accounting.unresolvedGranted).toBe(1.7);
 });
+
+it('stops native OpenCode recovery before spawning when the crashed session cannot be interrupted', async () => {
+  const f = await fixture();
+  const directory = f.configPath.replace('/connection.json', '');
+
+  const script = `import { supervise } from ${JSON.stringify(supervisorURL)};
+    await supervise({configPath:${JSON.stringify(f.configPath)},harness:'opencode',
+      clock:{now:()=>${f.origin},monotonic:()=>0,sleep:()=>new Promise(r=>setTimeout(r,1))},
+      request:async(_c,path)=>path==='/api/queue'?${JSON.stringify(f.queue)}:${JSON.stringify(f.view)}},
+      async child=>{await child.onSession('ses_crash');process.exit(7)});`;
+
+  await expect(
+    promisify(execFile)(process.execPath, ['--input-type=module', '-e', script]),
+  ).rejects.toMatchObject({ code: 7 });
+  const crashed = await f.ledger();
+  const calls = `${directory}/native-calls.jsonl`;
+  await writeFile(
+    `${directory}/opencode2`,
+    `#!${process.execPath}
+    const fs=require('node:fs');fs.appendFileSync(${JSON.stringify(calls)},JSON.stringify(process.argv.slice(2))+'\\n');
+    if(process.argv[2]==='api')process.exit(1);
+    fs.writeFileSync(${JSON.stringify(`${directory}/unexpected-run`)},'spawned');`,
+    { mode: 0o700 },
+  );
+  vi.stubEnv('PATH', `${directory}:${process.env.PATH}`);
+
+  try {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const result = await supervise({ ...f.options, harness: 'opencode' });
+      expect(result.status).toBe('client-stopped');
+      expect(result.reason).toBe('accounting-unavailable');
+      expect(result.invocations).toBe(1);
+      const saved = await f.ledger();
+      expect(saved.child).toEqual(crashed.child);
+      expect(saved.sessionId).toBe('ses_crash');
+      expect(saved.accounting.unknown).toBe(true);
+    }
+
+    expect(
+      (await readFile(calls, 'utf8'))
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line)),
+    ).toEqual(Array.from({ length: 2 }, () => ['api', 'post', '/api/session/ses_crash/interrupt']));
+    await expect(readFile(`${directory}/unexpected-run`)).rejects.toMatchObject({ code: 'ENOENT' });
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});
+
+it.each([false, true])(
+  'handles a receiptless assigned ledger without refilling the same assignment (new queue=%s)',
+  async (newQueue) => {
+    const f = await fixture();
+    f.view.status = 'finished';
+    await writeFile(
+      f.configPath,
+      JSON.stringify({
+        server: f.connection.server,
+        agentId: f.connection.agentId,
+        selectedGame: 'succession',
+        matchId: f.view.matchId,
+      }),
+    );
+    f.options.request = async (_connection, path) => (path === '/api/queue' ? { status: 'idle' } : f.view);
+    expect((await supervise(f.options)).status).toBe('finished');
+    const original = await f.ledger();
+    expect(original.pendingJoin).toBeNull();
+
+    const mainURL = pathToFileURL(
+      `${installedDirectory}/node_modules/agent-game-cli/cli/agent-game.mjs`,
+    ).href;
+
+    const installed: typeof import('../cli/agent-game.mjs') = await import(mainURL);
+    let requestId = 'different-receipt-same-match';
+
+    if (newQueue) {
+      vi.stubGlobal('fetch', async (_url: string, input: RequestInit) => {
+        if (input.method === 'GET') return Response.json({ status: 'idle' });
+        requestId = JSON.parse(String(input.body)).requestId;
+
+        return Response.json({ ...f.queue, status: 'queued', matchId: null, requestId });
+      });
+
+      try {
+        await installed.main(['join', '--config', f.configPath]);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    }
+
+    let polls = 0;
+    f.options.request = async (_connection, path) => {
+      if (path === '/api/queue')
+        return newQueue && ++polls < 3
+          ? { ...f.queue, status: 'queued', matchId: null, requestId }
+          : { ...f.queue, matchId: newQueue ? 'match_next' : f.view.matchId, requestId };
+      expect(path).toContain(newQueue ? 'match_next' : f.view.matchId);
+
+      return { ...f.view, matchId: newQueue ? 'match_next' : f.view.matchId };
+    };
+
+    const result = await supervise(f.options, async () => {
+      throw new Error('No child for terminal assignment');
+    });
+
+    expect(result.matchId).toBe(newQueue ? 'match_next' : f.view.matchId);
+    expect(result.status).toBe('finished');
+
+    const archives = (await readdir(f.configPath.replace('/connection.json', ''))).filter((name) =>
+      name.endsWith('.archive'),
+    );
+
+    expect(archives).toHaveLength(newQueue ? 1 : 0);
+
+    if (!newQueue) expect((await f.ledger()).allowances).toEqual(original.allowances);
+  },
+);
 
 it('rejects an explicit different game but follows actual game without a flag', async () => {
   const f = await fixture();

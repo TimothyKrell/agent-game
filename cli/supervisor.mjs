@@ -412,8 +412,9 @@ export async function supervise(options, invoke = invokeHarness) {
       // Only authoritative new participation identity permits new allowances.
       const newTicket =
         initialQueue?.requestId &&
-        ledger.pendingJoin?.requestId &&
-        initialQueue.requestId !== ledger.pendingJoin.requestId &&
+        (ledger.pendingJoin?.requestId
+          ? initialQueue.requestId !== ledger.pendingJoin.requestId
+          : initialQueue.status === 'queued' && ledger.matchId) &&
         (!initialQueue.matchId || initialQueue.matchId !== ledger.matchId);
 
       const newMatch = initialQueue?.matchId && ledger.matchId && initialQueue.matchId !== ledger.matchId;
@@ -637,8 +638,17 @@ export async function supervise(options, invoke = invokeHarness) {
     if (ledger.child && !ledger.child.settled) {
       ledger.accounting.unknown = true;
 
-      if (harness === 'opencode' && ledger.sessionId && invoke === invokeHarness)
-        await interruptSession(ledger.sessionId, ledger.runDir, 1000).catch(() => {});
+      if (harness === 'opencode' && ledger.sessionId && invoke === invokeHarness) {
+        try {
+          await interruptSession(ledger.sessionId, ledger.runDir, 1000);
+        } catch {
+          ledger.stopReason = 'accounting-unavailable';
+          await save();
+
+          return output(ledger.stopReason);
+        }
+      }
+
       await save();
     }
 

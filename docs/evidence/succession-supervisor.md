@@ -125,3 +125,12 @@ Review artifacts (SHA-256):
 This closes the C1 corrective stage. Other integrated testing, design, CI, hosted and production release gates remain separately owned; this review does not establish full Phase 3 release approval.
 
 The actual Worker test also now submits `act --json` chat with the optional `decisionId` omitted while a required decision is cached, for both games. Both receipts were accepted and the complete integration passed in 33.9 seconds. This reported source edge did not reproduce: explicit JSON submission bypasses the generated-action pending guard. No production guard was relaxed.
+
+### Supervisor recovery review follow-up
+
+Staged runtime review at `221eb62` reproduced two additional supervisor gaps, separate from the closed C1 findings:
+
+- **G7R01:** a failed OpenCode crash-recovery interrupt was swallowed, allowing provider-managed recovery to start another native run. Recovery now persists an `accounting-unavailable` stop before spawning, retaining the unresolved child, session and unknown accounting. An installed-supervisor test crashes a real subprocess after persisting its session, uses a fake native executable whose interrupt exits 1, and verifies two recovery attempts never call `run`, preserve the original unresolved child, and retain one invocation.
+- **G7R02:** an assigned terminal ledger created after its queue had already become idle could lack a join receipt. A later authoritative queued request now identifies a genuinely new participation and archives that ledger. An installed CLI join regression verifies queue polling and adoption of the new assignment. Its same-assignment countercase returns the existing match without archiving or refilling allowances, even when the queue response contains a different receipt ID.
+
+Ten focused installed-supervisor cases passed, including these three new cases, crash accounting and queue-exhaustion race coverage. TypeScript and scoped lint passed. The reviewer's original edge reproduction rerun against the fix reports `resumedNativeRun: false`, `accounting-unavailable` with one invocation, and a new queued participation that reaches `queue-exhausted` without reading the old match. Independent corrective review has been requested; no real provider, Worker or model was used for this follow-up.
