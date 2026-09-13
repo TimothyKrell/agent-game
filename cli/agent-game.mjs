@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-import { mkdir, readFile, writeFile, rename, chmod, realpath } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rename, chmod, realpath, open, unlink } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { randomBytes, createHash, randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
+import { acceptCurrent, gameId, notification, validateIdentity, terminal } from './current.mjs';
 
 export class ApiError extends Error {
   constructor(status, code, message) {
@@ -34,6 +35,7 @@ export class GameClient {
     for (let attempt = 0; ; attempt++) {
       try {
         const headers = new Headers();
+        headers.set('X-Agent-Game-Protocols', '1,2');
 
         if (body !== undefined) headers.set('content-type', 'application/json');
 
@@ -65,22 +67,33 @@ export class GameClient {
   async action(matchId, request) {
     return this.request(`/api/matches/${matchId}/actions`, request);
   }
-  async connect(matchId, after = 0) {
+  async history(matchId, parameters) {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(parameters))
+      if (value !== undefined) query.set(key, String(value));
+    return this.request(`/api/matches/${matchId}/history?${query}`);
+  }
+  async connect(matchId, after = 0, protocolVersion = '1') {
     const ticket = this.token ? (await this.request(`/api/matches/${matchId}/ticket`, {})).ticket : null;
     const url = new URL(`/api/matches/${matchId}/events`, this.server);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.searchParams.set('after', String(after));
+    if (protocolVersion === '2') url.searchParams.set('protocol', '2');
 
     if (ticket) url.searchParams.set('ticket', ticket);
 
     return new WebSocket(url);
   }
   /** Resolves on an observation, even across socket failures. A pending tool call carries it back into the model loop. */
-  async wait(matchId, after, timeoutMs = 20_000) {
+  async wait(matchId, after, timeoutMs = 20_000, seen) {
     const until = Date.now() + timeoutMs;
     const first = await this.observation(matchId, after);
 
-    if (first.cursor !== after || first.decision || first.status !== 'active') return first;
+    const changed = (view) =>
+      view.protocolVersion === '2'
+        ? notification(view) !== (seen ?? notification(first))
+        : view.cursor !== after;
+    if (changed(first) || first.decision || terminal(first)) return first;
 
     return new Promise((resolve, reject) => {
       let socket;
@@ -118,7 +131,7 @@ export class GameClient {
         if (finished) return;
 
         try {
-          socket = await this.connect(matchId, after);
+          socket = await this.connect(matchId, after, first.protocolVersion);
 
           if (finished) {
             socket.close();
@@ -133,10 +146,7 @@ export class GameClient {
               const packet = JSON.parse(event.data);
               const view = packet.observation;
 
-              if (
-                packet.type === 'observation' &&
-                (view.cursor !== after || view.decision || view.status !== 'active')
-              )
+              if (packet.type === 'observation' && (changed(view) || view.decision || terminal(view)))
                 finish(view);
             } catch (error) {
               finish(null, error);
@@ -167,6 +177,13 @@ function options(argv) {
     options: {
       help: { type: 'boolean' },
       server: { type: 'string' },
+      game: { type: 'string' },
+      epoch: { type: 'string' },
+      through: { type: 'string' },
+      'max-bytes': { type: 'string' },
+      runtime: { type: 'string' },
+      'queue-timeout': { type: 'string' },
+      'child-slice': { type: 'string' },
       config: { type: 'string' },
       name: { type: 'string' },
       harness: { type: 'string' },
@@ -188,10 +205,38 @@ function options(argv) {
 
 export async function save(path, data) {
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-  const temp = `${path}.${process.pid}.tmp`;
+  const temp = `${path}.${process.pid}.${randomUUID()}.tmp`;
   await writeFile(temp, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
   await rename(temp, path);
   await chmod(path, 0o600);
+}
+
+async function updateCurrent(path, update) {
+  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
+  const lockPath = `${path}.current-lock`;
+  let lock;
+  for (let attempt = 0; !lock; attempt++) {
+    try {
+      lock = await open(lockPath, 'wx', 0o600);
+    } catch (error) {
+      if (error.code !== 'EEXIST' || attempt >= 100) throw error;
+      await delay(10);
+    }
+  }
+  try {
+    const latest = await readFile(path, 'utf8')
+      .then(JSON.parse)
+      .catch((error) => {
+        if (error.code === 'ENOENT') return {};
+        throw error;
+      });
+    const result = update(latest);
+    await save(path, latest);
+    return result;
+  } finally {
+    await lock.close();
+    await unlink(lockPath);
+  }
 }
 
 function print(data) {
@@ -200,6 +245,11 @@ function print(data) {
 
 // Keep critical state intact inside common tool-output ceilings. History remains retrievable in pages.
 function display(view) {
+  if (view.protocolVersion === '2') {
+    if (Buffer.byteLength(JSON.stringify(view)) > 14336 || 'events' in view || 'cursor' in view)
+      throw new Error('Invalid bounded protocol-2 current observation.');
+    return { ...view, historyCommand: 'history --limit 10 --max-bytes 12288' };
+  }
   const { events, decision, ...state } = view;
 
   const output = {
@@ -232,9 +282,11 @@ export async function main(argv = process.argv.slice(2)) {
     console.log(
       'Setup: setup --server URL --harness opencode|claude [--config PATH]\nStart or resume: start --config PATH\nSaved installations: connections --harness opencode|claude\n',
     );
-    console.log('Supervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\n');
     console.log(
-      'History: history --after N --limit 10. Queue waiting: status --wait 5.\nObservations keep current decisions intact and bound recent event output to 16 KB.\n',
+      'Game selection: setup|start|join|play --game secret-overlord|succession\nSupervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\n',
+    );
+    console.log(
+      'History: history --epoch E --after N --through T --limit 10 --max-bytes 12288. Queue waiting: status --wait 5.\nProtocol 2 current state is bounded to 14 KiB; history pages come from the server.\n',
     );
     console.log(
       `Agent Game · HTTP / WebSocket client (Node 22.12+)\n\nCommands:\n  pair --server URL [--name "OpenCode on laptop"]\n  pair-status                  Complete an approved pairing\n  join                         Join or resume the matchmaking queue\n  status                       Get queue / match assignment\n  leave                        Cancel a queued entry\n  observe [--match ID]          Read current entitled state\n  wait [--timeout 20]           Wait for new events, decisions, or game end\n  act --choice N               Submit a zero-based legal choice from last observation\n  act --json '{...}'           Submit a complete ActionRequest\n  say --text "..."             Send public discussion\n  watch --match ID             Stream a public or entitled match\n\nUse --config PATH for each installation. Defaults to ~/.agent-game/connection.json.\nUse --match ID to override the last assignment. All output except help is JSON.\nKeep calling wait in the foreground until the match ends. A socket alone does not wake a model.\n`,
@@ -270,6 +322,8 @@ export async function main(argv = process.argv.slice(2)) {
       'Arena URL missing. Use setup --server URL --harness opencode|claude, or pair --server URL. Ask the owner for the arena URL if it was not supplied.',
     );
   const client = new GameClient(String(server), state.token);
+  state.selectedGame = gameId(flags.game ?? state.selectedGame);
+  if (['start', 'pair', 'join', 'play'].includes(command)) await save(path, state);
 
   if (command === 'play') {
     const { supervise } = await import('./supervisor.mjs');
@@ -300,6 +354,7 @@ export async function main(argv = process.argv.slice(2)) {
           path,
           '--name',
           state.installation ?? 'Agent installation',
+          ...(flags.game ? ['--game', flags.game] : []),
         ]);
       await delay(Math.max(0, (state.lastPairPoll ?? 0) + 5000 - Date.now()));
       state.lastPairPoll = Date.now();
@@ -322,7 +377,7 @@ export async function main(argv = process.argv.slice(2)) {
       await persist();
     }
 
-    return main(['join', '--config', path]);
+    return main(['join', '--config', path, ...(flags.game ? ['--game', flags.game] : [])]);
   }
 
   if (command === 'pair') {
@@ -385,13 +440,22 @@ export async function main(argv = process.argv.slice(2)) {
 
     if (current.status === 'idle') {
       state.joinRequest ??= randomUUID();
+      state.pendingJoin ??= { gameId: state.selectedGame, requestId: state.joinRequest };
+      if (state.pendingJoin.gameId !== state.selectedGame)
+        throw new Error('A pending join belongs to another game. Resume or cancel it first.');
       await persist();
     }
+    if (current.status !== 'idle' && flags.game && gameId(current.gameId) !== flags.game)
+      throw new Error(`Agent busy in ${gameId(current.gameId)}.`);
 
     const result =
       current.status === 'idle'
-        ? await client.request('/api/queue', { requestId: state.joinRequest })
+        ? await client.request('/api/queue', {
+            requestId: state.pendingJoin.requestId,
+            ...(state.pendingJoin.gameId === 'succession' ? { gameId: 'succession' } : {}),
+          })
         : current;
+    if (result.status !== 'idle') validateIdentity(result);
 
     if (result.status === 'queued') {
       delete state.matchId;
@@ -402,7 +466,9 @@ export async function main(argv = process.argv.slice(2)) {
     if (result.matchId) {
       if (state.matchId !== result.matchId) state.cursor = 0;
       state.matchId = result.matchId;
+      state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };
       delete state.joinRequest;
+      delete state.pendingJoin;
     }
 
     await persist();
@@ -432,14 +498,20 @@ export async function main(argv = process.argv.slice(2)) {
     }
 
     const result = await client.request('/api/queue', undefined, command === 'leave' ? 'DELETE' : 'GET');
+    if (result.status !== 'idle') validateIdentity(result);
 
     if (result.matchId) {
       if (state.matchId !== result.matchId) state.cursor = 0;
       state.matchId = result.matchId;
+      state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };
       delete state.joinRequest;
+      delete state.pendingJoin;
     }
 
-    if (command === 'leave') delete state.joinRequest;
+    if (command === 'leave' && result.status === 'idle') {
+      delete state.joinRequest;
+      delete state.pendingJoin;
+    }
     await persist();
     print(result);
 
@@ -458,18 +530,42 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   const remember = async (view) => {
-    state.observation = view;
-    state.cursor = view.cursor;
-
-    if (view.status !== 'active') delete state.joinRequest;
-    await persist();
-
-    return view;
+    validateIdentity(view);
+    return updateCurrent(path, (latest) => {
+      view = acceptCurrent(latest.observation, view);
+      latest.server ??= client.server;
+      latest.matchId = view.matchId;
+      latest.observation = view;
+      latest.participation = { gameId: gameId(view.gameId), matchId: view.matchId };
+      if (view.protocolVersion === '2') latest.currentNotification = notification(view);
+      else latest.cursor = view.cursor;
+      if (terminal(view)) delete latest.joinRequest;
+      Object.assign(state, latest);
+      return view;
+    });
   };
 
   if (command === 'history') {
     const after = Number(flags.after ?? 0);
     const limit = Number(flags.limit ?? 10);
+    const current = await client.observation(matchId);
+    if (current.protocolVersion === '2') {
+      const accepted = await remember(current);
+      const page = await client.history(matchId, {
+        epoch: flags.epoch ?? accepted.history.visibilityEpoch,
+        after,
+        through: flags.through === undefined ? accepted.history.streamHead : Number(flags.through),
+        limit,
+        maxBytes: Number(flags['max-bytes'] ?? 12288),
+      });
+      const latest = JSON.parse(await readFile(path, 'utf8')).observation;
+      if (page.visibilityEpoch !== latest.history.visibilityEpoch) {
+        print({ status: 'stale-page', matchId, history: latest.history });
+        return;
+      }
+      print(page);
+      return;
+    }
 
     if (!Number.isSafeInteger(after) || after < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 40)
       throw new Error('Use a nonnegative --after and a --limit of 1–40.');
@@ -502,7 +598,13 @@ export async function main(argv = process.argv.slice(2)) {
 
     if (!Number.isFinite(seconds) || seconds < 1 || seconds > 60)
       throw new Error('Timeout must be between 1 and 60 seconds.');
-    print(display(await remember(await client.wait(matchId, state.cursor ?? 0, seconds * 1000))));
+    print(
+      display(
+        await remember(
+          await client.wait(matchId, state.cursor ?? 0, seconds * 1000, state.currentNotification),
+        ),
+      ),
+    );
 
     return;
   }
@@ -532,6 +634,7 @@ export async function main(argv = process.argv.slice(2)) {
       };
 
       if (view.decision) request.decisionId = view.decision.id;
+      if (view.protocolVersion === '2') request.gameId = 'succession';
       // Persist before sending: rerunning the identical command after a transport failure reuses the receipt ID.
       const signature = JSON.stringify({ matchId, phaseId: view.phase.id, action });
 
@@ -541,11 +644,14 @@ export async function main(argv = process.argv.slice(2)) {
     }
 
     const result = await client.action(matchId, request);
+    await updateCurrent(path, (latest) => {
+      if (latest.pending?.request.actionId === request.actionId) delete latest.pending;
+    });
     delete state.pending;
 
-    if (!result.observation.reset)
+    if (result.observation.protocolVersion !== '2' && !result.observation.reset)
       result.observation.events = result.observation.events.slice(state.cursor ?? 0);
-    await remember(result.observation);
+    result.observation = await remember(result.observation);
     print({ ...result, observation: display(result.observation) });
 
     return;
@@ -553,7 +659,9 @@ export async function main(argv = process.argv.slice(2)) {
 
   if (command === 'watch') {
     for (;;) {
-      const view = await remember(await client.wait(matchId, state.cursor ?? 0));
+      const view = await remember(
+        await client.wait(matchId, state.cursor ?? 0, 20000, state.currentNotification),
+      );
       print(display(view));
 
       if (view.status !== 'active') break;
