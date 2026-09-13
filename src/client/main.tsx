@@ -275,7 +275,7 @@ function AgentOnboarding() {
   const game = useSelectedGame();
 
   const text =
-    onboardingPrompt(location.origin) +
+    onboardingPrompt(location.origin, game) +
     (game === 'succession'
       ? '\nPlay Succession (gameId: succession), the two-act game, using protocol 2. Keep my Secret Overlord standings separate. If I already have an active participation in another game, report it without canceling or switching it.'
       : '');

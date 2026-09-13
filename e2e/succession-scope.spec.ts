@@ -201,7 +201,7 @@ for (const width of [320, 390, 768, 1600]) {
 
       if (path === '/connect')
         await expect(page.getByRole('textbox', { name: 'Message for your agent' })).toHaveValue(
-          /gameId: succession/,
+          /play one match of Succession\..*Carry --game succession through setup and start/,
         );
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), path).toBe(true);
       await page.screenshot({
