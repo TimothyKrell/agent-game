@@ -776,6 +776,8 @@ export function act(
       const card = state.hand.find((entry) => entry.id === action.cardId)!;
       const discarded = state.hand.filter((entry) => entry.id !== card.id);
       state.discards.push(...discarded);
+      // The discarded card has left the hand before the event's replay checkpoint.
+      state.hand = [card];
       emit(
         state,
         context,

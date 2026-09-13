@@ -6,6 +6,8 @@ import { observeSuccession, inspectSuccession } from '../src/game/succession/obs
 import { replayFrameSuccession, replaySuccession, verifyReplayArchive } from '../src/game/succession/replay';
 import { previewSuccessionAction } from '../src/game/succession/preview';
 import { secureRandom } from '../src/game/succession/commitment';
+import { decodeGameState } from '../src/game/registry';
+import { decodeReplayCheckpoint } from '../src/game/succession/persistence';
 import type { Act2Board, Capability } from '../src/game/succession/act2';
 import type {
   Evolution,
@@ -22,6 +24,20 @@ import {
 } from '../src/shared/succession';
 
 let randomSequence = 0;
+
+it('decodes persisted event checkpoints before serving the first replay cursor', async () => {
+  const created = await initial();
+  expect(() => decodeGameState(JSON.parse(JSON.stringify(created.replayFrames[0].state)))).toThrow();
+
+  for (const checkpoint of created.replayFrames)
+    expect(decodeReplayCheckpoint(JSON.parse(JSON.stringify(checkpoint.state)))).toEqual(checkpoint.state);
+  const corrupt = structuredClone(created.replayFrames[0].state);
+
+  if (corrupt.stage.act !== 1) throw new Error('Expected initial policy checkpoint');
+  corrupt.stage.board.deck[0] = corrupt.stage.board.deck[1];
+  expect(() => decodeReplayCheckpoint(corrupt)).toThrow();
+  expect(() => decodeReplayCheckpoint({ ...created.replayFrames[0].state, events: [] })).toThrow();
+});
 
 function random(seed = 1, namespace = ++randomSequence): RandomContext {
   let serial = 0;
@@ -108,6 +124,7 @@ function verify(evolution: Evolution, checkpoint?: SuccessionState) {
 
   for (const [index, { state }] of evolution.replayFrames.entries()) {
     bounded(state, 65536);
+    expect(decodeReplayCheckpoint(JSON.parse(JSON.stringify(state)))).toEqual(state);
     const frame = replayFrameSuccession(state, index + 1, 'archive-epoch');
     bounded(frame, 32768);
     expect(

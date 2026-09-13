@@ -658,6 +658,103 @@ export function decodeSuccessionState(value: unknown): SuccessionState {
   return Schema.decodeUnknownSync(SuccessionStateSchema, { onExcessProperty: 'error' })(value);
 }
 
+const CheckpointPolicyBoard = Schema.Struct({
+  ...legacyBoardFields,
+  phase: Schema.Struct({ ...phaseFields, id: Schema.String, kind: PhaseKind }),
+});
+
+function checkpointPolicies(board: Act1Board): boolean {
+  const cards = [...board.deck, ...board.discards, ...board.hand];
+
+  return (
+    new Set(cards.map((card) => card.id)).size === cards.length &&
+    cards.filter((card) => card.policy === 'safeguard').length + board.safeguards === 6 &&
+    cards.filter((card) => card.policy === 'override').length + board.overrides === 11
+  );
+}
+
+function validReplayCheckpoint(state: SuccessionState): boolean {
+  const policy = state.stage.act === 1 ? state.stage.board : state.stage.archive;
+
+  if (
+    policy.id !== state.id ||
+    policy.createdAt !== state.createdAt ||
+    policy.mode !== state.snapshot.mode ||
+    !sameTiming(policy.timing, state.snapshot.timing) ||
+    !checkpointPolicies(policy)
+  )
+    return false;
+
+  if (
+    (state.status === 'finished') !== (state.result !== null) ||
+    (state.status === 'interrupted') !== (state.interruptionReason !== null) ||
+    (state.status === 'active') !== (state.finishedAt === null)
+  )
+    return false;
+
+  if (state.stage.act === 1) {
+    const initializing =
+      policy.phase.id === '' &&
+      policy.round === 1 &&
+      policy.safeguards === 0 &&
+      policy.overrides === 0 &&
+      policy.deck.length === 17 &&
+      policy.phase.kind === 'nomination-discussion';
+
+    return (
+      state.status !== 'finished' &&
+      state.act1Result === null &&
+      state.result === null &&
+      JSON.stringify(state.phase) === JSON.stringify(policy.phase) &&
+      (state.phase.id !== '' || initializing) &&
+      (state.status !== 'active' || state.phase.deadline !== null || initializing)
+    );
+  }
+
+  const board = state.stage.board;
+  const pool = board.pending?.exchange ?? [];
+  const cards = [
+    ...board.court,
+    ...pool,
+    ...board.resources.flatMap((resource) => [...resource.hand, ...resource.revealed]),
+  ];
+
+  if (
+    cards.length !== 25 ||
+    new Set(cards.map((card) => card.physicalId)).size !== 25 ||
+    new Set(cards.map((card) => card.id)).size !== 25 ||
+    ['treasurer', 'thief', 'assassin', 'envoy', 'guard'].some(
+      (capability) => cards.filter((card) => card.capability === capability).length !== 5,
+    ) ||
+    board.court.length + pool.length !== 5 ||
+    board.resources.some((resource) => resource.hand.length + resource.revealed.length !== 2)
+  )
+    return false;
+
+  return validState(state);
+}
+
+/** Event checkpoints are nonactionable snapshots inside an atomic mutation, not resumable current states. */
+export const ReplayCheckpointSchema = Schema.Struct({
+  ...SuccessionStateSchema.fields,
+  phase: Schema.Struct({ ...phaseFields, id: Schema.String, kind: SuccessionPhaseKind }),
+  stage: Schema.Union([
+    Schema.Struct({ act: Schema.Literal(1), board: CheckpointPolicyBoard }),
+    Schema.Struct({
+      act: Schema.Literal(2),
+      board: Schema.Struct(Act2BoardSchema.fields),
+      archive: Act1BoardSchema,
+    }),
+  ]),
+})
+  .check(Schema.makeFilter(validReplayCheckpoint))
+  .annotate({ parseOptions: { onExcessProperty: 'error' } }) satisfies Schema.Codec<SuccessionState>;
+
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- This is the private historical checkpoint decoder, never the live-state decoder.
+export function decodeReplayCheckpoint(value: unknown): SuccessionState {
+  return Schema.decodeUnknownSync(ReplayCheckpointSchema, { onExcessProperty: 'error' })(value);
+}
+
 // oxlint-disable-next-line anti-slop/no-unknown-parameters -- This is the replay decoding boundary.
 export function decodeReplayFact(value: unknown): ReplayFact {
   return Schema.decodeUnknownSync(ReplayFactSchema, { onExcessProperty: 'error' })(value);
