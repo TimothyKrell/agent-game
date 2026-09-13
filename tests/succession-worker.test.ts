@@ -253,17 +253,20 @@ async function driveOriginal(matchId: string, controllers: FixtureController[]):
     const seats = await Promise.all(
       controllers.map((controller) => data<Observation>(`/api/matches/${matchId}`, controller)),
     );
+
     await Promise.all(
       seats.map(async (view, index) => {
         const choice = previewAction(view);
 
         if (!choice || !view.decision) return;
+
         const input: ActionRequest = {
           actionId: crypto.randomUUID(),
           phaseId: view.phase.id,
           decisionId: view.decision.id,
           action: choice,
         };
+
         await data(`/api/matches/${matchId}/actions`, controllers[index], {
           method: 'POST',
           body: JSON.stringify(input),
@@ -345,13 +348,128 @@ async function restart(): Promise<void> {
   await startWorker();
 }
 
+function specificAction(view: Observation2, type: ActionRequest2['action']['type']): ActionRequest2 {
+  const choice = view.decision?.actions.find((option) => option.action.type === type);
+
+  if (!choice) throw new Error(`Missing entitled ${type} action`);
+
+  return { ...action(view), action: choice.action };
+}
+
+async function recoverPending(
+  matchId: string,
+  controller: FixtureController,
+  before: Observation2,
+): Promise<Observation2> {
+  await clock(matchId, before, 'late-alarm');
+  await restart();
+  const recovered = await data<Observation2>(`/api/matches/${matchId}`, controller);
+  expect(recovered.status).toBe('active');
+  expect(recovered.phase.id).not.toBe(before.phase.id);
+  expect(recovered.private).toEqual(before.private);
+  expect(recovered.board).toEqual(before.board);
+  expect(recovered.seats).toEqual(before.seats);
+  expect(recovered.commitment).toEqual(before.commitment);
+  expect(recovered.createdAt).toBe(before.createdAt);
+  expect(recovered.history.visibilityEpoch).toBe(before.history.visibilityEpoch);
+  expect(recovered.decision?.actions).toEqual(before.decision?.actions);
+
+  return recovered;
+}
+
 describe('actual Succession HTTP, Durable Object and house execution', () => {
+  it('recovers durably paid attacks, pending influence losses and private exchanges without repeating effects', async () => {
+    provider = 'openai';
+    const { matchId, controllers } = await admitted(10);
+    const payment = await drive(matchId, controllers, (_public, seats) =>
+      seats.some((view) => view.decision?.actions.some((option) => option.action.type === 'assassinate')),
+    );
+    const assassin = payment.seats.find((view) =>
+      view.decision?.actions.some((option) => option.action.type === 'assassinate'),
+    )!;
+    const assassinController = controllers.find(
+      (controller) => controller.agentId === assassin.you?.agentId,
+    )!;
+    const paidRequest = specificAction(assassin, 'assassinate');
+    const paid = await submit(matchId, assassinController, paidRequest);
+    expect(paid.observation.board).toMatchObject({ act: 2, pending: { action: 'assassinate', paid: 3 } });
+    const beforeCoins = assassin.seats.find((seat) => seat.agentId === assassinController.agentId)!.coins!;
+    expect(paid.observation.seats.find((seat) => seat.agentId === assassinController.agentId)?.coins).toBe(
+      beforeCoins - 3,
+    );
+    const paidRecovered = await recoverPending(matchId, assassinController, paid.observation);
+    const paidRetry = await submit(matchId, assassinController, paidRequest);
+    expect(paidRetry.observation.board).toEqual(paidRecovered.board);
+    expect(paidRetry.observation.seats).toEqual(paidRecovered.seats);
+    const losing = await drive(matchId, controllers, (_public, seats) =>
+      seats.some((view) => view.decision?.actions.some((option) => option.action.type === 'lose-influence')),
+    );
+    const loser = losing.seats.find((view) =>
+      view.decision?.actions.some((option) => option.action.type === 'lose-influence'),
+    )!;
+    const loserController = controllers.find((controller) => controller.agentId === loser.you?.agentId)!;
+    const lossRecovered = await recoverPending(matchId, loserController, loser);
+    const lossRequest = specificAction(lossRecovered, 'lose-influence');
+    const lost = await submit(matchId, loserController, lossRequest);
+    const influenceBefore = loser.seats.find((seat) => seat.agentId === loserController.agentId)!.influence!;
+    expect(lost.observation.seats.find((seat) => seat.agentId === loserController.agentId)?.influence).toBe(
+      influenceBefore - 1,
+    );
+    const lossRetry = await submit(matchId, loserController, lossRequest);
+    expect(lossRetry.observation.private).toEqual(lost.observation.private);
+    expect(lossRetry.observation.seats).toEqual(lost.observation.seats);
+    const exchanging = await drive(matchId, controllers, (_public, seats) =>
+      seats.some((view) => view.decision?.actions.some((option) => option.action.type === 'exchange')),
+    );
+    const exchanger = exchanging.seats.find((view) =>
+      view.decision?.actions.some((option) => option.action.type === 'exchange'),
+    )!;
+    const exchangeController = controllers.find(
+      (controller) => controller.agentId === exchanger.you?.agentId,
+    )!;
+    const declaration = specificAction(exchanger, 'exchange');
+    await submit(matchId, exchangeController, declaration);
+    const choosing = await drive(matchId, controllers, (_public, seats) =>
+      seats.some((view) =>
+        view.decision?.actions.some((option) => option.action.type === 'return-influence'),
+      ),
+    );
+    const choices = choosing.seats.find((view) => view.you?.agentId === exchangeController.agentId)!;
+    expect(choices.board).toMatchObject({ act: 2, courtCount: 3 });
+    expect(choices.private?.act).toBe(2);
+    const exchangeRecovered = await recoverPending(matchId, exchangeController, choices);
+    const declarationRetry = await submit(matchId, exchangeController, declaration);
+    expect(declarationRetry.observation.private).toEqual(exchangeRecovered.private);
+    expect(declarationRetry.observation.board).toEqual(exchangeRecovered.board);
+    const returnedRequest = specificAction(exchangeRecovered, 'return-influence');
+    const returned = await submit(matchId, exchangeController, returnedRequest);
+    expect(returned.observation.board).toMatchObject({ act: 2, courtCount: 5 });
+    expect(returned.observation.private).toMatchObject({ act: 2, exchangePool: [] });
+    const returnRetry = await submit(matchId, exchangeController, returnedRequest);
+    expect(returnRetry.observation.private).toEqual(returned.observation.private);
+    expect(returnRetry.observation.board).toEqual(returned.observation.board);
+    await drive(matchId, controllers, (view) => view.status === 'finished');
+    const settled = await until(
+      () => data<Settlement>(`/__fixture/matches/${matchId}/settlement`),
+      (value) => value.record?.result_applied === 1,
+    );
+    expect(settled.inference.calls).toBe(0);
+    expect(settled.participants.filter((participant) => participant.won === 1)).toHaveLength(1);
+    expect(settled.participants.every((participant) => participant.forfeited === 0)).toBe(true);
+    await until(
+      () => data<QueueStatus>('/api/queue', controllers[0]),
+      (value) => value.status === 'idle',
+    );
+  }, 180_000);
+
   it('runs both games concurrently through one coordinator and independently settles twenty ranked external agents', async () => {
     provider = 'openai';
+
     const [original, succession] = await Promise.all([
       admitted(10, 'secret-overlord'),
       admitted(10, 'succession'),
     ]);
+
     expect(original.matchId).not.toBe(succession.matchId);
 
     const groups = [
@@ -363,6 +481,7 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
       await data<{ id: string; game_id: GameId; state: string; reservation: number }[]>(
         '/__fixture/allocations',
       );
+
     expect(allocations.filter((entry) => entry.state === 'active')).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: original.matchId, game_id: 'secret-overlord', reservation: 1.5 }),
@@ -375,23 +494,28 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
         `/api/matches/${group.matchId}`,
         group.controllers[0],
       );
+
       expect(current.status).toBe('active');
       expect(current.mode).toBe('ranked');
       expect(current.seats.every((seat) => !seat.originalHouse)).toBe(true);
       const before = await data<QueueStatus>('/api/queue', group.controllers[0]);
+
       const conflict = await request('/api/queue', group.controllers[0], {
         method: 'POST',
         body: JSON.stringify({ gameId: group.otherGame, requestId: crypto.randomUUID() }),
       });
+
       expect(conflict.status).toBe(409);
       expect(await conflict.json()).toMatchObject({
         error: { code: 'agent-busy', gameId: group.gameId, matchId: group.matchId },
       });
       expect(await data('/api/queue', group.controllers[0])).toEqual(before);
+
       const selected = await until(
         () => data<{ id: string }[]>(`/api/matches?gameId=${group.gameId}`),
         (matches) => matches.some((entry) => entry.id === group.matchId),
       );
+
       expect(selected.some((entry) => entry.id === group.matchId)).toBe(true);
       expect(
         selected.some(
@@ -413,6 +537,7 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
         () => data<Settlement>(`/__fixture/matches/${group.matchId}/settlement`),
         (value) => value.record?.result_applied === 1,
       );
+
       expect(settled.record).toMatchObject({
         game_id: group.gameId,
         status: 'finished',
@@ -428,14 +553,17 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
 
       for (const participant of settled.participants) {
         expect(participant.forfeited).toBe(0);
+
         const own = await data<{
           agent: { games: number; wins: number; placements: number; rating: number };
           history: { id: string }[];
         }>(`/api/agents/${participant.agent_id}?gameId=${group.gameId}`);
+
         const other = await data<{
           agent: { games: number; wins: number; placements: number; rating: number };
           history: { id: string }[];
         }>(`/api/agents/${participant.agent_id}?gameId=${group.otherGame}`);
+
         expect(own.agent).toMatchObject({ games: 1, placements: 1, wins: participant.won });
         expect(own.agent.rating).toBeCloseTo(1000 + (participant.rating_delta ?? 0));
         expect(own.history.map((match) => match.id)).toEqual([group.matchId]);
