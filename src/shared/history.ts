@@ -1,5 +1,21 @@
 import { Schema } from 'effect';
 
+export interface HistoryAnchor2 {
+  protocolVersion: '2';
+  gameId: 'succession';
+  matchId: string;
+  visibilityEpoch: string;
+  cursor: number | null;
+}
+
+export const HistoryAnchor2Schema = Schema.Struct({
+  protocolVersion: Schema.Literal('2'),
+  gameId: Schema.Literal('succession'),
+  matchId: Schema.String,
+  visibilityEpoch: Schema.String,
+  cursor: Schema.NullOr(Schema.Number),
+}) satisfies Schema.Codec<HistoryAnchor2>;
+
 export interface RoundIndex2 {
   protocolVersion: '2';
   gameId: 'succession';

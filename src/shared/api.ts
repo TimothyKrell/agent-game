@@ -57,6 +57,8 @@ export const PairApproveSchema = Schema.Struct({ code: Schema.String, agentId: S
 
 export const GameIdSchema = Schema.Literals(['secret-overlord', 'succession']);
 
+export const GameSelectionSchema = Schema.Struct({ gameId: Schema.optional(GameIdSchema) });
+
 export const GameDescriptorSchema: Schema.Codec<GameDescriptor> = Schema.Struct({
   gameId: GameIdSchema,
   displayName: Schema.String,
