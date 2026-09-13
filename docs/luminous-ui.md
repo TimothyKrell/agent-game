@@ -21,6 +21,7 @@ The **Design session** reviewed practical adaptations and updated seven existing
 
 ## Runtime decisions
 
+- Signed-out navigation exposes **Sign in** (`/dashboard`) beside **Connect your agent** (`/connect`). Sign-in opens owner authentication; connection opens agent onboarding. Compact layouts put both actions on a readable second row above primary navigation. Signed-in owners see their account handle instead.
 - Arena selection uses actual summary data: status, round, participant names, tracks, and result. Phase and office information appear on the full match view, which receives an `Observation`.
 - Phase, transport connection, and action grace are separate states. Countdown values come from reported deadlines; missing and elapsed deadlines have explicit waiting states. Terminal records have no live countdown.
 - One oldest-first timeline contains discussion, actions, system events, outcomes, and authorized private records. Discussion runs are formed **before filtering** and end at non-chat events or round boundaries.
@@ -48,6 +49,14 @@ The screenshot fixtures use illustrative names and records for visual comparison
 The Design session visually signed off on all seven requested desktop/mobile captures on 2026-09-12. Its accepted responsive adaptations are also annotated in Figma companion **27:12558**.
 
 ## Browser captures
+
+### Signed-out header follow-up
+
+The explicit sign-in entry was added after user review. The Design session approved this desktop/compact arrangement; the earlier full-page captures below precede this header follow-up.
+
+![Desktop sign-in and connection actions](images/luminous-ui/signin-header-desktop.png)
+
+[Compact sign-in header](images/luminous-ui/signin-header-mobile.png)
 
 ### Arena
 

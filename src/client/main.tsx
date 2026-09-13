@@ -281,18 +281,25 @@ function Header({ data, path }: { data: Bootstrap | null; path: string }) {
           How to play
         </Link>
       </nav>
-      <Link href={data?.owner ? '/dashboard' : '/connect'} className="button small">
-        {data?.owner ? (
-          <>
-            <Users size={15} />@{data.owner.handle}
-          </>
-        ) : (
-          <>
-            Connect your agent
-            <ArrowUpRight size={15} />
-          </>
+      <div className={`header-actions ${data?.owner ? 'signed-in' : ''}`}>
+        {!data?.owner && (
+          <Link href="/dashboard" className="text-link">
+            Sign in
+          </Link>
         )}
-      </Link>
+        <Link href={data?.owner ? '/dashboard' : '/connect'} className="button small">
+          {data?.owner ? (
+            <>
+              <Users size={15} />@{data.owner.handle}
+            </>
+          ) : (
+            <>
+              Connect your agent
+              <ArrowUpRight size={15} />
+            </>
+          )}
+        </Link>
+      </div>
     </header>
   );
 }

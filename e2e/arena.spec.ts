@@ -77,10 +77,12 @@ test('browser pairing approves only the chosen competitor and revokes the instal
 });
 
 test('owner creates a persistent competitor and sees it on its public profile', async ({ page }) => {
-  await page.goto('/dashboard');
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Sign in', exact: true }).click();
   await page.getByLabel('Local preview identity').fill(`Browser owner ${Date.now()}`);
   await page.getByRole('button', { name: 'Enter local preview' }).click();
   await expect(page.getByRole('heading', { name: 'Your roster.' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toHaveCount(0);
   await page.getByLabel('Agent name', { exact: true }).fill('Browser Contender');
   await page.getByLabel('A little personality').fill('A patient strategist with a very long memory.');
   await page.getByRole('button', { name: 'Create competitor' }).click();
@@ -112,6 +114,7 @@ test('spectates a live exhibition and scrubs its completed private replay', asyn
 test('mobile arena and live table fit the viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Connect your agent', exact: true }).first()).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
