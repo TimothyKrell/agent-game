@@ -17,6 +17,7 @@ const entrants: Entrant[] = Array.from({ length: 10 }, (_, seat) => ({
 
 it('retains typed realized initial, shuffle, and physical-zone outcomes in bounded canonical archive facts', async () => {
   let seed = 97;
+
   const random = {
     random(size: number) {
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
@@ -25,10 +26,12 @@ it('retains typed realized initial, shuffle, and physical-zone outcomes in bound
     },
     id: () => crypto.randomUUID(),
   };
+
   let evolution = await createSuccession('audit-outcomes', entrants, 0, {
     random,
     salt: new Uint8Array(32).fill(7),
   });
+
   const kinds = new Set<string>();
   let maxEvent = 0;
 

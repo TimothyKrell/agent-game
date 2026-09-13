@@ -8,6 +8,7 @@ import {
   type Act2Board,
   type Act2Context,
   type Act2Fact,
+  type Act2Action,
   type Capability,
 } from '../src/game/succession/act2';
 
@@ -106,6 +107,492 @@ function removeCapability(board: Act2Board, seat: number, capability: Capability
 function eliminate(board: Act2Board, seat: number, count = 2) {
   board.resources[seat].revealed.push(...board.resources[seat].hand.splice(0, count));
 }
+
+function startAt(board: Act2Board, seat: number) {
+  board.firstSeat = seat;
+  board.activeSeat = seat;
+  board.slot = 0;
+}
+
+function putCapability(board: Act2Board, seat: number, slot: number, capability: Capability) {
+  if (board.resources[seat].hand[slot].capability === capability) return;
+
+  const zones = [
+    board.court,
+    ...board.resources.filter((_, index) => index !== seat).map((resource) => resource.hand),
+  ];
+
+  for (const zone of zones) {
+    const index = zone.findIndex((card) => card.capability === capability);
+
+    if (index < 0) continue;
+    [zone[index], board.resources[seat].hand[slot]] = [board.resources[seat].hand[slot], zone[index]];
+
+    return;
+  }
+
+  throw new Error('Missing fixture card');
+}
+
+function permutations(values: number[]): number[][] {
+  if (!values.length) return [[]];
+
+  return values.flatMap((value, index) =>
+    permutations(values.filter((_, other) => other !== index)).map((rest) => [value, ...rest]),
+  );
+}
+
+describe('Act 2 explicit contract matrices', () => {
+  const claims: { type: 'tax' | 'steal' | 'assassinate' | 'exchange'; capability: Capability }[] = [
+    { type: 'tax', capability: 'treasurer' },
+    { type: 'steal', capability: 'thief' },
+    { type: 'assassinate', capability: 'assassin' },
+    { type: 'exchange', capability: 'envoy' },
+  ];
+
+  for (const { type, capability } of claims) {
+    for (const truthful of [false, true]) {
+      for (const challenged of [false, true]) {
+        it(`${type}: ${truthful ? 'truthful' : 'bluff'} claim, ${challenged ? 'challenged' : 'unchallenged'}, complete effect and cost`, () => {
+          const { board, context, facts } = setup();
+          const actor = board.activeSeat;
+          const target = (actor + 1) % 10;
+          const challenger = (actor + 2) % 10;
+
+          if (truthful) ensureCapability(board, actor, capability);
+          else removeCapability(board, actor, capability);
+          board.resources[actor].coins = 3;
+          board.resources[target].coins = 2;
+          const oldHand = structuredClone(board.resources[actor].hand);
+          const failed = challenged && !truthful;
+          const action: Act2Action = type === 'steal' || type === 'assassinate' ? { type, target } : { type };
+          advanceAct2Discussion(board, context);
+          applyAct2(board, actor, action, context);
+          expect(board.resources[actor].coins).toBe(type === 'assassinate' ? 0 : 3);
+          replies(board, context, challenged ? [challenger] : []);
+          expect(facts.filter((fact) => fact.type === 'proof')).toHaveLength(challenged && truthful ? 1 : 0);
+
+          if (!challenged && type !== 'exchange') expect(board.resources[actor].hand).toEqual(oldHand);
+
+          if (!challenged && type === 'exchange')
+            expect(board.resources[actor].hand.map((card) => card.physicalId)).toEqual(
+              oldHand.map((card) => card.physicalId),
+            );
+
+          if (challenged) {
+            expect(pendingAct2(board)).toEqual([truthful ? challenger : actor]);
+            lose(board, context, 1);
+          }
+
+          if (!failed && (type === 'steal' || type === 'assassinate')) {
+            expect(board.phase).toBe('block');
+            applyAct2(board, target, { type: 'pass' }, context);
+
+            if (type === 'assassinate') lose(board, context, 1);
+          }
+
+          if (!failed && type === 'exchange') {
+            expect(board.phase).toBe('exchange');
+            const choice = legalAct2(board, actor)[0];
+            applyAct2(board, actor, choice, context);
+          }
+
+          let expectedCoins = type === 'assassinate' ? 0 : 3;
+
+          if (!failed && type === 'tax') expectedCoins += 3;
+
+          if (!failed && type === 'steal') expectedCoins += 2;
+          expect(board.resources[actor].coins).toBe(expectedCoins);
+          expect(board.resources[actor].hand).toHaveLength(failed ? 1 : 2);
+          expect(board.resources[challenger].hand).toHaveLength(challenged && truthful ? 1 : 2);
+          expect(board.resources[target].hand).toHaveLength(!failed && type === 'assassinate' ? 1 : 2);
+          expect(board.resources[target].coins).toBe(!failed && type === 'steal' ? 0 : 2);
+          expect(facts.filter((fact) => fact.type === 'exchange-completed')).toHaveLength(
+            !failed && type === 'exchange' ? 1 : 0,
+          );
+          expect(board.phase).toBe('discussion');
+          invariant(board);
+        });
+      }
+    }
+  }
+
+  for (const type of ['income', 'coup']) {
+    it(`${type} bypasses every challenge and block choice`, () => {
+      const { board, context, facts } = setup();
+      const actor = board.activeSeat;
+      const target = (actor + 1) % 10;
+      board.resources[actor].coins = 7;
+      advanceAct2Discussion(board, context);
+
+      if (type === 'coup') {
+        applyAct2(board, actor, { type: 'coup', target }, context);
+        expect(board.phase).toBe('loss');
+        expect(pendingAct2(board)).toEqual([target]);
+        lose(board, context);
+      } else applyAct2(board, actor, { type: 'income' }, context);
+      expect(board.resources[actor].coins).toBe(type === 'coup' ? 0 : 8);
+      expect(
+        facts.some(
+          (fact) => fact.type === 'challenge-resolved' || fact.type === 'block' || fact.type === 'proof',
+        ),
+      ).toBe(false);
+      invariant(board);
+    });
+  }
+
+  const blocks: { type: 'steal' | 'assassinate'; capability: Capability }[] = [
+    { type: 'steal', capability: 'thief' },
+    { type: 'steal', capability: 'envoy' },
+    { type: 'assassinate', capability: 'guard' },
+  ];
+
+  for (const { type, capability } of blocks) {
+    for (const truthful of [false, true]) {
+      for (const challenged of [false, true]) {
+        it(`${type} blocked by ${capability}, truthful=${truthful}, challenged=${challenged}`, () => {
+          const { board, context, facts } = setup();
+          const actor = board.activeSeat;
+          const target = (actor + 1) % 10;
+          const challenger = (actor + 2) % 10;
+
+          if (truthful) ensureCapability(board, target, capability);
+          else removeCapability(board, target, capability);
+          board.resources[actor].coins = 3;
+          board.resources[target].coins = 2;
+          advanceAct2Discussion(board, context);
+          applyAct2(board, actor, { type, target }, context);
+          replies(board, context);
+          applyAct2(board, target, { type: 'block', capability }, context);
+          replies(board, context, challenged ? [challenger] : []);
+          const failed = challenged && !truthful;
+
+          if (challenged) {
+            expect(pendingAct2(board)).toEqual([truthful ? challenger : target]);
+            lose(board, context);
+          }
+
+          if (failed && type === 'assassinate') {
+            expect(pendingAct2(board)).toEqual([target]);
+            lose(board, context);
+          }
+
+          expect(board.resources[target].hand).toHaveLength(failed ? (type === 'assassinate' ? 0 : 1) : 2);
+          expect(board.resources[challenger].hand).toHaveLength(challenged && truthful ? 1 : 2);
+          expect(board.resources[actor].coins).toBe(type === 'assassinate' ? 0 : failed ? 5 : 3);
+          expect(board.resources[target].coins).toBe(type === 'steal' && failed ? 0 : 2);
+          expect(facts.filter((fact) => fact.type === 'proof')).toHaveLength(challenged && truthful ? 1 : 0);
+          expect(board.phase).toBe('discussion');
+          invariant(board);
+        });
+      }
+    }
+
+    it(`${type}/${capability}: disproved one-card blocker dies and cancels attack with no extra effect`, () => {
+      const { board, context, facts } = setup();
+      const actor = board.activeSeat;
+      const target = (actor + 1) % 10;
+      removeCapability(board, target, capability);
+      eliminate(board, target, 1);
+      board.resources[actor].coins = 3;
+      board.resources[target].coins = 5;
+      advanceAct2Discussion(board, context);
+      applyAct2(board, actor, { type, target }, context);
+      replies(board, context);
+      applyAct2(board, target, { type: 'block', capability }, context);
+      replies(board, context, [actor]);
+      lose(board, context);
+      expect(board.resources[target].hand).toHaveLength(0);
+      expect(board.resources[target].coins).toBe(5);
+      expect(board.resources[actor].coins).toBe(type === 'assassinate' ? 0 : 3);
+      expect(facts.filter((fact) => fact.type === 'influence-lost')).toHaveLength(1);
+      expect(board.phase).toBe('discussion');
+      invariant(board);
+    });
+  }
+
+  for (const type of ['steal', 'assassinate']) {
+    if (type !== 'steal' && type !== 'assassinate') continue;
+    it(`${type} survives third-party challenger elimination while actor and target live`, () => {
+      const { board, context } = setup();
+      const actor = board.activeSeat;
+      const target = (actor + 1) % 10;
+      const challenger = (actor + 2) % 10;
+      ensureCapability(board, actor, type === 'steal' ? 'thief' : 'assassin');
+      eliminate(board, challenger, 1);
+      board.resources[actor].coins = 3;
+      board.resources[target].coins = 2;
+      advanceAct2Discussion(board, context);
+      applyAct2(board, actor, { type, target }, context);
+      replies(board, context, [challenger]);
+      lose(board, context);
+      expect(board.resources[challenger].hand).toHaveLength(0);
+      expect(board.phase).toBe('block');
+      expect(pendingAct2(board)).toEqual([target]);
+      applyAct2(board, target, { type: 'pass' }, context);
+
+      if (type === 'assassinate') lose(board, context);
+      expect(board.resources[actor].coins).toBe(type === 'steal' ? 5 : 0);
+      expect(board.resources[target].hand).toHaveLength(type === 'steal' ? 2 : 1);
+      invariant(board);
+    });
+  }
+
+  for (let actor = 0; actor < 10; actor++) {
+    for (const count of [2, 3, 4]) {
+      it(`selects clockwise action challenger for actor ${actor}, ${count} challengers, every arrival permutation and offset`, () => {
+        for (let offset = 0; offset < 9; offset++) {
+          const challengers = Array.from(
+            { length: count },
+            (_, index) => (actor + 1 + ((offset + index) % 9)) % 10,
+          );
+
+          const expected = Array.from({ length: 9 }, (_, index) => (actor + index + 1) % 10).find((seat) =>
+            challengers.includes(seat),
+          );
+
+          for (const order of permutations(challengers)) {
+            const { board, context, facts } = setup();
+            startAt(board, actor);
+            ensureCapability(board, actor, 'treasurer');
+            advanceAct2Discussion(board, context);
+            applyAct2(board, actor, { type: 'tax' }, context);
+
+            for (const seat of pendingAct2(board).filter((seat) => !challengers.includes(seat)))
+              applyAct2(board, seat, { type: 'pass' }, context);
+            const phaseId = board.phaseId;
+            const factCount = facts.length;
+
+            for (const [index, seat] of order.entries()) {
+              applyAct2(board, seat, { type: 'challenge' }, context);
+
+              if (index < order.length - 1) {
+                expect(board.phaseId).toBe(phaseId);
+                expect(facts).toHaveLength(factCount);
+              }
+            }
+
+            expect(pendingAct2(board)).toEqual([expected]);
+            expect(facts.find((fact) => fact.type === 'challenge-resolved')).toMatchObject({
+              challenger: expected,
+              outcome: 'proved',
+            });
+            lose(board, context, 1);
+
+            for (const seat of challengers)
+              expect(board.resources[seat].hand).toHaveLength(seat === expected ? 1 : 2);
+            invariant(board);
+          }
+        }
+      });
+
+      it(`anchors block challengers to actor ${actor} last, ${count} challengers, every arrival permutation and offset`, () => {
+        for (let offset = 0; offset < 8; offset++) {
+          const target = (actor + 9) % 10;
+
+          const challengers = [
+            actor,
+            ...Array.from({ length: count - 1 }, (_, index) => (actor + 1 + ((offset + index) % 8)) % 10),
+          ];
+
+          const expected = Array.from({ length: 10 }, (_, index) => (actor + index + 1) % 10).find((seat) =>
+            challengers.includes(seat),
+          );
+
+          for (const order of permutations(challengers)) {
+            const { board, context, facts } = setup();
+            startAt(board, actor);
+            ensureCapability(board, target, 'thief');
+            advanceAct2Discussion(board, context);
+            applyAct2(board, actor, { type: 'steal', target }, context);
+            replies(board, context);
+            applyAct2(board, target, { type: 'block', capability: 'thief' }, context);
+
+            for (const seat of pendingAct2(board).filter((seat) => !challengers.includes(seat)))
+              applyAct2(board, seat, { type: 'pass' }, context);
+
+            for (const seat of order) applyAct2(board, seat, { type: 'challenge' }, context);
+            expect(pendingAct2(board)).toEqual([expected]);
+            expect(expected).not.toBe(actor);
+            expect(facts.filter((fact) => fact.type === 'challenge-resolved')[1]).toMatchObject({
+              block: true,
+              challenger: expected,
+              outcome: 'proved',
+            });
+            lose(board, context);
+            expect(board.resources[actor].hand).toHaveLength(2);
+            invariant(board);
+          }
+        }
+      });
+    }
+  }
+
+  for (const influences of [1, 2]) {
+    const poolSize = influences + 2;
+
+    for (let first = 0; first < poolSize; first++) {
+      for (let second = first + 1; second < poolSize; second++) {
+        it(`returns exact exchange pair ${first},${second} with ${influences} influence`, () => {
+          const { board, context } = setup();
+          const actor = board.activeSeat;
+
+          if (influences === 1) eliminate(board, actor, 1);
+          const lost = structuredClone(board.resources[actor].revealed);
+          advanceAct2Discussion(board, context);
+          applyAct2(board, actor, { type: 'exchange' }, context);
+          replies(board, context);
+          const pool = [...board.resources[actor].hand, ...(board.pending?.exchange ?? [])];
+          const selected = [pool[first], pool[second]];
+          const cardIds: [string, string] = [selected[0].id, selected[1].id];
+          cardIds.sort();
+          const action: Act2Action = { type: 'return-influence', cardIds };
+          expect(legalAct2(board, actor)).toContainEqual(action);
+
+          const expectedKept = pool
+            .flatMap((card, index) => (index !== first && index !== second ? [card.physicalId] : []))
+            .sort();
+
+          const oldHandles = pool.map((card) => card.id);
+          const courtBefore = board.court.map((card) => card.physicalId);
+          applyAct2(board, actor, action, context);
+          expect(board.resources[actor].hand.map((card) => card.physicalId).sort()).toEqual(expectedKept);
+          expect(board.court.map((card) => card.physicalId).sort()).toEqual(
+            [...courtBefore, ...selected.map((card) => card.physicalId)].sort(),
+          );
+          expect(board.resources[actor].hand.every((card) => !oldHandles.includes(card.id))).toBe(true);
+          expect(board.resources[actor].revealed).toEqual(lost);
+          invariant(board);
+        });
+      }
+    }
+  }
+
+  it('proves the first of duplicate capabilities and can draw the identical physical card back', () => {
+    const { board, context, facts } = setup();
+    const actor = board.activeSeat;
+    putCapability(board, actor, 0, 'treasurer');
+    putCapability(board, actor, 1, 'treasurer');
+    const original = structuredClone(board.resources[actor].hand);
+    const court = board.court.map((card) => card.physicalId).sort();
+    // The proved card is appended at index 5. Swap it to zero, then leave it there.
+    const provedPhysicalIds: string[] = [];
+    context.random = (size) => {
+      if (size === 6) {
+        provedPhysicalIds.push(board.court[5].physicalId);
+
+        return 0;
+      }
+
+      return size - 1;
+    };
+
+    advanceAct2Discussion(board, context);
+    applyAct2(board, actor, { type: 'tax' }, context);
+    replies(board, context, [(actor + 1) % 10]);
+    expect(provedPhysicalIds).toEqual([original[0].physicalId]);
+    expect(board.resources[actor].hand.map((card) => card.physicalId)).toEqual(
+      original.map((card) => card.physicalId),
+    );
+    expect(board.resources[actor].hand.every((card) => !original.some((old) => old.id === card.id))).toBe(
+      true,
+    );
+    expect(board.court.map((card) => card.physicalId).sort()).toEqual(court);
+    expect(facts.filter((fact) => fact.type === 'proof')).toEqual([
+      { type: 'proof', seat: actor, capability: 'treasurer' },
+    ]);
+    lose(board, context);
+    invariant(board);
+  });
+
+  it.each([0, 2, 3, 6, 7, 9, 10])('enumerates the complete affordable menu at %i coins', (coins) => {
+    const { board, context } = setup();
+    const actor = board.activeSeat;
+    board.resources[actor].coins = coins;
+    advanceAct2Discussion(board, context);
+    const targets = Array.from({ length: 10 }, (_, seat) => seat).filter((seat) => seat !== actor);
+    const expected: Act2Action[] = [];
+
+    if (coins < 10) {
+      expected.push({ type: 'income' }, { type: 'tax' }, { type: 'exchange' });
+
+      for (const target of targets) expected.push({ type: 'steal', target });
+
+      if (coins >= 3) for (const target of targets) expected.push({ type: 'assassinate', target });
+    }
+
+    if (coins >= 7) for (const target of targets) expected.push({ type: 'coup', target });
+    expect(legalAct2(board, actor)).toEqual(expected);
+    const before = structuredClone(board);
+
+    if (coins < 3)
+      expect(() => applyAct2(board, actor, { type: 'assassinate', target: targets[0] }, context)).toThrow();
+
+    if (coins < 7)
+      expect(() => applyAct2(board, actor, { type: 'coup', target: targets[0] }, context)).toThrow();
+
+    if (coins >= 10) expect(() => applyAct2(board, actor, { type: 'income' }, context)).toThrow();
+    expect(board).toEqual(before);
+  });
+
+  for (const duplicate of [false, true]) {
+    for (const chosenIndex of [0, 1]) {
+      it(`selects loss handle ${chosenIndex} from ${duplicate ? 'duplicate' : 'distinct'} cards; rejects stale, foreign, lost and unknown handles`, () => {
+        const { board, context } = setup();
+        const target = board.activeSeat;
+        putCapability(board, target, 0, 'guard');
+        putCapability(board, target, 1, duplicate ? 'guard' : 'envoy');
+        const stale = board.resources[target].hand.map((card) => card.id);
+        advanceAct2Discussion(board, context);
+        applyAct2(board, target, { type: 'exchange' }, context);
+        replies(board, context);
+        const drawn = board.pending?.exchange;
+
+        if (!drawn) throw new Error('Missing exchange buffer');
+        const cardIds: [string, string] = [drawn[0].id, drawn[1].id];
+        cardIds.sort();
+        applyAct2(board, target, { type: 'return-influence', cardIds }, context);
+        const actor = board.activeSeat;
+        const outsider = (actor + 1) % 10;
+        eliminate(board, outsider, 1);
+        board.resources[actor].coins = 7;
+        advanceAct2Discussion(board, context);
+        applyAct2(board, actor, { type: 'coup', target }, context);
+        const before = structuredClone(board);
+
+        for (const invalid of [
+          ...stale,
+          board.resources[actor].hand[0].id,
+          board.resources[outsider].revealed[0].id,
+          'unknown-opaque',
+        ]) {
+          expect(() =>
+            applyAct2(board, target, { type: 'lose-influence', cardId: invalid }, context),
+          ).toThrow();
+          expect(board).toEqual(before);
+        }
+
+        const chosen = structuredClone(board.resources[target].hand[chosenIndex]);
+        const kept = structuredClone(board.resources[target].hand[1 - chosenIndex]);
+        applyAct2(board, target, { type: 'lose-influence', cardId: chosen.id }, context);
+        expect(board.resources[target].revealed).toEqual([chosen]);
+        expect(board.resources[target].hand).toEqual([kept]);
+        const nextActor = board.activeSeat;
+        board.resources[nextActor].coins = 7;
+        advanceAct2Discussion(board, context);
+        applyAct2(board, nextActor, { type: 'coup', target }, context);
+        expect(legalAct2(board, target)).toEqual([{ type: 'lose-influence', cardId: kept.id }]);
+        const nextLoss = structuredClone(board);
+        expect(() =>
+          applyAct2(board, target, { type: 'lose-influence', cardId: chosen.id }, context),
+        ).toThrow();
+        expect(board).toEqual(nextLoss);
+        applyAct2(board, target, { type: 'lose-influence', cardId: kept.id }, context);
+        invariant(board);
+      });
+    }
+  }
+});
 
 describe('Succession Act 2', () => {
   it('rejects corrupt physical-card persistence before mutation', () => {

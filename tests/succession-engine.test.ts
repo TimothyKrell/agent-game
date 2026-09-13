@@ -429,7 +429,11 @@ describe('Succession sealed observations and authority', () => {
       const before = others.map((seat) => JSON.stringify(observeSuccession(state, seat, history)));
       const previousId = state.phase.id;
       const result = move(state, responder, { type: 'pass' }, fixture.random);
-      expect(result.appendedEvents.every((event) => event.visibility === responder)).toBe(true);
+      expect(
+        result.appendedEvents.every(
+          (event) => event.visibility === responder || event.visibility === 'archive',
+        ),
+      ).toBe(true);
       state = result.state;
       expect(state.phase.id).toBe(previousId);
       expect(others.map((seat) => JSON.stringify(observeSuccession(state, seat, history)))).toEqual(before);
