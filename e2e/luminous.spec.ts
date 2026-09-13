@@ -83,7 +83,14 @@ test('pairing retries a failed request, excludes retired identities and waits fo
   await page.route('**/api/owner/pairing?*', (route) =>
     failed
       ? route.fulfill({ status: 503, json: { error: { message: 'Request temporarily unavailable' } } })
-      : route.fulfill({ json: { installation: 'OpenCode / Workstation', status: 'pending' } }),
+      : route.fulfill({
+          json: {
+            installation: 'OpenCode / Workstation',
+            status: 'pending',
+            code: '7KF9-M2QR',
+            expiresAt: Date.now() + 600_000,
+          },
+        }),
   );
   let release = () => {};
 
@@ -203,6 +210,7 @@ test('live and revealed records use real phase timers, outcomes, and accessible 
 
   await page.routeWebSocket('**/api/matches/luminous/events?*', (socket) => {
     send = (value) => socket.send(JSON.stringify({ type: 'observation', observation: value }));
+    send(view);
   });
   await page.setViewportSize({ width: 1600, height: 1120 });
   await page.goto('/matches/luminous');

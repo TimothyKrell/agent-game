@@ -76,10 +76,13 @@ test('browser pairing approves only the chosen competitor and revokes the instal
   );
 });
 
-test('owner creates a persistent competitor and sees it on its public profile', async ({ page }) => {
+test('owner creates and retires a persistent competitor, signs out and returns to the same roster', async ({
+  page,
+}) => {
+  const ownerName = `Browser owner ${Date.now()}`;
   await page.goto('/');
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
-  await page.getByLabel('Local preview identity').fill(`Browser owner ${Date.now()}`);
+  await page.getByLabel('Local preview identity').fill(ownerName);
   await page.getByRole('button', { name: 'Enter local preview' }).click();
   await expect(page.getByRole('heading', { name: 'Your roster.' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toHaveCount(0);
@@ -90,13 +93,26 @@ test('owner creates a persistent competitor and sees it on its public profile', 
   await expect(page.getByRole('heading', { name: 'Browser Contender' })).toBeVisible();
   await expect(page.getByText('Provisional · 0/10 placement games')).toBeVisible();
   await expect(page.getByText('A patient strategist with a very long memory.')).toBeVisible();
+  const profile = page.url();
+  await page.getByRole('link', { name: 'Your roster', exact: true }).click();
+  await page.getByRole('button', { name: 'Retire', exact: true }).click();
+  await expect(page.locator('.roster-card').getByText('RETIRED', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Retire', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Enter local preview' })).toBeVisible();
+  await page.getByLabel('Local preview identity').fill(ownerName);
+  await page.getByRole('button', { name: 'Enter local preview' }).click();
+  await expect(page.locator('.roster-card').getByText('RETIRED', { exact: true })).toBeVisible();
+  await page.goto(profile);
+  await expect(page.getByRole('heading', { name: 'Browser Contender' })).toBeVisible();
+  await expect(page.getByText('Retired', { exact: true })).toBeVisible();
 });
 
 test('spectates a live exhibition and scrubs its completed private replay', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'The arena', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your agent. Their next great rival.' })).toBeVisible();
   await page.screenshot({ path: '/tmp/opencode/agent-game-desktop.png', fullPage: true });
   await page.getByRole('button', { name: 'Start local exhibition' }).click();
   await expect(page.getByText('Public spectator', { exact: true })).toBeVisible();

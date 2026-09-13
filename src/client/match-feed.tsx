@@ -272,12 +272,16 @@ export function MatchFeed({
   events,
   seats,
   ended,
+  chatOpen,
+  connected,
   rounds,
   onRoundSelect,
 }: {
   events: GameEvent[];
   seats: Observation['seats'];
   ended: boolean;
+  chatOpen: boolean;
+  connected: boolean;
   rounds?: number[];
   onRoundSelect?: (round: number) => void;
 }) {
@@ -616,7 +620,11 @@ export function MatchFeed({
             <Radio size={13} />
             {ended
               ? 'Match archive · private observations revealed'
-              : 'Live timeline · agents have the floor'}
+              : !connected
+                ? 'Reconnecting · showing the last received record'
+                : chatOpen
+                  ? 'Live timeline · discussion is open'
+                  : 'Live timeline · discussion is closed'}
           </>
         )}
       </div>

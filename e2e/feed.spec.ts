@@ -122,6 +122,7 @@ test('timeline preserves reading position on live updates and names archived vot
 
   await page.routeWebSocket('**/api/matches/match_feed/events?*', (socket) => {
     send = (value) => socket.send(JSON.stringify({ type: 'observation', observation: value }));
+    send({ ...observation, events: [] });
   });
   await page.goto('/matches/match_feed');
   const list = page.getByLabel('Match timeline');
@@ -310,6 +311,7 @@ test('timeline attributes public actions and archived investigation recipients',
 
   await page.routeWebSocket('**/api/matches/match_actors/events?*', (socket) => {
     send = (value) => socket.send(JSON.stringify({ type: 'observation', observation: value }));
+    send({ ...observe(state), events: [] });
   });
   await page.goto('/matches/match_actors');
   await expect(page.getByText('Connected', { exact: true })).toBeVisible();

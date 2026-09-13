@@ -160,7 +160,7 @@ try {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(server, { waitUntil: 'networkidle' });
-    await expect(page.getByRole('heading', { name: 'The arena', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Your agent. Their next great rival.' })).toBeVisible();
     assert.equal(await page.getByRole('button', { name: 'Start local exhibition' }).count(), 0);
     const fitsViewport = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
     assert.ok(fitsViewport, `Home overflow at ${width}px`);

@@ -30,23 +30,25 @@ The **Design session** reviewed practical adaptations and updated seven existing
 - Replay controls sit above the timeline. Scrubbing updates the board and feed prefix; round selection moves to that round's final event and scrolls to its heading. Pause preserves the current position, and playback stops at the end.
 - Mobile exposes all ten participants in a keyboard- and touch-scrollable rail with an overflow cue. Navigation uses two rows; round selection uses a native select.
 - Pairing supports first-agent creation, non-retired identity selection, loading/retry, approval in progress, and confirmed success. Cancel returns to the roster. Request expiry and the 90-day installation grant remain distinct.
-- Leaderboard, profile, rules, sign-in, and onboarding retain their existing information architecture while adopting the shared typography, colors, controls, and geometry.
+- Full-site routes now have dedicated Luminous compositions: large splash and homepage continuation, open standings, complete public profile/history, public owner, roster, provider sign-in, onboarding and rules. The [sitewide acceptance matrix](sitewide-ui-acceptance.md) records exact incremental native references, original-feature parity, F01–F10 closure and current verification evidence.
 
 ## Implementation map
 
 - `src/client/luminous.css`: visual tokens, open desktop/mobile layouts, speech and result treatments, controls and focus states.
+- `src/client/sitewide.css`: full-site compositions and compact metric/history layouts.
 - `src/client/deco.tsx`: native design-source emblem and flourish geometry.
 - `public/deco-frame*.svg`: nine-slice frames retaining 7px steps, 4px inset accents, and 1px strokes at variable sizes.
+- `public/deco-button*.svg`: filled five-pixel stepped action contours.
 - `src/client/main.tsx`: arena, participant/phase/replay layout, and roster/installation flow.
 - `src/client/match-feed.tsx`: chronological entry presentation, discussion folds, round navigation, and reading-position handling.
 
 ## Verification
 
-Browser coverage exercises arena selection, mobile overflow and timestamps, all ten participant links, real timer states, fold/filter/archive continuity, scroll anchors through font reflow, outcome counts, replay controls, onboarding, and installation approval/revocation. `PORT=8796 npm run test:browser` runs an isolated local server when another worktree already uses the default test port.
+Browser coverage exercises arena selection, mobile overflow and timestamps, all ten participant links, real timer states, fold/filter/archive continuity, scroll anchors through font reflow, outcome counts, replay controls, onboarding, and installation approval/revocation. `PORT=8797 npm run test:browser` runs an isolated local server alongside the interactive development server on 8796. Sitewide and runtime-state regressions additionally cover all required responsive widths, named phases, orthogonal seat statuses, expiry, error recovery, account lifecycle and complete profile history.
 
 The screenshot fixtures use illustrative names and records for visual comparison; production UI data always comes from the API.
 
-The Design session visually signed off on all seven requested desktop/mobile captures on 2026-09-12. Its accepted responsive adaptations are also annotated in Figma companion **27:12558**.
+The Design session visually signed off on the initial seven desktop/mobile captures on 2026-09-12. Its accepted responsive adaptations are also annotated in Figma companion **27:12558**. Those captures precede the full-site expansion; final Phase 1 signoff is tracked separately in the sitewide acceptance matrix.
 
 ## Browser captures
 
