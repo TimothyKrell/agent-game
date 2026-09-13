@@ -445,7 +445,16 @@ export const PairingDetailsSchema = Schema.Struct({
 export const MatchAssignmentSchema = Schema.Struct({ matchId: Schema.String });
 
 export const ErrorResponseSchema = Schema.Struct({
-  error: Schema.Struct({ code: Schema.optional(Schema.String), message: Schema.optional(Schema.String) }),
+  error: Schema.Struct({
+    code: Schema.optional(Schema.String),
+    message: Schema.optional(Schema.String),
+    status: Schema.optional(Schema.Number),
+    gameId: Schema.optional(GameIdSchema),
+    matchId: Schema.optional(Schema.String),
+    requiredProtocolVersion: Schema.optional(Schema.Literals(['1', '2'])),
+    rulesUrl: Schema.optional(Schema.String),
+    cliUrl: Schema.optional(Schema.String),
+  }),
 });
 
 export const ObservationSchema: Schema.Codec<Observation> = Schema.Struct({
