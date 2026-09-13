@@ -186,7 +186,7 @@ afterAll(async () => {
   if (directory) await rm(directory, { recursive: true, force: true });
 });
 
-it('bounds actual cold host, mutations, sockets, house context and terminal archives with 31,200 Unicode messages', async () => {
+async function admitExternalGroup() {
   controllers = await get<FixtureController[]>('/__fixture/controllers?count=10');
   await Promise.all(
     controllers.map((controller) =>
@@ -196,7 +196,29 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
   const ticket = await get<QueueStatus>('/api/queue', controllers[0]);
   expect(ticket.status).toBe('matched');
   matchId = ticket.matchId!;
+}
+
+it('measures a small-history public/private current baseline on the actual host', async () => {
+  await admitExternalGroup();
+  await reset();
+  const publicView = await current();
+  const privateView = await current(controllers[0]);
+  const report = await record('small-history-current');
+  expect(publicView.history.streamHead).toBeLessThan(64);
+  await writeFile(
+    `/tmp/opencode/succession-worker-small-baseline-${process.pid}.json`,
+    JSON.stringify({ report, publicBytes: bytes(publicView), privateBytes: bytes(privateView) }, null, 2),
+  );
+  await drive((view) => view.status === 'finished');
+}, 120_000);
+
+it('bounds actual cold host, mutations, sockets, house context and terminal archives with 31,200 Unicode messages', async () => {
+  await admitExternalGroup();
   const initial = await current();
+  await reset();
+  await current();
+  await current(controllers[0]);
+  await record('small-history-current');
   let corpusStart = 0;
 
   for (let offset = 0; offset < 31_200; offset += 64) {
@@ -342,8 +364,13 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
 
   expect(unicode).toBe(31_200);
   expect(escaping).toBe(64);
+
+  const artifact =
+    process.env.SUCCESSION_BOUNDS_RESULTS_PATH ??
+    `/tmp/opencode/succession-worker-bounds-results-${process.pid}.json`;
+
   await writeFile(
-    '/tmp/opencode/succession-worker-bounds-results.json',
+    artifact,
     JSON.stringify(
       {
         measurements,
@@ -357,4 +384,5 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
       2,
     ),
   );
+  console.info(`Actual Worker bounds metrics: ${artifact}`);
 }, 240_000);
