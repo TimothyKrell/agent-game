@@ -8,6 +8,9 @@ import { replayFrameSuccession } from '../src/game/succession/replay';
 import type { SuccessionState, SuccessionEvent } from '../src/game/succession/types';
 import { HistoryPage2Schema, Observation2Schema, ReplayFrame2Schema } from '../src/shared/succession';
 import type { AuthorizedEvent2, Observation2 } from '../src/shared/succession';
+import { motionMark, traceSuccessionMotion } from './succession-motion-observer';
+import { visibility } from './motion-observer';
+import { writeFile } from 'node:fs/promises';
 
 test.use({ video: 'on' });
 
@@ -664,5 +667,318 @@ for (const width of [320, 390]) {
       path: `/tmp/opencode/succession-ui/historical-phase-${width}.png`,
       fullPage: true,
     });
+  });
+}
+
+for (const width of [1600, 768, 390, 320]) {
+  for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+    test(`composite native Succession motion ${width} ${reducedMotion}`, async ({
+      browser,
+      baseURL,
+    }, testInfo) => {
+      const viewport = {
+        width,
+        height:
+          new Map([
+            [1600, 1120],
+            [768, 1024],
+          ]).get(width) ?? 844,
+      };
+
+      const context = await browser.newContext({
+        baseURL,
+        viewport,
+        deviceScaleFactor: 1,
+        hasTouch: width < 768,
+        reducedMotion,
+        recordVideo: { dir: testInfo.outputPath('native-video'), size: viewport },
+      });
+
+      const page = await context.newPage();
+      const trace = await traceSuccessionMotion(page);
+      await motionMark(page, 'capture start on blank page before first navigation');
+
+      try {
+        await routes(page, viewOf(fixture.terminal, true));
+        await page.goto('/how-to-play');
+        const picker = page.getByRole('button', { name: 'Secret Overlord', exact: true });
+        const succession = page.getByRole('button', { name: 'Succession', exact: true });
+        await picker.focus();
+        await motionMark(page, 'SM01 keyboard focus Secret Overlord; hold 1s');
+        await page.waitForTimeout(1000);
+        await page.keyboard.press('Tab');
+        const pickerCueStart = trace.length;
+        await expect(succession).toBeFocused();
+        await motionMark(page, 'SM01 Enter selects Succession');
+        await page.keyboard.press('Enter');
+        await expect(succession).toHaveAttribute('aria-pressed', 'true');
+        await expect(succession).toBeFocused();
+        await page.waitForTimeout(1000);
+
+        if (width < 768) {
+          await motionMark(page, 'SM01 touch selects Secret Overlord');
+          await picker.tap();
+          await succession.tap();
+        } else {
+          await motionMark(page, 'SM01 fine pointer selects Secret Overlord then Succession');
+          await picker.click();
+          await succession.click();
+        }
+
+        await motionMark(page, 'SM01 rapid selection begins; DOM activation every 50ms');
+
+        for (const name of ['Secret Overlord', 'Succession', 'Secret Overlord', 'Succession']) {
+          await page.getByRole('button', { name, exact: true }).evaluate((node) => {
+            if (node instanceof HTMLButtonElement) node.click();
+          });
+          await motionMark(page, `SM01 rapid ${name}`);
+          await page.waitForTimeout(50);
+        }
+
+        await page.waitForTimeout(2000);
+        const pickerCues = trace.slice(pickerCueStart).filter((entry) => entry.kind === 'animate');
+        if (reducedMotion === 'reduce') expect(pickerCues).toHaveLength(0);
+        else {
+          expect(pickerCues.length).toBeGreaterThanOrEqual(4);
+          expect(
+            pickerCues.every(
+              (entry) =>
+                entry.detail.includes('"pseudoElement":"::after"') && entry.detail.includes('"duration":180'),
+            ),
+          ).toBe(true);
+        }
+        const beforeNoop = trace.filter((entry) => entry.kind === 'animate').length;
+        await succession.click();
+        await page.evaluate(() => {
+          history.replaceState(null, '', `${location.pathname}?gameId=succession&retained=1`);
+          dispatchEvent(new PopStateEvent('popstate'));
+        });
+        await motionMark(page, 'SM01 same selection and retained query-only update');
+        await page.waitForTimeout(300);
+        expect(trace.filter((entry) => entry.kind === 'animate').length).toBe(beforeNoop);
+        await motionMark(page, 'SM02 fresh completed record navigation');
+        const resultCueStart = trace.length;
+        await page.goto('/matches/succession-ui');
+        const result = page.locator('.succession-result');
+        await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
+        await expect(result).toHaveAttribute('data-motion-settled', 'true');
+        await page.waitForTimeout(2000);
+        await motionMark(page, 'SM02 completed result settled; scroll away and back');
+        const resultCues = trace.slice(resultCueStart).filter((entry) => entry.kind === 'animate');
+        expect(resultCues).toHaveLength(reducedMotion === 'reduce' ? 0 : 2);
+
+        if (reducedMotion === 'no-preference') {
+          expect(
+            resultCues.some(
+              (entry) =>
+                entry.detail.includes('"duration":240') &&
+                entry.detail.includes(`translateY(${width < 768 ? 2 : 4}px)`),
+            ),
+          ).toBe(true);
+          expect(
+            resultCues.some(
+              (entry) => entry.detail.includes('"duration":420') && entry.detail.includes('"delay":40'),
+            ),
+          ).toBe(true);
+        }
+
+        const resultText = await result.innerText();
+        const beforeReplay = trace.filter((entry) => entry.kind === 'animate').length;
+        await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+        await page.waitForTimeout(400);
+        await page.evaluate(() => scrollTo(0, 0));
+        await page.getByLabel('Replay event', { exact: true }).fill('0');
+        await expect(page.getByRole('region', { name: 'Historical match state' })).toContainText('ACT 1');
+        await page.getByLabel('Browse by round').selectOption('2:1');
+        await expect(page.getByRole('region', { name: 'Historical match state' })).toContainText('ACT 2');
+        await page.evaluate(() => {
+          history.replaceState(null, '', `${location.pathname}#replay`);
+          dispatchEvent(new HashChangeEvent('hashchange'));
+          scrollTo(0, 0);
+        });
+        await page.waitForTimeout(2000);
+        expect(await result.innerText()).toBe(resultText);
+        expect(trace.filter((entry) => entry.kind === 'animate').length).toBe(beforeReplay);
+        await motionMark(page, 'SM02 replay Act1/Act2/hash and scroll restoration add no result cue');
+        const source = width === 1600 || width === 390 ? fixture.act1 : fixture.act2;
+
+        const interrupted = evolveSuccession(
+          source,
+          { type: 'interrupt', now: Date.now(), reason: 'Motion evidence neutral interruption.' },
+          { id: () => crypto.randomUUID(), random: () => 0 },
+        ).state;
+
+        await motionMark(page, `SM02 fresh interrupted Act${source.stage.act} record`);
+        const partialCueStart = trace.length;
+        await outcomeSnapshot(page, interrupted);
+        await expect(page.getByRole('heading', { name: 'Match interrupted.' })).toBeVisible();
+        await expect(page.locator('.succession-result')).toHaveAttribute('data-motion-settled', 'true');
+        await page.waitForTimeout(2000);
+        const partialCues = trace.slice(partialCueStart).filter((entry) => entry.kind === 'animate');
+        expect(partialCues).toHaveLength(reducedMotion === 'reduce' ? 0 : 1);
+
+        if (reducedMotion === 'no-preference') expect(partialCues[0].detail).toContain('"duration":180');
+
+        if (reducedMotion === 'reduce')
+          expect(trace.filter((entry) => entry.kind === 'animate')).toHaveLength(0);
+
+        if (reducedMotion === 'no-preference' && (width === 1600 || width === 320)) {
+          for (const boundary of ['reduced', 'hidden'] as const) {
+            await routes(page, viewOf(fixture.terminal, true));
+            await page.goto('/matches/succession-ui');
+            await page.waitForFunction(() =>
+              document
+                .getAnimations()
+                .some(
+                  (animation) =>
+                    animation.playState === 'running' &&
+                    animation.effect instanceof KeyframeEffect &&
+                    animation.effect.target?.closest('.succession-result'),
+                ),
+            );
+            await motionMark(page, `SM03 confirmed active result before ${boundary}`);
+
+            if (boundary === 'reduced') await page.emulateMedia({ reducedMotion: 'reduce' });
+            else await visibility(page, 'hidden');
+            await expect
+              .poll(() =>
+                page.evaluate(
+                  () =>
+                    document.getAnimations().filter((animation) => animation.playState === 'running').length,
+                ),
+              )
+              .toBe(0);
+            await motionMark(
+              page,
+              `SM03 ${boundary} canceled running animations; hidden boundary is simulated`,
+            );
+
+            if (boundary === 'reduced') await page.emulateMedia({ reducedMotion: 'no-preference' });
+            else await visibility(page, 'visible');
+            const beforeRestore = trace.filter((entry) => entry.kind === 'animate').length;
+            await page.waitForTimeout(2000);
+            expect(trace.filter((entry) => entry.kind === 'animate').length).toBe(beforeRestore);
+            await motionMark(page, `SM03 ${boundary} restored without burst`);
+          }
+
+          const transport = await routes(page, viewOf(fixture.act2));
+          await page.goto('/matches/succession-ui');
+          await expect(page.getByRole('region', { name: 'Act 2 board' })).toBeVisible();
+          await visibility(page, 'hidden');
+          const beforeHidden = trace.filter((entry) => entry.kind === 'animate').length;
+          transport.publish(viewOf(fixture.terminal, true));
+          await expect(page.getByRole('heading', { name: 'One champion.' })).toBeAttached();
+          await visibility(page, 'visible');
+          await page.waitForTimeout(2000);
+          expect(trace.filter((entry) => entry.kind === 'animate').length).toBe(beforeHidden);
+          await motionMark(page, 'SM03 new result while simulated hidden consumed; restore no cue');
+        }
+      } finally {
+        await motionMark(page, 'capture end');
+        await context.close();
+        const tracePath = testInfo.outputPath('action-animation-trace.json');
+        await writeFile(
+          tracePath,
+          JSON.stringify(
+            {
+              viewport,
+              deviceScaleFactor: 1,
+              reducedMotion,
+              touch: width < 768,
+              visibilityBoundary:
+                'simulated via existing visibility helper; media-query subscription and cancellation real',
+              records: trace,
+            },
+            null,
+            2,
+          ),
+        );
+        await testInfo.attach('action-animation-trace.json', {
+          path: tracePath,
+          contentType: 'application/json',
+        });
+      }
+    });
+  }
+}
+
+for (const width of [1600, 320]) {
+  test(`growing history remains truthful across an in-flight page at ${width}`, async ({
+    browser,
+    baseURL,
+  }, testInfo) => {
+    const viewport = { width, height: width === 1600 ? 1120 : 844 };
+
+    const context = await browser.newContext({
+      baseURL,
+      viewport,
+      recordVideo: { dir: testInfo.outputPath('native-video'), size: viewport },
+    });
+
+    const page = await context.newPage();
+
+    try {
+      const live = viewOf(fixture.act2);
+      const initial = { ...live, history: { ...live.history, streamHead: 1 } };
+      const transport = await routes(page, initial);
+      let release = () => {};
+
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+
+      let started = false;
+      await page.route('**/api/matches/succession-ui/history?*', async (route) => {
+        if (!started) {
+          started = true;
+          await gate;
+        }
+
+        await route.fallback();
+      });
+      await page.goto('/matches/succession-ui');
+      await expect.poll(() => started).toBe(true);
+      transport.publish(live);
+      await expect(page.getByRole('region', { name: 'History page controls' })).toContainText(
+        `${live.history.streamHead} events available`,
+      );
+      release();
+      const footer = page.locator('.feed-footer');
+      await expect(footer).toContainText('newer events available');
+      await page.locator('.history-paging').scrollIntoViewIfNeeded();
+      await page.screenshot({
+        path: `/tmp/opencode/succession-ui/paging-delayed-${width}.png`,
+        fullPage: true,
+      });
+      await page.waitForTimeout(2000);
+      const next = page.getByRole('button', { name: 'Load next record page', exact: true });
+
+      for (let n = 0; n < 32 && (await next.isEnabled()); n++) {
+        await next.click();
+        await expect(page.getByRole('button', { name: 'Loading record…' })).toHaveCount(0);
+      }
+
+      await expect(next).toBeDisabled();
+      await expect(footer).not.toContainText('newer events available');
+      await page.screenshot({
+        path: `/tmp/opencode/succession-ui/paging-caught-up-${width}.png`,
+        fullPage: true,
+      });
+      const earlier = page.getByRole('button', { name: 'Load earlier record', exact: true });
+
+      if (await earlier.count()) {
+        await earlier.click();
+        await expect(footer).toContainText('newer events available');
+        await page.screenshot({
+          path: `/tmp/opencode/succession-ui/paging-earlier-${width}.png`,
+          fullPage: true,
+        });
+      }
+
+      expect(transport.pageRequests.every((url) => Number(url.searchParams.get('limit')) <= 32)).toBe(true);
+      await page.waitForTimeout(2000);
+    } finally {
+      await context.close();
+    }
   });
 }

@@ -180,6 +180,7 @@ export function SuccessionMatch({
                 )}
               </section>
               <MatchFeed
+                undelivered={Math.max(0, history.head - history.cursor)}
                 memory={feedMemory}
                 events={history.events}
                 seats={view.seats}

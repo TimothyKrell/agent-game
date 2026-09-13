@@ -244,6 +244,33 @@ for (const width of [320, 390]) {
           expect(geometry.lines).toBe(1);
           expect(geometry.fits).toBe(true);
           expect(geometry.height).toBeGreaterThanOrEqual(48 * zoom);
+
+          const containment = await page.locator('.header nav a, .game-picker button').evaluateAll((nodes) =>
+            nodes.map((node) => {
+              const box = node.getBoundingClientRect();
+              const label = node.querySelector('span') ?? node;
+              const range = document.createRange();
+              range.selectNodeContents(label);
+
+              return {
+                text: node.textContent,
+                fits: node.scrollWidth <= node.clientWidth,
+                contained: [...range.getClientRects()].every(
+                  (rect) =>
+                    rect.left >= box.left + 1 &&
+                    rect.right <= box.right - 1 &&
+                    rect.top >= box.top &&
+                    rect.bottom <= box.bottom,
+                ),
+              };
+            }),
+          );
+
+          for (const item of containment) {
+            expect(item.fits, item.text ?? '').toBe(true);
+            expect(item.contained, item.text ?? '').toBe(true);
+          }
+
           await page.screenshot({
             path: `/tmp/opencode/succession-ui/nav-${width}-${signedIn ? 'in' : 'out'}-${path.replaceAll('/', '') || 'arena'}-${zoom}.png`,
           });

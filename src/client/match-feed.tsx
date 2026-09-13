@@ -316,6 +316,7 @@ export function MatchFeed({
   actRounds,
   onActRoundSelect,
   memory,
+  undelivered = 0,
 }: {
   events: GameEvent[];
   seats: Observation['seats'];
@@ -329,6 +330,7 @@ export function MatchFeed({
   actRounds?: { act: 1 | 2; round: number; cursor: number }[];
   onActRoundSelect?: (cursor: number) => void;
   memory?: React.MutableRefObject<FeedReadingMemory | null>;
+  undelivered?: number;
 }) {
   const [filter, setFilter] = useState(memory?.current?.filter ?? 'all');
   const underline = useUnderlineMotion(filter);
@@ -690,18 +692,21 @@ export function MatchFeed({
             }}
           >
             <ArrowDown size={14} />
-            {unread > 0 && `${unread} new ${unread === 1 ? 'event' : 'events'} · `}Jump to latest
+            {unread > 0 && `${unread} new ${unread === 1 ? 'event' : 'events'} · `}
+            {undelivered > 0 ? 'Jump to latest loaded event' : 'Jump to latest'}
           </button>
         ) : (
           <>
             <Radio size={13} />
-            {ended
-              ? 'Match archive · private observations revealed'
-              : !connected
-                ? 'Reconnecting · showing the last received record'
-                : chatOpen
-                  ? 'Live timeline · discussion is open'
-                  : 'Live timeline · discussion is closed'}
+            {undelivered > 0
+              ? `${undelivered} newer events available · Load next record page above`
+              : ended
+                ? 'Match archive · private observations revealed'
+                : !connected
+                  ? 'Reconnecting · showing the last received record'
+                  : chatOpen
+                    ? 'Live timeline · discussion is open'
+                    : 'Live timeline · discussion is closed'}
           </>
         )}
       </div>
