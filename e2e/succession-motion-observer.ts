@@ -18,6 +18,7 @@ export async function traceSuccessionMotion(page: Page) {
   await page.exposeFunction('recordSuccessionMotion', (entry: SuccessionMotionRecord) => records.push(entry));
   await page.addInitScript(() => {
     let serial = 0;
+
     const report = (
       kind: string,
       detail: {

@@ -737,6 +737,7 @@ for (const width of [1600, 768, 390, 320]) {
 
         await page.waitForTimeout(2000);
         const pickerCues = trace.slice(pickerCueStart).filter((entry) => entry.kind === 'animate');
+
         if (reducedMotion === 'reduce') expect(pickerCues).toHaveLength(0);
         else {
           expect(pickerCues.length).toBeGreaterThanOrEqual(4);
@@ -747,6 +748,7 @@ for (const width of [1600, 768, 390, 320]) {
             ),
           ).toBe(true);
         }
+
         const beforeNoop = trace.filter((entry) => entry.kind === 'animate').length;
         await succession.click();
         await page.evaluate(() => {
@@ -918,7 +920,10 @@ for (const width of [1600, 320]) {
     const page = await context.newPage();
 
     try {
-      const live = viewOf(fixture.act2);
+      const source = fixture.stages.get('act-2:discussion');
+
+      if (!source) throw new Error('Missing late live discussion fixture');
+      const live = viewOf(source);
       const initial = { ...live, history: { ...live.history, streamHead: 1 } };
       const transport = await routes(page, initial);
       let release = () => {};
@@ -966,15 +971,13 @@ for (const width of [1600, 320]) {
       });
       const earlier = page.getByRole('button', { name: 'Load earlier record', exact: true });
 
-      if (await earlier.count()) {
-        await earlier.click();
-        await expect(footer).toContainText('newer events available');
-        await page.screenshot({
-          path: `/tmp/opencode/succession-ui/paging-earlier-${width}.png`,
-          fullPage: true,
-        });
-      }
-
+      await expect(earlier).toBeVisible();
+      await earlier.click();
+      await expect(footer).toContainText('newer events available');
+      await page.screenshot({
+        path: `/tmp/opencode/succession-ui/paging-earlier-${width}.png`,
+        fullPage: true,
+      });
       expect(transport.pageRequests.every((url) => Number(url.searchParams.get('limit')) <= 32)).toBe(true);
       await page.waitForTimeout(2000);
     } finally {

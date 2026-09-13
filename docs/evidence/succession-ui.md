@@ -45,6 +45,27 @@ Served follow-up assets were again fetched over HTTP and compared byte-for-byte 
 | `index-B1j05nE0.js`  | `1357cc59418f53564b2e49e99cf33f69debd8785d4baef9aa22c2fed3b3450fc` |
 | `index-uF6Q6Fat.css` | `3d5a0ba3a64f6197166772f791e617c03c0159aba5162f285f3634f9f30d0bf0` |
 
+## Supplemental reflow and interaction evidence: `bdc7172`
+
+Design subsequently closed SU07 and the required scale-1 SU06 matrix at `902c4d2`; supplemental zoom containment and SM01–SM03 remained open. The authoritative review report SHA-256 is `8d160e5dabe3f08659d8a2dac256e07fc60dd07580d37abf7ef42664ef6d2d64`.
+
+`bdc7172` gives all navigation words a min-content floor and lets the game picker become one column when its actual available width cannot fit two plates. The supplemental assertions check every navigation and picker label against its parent, not only Leaderboard.
+
+Exact animation assertions found and corrected a missing Succession spire entrance: the shared result selector previously matched only legacy emblems. The spire now receives the specified 420ms animation with 40ms delay. Title durations and distances remain 240ms and 4px/2px; neutral interruptions use 180ms opacity only. The six legacy motion tests and three legacy feed tests passed after this selector change.
+
+Eight composite clips cover SM01–SM03 at 1600×1120, 768×1024, 390×844, and 320×844 with normal/reduced motion, device scale 1, matching native video sizes, focus dwell, and settled dwell. Each clip records real Web Animations calls, animation IDs, pseudo-element targets, keyframes, duration/delay/iterations, cancellation/completion, action timestamps, running counts, and settled counts. The 1600/320 normal clips additionally interrupt active result animations with the real media-query subscription and the explicitly simulated visibility boundary, then exercise restore and hidden result consumption. Rapid activation uses DOM button activation at 50ms intervals after separate keyboard and touch/fine-pointer interactions. There is no playback time stretching.
+
+Two additional native growing-record clips reproduce a delayed initial history page followed by a newer current head. Explicit bounded paging remains intentional; the footer now reports undelivered events, and its catch-up button distinguishes the latest **loaded** event from the stream head. Captures show the delayed boundary, bounded catch-up, and earlier-page reading.
+
+Evidence directory: `/tmp/opencode/succession-ui-final-bdc7172`. `served-assets.json` records HTTP/build byte equality. The composite and zoom run passed 12/12 cases at this application source; `capture-source.diff` records test-only blank-line cleanup. A separate growing-history supplement uses a later live discussion fixture and requires the earlier-page control, ensuring cache eviction and backward paging are visibly exercised; its exact test delta is retained separately. Earlier frozen directories remain unchanged. Actual visual closure remains Design's decision on these supplied bytes.
+
+The frozen delivery contains 79 artifacts; inventory SHA-256 `d5a54996e91bcdf699dcfd93624d7f101a5c41c1009379ae240081cb1642ccd5`. The later growing-history supplement passed 2/2. Its clips under `growing-history-supplement/` supersede the first two growing-history recordings for backward-paging proof. `scene-index.json` indexes action timestamps for the eight composite clips; offsets are relative to the first recorded blank-page action, not re-timed video. `native-video-dimensions.json` verifies native dimensions and 25fps encoding.
+
+| Asset                | SHA-256                                                            |
+| -------------------- | ------------------------------------------------------------------ |
+| `index-C8KOGH8I.js`  | `081daba953ae4bb904d8a3c89eb689fdd8db7d04a4ebd287c2d489e68a9c34b7` |
+| `index-DDog0Idy.css` | `7613fcd0243ce9c26207c619c2076869edc57cb9850f72bc4f374b84e66d2cae` |
+
 ## Design source authority
 
 The authoritative specification is `design/figma/luminous-deco/succession/README.md` in the Design worktree. Native frames 46–55 contain 784 new editable text layers. Native IDs: `40:703`, `40:868`, `40:991`, `40:1260`, `41:2`, `41:178`, `41:336`, `41:502`, `41:618`, `41:723`.
