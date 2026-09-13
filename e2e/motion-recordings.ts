@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
-import { writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { readFile, writeFile } from 'node:fs/promises';
 import { interruptMatch } from '../src/game/engine';
 import { observe } from '../src/game/observation';
 import type { Observation } from '../src/game/types';
@@ -10,6 +11,7 @@ import { expectTimelineFiltersBounded } from './timeline-bounds';
 
 test('native-size motion review scenes', async ({ page }, info) => {
   const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  execFileSync('git', ['diff', '--exit-code', 'HEAD', '--', 'src', 'public']);
   const started = Date.now();
   const scenes: { name: string; offsetMs: number }[] = [];
   const mark = (name: string) => scenes.push({ name, offsetMs: Date.now() - started });
@@ -41,7 +43,7 @@ test('native-size motion review scenes', async ({ page }, info) => {
     throw new Error('Live recording socket not connected');
   };
 
-  await page.route('**/api/matches/motion-table', (route) => route.fulfill({ json: record }));
+  await page.context().route('**/api/matches/motion-table', (route) => route.fulfill({ json: record }));
   await page.routeWebSocket('**/api/matches/motion-table/events?*', (socket) => {
     send = (view) => socket.send(JSON.stringify({ type: 'observation', observation: view }));
     send(record);
@@ -51,6 +53,31 @@ test('native-size motion review scenes', async ({ page }, info) => {
   mark('homepage-navigation');
   await page.goto('/');
   await expect(page.locator('.splash-copy')).toBeVisible();
+
+  const assets = await page
+    .locator('script[src], link[rel="stylesheet"]')
+    .evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute('src') ?? element.getAttribute('href') ?? ''),
+    );
+
+  const servedAssets = await Promise.all(
+    assets.map(async (path) => {
+      const response = await page.request.get(path);
+
+      const hash = createHash('sha256')
+        .update(await response.body())
+        .digest('hex');
+
+      const built = createHash('sha256')
+        .update(await readFile(`dist/client${path}`))
+        .digest('hex');
+
+      expect(hash).toBe(built);
+
+      return { path, sha256: hash };
+    }),
+  );
+
   await page.waitForTimeout(2000);
   mark('artwork-first-viewport');
   await page.locator('.splash-art').scrollIntoViewIfNeeded();
@@ -177,6 +204,42 @@ test('native-size motion review scenes', async ({ page }, info) => {
     await page.waitForTimeout(500);
     await expect(page.locator('.final-track.safeguard b')).toHaveText(String(archive.tracks.safeguards));
     await expect(page.locator('.final-track.override b')).toHaveText(String(archive.tracks.overrides));
+
+    const resultEntries = await page.evaluate(
+      () =>
+        window.motionTrace.filter((entry) => entry.target === 'H1' || entry.target.includes('deco-emblem'))
+          .length,
+    );
+
+    const disclosure = page.getByText('Recorded data', { exact: true }).first();
+
+    if (await disclosure.count()) {
+      mark(`${archive.status}-recorded-data`);
+      await disclosure.focus();
+      await page.keyboard.press('Enter');
+      await expect(disclosure.locator('..')).toHaveAttribute('open', '');
+      await page.waitForTimeout(500);
+      await page.screenshot({ path: info.outputPath(`${archive.status}-recorded-data.png`) });
+      await page.keyboard.press('Enter');
+      await expect(disclosure).toBeFocused();
+    }
+
+    const full = page.getByRole('link', { name: 'Full record', exact: true });
+    await full.focus();
+    mark(`${archive.status}-full-record`);
+    const [popup] = await Promise.all([page.waitForEvent('popup'), page.keyboard.press('Enter')]);
+    await popup.waitForLoadState();
+    await expect(popup.locator('body')).toContainText(archive.matchId);
+    await popup.screenshot({ path: info.outputPath(`${archive.status}-full-record.png`) });
+    await popup.close();
+    await expect(full).toBeFocused();
+    expect(
+      await page.evaluate(
+        () =>
+          window.motionTrace.filter((entry) => entry.target === 'H1' || entry.target.includes('deco-emblem'))
+            .length,
+      ),
+    ).toBe(resultEntries);
   }
 
   mark('preference-interruption');
@@ -187,6 +250,18 @@ test('native-size motion review scenes', async ({ page }, info) => {
   await page.emulateMedia({ reducedMotion: info.project.use.reducedMotion });
   await page.waitForTimeout(1000);
   await page.screenshot({ path: info.outputPath('preference-return-settled.png') });
+  mark('visibility-entrance-interruption');
+  await page.goto('/');
+  await expect(page.locator('.splash-copy')).toBeVisible();
+  const interruptedAnimations = await page.evaluate(() => document.getAnimations().length);
+
+  if (info.project.use.reducedMotion === 'no-preference') expect(interruptedAnimations).toBeGreaterThan(0);
+  await visibility(page, 'hidden');
+  expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
+  await page.waitForTimeout(300);
+  await visibility(page, 'visible');
+  await page.waitForTimeout(1000);
+  expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(errors).toEqual([]);
   await writeFile(
@@ -194,6 +269,8 @@ test('native-size motion review scenes', async ({ page }, info) => {
     JSON.stringify(
       {
         source,
+        servedAssets,
+        interruptedAnimations,
         viewport: info.project.use.viewport,
         reducedMotion: info.project.use.reducedMotion,
         pointer: info.project.use.hasTouch ? 'coarse touch' : 'fine',
