@@ -45,13 +45,319 @@
   font-size: 12px;
   letter-spacing: 0.08em;
 }
-.game-picker select {
-  max-width: 100%;
-  padding: 10px 14px;
-  color: inherit;
-  background: transparent;
+.succession-board .policy-tracks {
+  padding: 20px;
+}
+.succession-board .seat-grid {
+  align-items: stretch;
+}
+.succession-board .seat {
+  min-height: 220px;
+}
+.succession-board.act-2 .seat {
+  min-height: 280px;
+}
+.succession-board .seat a {
+  overflow-wrap: anywhere;
+}
+.seat-resources {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 10px 0;
+  font-variant-numeric: tabular-nums;
+}
+.seat-resources > span,
+.champion-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.returned-marker,
+.bonus-marker {
+  display: block;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.bonus-marker,
+.champion-marker {
+  color: var(--brass);
+}
+.champion-marker {
+  margin-top: 10px;
+  font-size: 12px;
+}
+.succession-board .champion {
+  border-color: var(--brass);
+}
+.succession-result .forfeit-result {
+  color: var(--red);
+  max-width: 720px;
+}
+.act1-result-note {
+  padding: 20px 0;
+  color: var(--muted);
+}
+.tie-commitment {
+  margin: 20px 0;
+}
+.tie-commitment code {
+  overflow-wrap: anywhere;
+}
+.cap-evidence {
+  overflow-x: auto;
+}
+.cap-evidence table {
+  width: 100%;
+  text-align: left;
+}
+.cap-evidence th,
+.cap-evidence td {
+  padding: 12px;
+}
+.succession-phase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+}
+.succession-phase .pending-action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.succession-phase .pending-action span {
+  border-left: 1px solid var(--line);
+  padding-left: 12px;
+}
+.act-transition {
+  padding: 24px;
+  margin-bottom: 24px;
+  border-block: 1px solid var(--line);
+}
+.act-transition h2 {
+  color: var(--green);
+}
+.succession-private {
+  padding: 24px;
+  margin-top: 24px;
   border: 1px solid var(--line);
-  border-radius: 4px;
-  font: inherit;
-  letter-spacing: normal;
+}
+.capability-hand,
+.legal-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.capability-card {
+  padding: 20px;
+  border: 1px solid var(--violet);
+  color: var(--violet);
+}
+.history-paging {
+  padding: 16px;
+  border-block: 1px solid var(--line);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .succession-phase {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .succession-board .policy-tracks {
+    padding: 12px;
+  }
+}
+.game-scope {
+  width: calc(100% - 96px);
+  max-width: 1504px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.game-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: min(100%, 560px);
+}
+.game-picker .button {
+  min-height: 56px;
+  justify-content: center;
+  padding: 12px 20px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.game-picker .button[aria-pressed='true'] {
+  color: var(--bg);
+  background: var(--green);
+}
+@media (max-width: 640px) {
+  .game-scope {
+    width: calc(100% - 40px);
+    display: block;
+  }
+  .game-scope > .eyebrow {
+    display: block;
+    margin-bottom: 12px;
+  }
+  .game-picker .button {
+    font-size: 12px;
+    padding: 12px;
+  }
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.succession-board .seat.eliminated {
+  opacity: 1;
+}
+.influence-backs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.influence-backs span {
+  width: 20px;
+  height: 28px;
+  border: 1px solid var(--green);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 3px var(--bg);
+}
+.succession-result h2 {
+  overflow-wrap: anywhere;
+}
+.succession-act2-layout {
+  grid-template-columns: minmax(0, 1fr) 360px;
+  align-items: start;
+}
+.succession-act2-layout > div:first-child {
+  grid-column: 2;
+  grid-row: 1;
+}
+.succession-act2-layout > .event-panel {
+  grid-column: 1;
+  grid-row: 1;
+}
+.succession-board.act-2 {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.succession-board.act-2 .seat-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: visible;
+  min-width: 0;
+  padding: 0;
+  gap: 16px;
+}
+.succession-board.act-2 .seat {
+  min-height: 0;
+  height: auto;
+  text-align: left;
+  align-items: stretch;
+  padding: 24px;
+  border: 1px solid var(--line);
+  background: transparent;
+  clip-path: var(--step);
+}
+.succession-board.act-2 .seat-number {
+  position: static;
+  display: block;
+  margin-bottom: 12px;
+}
+.succession-board.act-2 .seat a {
+  font-size: 16px;
+  line-height: 1.5;
+  max-width: none;
+  white-space: normal;
+}
+.succession-board.act-2 .seat-resources {
+  justify-content: space-between;
+  font-size: 16px;
+}
+.succession-board.act-2 .influence-backs {
+  justify-content: start;
+}
+.succession-board.act-2 .board-footer {
+  flex-direction: column;
+  align-items: start;
+  padding: 20px 0;
+  gap: 12px;
+}
+.succession-board.act-2 .seat-overflow-hint {
+  display: none;
+}
+@media (max-width: 900px) {
+  .succession-act2-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .succession-act2-layout > div:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .succession-act2-layout > .event-panel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+.succession-board.act-2 .seat {
+  display: block;
+}
+.succession-board.act-2 .seat small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+.succession-board.act-2 .returned-marker,
+.succession-board.act-2 .bonus-marker,
+.succession-board.act-2 .badge {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.succession-board.act-2 .board-header {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.succession-act2-layout {
+  display: grid;
+}
+.succession-phase > div:first-child {
+  grid-column: 1;
+}
+.succession-phase .countdown {
+  grid-column: 2;
+  grid-row: 1;
+}
+@media (max-width: 640px) {
+  .succession-phase .countdown {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+.succession-private {
+  overflow-wrap: anywhere;
+}
+.succession-board.act-2 .seat small span {
+  display: block;
+}
+.succession-board.act-2 .board-footer {
+  display: flex;
 }

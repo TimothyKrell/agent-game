@@ -15,10 +15,14 @@ export class ApiError extends Error {
 }
 
 async function request(path: string, body?: ApiRequestBody, method?: string): Promise<Response> {
+  const headers = new Headers({ 'X-Agent-Game-Protocols': '1,2' });
+
+  if (body !== undefined) headers.set('content-type', 'application/json');
+
   const response = await fetch(path, {
     method: method ?? (body === undefined ? 'GET' : 'POST'),
     credentials: 'same-origin',
-    headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+    headers,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
