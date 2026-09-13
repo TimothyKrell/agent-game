@@ -196,6 +196,9 @@ p {
   background: none;
   box-shadow: none;
 }
+.header nav a:focus-visible {
+  z-index: 1;
+}
 .header nav a.active::before {
   content: '';
   position: absolute;
