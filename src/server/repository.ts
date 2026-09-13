@@ -357,6 +357,7 @@ function indexInput(env: RepositoryEnv, state: LegacyIndexedState | IndexedMatch
     ? state.snapshot
     : (state.snapshot ?? {
         ...gameDescriptor('secret-overlord'),
+        housePolicyVersion: state.houseModel?.policyVersion ?? 'house-1',
         mode: state.mode,
         timing: state.timing,
         houseModel: state.houseModel ?? {
@@ -367,6 +368,16 @@ function indexInput(env: RepositoryEnv, state: LegacyIndexedState | IndexedMatch
       });
 
   validateGame(snapshot.gameId);
+
+  if (
+    !modern &&
+    (snapshot.gameId !== 'secret-overlord' ||
+      snapshot.mode !== state.mode ||
+      snapshot.rulesVersion !== state.rulesVersion ||
+      stableJson(snapshot.timing) !== stableJson(state.timing) ||
+      (state.houseModel && stableJson(snapshot.houseModel) !== stableJson(state.houseModel)))
+  )
+    throw new GameError('integrity-error', 'Legacy state conflicts with its preserved snapshot.', 500);
 
   if (
     (snapshot.gameId === 'secret-overlord' &&
@@ -415,6 +426,13 @@ function indexInput(env: RepositoryEnv, state: LegacyIndexedState | IndexedMatch
       state.summary.gameId !== snapshot.gameId ||
       state.summary.id !== state.id ||
       state.summary.status !== status ||
+      state.summary.mode !== snapshot.mode ||
+      state.summary.createdAt !== state.createdAt ||
+      state.summary.finishedAt !== state.finishedAt ||
+      state.summary.round !== state.round ||
+      state.summary.houseCount !== state.houseCount ||
+      stableJson(state.summary.names) !==
+        stableJson(participants.map((participant) => participant.entrant.name)) ||
       state.summary.gameId !== 'succession' ||
       stableJson(state.summary.result) !== stableJson(result) ||
       (status === 'finished') !== (result !== null))

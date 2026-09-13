@@ -80,6 +80,28 @@ describe('platform migration and game-scoped repository', () => {
     await dispose?.();
   });
 
+  it('uses scoped indexes for live listings, profile history and pool ranking', async () => {
+    const queries = [
+      {
+        sql: "SELECT * FROM matches WHERE game_id='succession' AND status='active' ORDER BY created_at DESC LIMIT 20",
+        index: 'matches_game_status_created',
+      },
+      {
+        sql: "SELECT m.* FROM match_participants p JOIN matches m ON m.id=p.match_id WHERE p.agent_id='external' AND m.game_id='succession' ORDER BY m.created_at DESC LIMIT 50",
+        index: 'participant_agent',
+      },
+      {
+        sql: "SELECT agent_id FROM agent_game_stats WHERE game_id='succession' AND rating_pool_id='succession-1' AND placements>=10 ORDER BY rating DESC",
+        index: 'game_stats_leaderboard',
+      },
+    ];
+
+    for (const query of queries) {
+      const plan = await env.DB.prepare(`EXPLAIN QUERY PLAN ${query.sql}`).all<{ detail: string }>();
+      expect(plan.results.some((row) => row.detail.includes(query.index))).toBe(true);
+    }
+  });
+
   async function fixture(
     id: string,
     status: IndexedMatch['status'] = 'finished',

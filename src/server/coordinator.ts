@@ -139,6 +139,7 @@ export class PlatformQueue {
 
     return {
       ...descriptor,
+      housePolicyVersion: policyVersion,
       timing: {
         nomination: timing.nomination * scale,
         debate: timing.debate * scale,
