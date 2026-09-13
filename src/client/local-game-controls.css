@@ -6,6 +6,7 @@
   margin-block: 24px;
   padding: 6px;
   overflow: visible;
+  flex-shrink: 0;
 }
 
 .local-game-select label {
@@ -108,13 +109,45 @@
   width: calc(100% - 96px);
 }
 .game-discovery .game-introduction {
+  display: grid;
   width: 100%;
   margin: 0;
   padding: 24px;
   grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
 }
-.game-discovery .game-introduction > .emblem {
-  display: none;
+.game-discovery .game-introduction > .deco-emblem {
+  width: 96px;
+  height: 96px;
+  margin: 0;
+  justify-self: end;
+}
+.game-discovery .game-introduction > div {
+  min-width: 0;
+}
+.game-discovery .game-introduction .button {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+}
+.game-discovery .game-introduction h2 {
+  overflow-wrap: anywhere;
+}
+#live > .section-heading {
+  flex-wrap: wrap;
+  gap: 24px;
+}
+#live .arena-tabs {
+  flex-shrink: 0;
+}
+
+@media (min-width: 761px) and (max-width: 1000px) {
+  #live > .section-heading > .local-game-select {
+    flex-basis: 100%;
+  }
+  .game-discovery {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .game-discovery .game-introduction .text-link {
   display: flex;

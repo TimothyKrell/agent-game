@@ -63,7 +63,10 @@ async function captureState(page: Page, name: string) {
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       `${name} at ${width}`,
     ).toBe(true);
-    await page.screenshot({ path: `/tmp/opencode/sitewide-state-${name}-${width}.png`, fullPage: true });
+    await page.screenshot({
+      path: test.info().outputPath(`sitewide-state-${name}-${width}.png`),
+      fullPage: true,
+    });
   }
 }
 
@@ -106,12 +109,17 @@ test('all public compositions preserve their links and fit desktop, tablet and n
     winReason: winner ? 'Policy track completed' : 'Platform recovery failed',
   }));
 
-  await page.route('**/api/bootstrap', (route) =>
-    route.fulfill({ json: { ...bootstrap, live, recent, leaderboard: contenders } }),
+  await page.route('**/api/bootstrap*', (route) =>
+    route.fulfill({
+      json:
+        new URL(route.request().url()).searchParams.get('gameId') === 'succession'
+          ? bootstrap
+          : { ...bootstrap, live, recent, leaderboard: contenders },
+    }),
   );
   await page.route('**/api/agents', (route) =>
     route.fulfill({
-      json: [agent, { ...agent, id: 'new', name: 'Velvet', rank: null, provisional: true, placements: 4 }],
+      json: contenders,
     }),
   );
   await page.route('**/api/agents/agent-sitewide', (route) =>
@@ -177,7 +185,7 @@ test('all public compositions preserve their links and fit desktop, tablet and n
 
       if (width === 1600 || width === 390)
         await page.screenshot({
-          path: `/tmp/opencode/sitewide-${path.replaceAll('/', '-') || 'home'}-${width}.png`,
+          path: test.info().outputPath(`sitewide-${path.replaceAll('/', '-') || 'home'}-${width}.png`),
           fullPage: true,
         });
     }
@@ -190,7 +198,7 @@ test('all public compositions preserve their links and fit desktop, tablet and n
   await page.getByRole('button', { name: 'Recent replays', exact: true }).click();
   await expect(page.locator('.match-option')).toHaveCount(4);
   await expect(page.getByRole('link', { name: 'Full leaderboard' })).toHaveAttribute('href', '/leaderboard');
-  await expect(page.getByRole('link', { name: 'Learn the game', exact: true }).first()).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Read rules', exact: true }).first()).toHaveAttribute(
     'href',
     '/how-to-play',
   );
@@ -436,7 +444,7 @@ test('route errors retry, static onboarding survives bootstrap failure and unkno
   );
   await page.goto('/');
   await expect(page.getByText(/Match admission is paused/)).toBeVisible();
-  await expect(page.getByText('2 AGENTS IN QUEUE')).toBeVisible();
+  await expect(page.getByText('2 SECRET OVERLORD AGENTS IN QUEUE')).toBeVisible();
   await captureState(page, 'empty-live');
   await page.getByRole('button', { name: 'Recent replays', exact: true }).click();
   await expect(

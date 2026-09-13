@@ -24,6 +24,106 @@ const agent: AgentProfile = {
   createdAt: 1,
 };
 
+for (const route of ['/agents/local-agent', '/owners/shape-review']) {
+  test(`healthy selected pool survives unavailable default pool at ${route}`, async ({ page }, testInfo) => {
+    await navigationFixture(page, false);
+    await page.route('**/api/agents/local-agent*', (request) => {
+      if (new URL(request.request().url()).searchParams.get('gameId') !== 'succession')
+        return request.fulfill({ status: 503, json: { error: { message: 'Default pool unavailable' } } });
+
+      return request.fulfill({ json: { agent: { ...agent, rating: 1777 }, history: [] } });
+    });
+    await page.route('**/api/owners/shape-review*', (request) => {
+      if (new URL(request.request().url()).searchParams.get('gameId') !== 'succession')
+        return request.fulfill({ status: 503, json: { error: { message: 'Default pool unavailable' } } });
+
+      return request.fulfill({
+        json: {
+          owner: { id: 'shape-owner', name: 'Shape Review', handle: 'shape-review' },
+          agents: [{ ...agent, rating: 1777 }],
+        },
+      });
+    });
+    await page.goto(`${route}?gameId=succession`);
+    await expect(page.getByRole('combobox', { name: 'Stats for', exact: true })).toHaveValue('succession');
+    await expect(page.locator(route.startsWith('/agents') ? '.profile-stats' : 'a.leader-row')).toContainText(
+      '1,777',
+    );
+    await page.screenshot({ path: testInfo.outputPath('healthy-selected-pool.png'), fullPage: true });
+    await page.getByRole('combobox', { name: 'Stats for', exact: true }).selectOption('secret-overlord');
+    await expect(page.getByRole('combobox', { name: 'Stats for', exact: true })).toHaveValue(
+      'secret-overlord',
+    );
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      route.startsWith('/agents') ? agent.name : '@shape-review',
+    );
+    await expect(page.locator(route.startsWith('/agents') ? '.profile-stats' : 'a.leader-row')).toHaveCount(
+      0,
+    );
+    await expect(page.getByRole('alert').first()).toContainText('Default pool unavailable');
+    await page.screenshot({
+      path: testInfo.outputPath('local-failed-pool-retained-identity.png'),
+      fullPage: true,
+    });
+  });
+}
+
+for (const width of [320, 760, 768, 800, 1024, 1600]) {
+  test(`Arena home and toolbar fit their actual ${width}px viewport`, async ({ page }, testInfo) => {
+    await navigationFixture(page, false);
+    await page.setViewportSize({ width, height: 1024 });
+
+    for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+      await page.emulateMedia({ reducedMotion });
+      await page.goto('/?gameId=succession');
+      await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveValue('succession');
+      await page.evaluate(() => document.fonts.ready);
+      await page.screenshot({
+        path: testInfo.outputPath(`arena-${width}-${reducedMotion}.png`),
+        fullPage: true,
+      });
+      expect.soft(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+
+      const labelLines = await page.locator('#live .local-game-select label').evaluate((label) => {
+        const range = document.createRange();
+        range.selectNodeContents(label);
+
+        return range.getClientRects().length;
+      });
+
+      expect.soft(labelLines).toBe(1);
+
+      const boxes = await page
+        .locator(
+          '#live > .section-heading .local-game-select, #live .arena-tabs, #live > .section-heading > .button',
+        )
+        .evaluateAll((nodes) =>
+          nodes.map((node) => {
+            const box = node.getBoundingClientRect();
+
+            return { left: box.left, top: box.top, right: box.right, bottom: box.bottom };
+          }),
+        );
+
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+          expect(
+            boxes[i].right <= boxes[j].left ||
+              boxes[j].right <= boxes[i].left ||
+              boxes[i].bottom <= boxes[j].top ||
+              boxes[j].bottom <= boxes[i].top,
+          ).toBe(true);
+        }
+      }
+
+      await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCSS(
+        'min-height',
+        '48px',
+      );
+    }
+  });
+}
+
 test('a standings deep link never changes shared navigation destinations', async ({ page }) => {
   await navigationFixture(page, false);
   await page.goto('/leaderboard?gameId=succession');
@@ -42,6 +142,7 @@ test('a standings deep link never changes shared navigation destinations', async
 test('manual rules tabs preserve URL keys, hash, title DOM and scroll through history', async ({ page }) => {
   await navigationFixture(page, false);
   await page.goto('/how-to-play?code=keep#rules-panel');
+  await page.evaluate(() => document.fonts.ready);
   const first = page.getByRole('tab', { name: 'Secret Overlord', exact: true });
   const second = page.getByRole('tab', { name: 'Succession', exact: true });
   await first.focus();

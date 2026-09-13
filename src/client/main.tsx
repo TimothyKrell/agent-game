@@ -165,6 +165,42 @@ function ErrorBox({ message, retry }: { message: string; retry?: () => void }) {
   ) : null;
 }
 
+/** Keep shared identity mounted across pool changes without depending on another pool's request. */
+function useRecordIdentity<T>(key: string, value: T | null) {
+  const retained = useRef({ key, value });
+
+  if (retained.current.key !== key) retained.current = { key, value };
+  else if (value !== null) retained.current.value = value;
+
+  return retained.current.value;
+}
+
+function StatisticsState({
+  game,
+  error,
+  status,
+  retry,
+}: {
+  game: GameId;
+  error: string;
+  status: number;
+  retry: () => void;
+}) {
+  return (
+    <div className="statistics-state">
+      {status === 404 && <h2>Off the board.</h2>}
+      {error ? (
+        <ErrorBox
+          message={`${gameNames[game]} statistics: ${error}`}
+          retry={status === 404 ? undefined : retry}
+        />
+      ) : (
+        <p role="status">Loading {gameNames[game]} statistics…</p>
+      )}
+    </div>
+  );
+}
+
 function Loading() {
   return (
     <div className="loading" role="status">
@@ -2229,21 +2265,12 @@ function Profile({ id }: { id: string }) {
   const choice = usePageGame();
   const { game } = choice;
 
-  const { data, error, refresh } = useLoad(gamePath(`/api/agents/${id}`, game), GameAgentHistorySchema);
+  const { data, error, status, refresh } = useLoad(
+    gamePath(`/api/agents/${id}`, game),
+    GameAgentHistorySchema,
+  );
 
-  const identity = useLoad(`/api/agents/${id}`, GameAgentHistorySchema);
-
-  if (!identity.data)
-    return (
-      <ResourceState
-        title="Public agent record"
-        error={identity.error}
-        retry={identity.refresh}
-        missing={identity.status === 404}
-        publicRecord
-      />
-    );
-  const agent = data?.agent ?? identity.data.agent;
+  const agent = useRecordIdentity(id, data?.agent ?? null);
   const history = data?.history ?? [];
 
   return (
@@ -2252,37 +2279,41 @@ function Profile({ id }: { id: string }) {
         <ChevronLeft size={16} />
         All contenders
       </Link>
-      <div className="profile-heading">
-        <Avatar name={agent.name} size="big" />
-        <div className="profile-identity">
-          <div className="eyebrow">
-            {agent.house
-              ? 'HOUSE COMPETITOR'
-              : agent.ownerHandle && (
-                  <Link href={gamePath(`/owners/${agent.ownerHandle}`, game)}>@{agent.ownerHandle}</Link>
-                )}
+      {agent ? (
+        <div className="profile-heading">
+          <Avatar name={agent.name} size="big" />
+          <div className="profile-identity">
+            <div className="eyebrow">
+              {agent.house
+                ? 'HOUSE COMPETITOR'
+                : agent.ownerHandle && (
+                    <Link href={gamePath(`/owners/${agent.ownerHandle}`, game)}>@{agent.ownerHandle}</Link>
+                  )}
+            </div>
+            <h1>{agent.name}</h1>
+            <p className="muted">{gameNames[game]} standings · Independent rating and placement</p>
           </div>
-          <h1>{agent.name}</h1>
-          <p className="muted">{gameNames[game]} standings · Independent rating and placement</p>
+          <p className="profile-description">{agent.description || 'Actions speak. The table remembers.'}</p>
+          <div className="tags">
+            {agent.retired && <Badge>Retired</Badge>}
+            {agent.house ? (
+              <Badge>House</Badge>
+            ) : !data || choice.invalid ? null : agent.provisional ? (
+              <Badge>Provisional · {agent.placements}/10 placement games</Badge>
+            ) : agent.rank !== null ? (
+              <Badge color="green">Rank #{agent.rank}</Badge>
+            ) : null}
+          </div>
         </div>
-        <p className="profile-description">{agent.description || 'Actions speak. The table remembers.'}</p>
-        <div className="tags">
-          {agent.retired && <Badge>Retired</Badge>}
-          {agent.house ? (
-            <Badge>House</Badge>
-          ) : !data || choice.invalid ? null : agent.provisional ? (
-            <Badge>Provisional · {agent.placements}/10 placement games</Badge>
-          ) : agent.rank !== null ? (
-            <Badge color="green">Rank #{agent.rank}</Badge>
-          ) : null}
-        </div>
-      </div>
+      ) : (
+        <h1>Public agent record</h1>
+      )}
       <GameSelect choice={choice} label="Stats for" />
-      <ErrorBox message={error} retry={refresh} />
+      <ErrorBox message={data ? error : ''} retry={refresh} />
       {choice.invalid ? (
         <p>This game is not supported here. Choose Secret Overlord or Succession.</p>
-      ) : !data ? (
-        <p role="status">{error ? 'Statistics unavailable.' : `Loading ${gameNames[game]} statistics…`}</p>
+      ) : !data || !agent ? (
+        <StatisticsState game={game} error={error} retry={refresh} status={status} />
       ) : (
         <>
           <div className="profile-stats">
@@ -2402,42 +2433,35 @@ function Owner({ handle }: { handle: string }) {
   const choice = usePageGame();
   const { game } = choice;
 
-  const { data, error, refresh } = useLoad(gamePath(`/api/owners/${handle}`, game), OwnerRosterSchema);
+  const { data, error, status, refresh } = useLoad(
+    gamePath(`/api/owners/${handle}`, game),
+    OwnerRosterSchema,
+  );
 
-  const identity = useLoad(`/api/owners/${handle}`, OwnerRosterSchema);
-
-  if (!identity.data)
-    return (
-      <ResourceState
-        title="Public owner profile"
-        error={identity.error}
-        retry={identity.refresh}
-        missing={identity.status === 404}
-        publicRecord
-      />
-    );
+  const identity = useRecordIdentity(handle, data ? { owner: data.owner, count: data.agents.length } : null);
 
   return (
     <div className="page owner-page" ref={entry}>
       <>
         <div className="eyebrow">PUBLIC OWNER PROFILE</div>
-        <h1>@{identity.data.owner.handle}</h1>
-        <h2>{identity.data.owner.name}’s roster</h2>
+        <h1>{identity ? `@${identity.owner.handle}` : 'Public owner profile'}</h1>
+        {identity && <h2>{identity.owner.name}’s roster</h2>}
         <p>
-          {identity.data.agents.length} persistent{' '}
-          {identity.data.agents.length === 1 ? 'competitor' : 'competitors'}. Individual records and histories
-          belong to each agent.
+          {identity
+            ? `${identity.count} persistent ${identity.count === 1 ? 'competitor' : 'competitors'}. `
+            : ''}
+          Individual records and histories belong to each agent.
         </p>
         <div className="section-heading decorated owner-roster-heading">
           <h2>The roster</h2>
           <GameSelect choice={choice} label="Stats for" />
           <Flourish />
         </div>
-        <ErrorBox message={error} retry={refresh} />
+        <ErrorBox message={data ? error : ''} retry={refresh} />
         {choice.invalid ? (
           <p>This game is not supported here. Choose Secret Overlord or Succession.</p>
         ) : !data ? (
-          <p role="status">{error ? 'Statistics unavailable.' : `Loading ${gameNames[game]} statistics…`}</p>
+          <StatisticsState game={game} error={error} retry={refresh} status={status} />
         ) : data.agents.length ? (
           <LeaderTable agents={data.agents} game={game} />
         ) : (

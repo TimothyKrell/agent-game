@@ -254,7 +254,8 @@ test('hidden entrances are consumed and an authoritative arena fallback stays st
     .evaluate((element) => element.setAttribute('data-test-retained', 'yes'));
   const explicit = await page.evaluate(() => window.motionTrace.length);
   bootstrap.live.pop();
-  await expect.poll(() => reads, { timeout: 17_000 }).toBeGreaterThan(1);
+  const readsBeforeRefresh = reads;
+  await expect.poll(() => reads, { timeout: 17_000 }).toBeGreaterThan(readsBeforeRefresh);
   await expect(
     page.locator('.selected-match').getByRole('link', { name: 'Watch this table' }),
   ).toHaveAttribute('href', '/matches/motion-table');
