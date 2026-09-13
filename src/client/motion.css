@@ -1,0 +1,127 @@
+/* M01–M06: design/figma/luminous-deco/motion/README.md. Settled is the default. */
+:root {
+  --motion-press: 80ms;
+  --motion-control: 140ms;
+  --motion-select: 180ms;
+  --motion-settle: 420ms;
+  --motion-responsive: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --motion-ceremonial: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.art-rings-entry,
+.art-rings-hover {
+  transform-origin: 330px 330px;
+}
+.art-center-entry,
+.art-center-hover {
+  transform-origin: 330px 252px;
+}
+
+.header nav a::after,
+.arena-tabs button::after,
+.filter-tabs button::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--teal);
+  opacity: 0;
+  transform: scaleX(0.72);
+}
+.header nav a::after {
+  left: 15%;
+  width: 70%;
+  height: 2px;
+  background: var(--green);
+}
+.arena-tabs button,
+.filter-tabs button {
+  position: relative;
+}
+.arena-tabs button::after {
+  bottom: -2px;
+  height: 2px;
+}
+.arena-tabs button[aria-pressed='true'] {
+  border-bottom-color: transparent;
+}
+.filter-tabs .selected {
+  box-shadow: none;
+}
+.header nav a.active::after,
+.arena-tabs button[aria-pressed='true']::after,
+.filter-tabs .selected::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html[data-motion='enabled'] .button:not(:disabled):not([aria-disabled='true']) {
+    transition: transform var(--motion-control) var(--motion-responsive);
+  }
+  html[data-motion='enabled'] .button:not(:disabled):not([aria-disabled='true']):active {
+    transform: translateY(1px);
+    transition-duration: var(--motion-press);
+  }
+  html[data-motion='enabled'] .discussion-command svg {
+    transition: transform var(--motion-control) var(--motion-responsive);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  html[data-motion='enabled'][data-motion-hover='ready']
+    .button:not(:disabled):not([aria-disabled='true']):hover {
+    transform: translateY(-1px);
+  }
+  html[data-motion='enabled'][data-motion-hover='ready']
+    .button:not(:disabled):not([aria-disabled='true']):hover:active {
+    transform: translateY(1px);
+  }
+  html[data-motion='enabled'] :is(.button, .text-link) > :is(.lucide-arrow-right, .lucide-arrow-up-right) {
+    transition: transform var(--motion-control) var(--motion-responsive);
+  }
+  html[data-motion='enabled'][data-motion-hover='ready']
+    :is(.button, .text-link):not(:disabled):not([aria-disabled='true']):hover
+    > .lucide-arrow-right {
+    transform: translateX(2px);
+  }
+  html[data-motion='enabled'][data-motion-hover='ready']
+    :is(.button, .text-link):not(:disabled):not([aria-disabled='true']):hover
+    > .lucide-arrow-up-right {
+    transform: translate(1.414px, -1.414px);
+  }
+  html[data-motion='enabled'] :is(.art-rings-hover, .art-center-hover) {
+    transition: transform var(--motion-settle) var(--motion-ceremonial);
+  }
+  html[data-motion='enabled'][data-motion-hover='ready']
+    .splash-art[data-motion-settled='true']:hover
+    .art-rings-hover {
+    transform: rotate(0.6deg);
+  }
+  html[data-motion='enabled'][data-motion-hover='ready']
+    .splash-art[data-motion-settled='true']:hover
+    .art-center-hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Visibility also snaps existing busy indicators; their status text remains present. */
+html:not([data-motion='enabled']) *,
+html:not([data-motion='enabled']) *::before,
+html:not([data-motion='enabled']) *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
