@@ -193,8 +193,19 @@ async function admitExternalGroup() {
       get('/api/queue', controller, JSON.stringify({ gameId: 'succession', requestId: crypto.randomUUID() })),
     ),
   );
-  const ticket = await get<QueueStatus>('/api/queue', controllers[0]);
-  expect(ticket.status).toBe('matched');
+  let ticket = await get<QueueStatus>('/api/queue', controllers[0]);
+  // Joining schedules the coordinator alarm; its HTTP receipt does not await allocation.
+  await expect
+    .poll(
+      async () => {
+        ticket = await get<QueueStatus>('/api/queue', controllers[0]);
+
+        return ticket;
+      },
+      { timeout: 10_000, interval: 50 },
+    )
+    .toMatchObject({ status: 'matched', gameId: 'succession' });
+  expect(ticket.matchId).toBeTruthy();
   matchId = ticket.matchId!;
 }
 
