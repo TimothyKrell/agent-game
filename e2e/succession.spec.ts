@@ -345,6 +345,7 @@ test('archive expansion preserves the opaque reading anchor and rejects delayed 
 
   const before = await timeline.evaluate((element) => {
     const top = element.getBoundingClientRect().top;
+
     const row = [...element.querySelectorAll<HTMLElement>('[data-event-id]')].find(
       (entry) => entry.getBoundingClientRect().bottom > top,
     );

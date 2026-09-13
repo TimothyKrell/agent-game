@@ -37,9 +37,11 @@ export function SuccessionReplay({
   const requests = useRef(0);
   const reader = useRef(new SuccessionHistory());
   const epoch = view.history.visibilityEpoch;
+
   const [anchorKey] = useState(
     memory.current?.following === false ? memory.current.anchor?.identity : undefined,
   );
+
   const [anchorLoading, setAnchorLoading] = useState(!!anchorKey);
 
   useEffect(() => {

@@ -319,9 +319,11 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     const beforePublic = await data<Observation2>(`/api/matches/${matchId}`);
     const beforeOther = await data<Observation2>(`/api/matches/${matchId}`, controllers[1]);
     const firstVote = action(voting.seats[0]);
+
     const downgraded = await request('/api/queue', controllers[0], {
       headers: { 'X-Agent-Game-Protocols': '' },
     });
+
     expect(downgraded.status).toBe(426);
     expect(await downgraded.json()).toMatchObject({
       error: { code: 'protocol-upgrade-required', gameId: 'succession', matchId },
@@ -474,9 +476,11 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
 
     for (const participant of settled.participants) {
       expect(participant.rating_delta).toBeCloseTo(participant.won ? 28.8 : -3.2);
+
       const selected = await data<{
         agent: { rating: number; games: number; placements: number; wins: number };
       }>(`/api/agents/${participant.agent_id}?gameId=succession`);
+
       expect(selected.agent).toMatchObject({ games: 1, placements: 1, wins: participant.won });
       expect(selected.agent.rating).toBeCloseTo(1000 + (participant.rating_delta ?? 0));
       expect(
@@ -520,12 +524,15 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     expect(finalFrame.result).toEqual(finished.publicView.result);
     const firstAct = events.find((event) => event.act === 1)!;
     const secondAct = events.find((event) => event.act === 2 && event.type === 'act-started')!;
+
     const oldBoard = await data<ReplayFrame2>(
       `/api/matches/${matchId}/replay?epoch=${reset.visibilityEpoch}&through=${firstAct.id}`,
     );
+
     const returnBoard = await data<ReplayFrame2>(
       `/api/matches/${matchId}/replay?epoch=${reset.visibilityEpoch}&through=${secondAct.id}`,
     );
+
     expect(oldBoard).toMatchObject({ act: 1, status: 'active', result: null });
     expect(returnBoard).toMatchObject({ act: 2, status: 'active', result: null });
     expect(returnBoard.seats.every((seat) => seat.alive && seat.influence === 2)).toBe(true);

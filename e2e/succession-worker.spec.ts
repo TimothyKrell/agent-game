@@ -17,9 +17,11 @@ test('real Worker exhibition plays both acts and opens the bounded archive in th
   await expect(page).toHaveURL(/\/matches\//);
   await expect(page.getByRole('heading', { name: /^Succession/ })).toBeVisible();
   const matchId = new URL(page.url()).pathname.split('/')[2];
+
   const response = await page.request.get(`/api/matches/${matchId}`, {
     headers: { 'X-Agent-Game-Protocols': '1,2' },
   });
+
   expect(response.ok()).toBe(true);
   const bytes = await response.body();
   expect(bytes.byteLength).toBeLessThanOrEqual(14_336);

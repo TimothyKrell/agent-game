@@ -713,6 +713,7 @@ function validReplayCheckpoint(state: SuccessionState): boolean {
 
   const board = state.stage.board;
   const pool = board.pending?.exchange ?? [];
+
   const cards = [
     ...board.court,
     ...pool,
