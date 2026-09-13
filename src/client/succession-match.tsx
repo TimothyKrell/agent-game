@@ -40,7 +40,7 @@ export function SuccessionMatch({
 
   return (
     <div className={`page table-page succession-page ${ended ? 'result-page' : ''}`}>
-      <a className="back" href="/?gameId=succession">
+      <a className="back" href="/">
         <ChevronLeft size={16} />
         Back to Succession arena
       </a>

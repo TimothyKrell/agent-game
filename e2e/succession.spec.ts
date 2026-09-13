@@ -315,18 +315,16 @@ test('one terminal champion remains fixed during two-act replay with bounded pag
   expect(transport.pageRequests.length).toBeLessThan(10);
 });
 
-test('game scope survives rules navigation and back without changing actual match identity', async ({
-  page,
-}) => {
+test('rules scope restores on back while shared navigation stays neutral', async ({ page }) => {
   await page.goto('/how-to-play');
-  const picker = page.getByRole('button', { name: 'Succession', exact: true });
+  const picker = page.getByRole('tab', { name: 'Succession', exact: true });
   await picker.click();
   await expect(page).toHaveURL(/gameId=succession/);
   await expect(page.getByRole('heading', { name: 'Win together. Then stand alone.' })).toBeVisible();
   await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
-  await expect(page).toHaveURL(/leaderboard\?gameId=succession/);
+  await expect(page).toHaveURL(/\/leaderboard$/);
   await page.goBack();
-  await expect(picker).toHaveAttribute('aria-pressed', 'true');
+  await expect(picker).toHaveAttribute('aria-selected', 'true');
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: '/tmp/opencode/succession-ui/rules-390.png', fullPage: true });
@@ -701,17 +699,17 @@ for (const width of [1600, 768, 390, 320]) {
       try {
         await routes(page, viewOf(fixture.terminal, true));
         await page.goto('/how-to-play');
-        const picker = page.getByRole('button', { name: 'Secret Overlord', exact: true });
-        const succession = page.getByRole('button', { name: 'Succession', exact: true });
+        const picker = page.getByRole('tab', { name: 'Secret Overlord', exact: true });
+        const succession = page.getByRole('tab', { name: 'Succession', exact: true });
         await picker.focus();
         await motionMark(page, 'SM01 keyboard focus Secret Overlord; hold 1s');
         await page.waitForTimeout(1000);
-        await page.keyboard.press('Tab');
+        await page.keyboard.press('ArrowRight');
         const pickerCueStart = trace.length;
         await expect(succession).toBeFocused();
         await motionMark(page, 'SM01 Enter selects Succession');
         await page.keyboard.press('Enter');
-        await expect(succession).toHaveAttribute('aria-pressed', 'true');
+        await expect(succession).toHaveAttribute('aria-selected', 'true');
         await expect(succession).toBeFocused();
         await page.waitForTimeout(1000);
 
@@ -728,7 +726,7 @@ for (const width of [1600, 768, 390, 320]) {
         await motionMark(page, 'SM01 rapid selection begins; DOM activation every 50ms');
 
         for (const name of ['Secret Overlord', 'Succession', 'Secret Overlord', 'Succession']) {
-          await page.getByRole('button', { name, exact: true }).evaluate((node) => {
+          await page.getByRole('tab', { name, exact: true }).evaluate((node) => {
             if (node instanceof HTMLButtonElement) node.click();
           });
           await motionMark(page, `SM01 rapid ${name}`);

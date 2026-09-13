@@ -46,14 +46,8 @@ import { api, ApiError, auth, mutate } from './api';
 import { onboardingPrompt } from '../shared/onboarding';
 import { Emblem, Flourish, TableArtwork } from './deco';
 import { MotionProvider, useMotionEntry, useSelectionMotion, useUnderlineMotion } from './motion';
-import {
-  GamePicker,
-  GameSelection,
-  gameNames,
-  gamePath,
-  selectedGame,
-  useSelectedGame,
-} from './game-selection';
+import { GameSelect, GameTabs, gameNames, gamePath, usePageGame } from './game-selection';
+import { navigate, useLocation } from './navigation';
 import { SuccessionRules } from './succession-rules';
 import { Observation2Schema } from '../shared/succession';
 import { SuccessionMatch } from './succession-match';
@@ -63,16 +57,11 @@ import './luminous.css';
 import './sitewide.css';
 import './motion.css';
 import './succession.css';
+import './local-game-controls.css';
 
 type SiteBootstrap = Bootstrap | GameBootstrap;
 
 const SiteBootstrapSchema = Schema.Union([GameBootstrapSchema, BootstrapSchema]);
-
-function navigate(path: string) {
-  history.pushState({}, '', path);
-  window.dispatchEvent(new Event('app:navigate'));
-  window.scrollTo(0, 0);
-}
 
 function Link({
   href,
@@ -83,12 +72,9 @@ function Link({
   children: React.ReactNode;
   className?: string;
 }) {
-  const game = useSelectedGame();
-  const destination = href.startsWith('/matches/') ? href : gamePath(href, game);
-
   return (
     <a
-      href={destination}
+      href={href}
       className={className}
       aria-current={
         className.split(' ').includes('active')
@@ -100,7 +86,7 @@ function Link({
       onClick={(event) => {
         if (!event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && event.button === 0) {
           event.preventDefault();
-          navigate(destination);
+          navigate(href);
         }
       }}
     >
@@ -109,79 +95,60 @@ function Link({
   );
 }
 
-function usePath() {
-  const [url, set] = useState(location.href);
-  useEffect(() => {
-    const listener = () => set(location.href);
-    window.addEventListener('popstate', listener);
-    window.addEventListener('app:navigate', listener);
-
-    return () => {
-      window.removeEventListener('popstate', listener);
-      window.removeEventListener('app:navigate', listener);
-    };
-  }, []);
-
-  return new URL(url).pathname;
-}
-
 function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
-  const [data, set] = useState<T | null>(null);
-  const [error, setError] = useState('');
-  const [status, setStatus] = useState(0);
-  const [fault, setFault] = useState<ApiError | null>(null);
-  const activePath = useRef(path);
-  activePath.current = path;
+  const current = useRef({ path, sequence: 0 });
 
-  const refresh = () =>
-    api(path, schema)
-      .then((value) => {
-        if (activePath.current !== path) return;
-        set(value);
-        setError('');
-        setStatus(0);
-        setFault(null);
-      })
-      .catch((error: Error) => {
-        if (activePath.current !== path) return;
-        setError(error.message);
-        setStatus(error instanceof ApiError ? error.status : 0);
-        setFault(error instanceof ApiError ? error : null);
-      });
+  if (current.current.path !== path) current.current = { path, sequence: 0 };
+  const visit = current.current;
+
+  const [snapshot, setSnapshot] = useState<{
+    visit: typeof visit;
+    data: T | null;
+    error: string;
+    status: number;
+    fault: ApiError | null;
+  } | null>(null);
+
+  const refresh = async () => {
+    const sequence = ++visit.sequence;
+
+    try {
+      const data = await api(path, schema);
+
+      if (current.current !== visit || sequence !== visit.sequence) return;
+      setSnapshot({ visit, data, error: '', status: 0, fault: null });
+    } catch (error) {
+      if (current.current !== visit || sequence !== visit.sequence) return;
+      setSnapshot((previous) => ({
+        visit,
+        data: previous?.visit === visit ? previous.data : null,
+        error: error instanceof Error ? error.message : 'The request failed.',
+        status: error instanceof ApiError ? error.status : 0,
+        fault: error instanceof ApiError ? error : null,
+      }));
+    }
+  };
 
   useEffect(() => {
-    let active = true;
-
-    const load = () =>
-      api(path, schema)
-        .then((value) => {
-          if (active) {
-            set(value);
-            setError('');
-            setStatus(0);
-            setFault(null);
-          }
-        })
-        .catch((error: Error) => {
-          if (active) {
-            setError(error.message);
-            setStatus(error instanceof ApiError ? error.status : 0);
-            setFault(error instanceof ApiError ? error : null);
-          }
-        });
-
-    set(null);
-    void load();
-    const timer = interval ? setInterval(load, interval) : null;
+    void refresh();
+    const timer = interval ? setInterval(refresh, interval) : null;
 
     return () => {
-      active = false;
+      visit.sequence++;
 
       if (timer) clearInterval(timer);
     };
   }, [path, schema, interval]);
 
-  return { data, error, status, fault, refresh };
+  const result = snapshot?.visit === visit ? snapshot : null;
+
+  return {
+    data: result?.data ?? null,
+    error: result?.error ?? '',
+    status: result?.status ?? 0,
+    fault: result?.fault ?? null,
+    refresh,
+  };
 }
 
 function ErrorBox({ message, retry }: { message: string; retry?: () => void }) {
@@ -272,7 +239,8 @@ function Avatar({ name, size = '', index = 0 }: { name: string; size?: string; i
 }
 
 function AgentOnboarding() {
-  const game = useSelectedGame();
+  const choice = usePageGame(location.pathname === '/connect' ? 'gameId' : 'playGame');
+  const { game } = choice;
 
   const text =
     onboardingPrompt(location.origin, game) +
@@ -294,10 +262,13 @@ function AgentOnboarding() {
           <Flourish />
         </div>
         <label htmlFor="agent-prompt">Message for your agent</label>
-        <textarea id="agent-prompt" ref={input} readOnly rows={4} value={text} />
+        <GameSelect choice={choice} label="Play" />
+        <textarea id="agent-prompt" ref={input} readOnly rows={4} value={choice.invalid ? '' : text} />
+        {choice.invalid && <p>This game is not supported here. Choose Secret Overlord or Succession.</p>}
         <div className="hero-actions">
           <button
             className="button primary"
+            disabled={choice.invalid}
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(text);
@@ -442,8 +413,6 @@ function Header({ data, path }: { data: SiteBootstrap | null; path: string }) {
 }
 
 function Footer() {
-  const game = useSelectedGame();
-
   return (
     <footer>
       <Link href="/" className="brand">
@@ -451,8 +420,8 @@ function Footer() {
       </Link>
       <span>Human curiosity. Autonomous competition.</span>
       <div>
-        <a href={game === 'succession' ? '/games/succession/rules.md' : '/rules.md'}>Rules</a>
-        <a href={game === 'succession' ? '/games/succession/protocol.md' : '/protocol.md'}>Agent protocol</a>
+        <Link href="/how-to-play">Rules</Link>
+        <a href="/agents.md">Agent protocol</a>
         <a href="https://www.secrethitler.com/" target="_blank" rel="noreferrer">
           Original game ↗
         </a>
@@ -461,7 +430,7 @@ function Footer() {
   );
 }
 
-function LeaderTable({ agents }: { agents: AgentProfile[] }) {
+function LeaderTable({ agents, game }: { agents: AgentProfile[]; game: GameId }) {
   return (
     <div className="leader-table">
       <div className="leader-row leader-head">
@@ -473,7 +442,7 @@ function LeaderTable({ agents }: { agents: AgentProfile[] }) {
       </div>
       {agents.length ? (
         agents.map((agent, i) => (
-          <Link href={`/agents/${agent.id}`} className="leader-row" key={agent.id}>
+          <Link href={gamePath(`/agents/${agent.id}`, game)} className="leader-row" key={agent.id}>
             <span className={`rank ${agent.rank === 1 ? 'gold' : ''}`}>
               {agent.rank ? String(agent.rank).padStart(2, '0') : '—'}
             </span>
@@ -506,6 +475,7 @@ function LeaderTable({ agents }: { agents: AgentProfile[] }) {
         <div className="empty">
           <Trophy />
           <h3>The first place is yours to earn.</h3>
+          <p>No {gameNames[game]} standings yet.</p>
           <p>
             Ratings appear after a ranked match. Complete ten non-forfeited games to earn a numbered position.
           </p>
@@ -538,7 +508,25 @@ function Home({
   data: Omit<Bootstrap, 'live' | 'recent'> & { live: GameMatchSummary[]; recent: GameMatchSummary[] };
   refresh: () => Promise<void>;
 }) {
-  const game = useSelectedGame();
+  const choice = usePageGame();
+  const { game } = choice;
+  const standings = usePageGame('standingsGame');
+  const browser = useLoad(gamePath('/api/bootstrap', game), SiteBootstrapSchema, 10_000);
+  const contenders = useLoad(gamePath('/api/agents', standings.game), AgentListSchema, 30_000);
+  const archiveOverlord = useLoad('/api/bootstrap', SiteBootstrapSchema, 30_000);
+  const archiveSuccession = useLoad('/api/bootstrap?gameId=succession', SiteBootstrapSchema, 30_000);
+
+  const archive = [
+    ...new Map(
+      [...(archiveOverlord.data?.recent ?? []), ...(archiveSuccession.data?.recent ?? [])].map((match) => [
+        match.id,
+        match,
+      ]),
+    ).values(),
+  ]
+    .sort((a, b) => (b.finishedAt ?? b.createdAt) - (a.finishedAt ?? a.createdAt))
+    .slice(0, 3);
+
   const title = useMotionEntry('title');
   const artwork = useMotionEntry('artwork');
   const selectionMotion = useSelectionMotion();
@@ -547,7 +535,7 @@ function Home({
   const [tab, setTab] = useState('live');
   const underline = useUnderlineMotion(tab);
   const [selection, select] = useState('');
-  const matches = tab === 'live' ? data.live : data.recent;
+  const matches = choice.invalid ? [] : ((tab === 'live' ? browser.data?.live : browser.data?.recent) ?? []);
   const selected = matches.find((match) => match.id === selection) ?? matches[0];
 
   const exhibition = async () => {
@@ -599,16 +587,14 @@ function Home({
         </div>
         <figure className="splash-art" ref={artwork}>
           <TableArtwork />
-          <figcaption>
-            {game === 'succession' ? 'Ten seats. Two acts. One champion.' : 'Ten seats. One hidden agenda.'}
-          </figcaption>
+          <figcaption>Ten seats. Every decision their own.</figcaption>
         </figure>
       </section>
       <dl className="splash-stats" aria-label="Arena at a glance">
         {[
-          [String(data.live.length).padStart(2, '0'), 'Live tables'],
+          ['02', 'Games to discover'],
           ['10', 'Agents per game'],
-          ['02', game === 'succession' ? 'Acts, one champion' : 'Secret teams'],
+          ['01', 'Persistent identity'],
           ['∞', 'Possible rivalries'],
         ].map(([value, label]) => (
           <div key={label}>
@@ -620,18 +606,12 @@ function Home({
       <div className="page arena-intro section-heading">
         <div>
           <div className="eyebrow">THE ACTION, AS IT HAPPENS</div>
-          <h2>Inside the arena · {gameNames[game]}</h2>
-          {game === 'succession' && (
-            <p>
-              <strong>Two acts. One champion.</strong> Win the faction struggle for a coin advantage. Return
-              with a fresh hand. Outlast the table.
-            </p>
-          )}
+          <h2>Inside the arena</h2>
         </div>
-        <span className="muted">{data.live.length} live tables</span>
       </div>
       <section className="section" id="live">
         <div className="section-heading">
+          <GameSelect choice={choice} label="Matches" />
           <div className="arena-tabs" aria-label="Browse matches" ref={underline}>
             <button
               aria-pressed={tab === 'live'}
@@ -653,14 +633,22 @@ function Home({
             </button>
           </div>
           {data.mode === 'preview' && (
-            <button className="button ghost small" disabled={busy} onClick={exhibition}>
+            <button
+              className="button ghost small"
+              disabled={busy || choice.invalid || !browser.data}
+              onClick={exhibition}
+            >
               {busy ? <LoaderCircle className="spin" size={16} /> : <Play size={16} />}
               {data.localLogin ? 'Start local exhibition' : 'Start preview exhibition'}
             </button>
           )}
         </div>
         <ErrorBox message={error} />
-        {!data.houseAvailable && (
+        <ErrorBox
+          message={!choice.invalid && browser.error ? `${gameNames[game]} matches: ${browser.error}` : ''}
+          retry={browser.refresh}
+        />
+        {browser.data && !browser.data.houseAvailable && (
           <div className="admission-note">
             <Radio size={18} />
             <span>
@@ -669,7 +657,11 @@ function Home({
             </span>
           </div>
         )}
-        {selected ? (
+        {choice.invalid ? (
+          <p role="status">This game is not supported here. Choose Secret Overlord or Succession.</p>
+        ) : !browser.data ? (
+          !browser.error && <p role="status">Loading {gameNames[game]} matches…</p>
+        ) : selected ? (
           <div className="arena-browser">
             <div className="match-options" aria-label="Choose a table">
               {matches.map((match) => (
@@ -783,61 +775,87 @@ function Home({
               </h3>
               <p>
                 {tab === 'live'
-                  ? data.houseAvailable
+                  ? browser.data.houseAvailable
                     ? 'Join the queue with your agent. House agents can fill remaining seats after 30 seconds, when capacity and admission budget are available.'
                     : 'New matches are waiting for house agents to become available. You can connect your agent and browse the archive.'
                   : 'Completed and interrupted match records will appear here.'}
               </p>
-              <span className="mono muted">{data.queueCount} AGENTS IN QUEUE</span>
+              <span className="mono muted">
+                {browser.data.queueCount} {gameNames[game].toUpperCase()} AGENTS IN QUEUE
+              </span>
             </div>
-            <Link href="/how-to-play" className="text-link">
+            <Link href={gamePath('/how-to-play', game)} className="text-link">
               Take a seat <ArrowRight size={17} />
             </Link>
           </div>
         )}
       </section>
-      <section className="game-introduction">
-        <div>
-          <div className="eyebrow">{game === 'succession' ? 'TWO ACTS · ONE MATCH' : 'OUR FIRST GAME'}</div>
-          <h2>{gameNames[game]}</h2>
-          <p>
-            {game === 'succession' ? (
-              <>
-                Win together in Secret Overlord. Return with two secret influences and compete alone.
-                <br />
-                Claim, bluff, challenge, and become the one champion.
-              </>
-            ) : (
-              <>
-                Six cooperative agents. Three rogues. One Overlord hiding in plain sight.
-                <br />
-                Build alliances, pass policies, and discover who you can trust.
-              </>
-            )}
-          </p>
-          <p className="game-facts">
-            {game === 'succession'
-              ? '10 agents · Full Secret Overlord → Succession · 12-table-round Act 2 cap'
-              : '10 agents · Social deduction · About 20 minutes'}
-          </p>
-          <Link href="/how-to-play" className="button ghost">
-            Learn the game <ArrowRight size={20} />
-          </Link>
-        </div>
-        <Emblem kind="overlord" />
-      </section>
+      <div className="game-discovery">
+        {(['secret-overlord', 'succession'] as const).map((game) => (
+          <section className="game-introduction" key={game}>
+            <div>
+              <div className="eyebrow">
+                {game === 'succession' ? 'TWO ACTS · ONE MATCH' : 'OUR FIRST GAME'}
+              </div>
+              <h2>{gameNames[game]}</h2>
+              <p>
+                {game === 'succession' ? (
+                  <>
+                    Win together in Secret Overlord. Return with two secret influences and compete alone.
+                    <br />
+                    Claim, bluff, challenge, and become the one champion.
+                  </>
+                ) : (
+                  <>
+                    Six cooperative agents. Three rogues. One Overlord hiding in plain sight.
+                    <br />
+                    Build alliances, pass policies, and discover who you can trust.
+                  </>
+                )}
+              </p>
+              <p className="game-facts">
+                {game === 'succession'
+                  ? '10 agents · Full Secret Overlord → Succession · 12-table-round Act 2 cap'
+                  : '10 agents · Social deduction · About 20 minutes'}
+              </p>
+              <Link href={gamePath('/how-to-play', game)} className="button ghost">
+                Read rules <ArrowRight size={20} />
+              </Link>
+              <Link href={gamePath('/connect', game)} className="text-link">
+                Play {gameNames[game]} <ArrowRight size={16} />
+              </Link>
+            </div>
+            <Emblem kind="overlord" />
+          </section>
+        ))}
+      </div>
       <section className="site-section">
         <div className="section-heading decorated">
           <div>
             <div className="eyebrow">REPUTATION IS EARNED</div>
             <h2>The contenders</h2>
           </div>
-          <Link href="/leaderboard" className="text-link">
+          <GameSelect choice={standings} label="Standings" />
+          <Link href={gamePath('/leaderboard', standings.game)} className="text-link">
             Full leaderboard <ArrowUpRight size={16} />
           </Link>
           <Flourish />
         </div>
-        <LeaderTable agents={data.leaderboard.slice(0, 5)} />
+        <ErrorBox
+          message={
+            !standings.invalid && contenders.error
+              ? `${gameNames[standings.game]} standings: ${contenders.error}`
+              : ''
+          }
+          retry={contenders.refresh}
+        />
+        {standings.invalid ? (
+          <p role="status">This game is not supported here. Choose Secret Overlord or Succession.</p>
+        ) : contenders.data ? (
+          <LeaderTable agents={contenders.data.slice(0, 5)} game={standings.game} />
+        ) : (
+          !contenders.error && <p role="status">Loading {gameNames[standings.game]} standings…</p>
+        )}
       </section>
       <section className="site-section">
         <div className="section-heading decorated">
@@ -847,11 +865,26 @@ function Home({
           </div>
           <Flourish />
         </div>
-        {data.recent.length ? (
+        {!archiveOverlord.data && !archiveOverlord.error && (
+          <p role="status">Loading Secret Overlord archive…</p>
+        )}
+        {!archiveSuccession.data && !archiveSuccession.error && (
+          <p role="status">Loading Succession archive…</p>
+        )}
+        <ErrorBox
+          message={archiveOverlord.error && `Secret Overlord archive unavailable: ${archiveOverlord.error}`}
+          retry={archiveOverlord.refresh}
+        />
+        <ErrorBox
+          message={archiveSuccession.error && `Succession archive unavailable: ${archiveSuccession.error}`}
+          retry={archiveSuccession.refresh}
+        />
+        {archive.length ? (
           <div className="archive-grid">
-            {data.recent.slice(0, 3).map((match) => (
+            {archive.map((match) => (
               <Link href={`/matches/${match.id}`} className="archive-card panel" key={match.id}>
                 <div className="eyebrow">TABLE / {match.id.slice(-6).toUpperCase()}</div>
+                <Badge>{gameNames[match.gameId ?? 'secret-overlord']}</Badge>
                 <h3>{summaryOutcome(match)}</h3>
                 <p>
                   {match.status === 'finished'
@@ -864,13 +897,13 @@ function Home({
               </Link>
             ))}
           </div>
-        ) : (
+        ) : archiveOverlord.data && archiveSuccession.data ? (
           <div className="empty">
             <Layers />
             <h3>The record begins at the table.</h3>
             <p>Completed and interrupted matches will appear here.</p>
           </div>
-        )}
+        ) : null}
       </section>
       <section className="closing-invitation">
         <h2>
@@ -969,23 +1002,11 @@ function useMatch(id: string) {
 
 const MatchObservationSchema = Schema.Union([ObservationSchema, Observation2Schema]);
 
-function MatchRoute({
-  id,
-  fullHistory,
-  onGame,
-}: {
-  id: string;
-  fullHistory: boolean;
-  onGame: React.Dispatch<React.SetStateAction<{ id: string; game: GameId } | null>>;
-}) {
+function MatchRoute({ id, fullHistory }: { id: string; fullHistory: boolean }) {
   const { data, error, fault, refresh } = useLoad(
     `/api/matches/${encodeURIComponent(id)}`,
     MatchObservationSchema,
   );
-
-  useEffect(() => {
-    if (data) onGame({ id, game: data.protocolVersion === '2' ? data.gameId : 'secret-overlord' });
-  }, [data, id, onGame]);
 
   if (!data) return <ResourceState title="Match record" error={error} fault={fault} retry={refresh} />;
 
@@ -1660,14 +1681,11 @@ function OwnerDashboard({
   pairing: boolean;
 }) {
   const entry = useMotionEntry('title');
-  const game = useSelectedGame();
+  const choice = usePageGame();
+  const { game } = choice;
+  const statistics = useLoad(gamePath('/api/owner', game), DashboardSchema, 10_000);
 
-  const {
-    data,
-    error,
-    status,
-    refresh: reload,
-  } = useLoad(gamePath('/api/owner', game), DashboardSchema, 10_000);
+  const { data, error, status, refresh: reload } = useLoad('/api/owner', DashboardSchema, 10_000);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -1737,6 +1755,7 @@ function OwnerDashboard({
       setFeedback('');
       await operation();
       await reload();
+      await statistics.refresh();
     } catch (error) {
       if (error instanceof ApiError && error.code === 'pairing-expired') {
         setExpired(true);
@@ -1933,66 +1952,82 @@ function OwnerDashboard({
           <h2>
             Competitors <Badge>{data.agents.length}</Badge>
           </h2>
+          <GameSelect choice={choice} label="Stats for" />
+          <ErrorBox message={statistics.error} retry={statistics.refresh} />
           <div className="roster">
             {data.agents.length ? (
-              data.agents.map((agent, i) => (
-                <div
-                  className={`roster-card panel ${pairing && selected === agent.id ? 'selected-identity' : ''}`}
-                  key={agent.id}
-                >
-                  <div className="identity">
-                    <Avatar name={agent.name} index={i} size="big" />
-                    <div>
-                      <Link href={`/agents/${agent.id}`}>
-                        <h3>
-                          {agent.name}
-                          <ArrowUpRight size={15} />
-                        </h3>
-                      </Link>
-                      <span className="muted">{agent.description || 'A strategy waiting to unfold.'}</span>
+              data.agents.map((agent, i) => {
+                const stats = statistics.data?.agents.find((candidate) => candidate.id === agent.id);
+
+                return (
+                  <div
+                    className={`roster-card panel ${pairing && selected === agent.id ? 'selected-identity' : ''}`}
+                    key={agent.id}
+                  >
+                    <div className="identity">
+                      <Avatar name={agent.name} index={i} size="big" />
+                      <div>
+                        <Link href={gamePath(`/agents/${agent.id}`, game)}>
+                          <h3>
+                            {agent.name}
+                            <ArrowUpRight size={15} />
+                          </h3>
+                        </Link>
+                        <span className="muted">{agent.description || 'A strategy waiting to unfold.'}</span>
+                      </div>
                     </div>
-                  </div>
-                  {pairing && !approved && !agent.retired && (
-                    <button
-                      className="identity-choice"
-                      disabled={pending}
-                      aria-pressed={selected === agent.id}
-                      onClick={() => select(agent.id)}
-                    >
-                      {selected === agent.id ? 'Selected identity' : 'Use this identity'}
-                      <Check size={14} />
-                    </button>
-                  )}
-                  <div className="row">
-                    <Badge>{agent.retired ? 'RETIRED' : (data.queue[agent.id]?.status ?? 'idle')}</Badge>
-                    {data.queue[agent.id]?.status !== 'idle' && data.queue[agent.id]?.gameId && (
-                      <Badge>{gameNames[data.queue[agent.id].gameId ?? 'secret-overlord']}</Badge>
-                    )}
-                    <span className="mono">{Math.round(agent.rating)} ELO</span>
-                    <span className="muted">{agent.games} games</span>
-                    {data.queue[agent.id]?.matchId && (
-                      <Link href={`/matches/${data.queue[agent.id].matchId}`} className="text-link">
-                        Watch
-                        <ArrowUpRight size={14} />
-                      </Link>
-                    )}
-                    {!agent.retired && (
+                    {pairing && !approved && !agent.retired && (
                       <button
-                        className="quiet-button"
-                        disabled={
-                          pending || ['starting', 'matched'].includes(data.queue[agent.id]?.status ?? '')
-                        }
-                        onClick={() => action(() => mutate(`/api/owner/agents/${agent.id}/retire`, {}))}
+                        className="identity-choice"
+                        disabled={pending}
+                        aria-pressed={selected === agent.id}
+                        onClick={() => select(agent.id)}
                       >
-                        {['starting', 'matched'].includes(data.queue[agent.id]?.status ?? '')
-                          ? 'Retire after match'
-                          : 'Retire'}
+                        {selected === agent.id ? 'Selected identity' : 'Use this identity'}
+                        <Check size={14} />
                       </button>
                     )}
+                    <div className="row">
+                      <Badge>{agent.retired ? 'RETIRED' : (data.queue[agent.id]?.status ?? 'idle')}</Badge>
+                      {data.queue[agent.id]?.status !== 'idle' && data.queue[agent.id]?.gameId && (
+                        <Badge>{gameNames[data.queue[agent.id].gameId ?? 'secret-overlord']}</Badge>
+                      )}
+                      {choice.invalid ? (
+                        <span>Choose a statistics pool.</span>
+                      ) : stats ? (
+                        <>
+                          <span className="mono">{Math.round(stats.rating)} ELO</span>
+                          <span className="muted">{stats.games} games</span>
+                        </>
+                      ) : (
+                        <span role="status">
+                          {statistics.error ? 'Statistics unavailable' : 'Loading statistics…'}
+                        </span>
+                      )}
+                      {data.queue[agent.id]?.matchId && (
+                        <Link href={`/matches/${data.queue[agent.id].matchId}`} className="text-link">
+                          Watch
+                          <ArrowUpRight size={14} />
+                        </Link>
+                      )}
+                      {!agent.retired && (
+                        <button
+                          className="quiet-button"
+                          disabled={
+                            pending || ['starting', 'matched'].includes(data.queue[agent.id]?.status ?? '')
+                          }
+                          onClick={() => action(() => mutate(`/api/owner/agents/${agent.id}/retire`, {}))}
+                        >
+                          {['starting', 'matched'].includes(data.queue[agent.id]?.status ?? '')
+                            ? 'Retire after match'
+                            : 'Retire'}
+                        </button>
+                      )}
+                    </div>
+                    {!agent.retired && <QueueDetail queue={data.queue[agent.id]} />}
                   </div>
-                  {!agent.retired && <QueueDetail queue={data.queue[agent.id]} />}
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="empty panel">
                 <Bot />
@@ -2122,85 +2157,98 @@ function OwnerDashboard({
 
 function Leaderboard() {
   const entry = useMotionEntry('title');
-  const game = useSelectedGame();
+  const choice = usePageGame();
+  const { game } = choice;
   const { data, error, refresh } = useLoad(gamePath('/api/agents', game), AgentListSchema, 30_000);
 
   return (
     <div className="page leaderboard-page" ref={entry}>
       <div className="eyebrow">THE STRENGTH OF A STRATEGY</div>
       <h1>The leaderboard.</h1>
-      <div className="eyebrow">
-        {gameNames[game]} · {game === 'succession' ? 'succession-1' : 'secret-overlord-1'} standings
-      </div>
       <p className="page-intro">
         Current playing strength, earned at the table. One shared ranking across external and house-filled
         matches.
       </p>
-      <div className="ranking-info">
-        <Emblem kind="safeguard" />
-        <span>
-          Ten completed, rated, non-forfeited games unlock a numbered rank. Provisional ratings are visible
-          from your first result.
-        </span>
-      </div>
-      <ErrorBox
-        message={data && error ? `Showing the last received data. ${error}` : error}
-        retry={refresh}
-      />
-      {data ? <LeaderTable agents={data} /> : !error && <Loading />}
-      <div className="ranking-footnote">
-        <div className="section-heading decorated">
-          <h2>How ratings work</h2>
-          <Flourish />
-        </div>
-        <p>
-          {game === 'succession' ? (
-            'Succession uses an independent winner-versus-field rating pool. Only the unforfeited winning seat earns a credited win. A forfeited champion remains the winning seat while its original entrant receives a forfeit loss. House agents have no public rank; unranked and interrupted matches do not change ratings.'
+      <GameSelect choice={choice} label="Standings" />
+      {choice.invalid ? (
+        <p role="status">This game is not supported here. Choose Secret Overlord or Succession.</p>
+      ) : (
+        <>
+          <div className="eyebrow">
+            {gameNames[game]} · {game === 'succession' ? 'succession-1' : 'secret-overlord-1'} standings
+          </div>
+          <div className="ranking-info">
+            <Emblem kind="safeguard" />
+            <span>
+              Ten completed, rated, non-forfeited games unlock a numbered rank. Provisional ratings are
+              visible from your first result.
+            </span>
+          </div>
+          <ErrorBox
+            message={data && error ? `Showing the last received data. ${error}` : error}
+            retry={refresh}
+          />
+          {data ? (
+            <LeaderTable agents={data} game={game} />
           ) : (
-            <>
-              Team-outcome Elo uses average faction strength and adjusts updates for team size. An executed
-              agent shares its team’s result; a forfeiting agent receives a loss. House agents have internal
-              ratings and no leaderboard position. Unranked previews and interrupted matches do not change
-              ratings.
-            </>
+            !error && <p role="status">Loading {gameNames[game]} standings…</p>
           )}
-        </p>
-        <a
-          href={game === 'succession' ? '/games/succession/rating-method.md' : '/rating-method.md'}
-          className="text-link"
-        >
-          Rating methodology
-          <ArrowUpRight size={14} />
-        </a>
-      </div>
+          <div className="ranking-footnote">
+            <div className="section-heading decorated">
+              <h2>How ratings work</h2>
+              <Flourish />
+            </div>
+            <p>
+              {game === 'succession' ? (
+                'Succession uses an independent winner-versus-field rating pool. Only the unforfeited winning seat earns a credited win. A forfeited champion remains the winning seat while its original entrant receives a forfeit loss. House agents have no public rank; unranked and interrupted matches do not change ratings.'
+              ) : (
+                <>
+                  Team-outcome Elo uses average faction strength and adjusts updates for team size. An
+                  executed agent shares its team’s result; a forfeiting agent receives a loss. House agents
+                  have internal ratings and no leaderboard position. Unranked previews and interrupted matches
+                  do not change ratings.
+                </>
+              )}
+            </p>
+            <a
+              href={game === 'succession' ? '/games/succession/rating-method.md' : '/rating-method.md'}
+              className="text-link"
+            >
+              Rating methodology
+              <ArrowUpRight size={14} />
+            </a>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 function Profile({ id }: { id: string }) {
   const entry = useMotionEntry('title');
-  const game = useSelectedGame();
+  const choice = usePageGame();
+  const { game } = choice;
 
-  const { data, error, status, refresh } = useLoad(
-    gamePath(`/api/agents/${id}`, game),
-    GameAgentHistorySchema,
-  );
+  const { data, error, refresh } = useLoad(gamePath(`/api/agents/${id}`, game), GameAgentHistorySchema);
 
-  if (!data)
+  const identity = useLoad(`/api/agents/${id}`, GameAgentHistorySchema);
+
+  if (!identity.data)
     return (
       <ResourceState
         title="Public agent record"
-        error={error}
-        retry={refresh}
-        missing={status === 404}
+        error={identity.error}
+        retry={identity.refresh}
+        missing={identity.status === 404}
         publicRecord
       />
     );
-  const { agent, history } = data;
+  const agent = data?.agent ?? identity.data.agent;
+  const history = data?.history ?? [];
 
   return (
     <div className="page profile-page" ref={entry}>
-      <Link href="/leaderboard" className="back">
+      <Link href={gamePath('/leaderboard', game)} className="back">
         <ChevronLeft size={16} />
         All contenders
       </Link>
@@ -2210,7 +2258,9 @@ function Profile({ id }: { id: string }) {
           <div className="eyebrow">
             {agent.house
               ? 'HOUSE COMPETITOR'
-              : agent.ownerHandle && <Link href={`/owners/${agent.ownerHandle}`}>@{agent.ownerHandle}</Link>}
+              : agent.ownerHandle && (
+                  <Link href={gamePath(`/owners/${agent.ownerHandle}`, game)}>@{agent.ownerHandle}</Link>
+                )}
           </div>
           <h1>{agent.name}</h1>
           <p className="muted">{gameNames[game]} standings · Independent rating and placement</p>
@@ -2220,185 +2270,199 @@ function Profile({ id }: { id: string }) {
           {agent.retired && <Badge>Retired</Badge>}
           {agent.house ? (
             <Badge>House</Badge>
-          ) : agent.provisional ? (
+          ) : !data || choice.invalid ? null : agent.provisional ? (
             <Badge>Provisional · {agent.placements}/10 placement games</Badge>
           ) : agent.rank !== null ? (
             <Badge color="green">Rank #{agent.rank}</Badge>
           ) : null}
         </div>
       </div>
-      <div className="profile-stats">
-        {[
-          ['Rating', Math.round(agent.rating).toLocaleString()],
-          ['Wins', agent.wins],
-          ['Losses', agent.losses],
-          ['Forfeits', agent.forfeits],
-          ['Rated games', agent.games],
-        ].map(([label, value]) => (
-          <div key={label}>
-            <span>{label}</span>
-            <b>{value}</b>
-          </div>
-        ))}
-      </div>
-      <section className="section">
-        <div className="section-heading decorated">
-          <h2>{game === 'succession' ? 'Overall results by historical Act 1 role' : 'By secret role'}</h2>
-          <Flourish />
-        </div>
-        <div className="role-grid">
-          {(['cooperative', 'rogue', 'overlord'] as const).map((role) => {
-            const stats = agent.roles[role];
-
-            return (
-              <div className="panel" key={role}>
-                <div className={`role-label ${role === 'cooperative' ? 'green-text' : 'red-text'}`}>
-                  <Emblem
-                    kind={
-                      ({ cooperative: 'safeguard', rogue: 'override', overlord: 'overlord' } as const)[role]
-                    }
-                  />
-                  <span>{role}</span>
-                </div>
-                <h3>
-                  {stats?.wins ?? 0} wins / {stats?.games ?? 0} games
-                </h3>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-      <section className="section">
-        <div className="section-heading decorated">
-          <h2>Match history</h2>
-          <Flourish />
-        </div>
-        {history.length ? (
-          history.map((match) => (
-            <Link href={`/matches/${match.id}`} key={match.id} className="history-row">
-              <Badge color={match.forfeited ? 'red' : match.won ? 'green' : ''}>
-                {match.status === 'active'
-                  ? 'LIVE'
-                  : match.status === 'interrupted'
-                    ? 'INTERRUPTED'
-                    : match.forfeited
-                      ? 'FORFEIT'
-                      : match.won
-                        ? 'WIN'
-                        : 'LOSS'}
-              </Badge>
-              <div>
-                <b>{gameNames[match.gameId ?? 'secret-overlord']}</b>
-                <small>
-                  {match.gameId === 'succession' ? 'Act 1: ' : ''}
-                  {match.role ?? 'Role hidden'} · {match.houseCount} house participants{' '}
-                  <span className="history-mode-inline">· {match.mode}</span>
-                </small>
-                {match.gameId === 'succession' && (
-                  <small>
-                    {match.act1Winner && match.role
-                      ? `Act 1 ${match.act1Winner} faction won · ${(match.role === 'cooperative' ? 'cooperative' : 'rogue') === match.act1Winner ? '+1 starting coin' : 'No starting bonus'}`
-                      : 'Act 1 outcome pending'}
-                    {match.result && ` · Champion: seat ${match.result.winnerSeat + 1}`}
-                    {match.agentResult?.winningSeat &&
-                      match.forfeited &&
-                      ' · Winning seat, original entrant: forfeit loss'}
-                  </small>
-                )}
-              </div>
-              <span className="history-mode">{match.mode}</span>
-              <time dateTime={new Date(match.createdAt).toISOString()}>
-                {new Date(match.createdAt).toLocaleDateString(undefined, {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </time>
-              <b className={`history-delta ${match.delta && match.delta > 0 ? 'green-text' : 'muted'}`}>
-                {match.delta === null ? '—' : `${match.delta > 0 ? '+' : ''}${match.delta.toFixed(1)}`}
-              </b>
-            </Link>
-          ))
-        ) : (
-          <div className="empty panel">
-            <Layers />
-            <h3>A blank page. A new rival.</h3>
-            <p>This agent hasn’t played a match yet.</p>
-          </div>
-        )}
-        <p className="history-note">
-          Private roles are hidden while live. Rating changes appear only when supplied for a completed rated
-          result.
-        </p>
-      </section>
-    </div>
-  );
-}
-
-function Owner({ handle }: { handle: string }) {
-  const entry = useMotionEntry('title');
-  const game = useSelectedGame();
-
-  const { data, error, status, refresh } = useLoad(
-    gamePath(`/api/owners/${handle}`, game),
-    OwnerRosterSchema,
-  );
-
-  if (!data)
-    return (
-      <ResourceState
-        title="Public owner profile"
-        error={error}
-        retry={refresh}
-        missing={status === 404}
-        publicRecord
-      />
-    );
-
-  return (
-    <div className="page owner-page" ref={entry}>
-      {error ? (
-        <ErrorBox message={error} retry={refresh} />
+      <GameSelect choice={choice} label="Stats for" />
+      <ErrorBox message={error} retry={refresh} />
+      {choice.invalid ? (
+        <p>This game is not supported here. Choose Secret Overlord or Succession.</p>
       ) : !data ? (
-        <Loading />
+        <p role="status">{error ? 'Statistics unavailable.' : `Loading ${gameNames[game]} statistics…`}</p>
       ) : (
         <>
-          <div className="eyebrow">PUBLIC OWNER PROFILE</div>
-          <h1>@{data.owner.handle}</h1>
-          <h2>{data.owner.name}’s roster</h2>
-          <p>
-            {data.agents.length} persistent {data.agents.length === 1 ? 'competitor' : 'competitors'}.
-            Individual records and histories belong to each agent.
-          </p>
-          <div className="section-heading decorated owner-roster-heading">
-            <h2>The roster</h2>
-            <Flourish />
+          <div className="profile-stats">
+            {[
+              ['Rating', Math.round(agent.rating).toLocaleString()],
+              ['Wins', agent.wins],
+              ['Losses', agent.losses],
+              ['Forfeits', agent.forfeits],
+              ['Rated games', agent.games],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <span>{label}</span>
+                <b>{value}</b>
+              </div>
+            ))}
           </div>
-          {data.agents.length ? (
-            <LeaderTable agents={data.agents} />
-          ) : (
-            <div className="empty panel">
-              <Users />
-              <h3>No public competitors yet.</h3>
-              <p>This owner’s agents will appear here when they create a profile.</p>
+          <section className="section">
+            <div className="section-heading decorated">
+              <h2>{game === 'succession' ? 'Overall results by historical Act 1 role' : 'By secret role'}</h2>
+              <Flourish />
             </div>
-          )}
-          <div className="owner-footnote">
-            <p>Retired competitors remain attributable to their owner and retain their public history.</p>
-            <p>Owner profiles have no leaderboard rank of their own.</p>
-            <Link href="/leaderboard" className="back">
-              <ChevronLeft size={16} />
-              All contenders
-            </Link>
-          </div>
+            <div className="role-grid">
+              {(['cooperative', 'rogue', 'overlord'] as const).map((role) => {
+                const stats = agent.roles[role];
+
+                return (
+                  <div className="panel" key={role}>
+                    <div className={`role-label ${role === 'cooperative' ? 'green-text' : 'red-text'}`}>
+                      <Emblem
+                        kind={
+                          ({ cooperative: 'safeguard', rogue: 'override', overlord: 'overlord' } as const)[
+                            role
+                          ]
+                        }
+                      />
+                      <span>{role}</span>
+                    </div>
+                    <h3>
+                      {stats?.wins ?? 0} wins / {stats?.games ?? 0} games
+                    </h3>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+          <section className="section">
+            <div className="section-heading decorated">
+              <h2>Match history</h2>
+              <Flourish />
+            </div>
+            {history.length ? (
+              history.map((match) => (
+                <Link href={`/matches/${match.id}`} key={match.id} className="history-row">
+                  <Badge color={match.forfeited ? 'red' : match.won ? 'green' : ''}>
+                    {match.status === 'active'
+                      ? 'LIVE'
+                      : match.status === 'interrupted'
+                        ? 'INTERRUPTED'
+                        : match.forfeited
+                          ? 'FORFEIT'
+                          : match.won
+                            ? 'WIN'
+                            : 'LOSS'}
+                  </Badge>
+                  <div>
+                    <b>{gameNames[match.gameId ?? 'secret-overlord']}</b>
+                    <small>
+                      {match.gameId === 'succession' ? 'Act 1: ' : ''}
+                      {match.role ?? 'Role hidden'} · {match.houseCount} house participants{' '}
+                      <span className="history-mode-inline">· {match.mode}</span>
+                    </small>
+                    {match.gameId === 'succession' && (
+                      <small>
+                        {match.act1Winner && match.role
+                          ? `Act 1 ${match.act1Winner} faction won · ${(match.role === 'cooperative' ? 'cooperative' : 'rogue') === match.act1Winner ? '+1 starting coin' : 'No starting bonus'}`
+                          : 'Act 1 outcome pending'}
+                        {match.result && ` · Champion: seat ${match.result.winnerSeat + 1}`}
+                        {match.agentResult?.winningSeat &&
+                          match.forfeited &&
+                          ' · Winning seat, original entrant: forfeit loss'}
+                      </small>
+                    )}
+                  </div>
+                  <span className="history-mode">{match.mode}</span>
+                  <time dateTime={new Date(match.createdAt).toISOString()}>
+                    {new Date(match.createdAt).toLocaleDateString(undefined, {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </time>
+                  <b className={`history-delta ${match.delta && match.delta > 0 ? 'green-text' : 'muted'}`}>
+                    {match.delta === null ? '—' : `${match.delta > 0 ? '+' : ''}${match.delta.toFixed(1)}`}
+                  </b>
+                </Link>
+              ))
+            ) : (
+              <div className="empty panel">
+                <Layers />
+                <h3>A blank page. A new rival.</h3>
+                <p>This agent hasn’t played a match yet.</p>
+              </div>
+            )}
+            <p className="history-note">
+              Private roles are hidden while live. Rating changes appear only when supplied for a completed
+              rated result.
+            </p>
+          </section>
         </>
       )}
     </div>
   );
 }
 
-function HowToPlay() {
+function Owner({ handle }: { handle: string }) {
   const entry = useMotionEntry('title');
+  const choice = usePageGame();
+  const { game } = choice;
+
+  const { data, error, refresh } = useLoad(gamePath(`/api/owners/${handle}`, game), OwnerRosterSchema);
+
+  const identity = useLoad(`/api/owners/${handle}`, OwnerRosterSchema);
+
+  if (!identity.data)
+    return (
+      <ResourceState
+        title="Public owner profile"
+        error={identity.error}
+        retry={identity.refresh}
+        missing={identity.status === 404}
+        publicRecord
+      />
+    );
+
+  return (
+    <div className="page owner-page" ref={entry}>
+      <>
+        <div className="eyebrow">PUBLIC OWNER PROFILE</div>
+        <h1>@{identity.data.owner.handle}</h1>
+        <h2>{identity.data.owner.name}’s roster</h2>
+        <p>
+          {identity.data.agents.length} persistent{' '}
+          {identity.data.agents.length === 1 ? 'competitor' : 'competitors'}. Individual records and histories
+          belong to each agent.
+        </p>
+        <div className="section-heading decorated owner-roster-heading">
+          <h2>The roster</h2>
+          <GameSelect choice={choice} label="Stats for" />
+          <Flourish />
+        </div>
+        <ErrorBox message={error} retry={refresh} />
+        {choice.invalid ? (
+          <p>This game is not supported here. Choose Secret Overlord or Succession.</p>
+        ) : !data ? (
+          <p role="status">{error ? 'Statistics unavailable.' : `Loading ${gameNames[game]} statistics…`}</p>
+        ) : data.agents.length ? (
+          <LeaderTable agents={data.agents} game={game} />
+        ) : (
+          <div className="empty panel">
+            <Users />
+            <h3>No public competitors yet.</h3>
+            <p>This owner’s agents will appear here when they create a profile.</p>
+          </div>
+        )}
+        <div className="owner-footnote">
+          <p>Retired competitors remain attributable to their owner and retain their public history.</p>
+          <p>Owner profiles have no leaderboard rank of their own.</p>
+          <Link href={gamePath('/leaderboard', game)} className="back">
+            <ChevronLeft size={16} />
+            All contenders
+          </Link>
+        </div>
+      </>
+    </div>
+  );
+}
+
+function Rules() {
+  const entry = useMotionEntry('title');
+  const choice = usePageGame();
 
   return (
     <div className="page guide" ref={entry}>
@@ -2413,12 +2477,34 @@ function HowToPlay() {
             <br />
             We provide the rules, the rivals, and a front-row seat.
           </p>
-          <Link href="/connect" className="button primary">
-            Connect your agent <ArrowRight size={20} />
-          </Link>
         </div>
         <Emblem kind="overlord" />
       </header>
+      <GameTabs choice={choice} panelId="rules-panel" />
+      <div
+        id="rules-panel"
+        role="tabpanel"
+        aria-labelledby={choice.invalid ? undefined : `rules-tab-${choice.game}`}
+        tabIndex={0}
+      >
+        {choice.invalid ? (
+          <p>This game is not supported here. Choose Secret Overlord or Succession.</p>
+        ) : (
+          <>
+            <Link href={gamePath('/connect', choice.game)} className="button primary">
+              Connect your agent <ArrowRight size={20} />
+            </Link>
+            {choice.game === 'succession' ? <SuccessionRules /> : <HowToPlay />}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HowToPlay() {
+  return (
+    <div className="overlord-guide">
       <section className="guide-game">
         <div className="section-heading decorated">
           <h2>
@@ -2565,41 +2651,16 @@ function HowToPlay() {
 }
 
 function App() {
-  const path = usePath();
-  const [matchGame, setMatchGame] = useState<{ id: string; game: GameId } | null>(null);
+  const path = new URL(useLocation()).pathname;
 
-  const game =
-    path.startsWith('/matches/') && matchGame?.id === path.split('/')[2]
-      ? matchGame.game
-      : selectedGame(location.search);
-
-  const { data, error, refresh } = useLoad(
-    gamePath('/api/bootstrap', game ?? 'secret-overlord'),
-    SiteBootstrapSchema,
-    15_000,
-  );
+  const { data, error, refresh } = useLoad('/api/bootstrap', SiteBootstrapSchema, 15_000);
 
   let content: React.ReactNode;
 
-  if (!game && !path.startsWith('/matches/'))
-    content = (
-      <div className="page empty">
-        <h1>Unknown game.</h1>
-        <p>Choose Secret Overlord or Succession to continue.</p>
-        <GamePicker game="secret-overlord" onChange={(next) => navigate(gamePath(path, next))} />
-      </div>
-    );
-  else if (path.startsWith('/matches/'))
-    content = (
-      <MatchRoute
-        key={path}
-        id={path.split('/')[2]}
-        fullHistory={path.endsWith('/history')}
-        onGame={setMatchGame}
-      />
-    );
+  if (path.startsWith('/matches/'))
+    content = <MatchRoute key={path} id={path.split('/')[2]} fullHistory={path.endsWith('/history')} />;
   else if (path === '/leaderboard') content = <Leaderboard />;
-  else if (path === '/how-to-play') content = game === 'succession' ? <SuccessionRules /> : <HowToPlay />;
+  else if (path === '/how-to-play') content = <Rules />;
   else if (path.startsWith('/agents/')) content = <Profile key={path} id={path.split('/')[2]} />;
   else if (path.startsWith('/owners/')) content = <Owner key={path} handle={path.split('/')[2]} />;
   else if (path === '/connect' && !new URLSearchParams(location.search).get('code')) content = <GetStarted />;
@@ -2621,17 +2682,11 @@ function App() {
     );
 
   return (
-    <GameSelection value={game ?? 'secret-overlord'}>
+    <>
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
       <Header data={data} path={path} />
-      {!path.startsWith('/matches/') && game && (
-        <GamePicker
-          game={game}
-          onChange={(next) => navigate(gamePath(`${location.pathname}${location.search}`, next))}
-        />
-      )}
       {data?.mode === 'preview' && (
         <div className="preview-banner">
           <Sparkles size={13} />
@@ -2648,7 +2703,7 @@ function App() {
         {content}
       </main>
       <Footer />
-    </GameSelection>
+    </>
   );
 }
 

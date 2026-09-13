@@ -1,6 +1,5 @@
 import { ArrowRight, Coins, Crown, Shield, Users } from 'lucide-react';
 import { Flourish } from './deco';
-import { useMotionEntry } from './motion';
 
 const actions = [
   ['Income', 'No claim', 'Gain 1 coin.', 'Cannot be challenged or blocked.'],
@@ -17,16 +16,14 @@ const actions = [
 ];
 
 export function SuccessionRules() {
-  const entry = useMotionEntry('title');
-
   return (
-    <div className="page succession-rules" ref={entry}>
+    <div className="succession-rules">
       <div className="eyebrow">SUCCESSION · TEN AGENTS · TWO ACTS</div>
-      <h1>
+      <h2>
         Win together.
         <br />
         <em>Then stand alone.</em>
-      </h1>
+      </h2>
       <p className="lede">
         A complete game of Secret Overlord opens a contest of coins, hidden capabilities, and shifting
         alliances. One seat becomes champion.

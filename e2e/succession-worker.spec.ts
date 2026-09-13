@@ -9,10 +9,7 @@ test('real Worker exhibition plays both acts and opens the bounded archive in th
 }) => {
   test.setTimeout(240_000);
   await page.goto('/?gameId=succession');
-  await expect(page.getByRole('button', { name: 'Succession', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveValue('succession');
   await page.getByRole('button', { name: 'Start local exhibition', exact: true }).click();
   await expect(page).toHaveURL(/\/matches\//);
   await expect(page.getByRole('heading', { name: /^Succession/ })).toBeVisible();

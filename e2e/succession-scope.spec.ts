@@ -144,7 +144,7 @@ async function scopeRoutes(page: Page, signedIn = true) {
 for (const width of [320, 390, 768, 1600]) {
   test(`scoped pages keep full identities, selected-game contrast, rule facts and global participation at ${width}px`, async ({
     page,
-  }) => {
+  }, testInfo) => {
     await page.setViewportSize({ width, height: width === 768 ? 1024 : width > 768 ? 1120 : 844 });
     await scopeRoutes(page);
 
@@ -154,13 +154,29 @@ for (const width of [320, 390, 768, 1600]) {
       for (const game of ['secret-overlord', 'succession'] as const) {
         await page.goto(`/?gameId=${game}`);
         const label = game === 'succession' ? 'Succession' : 'Secret Overlord';
-        const selected = page.getByRole('button', { name: label, exact: true });
-        await expect(selected).toHaveAttribute('aria-pressed', 'true');
-        await expect(selected).toHaveCSS('color', 'rgb(187, 243, 238)');
-        await expect(selected).toHaveCSS('border-image-source', /deco-game-selected|data:image/);
-        await expect(page.getByRole('heading', { name: `Inside the arena · ${label}` })).toBeVisible();
+        const selected = page.getByRole('combobox', { name: 'Matches', exact: true });
+        await expect(selected).toHaveValue(game);
+        await expect(page.getByRole('heading', { name: 'Inside the arena', exact: true })).toBeVisible();
+        await expect(
+          page.locator('.game-introduction').getByRole('heading', { name: label, exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('.archive-card h3')).toHaveCount(2);
+
+        const archiveNames = await page.locator('.archive-card h3').evaluateAll((headings) =>
+          headings.map((heading) => {
+            const bounds = heading.getBoundingClientRect();
+            const range = document.createRange();
+            range.selectNodeContents(heading);
+
+            return [...range.getClientRects()].every(
+              (rect) => rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1,
+            );
+          }),
+        );
+
+        expect(archiveNames.every(Boolean)).toBe(true);
         await page.screenshot({
-          path: `/tmp/opencode/succession-ui/scope-${game}-${width}-${reducedMotion}.png`,
+          path: testInfo.outputPath(`scope-${game}-${width}-${reducedMotion}.png`),
           fullPage: true,
         });
       }
@@ -177,10 +193,23 @@ for (const width of [320, 390, 768, 1600]) {
       '/how-to-play',
     ]) {
       await page.goto(`${path}?gameId=succession`);
-      await expect(page.getByRole('button', { name: 'Succession', exact: true })).toHaveAttribute(
-        'aria-pressed',
-        'true',
-      );
+
+      if (path === '/how-to-play')
+        await expect(page.getByRole('tab', { name: 'Succession', exact: true })).toHaveAttribute(
+          'aria-selected',
+          'true',
+        );
+      else
+        await expect(
+          page.getByRole('combobox', {
+            name:
+              new Map([
+                ['/connect', 'Play'],
+                ['/leaderboard', 'Standings'],
+              ]).get(path) ?? 'Stats for',
+            exact: true,
+          }),
+        ).toHaveValue('succession');
 
       if (path === '/dashboard') {
         await expect(page.locator('.roster-card')).toContainText('Secret Overlord');
@@ -205,7 +234,7 @@ for (const width of [320, 390, 768, 1600]) {
         );
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), path).toBe(true);
       await page.screenshot({
-        path: `/tmp/opencode/succession-ui/${path.replaceAll('/', '-').slice(1)}-${width}.png`,
+        path: testInfo.outputPath(`${path.replaceAll('/', '-').slice(1)}-${width}.png`),
         fullPage: true,
       });
     }
@@ -213,7 +242,7 @@ for (const width of [320, 390, 768, 1600]) {
 }
 
 for (const width of [320, 390]) {
-  test(`compact navigation keeps complete words and targets at ${width}`, async ({ page }) => {
+  test(`compact navigation keeps complete words and targets at ${width}`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 844 });
 
     for (const signedIn of [false, true]) {
@@ -272,7 +301,9 @@ for (const width of [320, 390]) {
           }
 
           await page.screenshot({
-            path: `/tmp/opencode/succession-ui/nav-${width}-${signedIn ? 'in' : 'out'}-${path.replaceAll('/', '') || 'arena'}-${zoom}.png`,
+            path: testInfo.outputPath(
+              `nav-${width}-${signedIn ? 'in' : 'out'}-${path.replaceAll('/', '') || 'arena'}-${zoom}.png`,
+            ),
           });
         }
       }
