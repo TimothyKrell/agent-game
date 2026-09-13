@@ -164,6 +164,7 @@ async function drive(stop: (view: Observation2) => boolean) {
 }
 
 beforeAll(async () => {
+  const started = performance.now();
   directory = await mkdtemp('/tmp/opencode/succession-bounds-');
   await promisify(execFile)('npx', [
     'wrangler',
@@ -178,12 +179,21 @@ beforeAll(async () => {
     directory,
   ]);
   await start();
+  console.info(
+    'SUCCESSION_BOUNDS_LIFECYCLE',
+    JSON.stringify({ phase: 'ready', elapsedMs: Math.round(performance.now() - started) }),
+  );
 }, 60_000);
 
 afterAll(async () => {
+  const started = performance.now();
   await worker?.stop();
 
   if (directory) await rm(directory, { recursive: true, force: true });
+  console.info(
+    'SUCCESSION_BOUNDS_LIFECYCLE',
+    JSON.stringify({ phase: 'cleaned', elapsedMs: Math.round(performance.now() - started) }),
+  );
 });
 
 async function admitExternalGroup() {
@@ -224,7 +234,17 @@ it('measures a small-history public/private current baseline on the actual host'
 }, 120_000);
 
 it('bounds actual cold host, mutations, sockets, house context and terminal archives with 31,200 Unicode messages', async () => {
+  const started = performance.now();
+  const progress: { phase: string; elapsedMs: number; count: number }[] = [];
+
+  function mark(phase: string, count = 0) {
+    const entry = { phase, elapsedMs: Math.round(performance.now() - started), count };
+    progress.push(entry);
+    console.info('SUCCESSION_BOUNDS_PROGRESS', JSON.stringify(entry));
+  }
+
   await admitExternalGroup();
+  mark('admitted');
   const initial = await current();
   await reset();
   await current();
@@ -238,9 +258,12 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
     );
 
     if (offset === 0) corpusStart = batch.first - 1;
+
+    if ((offset + 64) % 4096 === 0) mark('populating', offset + 64);
   }
 
   const corpusEnd = (await get<{ through: number }>(fixture('populate?offset=0&count=64&escaping'))).through;
+  mark('populated', 31_264);
   await worker.stop();
   await start();
   const cold = await current(controllers[0]);
@@ -285,8 +308,10 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
   await reset();
   await get(`/api/matches/${matchId}/actions`, controllers[index], JSON.stringify(input));
   await record('receipt-retry');
+  mark('hot-paths-checked');
   expect(actionable.status).toBe('active');
   const act2 = await drive((view) => view.act === 2 && !view.phase.kind.includes('discussion'));
+  mark('act-2');
   await reset();
   await get(fixture(`clock?kind=grace&phaseId=${act2.phase.id}`));
   await record('timeout-takeover-enqueue', true);
@@ -305,6 +330,7 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
   expect(bytes(context!.observation)).toBeLessThanOrEqual(14_336);
   await record('entitled-house-context', true);
   const terminal = await drive((view) => view.status === 'finished');
+  mark('terminal');
   await worker.stop();
   await start();
   const archived = await current();
@@ -340,6 +366,7 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
   let after = corpusStart;
   let unicode = 0;
   let escaping = 0;
+  let pages = 0;
 
   while (after < corpusEnd) {
     await reset();
@@ -371,10 +398,14 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
 
     expect(part.cursor).toBeGreaterThan(after);
     after = part.cursor;
+    pages++;
+
+    if (pages % 512 === 0) mark('traversing', unicode + escaping);
   }
 
   expect(unicode).toBe(31_200);
   expect(escaping).toBe(64);
+  mark('preserved', unicode + escaping);
 
   const artifact =
     process.env.SUCCESSION_BOUNDS_RESULTS_PATH ??
@@ -385,6 +416,7 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
     JSON.stringify(
       {
         measurements,
+        progress,
         unicode,
         escaping,
         contextBytes: bytes(context),
@@ -396,4 +428,6 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
     ),
   );
   console.info(`Actual Worker bounds metrics: ${artifact}`);
-}, 240_000);
+  // Full 125MB preservation traversal: the two-CPU profile takes 220.52s locally;
+  // hosted CI exceeds 240s. Wire/storage bounds remain assertions, independently of this budget.
+}, 480_000);
