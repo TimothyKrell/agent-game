@@ -548,6 +548,7 @@ export async function supervise(options, invoke = invokeHarness) {
             phase: { id: view.phase?.id, kind: view.phase?.kind },
             decision: { id: view.decision?.id, submitted: view.decision?.submitted },
             result: view.result,
+            interruptionReason: view.interruptionReason,
             winner: view.winner,
             you: view.you,
             controller: view.controller,
@@ -572,6 +573,15 @@ export async function supervise(options, invoke = invokeHarness) {
       if (reason) ledger.stopReason = reason;
       await save();
       const view = ledger.snapshot?.view;
+      const successionTerminal = ledger.gameId === 'succession' && terminal(view);
+
+      const originalAgentResult =
+        !reason && successionTerminal && view.status === 'finished' && view.you && view.result
+          ? {
+              won: view.you.seat === view.result.winnerSeat && !view.you.forfeited,
+              forfeited: view.you.forfeited,
+            }
+          : null;
 
       return {
         status: reason ? 'client-stopped' : view.status,
@@ -580,6 +590,9 @@ export async function supervise(options, invoke = invokeHarness) {
         matchId: ledger.matchId,
         winner: view?.winner ?? null,
         result: view?.result ?? null,
+        winningSeat: successionTerminal ? (view.result?.winnerSeat ?? null) : null,
+        originalAgentResult,
+        overallReason: successionTerminal ? (view.result?.reason ?? view.interruptionReason ?? null) : null,
         you: view?.you ?? null,
         controller: view?.controller ?? null,
         serverStatus: view?.status ?? null,

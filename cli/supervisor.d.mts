@@ -68,6 +68,9 @@ export type SupervisorResult = {
   matchId: string | null;
   winner: string | null;
   result: unknown;
+  winningSeat: number | null;
+  originalAgentResult: { won: boolean; forfeited: boolean } | null;
+  overallReason: string | null;
   you: Observation['you'] | null;
   controller: unknown;
   serverStatus: string | null;
