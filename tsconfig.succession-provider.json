@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "fixtures/succession-provider-worker.ts",
+    "tests/succession-provider*.ts",
+    "worker-configuration.d.ts",
+    "src/server/secrets.d.ts",
+    "vitest.succession-provider.config.ts"
+  ]
+}
