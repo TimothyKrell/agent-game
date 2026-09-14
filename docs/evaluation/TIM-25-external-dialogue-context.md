@@ -22,8 +22,10 @@ The correction uses existing seams:
   decisions in action receipts. Before optional speech, explicitly retrieve the
   most recent ten entitled events at a frozen epoch/head. Advance only through
   returned page cursors, and reobserve between pages and before speaking.
-  Defer speech on changed state, insufficient time, or incomplete context.
-  Deliberate silence remains valid.
+  Defer speech on a new decision, changed phase/authority/epoch, insufficient
+  time, or an incomplete frozen window. Same-scope head growth leaves that
+  window valid; speech can use its delivered context while the newer unread tail
+  remains available for the next bounded pass. Deliberate silence remains valid.
 - `cli/supervisor.mjs`: replace the ambiguous ordinary-history suggestion with
   a pointer to the skill's **Recent context** sequence. This also removes its
   `--limit 64` suggestion, which was incompatible with protocol 1's 40-event
@@ -83,6 +85,11 @@ Each main scenario writes full commands/stdout and HTTP request order to ignored
 These contain only synthetic game data and no authentication material. The
 essential transcript is preserved below so retiring the worktree does not lose
 the finding.
+
+The original four traces from `96fc9af` are also preserved under
+`.agent-game/tim25-original-96fc9af/`. The moving-head follow-up writes separate
+`.agent-game/tim25-moving-head-blocked.json` and
+`.agent-game/tim25-moving-head-after.json` artifacts; its evidence is below.
 
 ## Actual request and context sequence
 
@@ -198,14 +205,74 @@ installed-package play against the real Worker.
 | Voting opens during first page           | One page, then `observe` exposes the new vote decision; `POST vote` follows before another page or speech.                                                                                         |
 | Controller replacement during first page | Real debate/action/grace expiry yields forfeited generation 1 and `private:null`; stop after one page, no chat submission.                                                                         |
 | Epoch changes before page response       | Real interruption makes the server return reset metadata; CLI adopts the archive epoch, the script defers speech, and a subsequent foreground page begins at zero.                                 |
-| Peer speaks during first page            | Reobserve sees the changed head; stop after one page rather than chasing the moving head or speaking on incomplete context.                                                                        |
+| Peer speaks after every page             | Superseding the original single-chat silence case: finish four pages through frozen head 43, acknowledge newer head 47, and speak using the delivered claim. The unread tail remains undelivered.  |
 | Fresh model context / reconnect          | Drain foreground history to head 16, clear only the simulated model's prior stdout, invoke a fresh CLI process, and explicitly redeliver the recent window. The foreground walk remains identical. |
 | Cooldown                                 | Engine-generated earlier speech sets `nextSpeakAt` in the future; refreshed context does not result in another chat.                                                                               |
 | Deliberate silence                       | A completed fresh read leaves speech available; the scripted caller chooses silence and submits no chat.                                                                                           |
 
+## Follow-up: moving-head progress without a quiescence gate
+
+Lead review of `96fc9af` identified that requiring the head to remain equal to T
+after every page unnecessarily required a quiet table. A growing head within the
+same match/phase/controller/epoch does not invalidate a frozen history prefix.
+This section **supersedes** that commit's `new-chat` silence finding and its
+remaining-limits statement accepting silence on a continually changing head.
+The earlier ordering/backlog measurements and their transcripts remain valid.
+
+A new installed-CLI stress scenario first ran against the unchanged helper from
+`96fc9af`, before removing its `current.history.streamHead === through` gate:
+
+```sh
+npx vitest run tests/cli-dialogue.test.ts -t 'head grows after every page'
+```
+
+Measured **red** in 1.43 seconds:
+
+```text
+ready=false pages=1 cursors=[36] frozenThrough=43
+page advertisedHeads=[43] peerTimes=[25000] currentHead=44
+FAIL Same-scope head growth must not require table quiescence before speech
+```
+
+After revising the skill and executable helper, the same command passed in
+1.56 seconds. It keeps epoch `dialogue-12` and `through=43` for every history
+request. An actual engine-accepted peer chat occurs after **each** of the four
+pages, before its explicit current recheck:
+
+| Page | Delivered IDs | Page's advertised head | Peer chat time | Rechecked head |
+| ---- | ------------- | ---------------------- | -------------- | -------------- |
+| 1    | 34–36         | 43                     | 25,000 ms      | 44             |
+| 2    | 37–38         | 44                     | 26,000 ms      | 45             |
+| 3    | 39–40         | 45                     | 27,000 ms      | 46             |
+| 4    | 41–43         | 46                     | 28,000 ms      | 47             |
+
+Four distinct peers speak after their individual five-second cooldowns, all
+within the same government-discussion phase ending at 40,000 ms. The frozen
+ten-event window remains **33,944 JSON UTF-8 bytes (33.1 KiB)** across four
+individually bounded pages, including the claim at event 43. A preparatory
+one-event foreground page establishes cursor 1; that saved cursor remains 1
+through the entire recent read and accepted speech. No history query goes
+beyond frozen T, despite later availability being visible in both page metadata
+and the final current recheck.
+
+The script asserts that the four newer posts' unique text is absent from every
+CLI output before speech. It obtains the known claim from the actual delivered
+page, then submits this engine-accepted reply:
+
+> You said: "I oppose this government: ask the nominee to explain their last vote." Which prior vote concerns you?
+
+The final recheck advertises head **47**; the reply itself advances the head to
+**48**. Events 44–47 are known to be available, but their contents are **not**
+known to this caller. The scripted reply demonstrates use of delivered context,
+not an LLM choosing a useful response or a new mandatory reply style. Subsequent
+bounded passes can read newer availability. Mandatory-decision, match, phase,
+epoch, generation, forfeit, terminal and cooldown rechecks remain in effect.
+
 ## Verification
 
-Final regression command:
+### Original patch (`96fc9af`)
+
+Original regression command:
 
 ```sh
 npx vitest run --no-file-parallelism tests/cli-dialogue.test.ts tests/cli-output.test.ts tests/cli-succession.test.ts tests/cli-worker.test.ts tests/supervisor.test.ts tests/supervisor-native.test.ts tests/supervisor-result.test.ts
@@ -228,15 +295,34 @@ root-path missing-binding and occasional shutdown `Broken pipe` diagnostics;
 its gameplay/archive assertions pass. Those diagnostics are not dialogue
 context failures, and the parallel-interference cause was not fully isolated.
 
+### Moving-head follow-up
+
+The focused moving-head scenario was recorded red before the helper/instruction
+edit and green afterward. Final follow-up checks passed:
+
+```sh
+npx vitest run tests/cli-dialogue.test.ts
+npx oxlint tests/cli-dialogue.test.ts
+npx prettier --ignore-path /dev/null --check tests/cli-dialogue.test.ts skills/agent-game/SKILL.md docs/evaluation/TIM-25-external-dialogue-context.md
+git diff --check
+```
+
+**Nine dialogue cases passed** in 4.39 seconds; scoped lint reported no warnings
+or errors. The moving-head stress replaces the original single-head-growth
+silence test. Production CLI runtime code is unchanged; the original 63-case
+regression evidence above is retained without repeating those suites.
+
 ## Remaining model limits
 
 This proves the corrected **scripted sequence can deliver** relevant permitted
 history before optional speech while preserving immediate known mandatory-action
 priority. It does **not** prove an LLM will follow the skill, use a claim correctly,
 choose a useful reply, or fit real model/tool latency inside the available phase.
-Silence on a continually changing head is a boundedness tradeoff, not a measured
-conversation-quality improvement. State can still change after the final read;
-the existing server legality/phase/controller checks remain authoritative.
+Bounded historical context can omit newer messages even after a fresh current
+recheck: their advertised availability does not deliver their content. This
+permits conversation grounded in a finite delivered window without requiring
+table quiescence or unbounded catchup. State can still change after the final
+read; the existing server legality/phase/controller checks remain authoritative.
 
 There is no evidence here for adding a mandatory “reply to a prior claim” prompt.
 The prior useful-claim/question/reply guidance is retained, with no new response

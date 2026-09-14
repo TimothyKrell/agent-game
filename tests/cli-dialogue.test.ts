@@ -232,9 +232,12 @@ async function fixture(backlog = true) {
       advance();
       advance();
     },
-    peerChat() {
-      now += 5000;
-      chat(peers[0], 'A newer position after the context read.');
+    peerChat(index: number) {
+      now += index === 0 ? 5000 : 1000;
+      const text = `Newer undelivered peer position ${index + 1}.`;
+      chat(peers[index], text);
+
+      return { text, at: now };
     },
     coolingDown() {
       chat(seat, 'An earlier contribution from this controller.');
@@ -281,10 +284,10 @@ async function recent(h: Awaited<ReturnType<typeof fixture>>, start: Observation
       !current.decision &&
       current.status === 'active' &&
       !current.you?.forfeited &&
+      current.matchId === start.matchId &&
       current.you?.generation === start.you?.generation &&
       current.phase.id === start.phase.id &&
-      current.history.visibilityEpoch === epoch &&
-      current.history.streamHead === through;
+      current.history.visibilityEpoch === epoch;
 
     if (!ready) break;
     expect(page.cursor).toBeGreaterThan(after);
@@ -376,7 +379,7 @@ it.each([false, true])(
   },
 );
 
-it.each(['decision', 'replacement', 'epoch', 'new-chat'])(
+it.each(['decision', 'replacement', 'epoch'])(
   'rechecks %s during a byte-short recent read before any optional speech',
   async (change) => {
     const h = await fixture();
@@ -388,8 +391,7 @@ it.each(['decision', 'replacement', 'epoch', 'new-chat'])(
 
       if (change === 'epoch') h.beforePage(h.interrupt);
       else if (change === 'decision') h.onPage(h.advance);
-      else if (change === 'replacement') h.onPage(h.replace);
-      else h.onPage(h.peerChat);
+      else h.onPage(h.replace);
       const prepared = await recent(h, start);
       expect(prepared.ready).toBe(false);
       expect(prepared.pages).toBe(1);
@@ -421,6 +423,91 @@ it.each(['decision', 'replacement', 'epoch', 'new-chat'])(
     }
   },
 );
+
+it('finishes the frozen window and can speak while the head grows after every page', async () => {
+  const h = await fixture();
+  const posts: { text: string; at: number }[] = [];
+  let ready = false;
+  let recheckedHead: number | undefined;
+
+  try {
+    await h.cli('observe');
+    const { observation } = await h.cli('act', '--choice', '0');
+    const start = Schema.decodeUnknownSync(Observation2Schema)(observation);
+    expect(h.requests).toEqual(['GET current', 'POST nominate']);
+    await h.cli('history', '--limit', '1');
+    const foreground = (await h.saved()).historyWalk;
+    expect(foreground.cursor).toBe(1);
+
+    const peerBetweenPages = () => {
+      posts.push(h.peerChat(posts.length));
+      h.onPage(peerBetweenPages);
+    };
+
+    h.onPage(peerBetweenPages);
+    const prepared = await recent(h, start);
+    ready = prepared.ready;
+    recheckedHead = prepared.current.history.streamHead;
+    expect(ready, 'Same-scope head growth must not require table quiescence before speech').toBe(true);
+    expect(prepared.pages).toBe(4);
+    expect(posts.map(({ at }) => at)).toEqual([25000, 26000, 27000, 28000]);
+    expect(h.now).toBeLessThan(start.phase.deadline!);
+    expect(prepared.current.phase).toEqual(start.phase);
+    expect(prepared.current.history).toEqual({ ...start.history, streamHead: 47 });
+    expect((await h.saved()).historyWalk).toEqual(foreground);
+
+    const pages = h.outputs
+      .filter(({ command }) => command.includes('--epoch'))
+      .map(({ output }) => Schema.decodeUnknownSync(HistoryPage2Schema)(JSON.parse(output)));
+
+    expect(
+      pages.map(({ after, cursor, through, streamHead }) => ({ after, cursor, through, streamHead })),
+    ).toEqual([
+      { after: 33, cursor: 36, through: 43, streamHead: 43 },
+      { after: 36, cursor: 38, through: 43, streamHead: 44 },
+      { after: 38, cursor: 40, through: 43, streamHead: 45 },
+      { after: 40, cursor: 43, through: 43, streamHead: 46 },
+    ]);
+    expect(pages.reduce((bytes, page) => bytes + Buffer.byteLength(JSON.stringify(page)), 0)).toBe(33944);
+
+    for (const request of h.requests.filter((entry) => entry.startsWith('GET history'))) {
+      const query = new URLSearchParams(request.slice('GET history '.length));
+      expect(query.get('epoch')).toBe(start.history.visibilityEpoch);
+      expect(query.get('through')).toBe(String(start.history.streamHead));
+    }
+
+    const delivered = pages.flatMap(({ events }) => events).find((event) => event.text === claim);
+    expect(delivered?.id).toBe(43);
+
+    for (const post of posts) expect(h.outputs.some(({ output }) => output.includes(post.text))).toBe(false);
+    const reply = `You said: "${delivered!.text}" Which prior vote concerns you?`;
+    expect((await h.cli('say', '--text', reply)).accepted).toBe(true);
+    expect(h.requests.at(-1)).toBe('POST chat');
+    expect((await h.saved()).historyWalk).toEqual(foreground);
+  } finally {
+    const pages = h.outputs
+      .filter(({ command }) => command.includes('--epoch'))
+      .map(({ output }) => Schema.decodeUnknownSync(HistoryPage2Schema)(JSON.parse(output)));
+
+    const summary = {
+      ready,
+      pages: pages.length,
+      cursors: pages.map(({ cursor }) => cursor),
+      frozenThrough: pages[0]?.through,
+      advertisedHeads: pages.map(({ streamHead }) => streamHead),
+      peerTimes: posts.map(({ at }) => at),
+      recheckedHead,
+      currentHead: h.view().history.streamHead,
+    };
+
+    console.log(JSON.stringify(summary));
+    await writeFile(
+      resolve('.agent-game', `tim25-moving-head-${ready ? 'after' : 'blocked'}.json`),
+      JSON.stringify({ summary, requests: h.requests, outputs: h.outputs }, null, 2),
+    );
+    await h.close();
+  }
+});
 
 it('redelivers recent context on reconnect independently of an already delivered foreground walk', async () => {
   const h = await fixture(false);
