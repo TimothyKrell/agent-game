@@ -45,6 +45,8 @@ const HouseSchema = Schema.Struct({
       deadline: Schema.Number,
       attempts: Schema.Number,
       response: Schema.NullOr(Schema.String),
+      outcome: Schema.NullOr(Schema.String),
+      completed_at: Schema.NullOr(Schema.Number),
     }),
   ),
   notes: Schema.Array(Schema.Struct({ generation: Schema.Number, text: Schema.String })),
@@ -99,7 +101,9 @@ const headers = { 'X-Agent-Game-Protocols': '1,2' };
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 async function fixture(options: Parameters<typeof startSuccessionProvider>[0] = {}, timeScale = '0.4') {
-  const provider = await startSuccessionProvider(options);
+  // A broad first pass now reaches every seat in Act I. Speak once per act so the
+  // Act II history assertion does not rely on scheduler-starved seats speaking late.
+  const provider = await startSuccessionProvider({ ...options, chatPerAct: true });
   const directory = await mkdtemp('/tmp/opencode/succession-provider-');
   let worker: Awaited<ReturnType<typeof unstable_dev>> | undefined;
 
@@ -399,7 +403,21 @@ it('completes both acts through real HouseSeat OpenAI transport, accounting, ret
       houseModel: { provider: 'openai', model: 'gpt-4.1-mini', policyVersion: 'succession-1' },
     });
     expect(accounting.summary.accountedUsd).toBeLessThan(accounting.allocations[0].reservation);
-    expect(accounting.summary.calls).toBe(f.provider.requests.length);
+    const released = accounting.usage.filter((entry) => entry.actual === 0);
+
+    for (const reservation of released) {
+      const skipped = jobs.find((entry) => reservation.id === `${entry.id}:attempt:1`);
+      expect(skipped).toMatchObject({
+        status: 'done',
+        attempts: 0,
+        response: null,
+        outcome: 'insufficient-time',
+      });
+      expect(skipped!.job.kind).toBe('chat');
+      expect(skipped!.deadline - skipped!.completed_at!).toBeLessThan(1150);
+    }
+
+    expect(accounting.summary.calls).toBe(f.provider.requests.length + released.length);
     expect(accounting.summary.peakRollingRpm).toBeLessThanOrEqual(250);
     expect(accounting.summary.unknownUsageCalls).toBe(1);
     expect(accounting.usage.every((entry) => entry.done === 1 && entry.reserved > 0)).toBe(true);

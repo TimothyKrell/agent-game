@@ -111,7 +111,7 @@ export class SuccessionProviderHouse extends HouseSeatObject {
           attempts: number;
           response: string | null;
         }>(
-          'SELECT id,data,status,due_at,deadline,attempts,response FROM jobs WHERE id>? ORDER BY id LIMIT 64',
+          'SELECT id,data,status,due_at,deadline,attempts,response,outcome,completed_at FROM jobs WHERE id>? ORDER BY id LIMIT 64',
           url.searchParams.get('after') ?? '',
         )
         .toArray(),

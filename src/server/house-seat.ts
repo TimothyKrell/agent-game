@@ -7,6 +7,7 @@ import type { TransportActionRequest } from '../shared/api';
 import { Observation2Schema } from '../shared/succession';
 import type { Action2 } from '../shared/succession';
 import type { HouseJob } from './house-contract';
+import { houseChatBudget } from './house-contract';
 import { generateHouse, housePrompt, houseSystem, inferenceCost } from './house-model';
 import { platformCoordinator } from './coordinator';
 
@@ -27,6 +28,18 @@ interface SavedResponse {
   cost: number | null;
 }
 
+type JobOutcome =
+  | 'accepted'
+  | 'silent'
+  | 'expired'
+  | 'insufficient-time'
+  | 'obsolete'
+  | 'decision-complete'
+  | 'chat-closed'
+  | 'admission-denied'
+  | 'rejected'
+  | 'provider-error';
+
 /** Per-match, per-seat runner: slow inference never owns the authoritative match alarm. */
 export class HouseSeatObject extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
@@ -37,17 +50,31 @@ export class HouseSeatObject extends DurableObject<Env> {
     ctx.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS notes (generation INTEGER PRIMARY KEY, text TEXT NOT NULL)',
     );
+    const columns = ctx.storage.sql.exec<{ name: string }>('PRAGMA table_info(jobs)').toArray();
+
+    if (!columns.some((column) => column.name === 'outcome'))
+      ctx.storage.sql.exec('ALTER TABLE jobs ADD COLUMN outcome TEXT');
+
+    if (!columns.some((column) => column.name === 'completed_at'))
+      ctx.storage.sql.exec('ALTER TABLE jobs ADD COLUMN completed_at INTEGER');
   }
 
   async enqueue(job: HouseJob): Promise<void> {
-    this.ctx.storage.sql.exec(
-      'INSERT OR IGNORE INTO jobs (id, data, status, due_at, deadline) VALUES (?, ?, ?, ?, ?)',
+    const skip =
+      job.kind === 'chat' && Math.max(Date.now(), job.dueAt) + houseChatBudget(job.model) > job.deadline;
+
+    const inserted = this.ctx.storage.sql.exec(
+      'INSERT OR IGNORE INTO jobs (id, data, status, due_at, deadline, outcome, completed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
       job.id,
       JSON.stringify(job),
-      'pending',
+      skip ? 'done' : 'pending',
       job.dueAt,
       job.deadline,
+      skip ? 'insufficient-time' : null,
+      skip ? Date.now() : null,
     );
+
+    if (skip && inserted.rowsWritten) this.logSkip(job, 'insufficient-time');
     await this.arm();
   }
   private async arm(): Promise<void> {
@@ -58,8 +85,32 @@ export class HouseSeatObject extends DurableObject<Env> {
     if (next !== null) await this.ctx.storage.setAlarm(Math.max(Date.now() + 1, next));
     else await this.ctx.storage.deleteAlarm();
   }
-  private done(id: string): void {
-    this.ctx.storage.sql.exec("UPDATE jobs SET status = 'done' WHERE id = ?", id);
+  private logSkip(job: HouseJob, outcome: JobOutcome): void {
+    if (job.kind === 'chat')
+      console.log(
+        JSON.stringify({
+          event: 'house_chat_skip',
+          job: job.id,
+          outcome,
+          at: Date.now(),
+          deadline: job.deadline,
+        }),
+      );
+  }
+
+  private done(id: string, outcome: JobOutcome): void {
+    this.ctx.storage.sql.exec(
+      "UPDATE jobs SET status = 'done', outcome = ?, completed_at = ? WHERE id = ?",
+      outcome,
+      Date.now(),
+      id,
+    );
+
+    if (outcome !== 'accepted' && outcome !== 'silent') {
+      const row = this.ctx.storage.sql.exec<{ data: string }>('SELECT data FROM jobs WHERE id = ?', id).one();
+      const job: HouseJob = JSON.parse(row.data);
+      this.logSkip(job, outcome);
+    }
   }
 
   async alarm(): Promise<void> {
@@ -81,7 +132,7 @@ export class HouseSeatObject extends DurableObject<Env> {
 
     try {
       if (Date.now() >= job.deadline) {
-        this.done(row.id);
+        this.done(row.id, 'expired');
 
         return;
       }
@@ -90,10 +141,16 @@ export class HouseSeatObject extends DurableObject<Env> {
       let response: SavedResponse | null = row.response ? JSON.parse(row.response) : null;
 
       if (!response) {
+        if (job.kind === 'chat' && Date.now() + houseChatBudget(job.model) > job.deadline) {
+          this.done(row.id, 'insufficient-time');
+
+          return;
+        }
+
         const input = await match.houseObservation(job.seat, job.generation, job.phaseId);
 
         if (!input) {
-          this.done(row.id);
+          this.done(row.id, 'obsolete');
 
           return;
         }
@@ -104,13 +161,22 @@ export class HouseSeatObject extends DurableObject<Env> {
             : Schema.decodeUnknownSync(ObservationSchema)(input.observation);
 
         if (job.kind === 'action' && !view.decision) {
-          this.done(row.id);
+          this.done(row.id, 'decision-complete');
 
           return;
         }
 
         if (job.kind === 'chat' && !view.chat.open) {
-          this.done(row.id);
+          this.done(row.id, 'chat-closed');
+
+          return;
+        }
+
+        if (job.kind === 'chat' && view.chat.nextSpeakAt !== null && view.chat.nextSpeakAt > Date.now()) {
+          this.ctx.storage.sql.exec('UPDATE jobs SET due_at = ? WHERE id = ?', view.chat.nextSpeakAt, row.id);
+
+          if (view.chat.nextSpeakAt + houseChatBudget(job.model) > job.deadline)
+            this.done(row.id, 'insufficient-time');
 
           return;
         }
@@ -160,9 +226,18 @@ export class HouseSeatObject extends DurableObject<Env> {
           });
 
           if (!reserved.allowed) {
-            if (reserved.retryAt < job.deadline - 500)
+            const budget = job.kind === 'chat' ? houseChatBudget(job.model) : 500;
+
+            if (reserved.retryAt + budget < job.deadline)
               this.ctx.storage.sql.exec('UPDATE jobs SET due_at = ? WHERE id = ?', reserved.retryAt, row.id);
-            else this.done(row.id);
+            else this.done(row.id, 'admission-denied');
+
+            return;
+          }
+
+          if (job.kind === 'chat' && Date.now() + houseChatBudget(job.model) > job.deadline) {
+            await platformCoordinator(this.env).recordInference(usageId, 0);
+            this.done(row.id, 'insufficient-time');
 
             return;
           }
@@ -252,7 +327,7 @@ export class HouseSeatObject extends DurableObject<Env> {
           job.generation,
           response.notes,
         );
-      this.done(row.id);
+      this.done(row.id, accepted.ok ? (response.request ? 'accepted' : 'silent') : 'rejected');
     } catch (error) {
       if (usageId) await platformCoordinator(this.env).recordInference(usageId, null);
 
@@ -266,7 +341,7 @@ export class HouseSeatObject extends DurableObject<Env> {
           Date.now() + 250,
           row.id,
         );
-      else this.done(row.id);
+      else this.done(row.id, 'provider-error');
       console.warn(
         JSON.stringify({
           event: 'house_retry',

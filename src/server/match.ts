@@ -961,6 +961,14 @@ export class MatchObject extends DurableObject<Env> {
     if (runtime.status !== 'active') return;
     const model = modelConfig(state.snapshot);
     const now = Date.now();
+    const ringSize = runtime.participants.length;
+    const anchor = runtime.discussion?.anchor ?? 0;
+
+    // Compact living-participant order keeps dead holes and absolute seat numbers
+    // out of pacing. The initial pass fits inside the first second at normal speed.
+    const speakers = [...(runtime.discussion?.seats ?? [])].sort(
+      (a, b) => ((a - anchor + ringSize) % ringSize) - ((b - anchor + ringSize) % ringSize),
+    );
 
     for (const seat of runtime.participants) {
       if (!seat.alive || !seat.houseProfile) continue;
@@ -999,20 +1007,21 @@ export class MatchObject extends DurableObject<Env> {
         runtime.phase.deadline !== null &&
         runtime.discussion.seats.includes(seat.number)
       ) {
-        const distance = (seat.number - runtime.discussion.anchor + 10) % 10;
         const deadline = runtime.phase.deadline - Math.min(500, runtime.timing.nomination / 10);
         const chatBase = { ...base, kind: 'chat' as const, deadline };
-
-        if (distance < 4)
-          jobs.push({
-            ...chatBase,
-            id: `${state.gameId}:${runtime.phaseId}:${seat.number}:${seat.generation}:chat:0`,
-            dueAt: runtime.phase.startedAt + seat.number * Math.min(500, runtime.timing.nomination / 30),
-          });
         const lastChatAt = state.seats[seat.number].lastChatAt;
+        jobs.push({
+          ...chatBase,
+          id: `${state.gameId}:${runtime.phaseId}:${seat.number}:${seat.generation}:chat:0`,
+          dueAt: Math.max(
+            now,
+            runtime.phase.startedAt +
+              speakers.indexOf(seat.number) * Math.min(100, runtime.timing.nomination / 200),
+            lastChatAt === null ? 0 : lastChatAt + runtime.timing.chatCooldown,
+          ),
+        });
 
         if (
-          distance < 2 &&
           lastChatAt !== null &&
           lastChatAt >= runtime.phase.startedAt &&
           runtime.lastChat &&
@@ -1027,7 +1036,7 @@ export class MatchObject extends DurableObject<Env> {
       }
 
       for (const job of jobs)
-        if (job.dueAt < job.deadline)
+        if (job.kind === 'chat' || job.dueAt < job.deadline)
           this.ctx.storage.sql.exec(
             'INSERT OR IGNORE INTO outbox (id, data) VALUES (?, ?)',
             job.id,
@@ -1116,7 +1125,9 @@ export class MatchObject extends DurableObject<Env> {
           rows.map(async (row) => {
             const job: HouseJob = JSON.parse(row.data);
 
-            if (job.deadline > Date.now() && job.phaseId === this.load().phase.id)
+            // Optional jobs must reach the runner even when late: it records a bounded
+            // skip instead of silently dropping a seat's opportunity in the outbox.
+            if (job.kind === 'chat' || (job.deadline > Date.now() && job.phaseId === this.load().phase.id))
               await this.env.HOUSE_SEATS.getByName(`${job.matchId}:${job.seat}`).enqueue(job);
             this.ctx.storage.sql.exec('UPDATE outbox SET delivered = 1 WHERE id = ?', row.id);
           }),
