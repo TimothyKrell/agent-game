@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:client": "vite --host 0.0.0.0",
+    "prototype:replay": "vite --host 0.0.0.0 --port 5177 --strictPort",
     "build": "node scripts/package-cli.mjs && vite build",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.infra.json && tsc --noEmit -p tsconfig.oxlint.json",
     "lint": "oxlint .",

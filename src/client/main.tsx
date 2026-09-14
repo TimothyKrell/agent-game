@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Match, Schema } from 'effect';
 import {
@@ -61,6 +61,16 @@ import './local-game-controls.css';
 
 type SiteBootstrap = Bootstrap | GameBootstrap;
 
+// TIM-6 throwaway fixture: dev-only, on the existing match route, inside the real site shell.
+const ReplayDesignPrototype = import.meta.env.DEV
+  ? lazy(() => import('./succession-replay.prototype'))
+  : () => null;
+
+const isReplayDesignPrototype = () =>
+  import.meta.env.DEV &&
+  location.pathname === '/matches/tim-6-replay-prototype' &&
+  ['A', 'B', 'C'].includes(new URLSearchParams(location.search).get('variant') ?? '');
+
 const SiteBootstrapSchema = Schema.Union([GameBootstrapSchema, BootstrapSchema]);
 
 function Link({
@@ -95,7 +105,7 @@ function Link({
   );
 }
 
-function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
+function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0, enabled = true) {
   const current = useRef({ path, sequence: 0 });
 
   if (current.current.path !== path) current.current = { path, sequence: 0 };
@@ -130,6 +140,7 @@ function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
   };
 
   useEffect(() => {
+    if (!enabled) return;
     void refresh();
     const timer = interval ? setInterval(refresh, interval) : null;
 
@@ -138,7 +149,7 @@ function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
 
       if (timer) clearInterval(timer);
     };
-  }, [path, schema, interval]);
+  }, [path, schema, interval, enabled]);
 
   const result = snapshot?.visit === visit ? snapshot : null;
 
@@ -1039,6 +1050,17 @@ function useMatch(id: string) {
 const MatchObservationSchema = Schema.Union([ObservationSchema, Observation2Schema]);
 
 function MatchRoute({ id, fullHistory }: { id: string; fullHistory: boolean }) {
+  if (isReplayDesignPrototype())
+    return (
+      <Suspense fallback={<Loading />}>
+        <ReplayDesignPrototype />
+      </Suspense>
+    );
+
+  return <RecordedMatchRoute id={id} fullHistory={fullHistory} />;
+}
+
+function RecordedMatchRoute({ id, fullHistory }: { id: string; fullHistory: boolean }) {
   const { data, error, fault, refresh } = useLoad(
     `/api/matches/${encodeURIComponent(id)}`,
     MatchObservationSchema,
@@ -2677,7 +2699,12 @@ function HowToPlay() {
 function App() {
   const path = new URL(useLocation()).pathname;
 
-  const { data, error, refresh } = useLoad('/api/bootstrap', SiteBootstrapSchema, 15_000);
+  const { data, error, refresh } = useLoad(
+    '/api/bootstrap',
+    SiteBootstrapSchema,
+    15_000,
+    !isReplayDesignPrototype(),
+  );
 
   let content: React.ReactNode;
 

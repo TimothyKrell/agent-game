@@ -1,0 +1,337 @@
+/** TIM-6 THROWAWAY: authored storyboard excerpts, not an engine-generated match or API payload. */
+export type Capability = 'Treasurer' | 'Thief' | 'Assassin' | 'Envoy' | 'Guard';
+
+export const capabilityRules: Record<Capability, { effect: string; response: string; mark: string }> = {
+  Treasurer: {
+    effect: 'Tax · Take 3 coins from the treasury.',
+    response:
+      'Any other living agent may challenge the claim. A proved Treasurer is replaced, not lost. An unchallenged claim is not proof of a card.',
+    mark: 'M18 36h28M22 36V23h20v13M18 23l14-9 14 9M26 27v9m12-9v9M16 41h32',
+  },
+  Thief: {
+    effect: 'Theft · Take up to 2 coins from a target.',
+    response:
+      'The target may claim Thief or Envoy to block. The action claim and a block claim can each be challenged.',
+    mark: 'M17 32h30m-9-9 9 9-9 9M26 17l-9 9 9 9M23 46h18',
+  },
+  Assassin: {
+    effect: 'Assassination · Pay 3 coins; the target loses 1 influence if the action resolves.',
+    response:
+      'The target may claim Guard to block. The paid cost stays spent even if the claim fails or the action is blocked.',
+    mark: 'M21 44 43 16l-6 20-16 8Zm4-6 12-16M18 38l9 9M17 48l6-7',
+  },
+  Envoy: {
+    effect: 'Exchange · Draw 2 cards, then privately return exactly 2.',
+    response:
+      'May also block Theft. Exchange choices and the draw remain private during play; public chat pauses during the private exchange.',
+    mark: 'M16 22h29l-6-6m6 6-6 6M48 42H19l6-6m-6 6 6 6M25 28h14v8H25Z',
+  },
+  Guard: {
+    effect: 'Block · Stop an Assassination targeting you.',
+    response:
+      'Guard has no active action. The block may be a bluff and can be challenged. A proved card is replaced, not lost.',
+    mark: 'm32 14 15 7v13L32 48 17 34V21ZM24 30l6 6 11-14',
+  },
+};
+
+export const returnSeats = [
+  { name: 'Velvet', role: 'Cooperative', coins: 3, returned: false },
+  { name: 'Orbit', role: 'Rogue', coins: 2, returned: false },
+  { name: 'Morrow', role: 'Cooperative', coins: 3, returned: false },
+  { name: 'Northstar', role: 'Cooperative', coins: 3, returned: false },
+  { name: 'Cipher', role: 'Rogue', coins: 2, returned: false },
+  { name: 'Sable', role: 'Cooperative', coins: 3, returned: false },
+  { name: 'Quill', role: 'Overlord', coins: 2, returned: true },
+  { name: 'Echo', role: 'Cooperative', coins: 3, returned: false },
+  { name: 'Vesper', role: 'Cooperative', coins: 3, returned: true },
+  { name: 'Aster', role: 'Rogue', coins: 2, returned: false },
+];
+
+export interface ReplayMoment {
+  act: 1 | 2;
+  round: number;
+  position: string;
+  kind: 'speech' | 'action' | 'vote' | 'resolution' | 'transition' | 'bridge' | 'win';
+  actor: string;
+  title: string;
+  text: string;
+  target?: string;
+  capability?: Capability;
+  chain?: string;
+  phase?: string;
+  consequence?: string;
+  delta?: { name: string; coins: string; influence: string; note?: string }[];
+  why?: string;
+  hand?: { owner: string; cards: Capability[] };
+}
+
+export const moments: ReplayMoment[] = [
+  {
+    act: 1,
+    round: 8,
+    position: 'Discussion',
+    kind: 'speech',
+    actor: 'Velvet',
+    title: 'A risky government',
+    text: '“Northstar, I’m nominating you. We need to agree on what happened to the last safeguard.”',
+    target: 'Northstar',
+    consequence: 'Nominee: Northstar · Coordinator: Velvet',
+    why: 'Earlier elections are outside this illustrative excerpt. At this point: 3 safeguards, 4 overrides. Vesper was executed in Election 7 and cannot vote, but will return in Act II.',
+  },
+  {
+    act: 1,
+    round: 8,
+    position: 'Discussion',
+    kind: 'speech',
+    actor: 'Northstar',
+    title: 'A public promise',
+    text: '“I’ll enact a safeguard if you give me one. Quill’s account has changed twice.”',
+    consequence: 'A statement, not verified policy-hand evidence.',
+  },
+  {
+    act: 1,
+    round: 8,
+    position: 'Government vote',
+    kind: 'vote',
+    actor: 'The table',
+    title: 'Government approved',
+    text: 'Velvet → Northstar receives a majority of the 9 living agents.',
+    consequence: '7 approve · 2 reject · Vesper cannot vote',
+    why: 'Approve: Velvet, Morrow, Northstar, Sable, Quill, Echo, Aster. Reject: Orbit, Cipher. An executed agent does not vote in Act I.',
+  },
+  {
+    act: 1,
+    round: 8,
+    position: 'Policy → executive power',
+    kind: 'action',
+    actor: 'Northstar',
+    title: 'An override gives Velvet an execution',
+    text: 'Northstar enacts the fifth override. Coordinator Velvet must choose an agent to execute.',
+    consequence: 'Overrides 4 → 5 of 6 · Safeguards stay 3 of 5',
+    why: 'The public policy result does not reveal what either agent was dealt or discarded. At the fifth override, the coordinator receives an execution.',
+  },
+  {
+    act: 1,
+    round: 8,
+    position: 'Faction result',
+    kind: 'resolution',
+    actor: 'Velvet',
+    target: 'Quill',
+    title: 'The Overlord is executed',
+    text: 'Velvet executes Quill. Quill is the Overlord, ending Act I in a cooperative faction victory.',
+    consequence: 'Cooperative agents earn +1 starting coin for Act II. No match victory yet.',
+    why: 'Quill is executed at this historical moment. Do not label him alive until the atomic return. Vesper, executed earlier, also returns at that transition.',
+  },
+  {
+    act: 2,
+    round: 1,
+    position: 'Return & fresh deal',
+    kind: 'transition',
+    actor: 'All ten agents',
+    title: 'A fresh hand. A different game.',
+    text: 'All 10 return, including Quill and Vesper. Every agent receives 2 fresh capability cards: 2 influence.',
+    consequence: '6 cooperative agents start with 3 coins · 4 rogue-faction agents start with 2',
+    why: 'Act I factions are now historical. No faction targeting restriction or Overlord power carries into Act II. The fresh cards are secret during play. Everyone returns; “returned after execution” marks only Quill and Vesper.',
+  },
+  {
+    act: 2,
+    round: 1,
+    position: 'Slot 01 · Declaration',
+    kind: 'action',
+    actor: 'Velvet',
+    title: 'Velvet claims Treasurer',
+    text: 'Declares Tax: take 3 coins from the treasury. No target. No cost paid.',
+    capability: 'Treasurer',
+    chain: 'tax-bluff',
+    phase: '01 · Declaration',
+    consequence: 'Tax is pending · Velvet still has 3 coins',
+    hand: { owner: 'Velvet', cards: ['Guard', 'Thief'] },
+  },
+  {
+    act: 2,
+    round: 1,
+    position: 'Slot 01 · Discussion',
+    kind: 'speech',
+    actor: 'Velvet',
+    title: 'The claim, in her own words',
+    text: '“A quiet tax. I have the Treasurer; let’s save our challenges.”',
+    chain: 'tax-bluff',
+    phase: '02 · Claim in dialogue',
+    consequence: 'Claims Treasurer · This is not proof',
+  },
+  {
+    act: 2,
+    round: 1,
+    position: 'Slot 01 · Discussion',
+    kind: 'speech',
+    actor: 'Northstar',
+    target: 'Velvet',
+    title: 'Northstar questions the claim',
+    text: '“A new hand doesn’t make your story any stronger.”',
+    chain: 'tax-bluff',
+    phase: '03 · Response in dialogue',
+    consequence: 'Challenges sealed · Choices reveal together at resolution',
+    why: 'Speech does not disclose a submitted challenge. During collection, show no response count, waiting-seat roster, or selected challenger.',
+  },
+  {
+    act: 2,
+    round: 1,
+    position: 'Slot 01 · Published challenge',
+    kind: 'action',
+    actor: 'Northstar',
+    target: 'Velvet',
+    title: 'Northstar’s challenge is selected',
+    text: 'The sealed challenge collection resolves. Velvet must prove the claimed Treasurer.',
+    chain: 'tax-bluff',
+    phase: '04 · Challenge published',
+    consequence: 'Tax waits for proof · Neither agent gains coins',
+    why: 'Challenges are selected clockwise from the original actor, not by arrival time. Only the published outcome identifies the selected challenger.',
+  },
+  {
+    act: 2,
+    round: 1,
+    position: 'Slot 01 · Disproof',
+    kind: 'resolution',
+    actor: 'Velvet',
+    title: 'The bluff fails',
+    text: 'Velvet cannot prove Treasurer. She chooses Guard as the influence to lose; Guard is permanently revealed.',
+    capability: 'Guard',
+    chain: 'tax-bluff',
+    phase: '05 · Disproof → resolution',
+    consequence: 'Tax canceled · Velvet gains no coins · Northstar loses nothing',
+    delta: [{ name: 'Velvet', coins: '3 → 3', influence: '2 → 1', note: 'Guard lost · still alive' }],
+    why: 'A failed claimant loses one influence of their own choice. A revealed lost card never returns to the court. The original Tax action does not resolve.',
+    hand: { owner: 'Velvet', cards: ['Thief'] },
+  },
+  {
+    act: 2,
+    round: 1,
+    position: 'Slots 02–03 · Excerpt bridge',
+    kind: 'bridge',
+    actor: 'Orbit & Morrow',
+    title: 'Between the featured turns',
+    text: 'Orbit and Morrow each take Income (+1 coin). This storyboard compresses these two routine turns.',
+    consequence: 'Orbit 2 → 3 coins · Morrow 3 → 4 coins · No influence lost',
+  },
+  {
+    act: 2,
+    round: 1,
+    position: 'Slot 04 · Declaration → proof',
+    kind: 'action',
+    actor: 'Northstar',
+    title: 'This Treasurer claim is proved',
+    text: 'Northstar declares Tax: no target, no cost. Quill challenges. Northstar reveals a Treasurer, returns it to the court, and draws a replacement.',
+    capability: 'Treasurer',
+    chain: 'tax-proof',
+    phase: '01 · Claim → challenge → proof',
+    consequence: 'Proof replaces the card · Northstar loses no influence',
+    why: 'This compact example bundles published steps in chronological order. The expanded failed-claim chain above explores the individual-step design. A proved card is not lost influence.',
+  },
+  {
+    act: 2,
+    round: 1,
+    position: 'Slot 04 · Resolution',
+    kind: 'resolution',
+    actor: 'Quill',
+    title: 'Quill pays for the wrong challenge',
+    text: 'Quill chooses Envoy as the influence to lose. Northstar’s Tax now resolves for +3 coins.',
+    capability: 'Envoy',
+    chain: 'tax-proof',
+    phase: '02 · Loss → Tax resolves',
+    consequence: 'Northstar has 6 coins · Quill is down to his last influence',
+    delta: [
+      { name: 'Northstar', coins: '3 → 6', influence: '2 → 2', note: 'Treasurer replaced, not lost' },
+      { name: 'Quill', coins: '2 → 2', influence: '2 → 1', note: 'Envoy permanently revealed' },
+    ],
+    hand: { owner: 'Northstar', cards: ['Assassin', 'Thief'] },
+  },
+  {
+    act: 2,
+    round: 2,
+    position: 'Slot 04 · Income',
+    kind: 'action',
+    actor: 'Northstar',
+    title: 'One coin short becomes enough',
+    text: 'Northstar takes Income. The intervening turns are outside this excerpt; Quill still has 1 influence.',
+    consequence: 'Coup becomes affordable on a later turn',
+    delta: [{ name: 'Northstar', coins: '6 → 7', influence: '2 → 2' }],
+    why: 'Income gains 1 coin and has no capability claim. It cannot be challenged or blocked. Coup costs 7; at 10 or more coins it is mandatory.',
+  },
+  {
+    act: 2,
+    round: 3,
+    position: 'Slot 04 · Coup',
+    kind: 'action',
+    actor: 'Northstar',
+    target: 'Quill',
+    title: 'Northstar removes Quill’s last influence',
+    text: 'Pays 7 coins for Coup. Quill has no challenge or block response, and chooses his remaining Assassin to lose.',
+    consequence: 'Quill is eliminated in Act II · 9 agents remain',
+    delta: [
+      { name: 'Northstar', coins: '7 → 0', influence: '2 → 2', note: '7 coins paid' },
+      { name: 'Quill', coins: '4 → 4', influence: '1 → 0', note: 'Eliminated · coins frozen at 4' },
+    ],
+    why: 'Quill took Income on each of his first two turns (2 → 4 coins). Coup cannot be challenged or blocked. At zero influence an agent stops acting and speaking, but can still read.',
+  },
+  {
+    act: 2,
+    round: 10,
+    position: 'Rounds 3–10 · Excerpt bridge',
+    kind: 'bridge',
+    actor: 'The table',
+    title: 'The field narrows to two',
+    text: 'Illustrated summary of omitted turns: Orbit, Morrow, Cipher, Sable, Echo, Vesper and Aster are eliminated. Northstar loses one influence and builds back to 7 coins. Velvet keeps 1 influence.',
+    consequence: '2 agents remain · This is a storyboard excerpt, not a complete event log',
+    why: 'Production must retrieve the actual intervening dialogue and actions automatically; it must not invent this kind of bridge or imply all events are loaded when they are not.',
+  },
+  {
+    act: 2,
+    round: 11,
+    position: 'Slot 04 · Final Coup',
+    kind: 'action',
+    actor: 'Northstar',
+    target: 'Velvet',
+    title: 'The last move leaves no answer',
+    text: 'Northstar pays 7 coins for Coup against Velvet. She loses her last influence, Thief. There is no block or challenge to a Coup.',
+    chain: 'final-coup',
+    phase: '01 · Action → unavoidable loss',
+    consequence: 'Velvet eliminated · One agent remains',
+    delta: [
+      { name: 'Northstar', coins: '7 → 0', influence: '1 → 1' },
+      { name: 'Velvet', coins: '5 → 5', influence: '1 → 0', note: 'Eliminated · coins frozen at 5' },
+    ],
+  },
+  {
+    act: 2,
+    round: 11,
+    position: 'Match result',
+    kind: 'win',
+    actor: 'Northstar',
+    title: 'One champion. Northstar.',
+    text: 'Seat 04 is the last agent with influence. Northstar is the sole overall winner; the other nine entrants receive no match victory.',
+    chain: 'final-coup',
+    phase: '02 · Overall result',
+    consequence: 'Last influence standing · 1 influence · 0 coins',
+    why: 'Act I awarded a starting-coin bonus, not a match victory. This illustrative champion is the original entrant, with no house takeover or forfeit.',
+    hand: { owner: 'Northstar', cards: ['Thief'] },
+  },
+];
+
+export const actInfo = {
+  1: {
+    title: 'The faction struggle',
+    subtitle: 'Secret Overlord',
+    result: 'Cooperative faction victory',
+    detail: 'The Overlord was executed. Six agents earn +1 starting coin; all ten advance.',
+    start: 0,
+    end: 4,
+  },
+  2: {
+    title: 'Every agent for themselves',
+    subtitle: 'Succession',
+    result: 'Northstar · sole champion',
+    detail: 'Last influence standing. The Act I bonus gave an advantage, not a second victory.',
+    start: 5,
+    end: 18,
+  },
+};
