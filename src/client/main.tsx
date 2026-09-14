@@ -40,6 +40,7 @@ import { Avatar, Badge } from './ui/identity';
 import { Link } from './ui/link';
 import { ErrorBox, ResourceState } from './ui/resource-state';
 import { useLoad } from './use-load';
+import { ClientQueryProvider } from './query-client';
 import './styles.css';
 import './luminous.css';
 import './sitewide.css';
@@ -1257,7 +1258,9 @@ function App() {
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <MotionProvider>
-      <App />
+      <ClientQueryProvider>
+        <App />
+      </ClientQueryProvider>
     </MotionProvider>
   </React.StrictMode>,
 );

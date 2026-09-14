@@ -1,22 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { Schema } from 'effect';
 import { ArrowUpRight, Pause, Play } from 'lucide-react';
-import { HistoryPage2Schema, ReplayFrame2Schema } from '../shared/succession';
-import type { AuthorizedEvent2, Observation2, ReplayFrame2 } from '../shared/succession';
-import { HistoryAnchor2Schema, RoundIndex2Schema } from '../shared/history';
-import { api } from './api';
-import { historyPath, SuccessionHistory } from './succession-stream';
+import type { Observation2 } from '../shared/succession';
 import { SuccessionBoard } from './succession-board';
 import { MatchFeed } from './match-feed';
 import type { FeedReadingMemory } from './match-feed';
 import { Flourish } from './deco';
 import { SuccessionPhase } from './succession-controls';
-
-const FrameResponse = Schema.Union([ReplayFrame2Schema, HistoryPage2Schema]);
-
-const RoundsResponse = Schema.Union([RoundIndex2Schema, HistoryPage2Schema]);
-
-const AnchorResponse = Schema.Union([HistoryAnchor2Schema, HistoryPage2Schema]);
+import { useSuccessionReplay } from './use-succession-replay';
 
 export function SuccessionReplay({
   view,
@@ -27,178 +16,22 @@ export function SuccessionReplay({
   refresh: () => void;
   memory: React.MutableRefObject<FeedReadingMemory | null>;
 }) {
-  const [through, setThrough] = useState(view.history.streamHead);
-  const [playing, setPlaying] = useState(false);
-  const [frame, setFrame] = useState<ReplayFrame2 | null>(null);
-  const [events, setEvents] = useState<AuthorizedEvent2[]>([]);
-  const [rounds, setRounds] = useState<typeof RoundIndex2Schema.Type | null>(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [retry, setRetry] = useState(0);
-  const requests = useRef(0);
-  const epoch = view.history.visibilityEpoch;
+  const {
+    through,
+    playing,
+    displayed,
+    rounds,
+    error,
+    loading,
+    paused,
+    anchorLoading,
+    seek,
+    togglePlayback,
+    retry,
+  } = useSuccessionReplay({ view, refresh, memory });
 
-  const [anchorKey] = useState(
-    memory.current?.following === false ? memory.current.anchor?.identity : undefined,
-  );
-
-  const [anchorLoading, setAnchorLoading] = useState(!!anchorKey);
-
-  useEffect(() => {
-    if (!anchorKey) return;
-    let active = true;
-    setAnchorLoading(true);
-    const query = new URLSearchParams({ epoch, eventKey: anchorKey });
-    void api(`/api/matches/${encodeURIComponent(view.matchId)}/history-anchor?${query}`, AnchorResponse)
-      .then((result) => {
-        if (!active) return;
-
-        if ('reset' in result) {
-          refresh();
-
-          return;
-        }
-
-        if (result.matchId !== view.matchId || result.visibilityEpoch !== epoch) return;
-
-        if (result.cursor !== null) setThrough(Math.min(view.history.streamHead, result.cursor + 16));
-        else setError('The previous reading anchor is not available in this archive.');
-      })
-      .catch((cause: Error) => {
-        if (active) setError(cause.message);
-      })
-      .finally(() => {
-        if (active) setAnchorLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [anchorKey, view.matchId, epoch, retry]);
-
-  useEffect(() => {
-    let active = true;
-    const query = new URLSearchParams({ epoch });
-    void api(`/api/matches/${encodeURIComponent(view.matchId)}/rounds?${query}`, RoundsResponse)
-      .then((result) => {
-        if (!active) return;
-
-        if ('reset' in result) {
-          refresh();
-
-          return;
-        }
-
-        if (result.matchId === view.matchId && result.visibilityEpoch === epoch) setRounds(result);
-      })
-      .catch((cause: Error) => {
-        if (active) setError(cause.message);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [view.matchId, epoch, retry]);
-
-  useEffect(() => {
-    if (anchorLoading) return;
-    const request = ++requests.current;
-    setLoading(true);
-    setError('');
-
-    const timer = setTimeout(() => {
-      const query = new URLSearchParams({ epoch, through: String(through) });
-
-      const loadWindow = async () => {
-        const history = new SuccessionHistory();
-        history.observe(view.history);
-        history.seek(Math.max(0, through - 32), through);
-
-        // Byte limits may split this 32-event window across multiple pages.
-        // This never walks the archive outside the selected bounded window.
-        for (let pageNumber = 0; history.cursor < through && pageNumber < 32; pageNumber++) {
-          if (request !== requests.current) return null;
-          const walk = { epoch, after: history.cursor, through };
-          const page = await api(historyPath(view.matchId, walk), HistoryPage2Schema);
-
-          if (page.reset) return { reset: true, events: [] };
-
-          if (page.matchId !== view.matchId || !history.accept(page, walk))
-            throw new Error('The replay history page changed while loading.');
-        }
-
-        return { reset: false, events: history.events };
-      };
-
-      void Promise.all([
-        api(`/api/matches/${encodeURIComponent(view.matchId)}/replay?${query}`, FrameResponse),
-        loadWindow(),
-      ])
-        .then(([result, page]) => {
-          if (request !== requests.current) return;
-
-          if ('reset' in result || page?.reset) {
-            refresh();
-
-            return;
-          }
-
-          if (
-            result.matchId !== view.matchId ||
-            result.visibilityEpoch !== epoch ||
-            result.through !== through
-          )
-            throw new Error('The replay frame changed while loading.');
-          setFrame(result);
-          setEvents(page?.events ?? []);
-        })
-        .catch((cause: Error) => {
-          if (request === requests.current) {
-            setError(cause.message);
-            setPlaying(false);
-          }
-        })
-        .finally(() => {
-          if (request === requests.current) setLoading(false);
-        });
-    }, 80);
-
-    return () => {
-      clearTimeout(timer);
-      requests.current++;
-    };
-  }, [view.matchId, epoch, through, retry, anchorLoading]);
-
-  useEffect(() => {
-    if (!playing || loading || !frame || frame.through !== through) return;
-
-    if (through >= view.history.streamHead) {
-      setPlaying(false);
-
-      return;
-    }
-
-    const timer = setTimeout(() => setThrough((value) => Math.min(view.history.streamHead, value + 1)), 700);
-
-    return () => clearTimeout(timer);
-  }, [playing, loading, frame, through, view.history.streamHead]);
-
-  useEffect(() => {
-    const pause = () => {
-      if (document.visibilityState !== 'visible') setPlaying(false);
-    };
-
-    document.addEventListener('visibilitychange', pause);
-
-    return () => document.removeEventListener('visibilitychange', pause);
-  }, []);
-
-  const seek = (value: number) => {
-    setPlaying(false);
-    setThrough(value);
-  };
-
-  const actualFrame = frame?.visibilityEpoch === epoch ? frame : null;
+  const actualFrame = displayed?.frame ?? null;
+  const events = displayed?.events ?? [];
 
   return (
     <>
@@ -208,16 +41,7 @@ export function SuccessionReplay({
           <Flourish />
         </div>
         <div className="row">
-          <button
-            className="button primary"
-            onClick={() => {
-              if (playing) setPlaying(false);
-              else {
-                setThrough(0);
-                setPlaying(true);
-              }
-            }}
-          >
+          <button className="button primary" onClick={togglePlayback}>
             {playing ? <Pause size={16} /> : <Play size={16} />}
             {playing ? 'Pause' : 'Play from start'}
           </button>
@@ -236,19 +60,21 @@ export function SuccessionReplay({
         />
         <small>
           Event {through} / {view.history.streamHead} ·{' '}
-          {anchorLoading
-            ? 'Loading archive disclosures at your reading position'
-            : loading
-              ? 'Loading selected frame'
-              : through === view.history.streamHead
-                ? 'End of record'
-                : 'At selected event'}
+          {paused
+            ? 'Offline · Waiting to load the selected record'
+            : anchorLoading
+              ? 'Loading archive disclosures at your reading position'
+              : loading
+                ? 'Loading selected frame'
+                : through === view.history.streamHead
+                  ? 'End of record'
+                  : 'At selected event'}
           {view.status === 'interrupted' && ' · Partial record · No rating changes'}
         </small>
         {error && (
           <div className="error" role="alert">
-            {error}
-            <button className="button small" onClick={() => setRetry((value) => value + 1)}>
+            {error.message}
+            <button className="button small" onClick={retry}>
               Retry loading record
             </button>
           </div>
@@ -306,15 +132,19 @@ export function SuccessionReplay({
             </>
           ) : (
             <div className="loading" role="status">
-              Loading the historical board…
+              {paused
+                ? 'Offline · Waiting for a connection to load the historical board.'
+                : error
+                  ? 'The historical board could not be loaded. Retry loading the record.'
+                  : 'Loading the historical board…'}
             </div>
           )}
         </div>
         <div>
           <div className="history-paging">
             <span>
-              Replay record window: {events[0]?.id ?? through}–{events.at(-1)?.id ?? through}. Full history
-              remains available.
+              Replay record window: {events[0]?.id ?? actualFrame?.through ?? through}–
+              {events.at(-1)?.id ?? actualFrame?.through ?? through}. Full history remains available.
             </span>
             {through > 32 && (
               <button className="button small" onClick={() => seek(Math.max(0, through - 32))}>
@@ -351,7 +181,11 @@ export function SuccessionReplay({
                     historical
                   />
                 )}
-                {loading && <p>Updating historical frame…</p>}
+                {paused ? (
+                  <p>Offline · Waiting to update the historical frame.</p>
+                ) : (
+                  loading && <p>Updating historical frame…</p>
+                )}
               </div>
             }
           />

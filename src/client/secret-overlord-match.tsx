@@ -107,8 +107,9 @@ function MatchResult({ view }: { view: Observation }) {
   );
 }
 
-export function SecretOverlordMatch({ id }: { id: string }) {
-  const { view, error, connected, refresh } = useSecretOverlordMatch(id);
+export function SecretOverlordMatch({ initial }: { initial: Observation }) {
+  const id = initial.matchId;
+  const { view, error, connected, refresh } = useSecretOverlordMatch(initial);
   const [now, setNow] = useState(Date.now());
   const [step, setStep] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);

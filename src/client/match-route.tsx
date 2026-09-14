@@ -19,6 +19,6 @@ export function MatchRoute({ id, fullHistory }: { id: string; fullHistory: boole
   return data.protocolVersion === '2' ? (
     <SuccessionMatch initial={data} fullHistory={fullHistory} />
   ) : (
-    <SecretOverlordMatch id={id} />
+    <SecretOverlordMatch initial={data} />
   );
 }
