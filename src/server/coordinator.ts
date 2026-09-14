@@ -524,6 +524,7 @@ export class PlatformQueue {
     this.ctx.storage.transactionSync(() => {
       this.ctx.storage.sql.exec("UPDATE allocations SET state = 'settled' WHERE id = ?", matchId);
       this.ctx.storage.sql.exec('DELETE FROM tickets WHERE match_id = ?', matchId);
+      this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id = ?', matchId);
     });
     await this.ctx.storage.setAlarm(Date.now() + 1);
   }
@@ -711,6 +712,15 @@ export class PlatformQueue {
     );
 
     return { allowed: true, retryAt: now };
+  }
+
+  /** Retire priority only. Usage (including unknown or live reservations) is untouched. */
+  retireInferenceWaiter(input: Pick<InferenceRequest, 'id' | 'matchId'>): void {
+    this.ctx.storage.sql.exec(
+      'DELETE FROM inference_waiters WHERE id=? AND match_id=?',
+      input.id,
+      input.matchId,
+    );
   }
 
   recordInference(id: string, actual: number | null): void {

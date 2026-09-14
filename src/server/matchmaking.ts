@@ -59,6 +59,10 @@ export class MatchmakingObject extends DurableObject<Env> {
     return this.queue.recordInference(id, actual);
   }
 
+  retireInferenceWaiter(input: Pick<InferenceRequest, 'id' | 'matchId'>) {
+    return this.queue.retireInferenceWaiter(input);
+  }
+
   inferenceSummary(matchId: string) {
     return this.queue.inferenceSummary(matchId);
   }

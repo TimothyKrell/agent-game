@@ -77,6 +77,13 @@ type StoredJob = {
   outcome?: string | null;
   completed_at?: number | null;
   admission_reason?: string | null;
+  waiter_id?: string | null;
+};
+
+export type WaiterState = {
+  waiters: { id: string; match_id: string; kind: string; expires_at: number }[];
+  usage: UsageRow[];
+  cleanup: { id: string; matchId: string; fault: 'before' | 'after' | null; at: number }[];
 };
 
 export type DialogueTrace = {
@@ -148,6 +155,12 @@ export class DialogueHouse extends HouseSeatObject {
 
     if (url.pathname === '/restart') this.ctx.abort('TIM-26 fixture cold house restart');
 
+    if (url.pathname === '/legacy-waiter-schema') {
+      // An old uncertain admission acknowledgement may have no recorded denial reason.
+      this.ctx.storage.sql.exec('UPDATE jobs SET admission_reason=NULL');
+      this.ctx.storage.sql.exec('ALTER TABLE jobs DROP COLUMN waiter_id');
+    }
+
     if (url.pathname === '/tick' || url.pathname === '/start') {
       if (this.running) throw new Error('Only one alarm may run per house seat');
       now = Number(url.searchParams.get('now'));
@@ -192,6 +205,19 @@ export class DialogueCoordinator extends MatchmakingObject {
   private readonly recordings: InferenceReport['recordings'] = [];
   private injectRequiredPressure = false;
   private releasePressureAt: number | null = null;
+  private cleanupFault: 'before' | 'after' | null = null;
+  private readonly cleanup: WaiterState['cleanup'] = [];
+
+  override retireInferenceWaiter(input: Parameters<MatchmakingObject['retireInferenceWaiter']>[0]) {
+    const fault = this.cleanupFault;
+    this.cleanupFault = null;
+    this.cleanup.push({ ...input, fault, at: now });
+
+    if (fault === 'before') throw new Error('Fixture cleanup delivery failed');
+    super.retireInferenceWaiter(input);
+
+    if (fault === 'after') throw new Error('Fixture cleanup acknowledgement lost');
+  }
 
   pressure(matchId: string) {
     const rows = this.ctx.storage.sql
@@ -268,6 +294,23 @@ export class DialogueCoordinator extends MatchmakingObject {
     const id = url.searchParams.get('id')!;
 
     if (url.pathname === '/required-pressure') this.injectRequiredPressure = true;
+
+    if (url.pathname === '/cleanup-fault')
+      this.cleanupFault = url.searchParams.get('loss') === 'before' ? 'before' : 'after';
+
+    if (url.pathname === '/complete-lost-ack') {
+      await super.complete(id);
+      this.ctx.abort('Fixture lost settlement acknowledgement and coordinator restart');
+    }
+
+    if (url.pathname === '/waiter-state')
+      return Response.json({
+        waiters: this.ctx.storage.sql
+          .exec<WaiterState['waiters'][number]>('SELECT * FROM inference_waiters ORDER BY id')
+          .toArray(),
+        usage: this.ctx.storage.sql.exec<UsageRow>('SELECT * FROM usage ORDER BY id').toArray(),
+        cleanup: this.cleanup,
+      } satisfies WaiterState);
 
     if (url.pathname === '/allocate') {
       const { snapshot, grants }: { snapshot: MatchSnapshot; grants: Record<string, string> } =
@@ -519,11 +562,238 @@ export class DialogueMatch extends MatchObject {
     return Response.json({ initial: initial.value, submissions: this.submissions });
   }
 
+  async waiterLifecycle(id: string, kind: 'required' | 'initial', settlement: boolean, loss = '') {
+    await this.prepare(id, 7, 10);
+    let queue = this.env.MATCHMAKING.getByName('secret-overlord');
+    const snapshot = this.state().snapshot;
+    await queue.fetch(
+      new Request(`http://fixture/allocate?id=${id}-other`, {
+        method: 'POST',
+        body: JSON.stringify({ snapshot, grants: {} }),
+      }),
+    );
+
+    if (kind === 'required') {
+      now = this.state().phase.deadline!;
+      this.ctx.storage.sql.exec("UPDATE meta SET value=? WHERE key='alarm-due'", String(now));
+      await this.observation(null, 0, '2');
+    }
+
+    const oldPhase = this.state().phase.id;
+
+    const jobs = () =>
+      this.ctx.storage.sql
+        .exec<{ data: string }>('SELECT data FROM outbox ORDER BY rowid')
+        .toArray()
+        .map((row): HouseJob => JSON.parse(row.data));
+
+    const old = jobs().find(
+      (job) =>
+        job.phaseId === oldPhase &&
+        (kind === 'required' ? job.kind === 'action' : job.id.endsWith(':chat:0')),
+    )!;
+
+    if (!old) throw new Error('No live job for waiter probe');
+    const until = now + 120_000;
+    const unknown = { id: `${id}:unknown`, matchId: id, estimate: 0.1, mandatory: true, deadline: until };
+
+    if (!(await queue.reserveInference(unknown)).allowed) throw new Error('Unknown usage probe not admitted');
+    await queue.recordInference(unknown.id, null);
+
+    if (
+      !(
+        await queue.reserveInference({
+          id: `${id}:retained-live`,
+          matchId: id,
+          estimate: 0.05,
+          mandatory: true,
+          deadline: until,
+        })
+      ).allowed
+    )
+      throw new Error('Retained live usage not admitted');
+
+    const held = {
+      id: `${id}:held`,
+      matchId: id,
+      estimate: kind === 'required' ? 1.3499 : 0.7499,
+      mandatory: kind === 'required',
+      optionalKind: 'initial' as const,
+      deadline: until,
+    };
+
+    if (!(await queue.reserveInference(held)).allowed) throw new Error('Pressure probe not admitted');
+    const house = this.env.HOUSE_SEATS.getByName(`${id}:${old.seat}`);
+    await house.enqueue(old);
+    now = Math.max(now, old.dueAt);
+    await house.fetch(new Request(`http://fixture/tick?now=${now}`));
+
+    const inspect = async (): Promise<WaiterState> =>
+      (await queue.fetch(new Request('http://fixture/waiter-state'))).json();
+
+    const waiting = await inspect();
+    await queue.recordInference(held.id, 0);
+    let probe = 0;
+
+    const optional = () =>
+      queue.reserveInference({
+        id: `${id}:probe-${probe++}`,
+        matchId: kind === 'required' ? `${id}-other` : id,
+        mandatory: false,
+        optionalKind: 'followup',
+        estimate: 0.001,
+        deadline: now + 60_000,
+      });
+
+    const active = await optional();
+
+    // A different allocation also has a live initial waiter. Settlement must not clear it.
+    if (settlement)
+      await queue.reserveInference({
+        id: `${id}:foreign-waiter`,
+        matchId: `${id}-other`,
+        mandatory: false,
+        optionalKind: 'initial',
+        estimate: 0.001,
+        deadline: until,
+      });
+    const before = await inspect();
+
+    if (settlement) {
+      if (loss) {
+        try {
+          await queue.fetch(new Request(`http://fixture/complete-lost-ack?id=${id}`));
+        } catch {
+          /* Expected eviction after durable settlement. */
+        }
+
+        queue = this.env.MATCHMAKING.getByName('secret-overlord');
+      }
+
+      await queue.complete(id);
+    } else {
+      now += 6001;
+      await this.observation(null, 0, '2');
+
+      if (this.state().phase.id === oldPhase) throw new Error('Actual match recovery did not replace phase');
+
+      if (loss)
+        await queue.fetch(
+          new Request(`http://fixture/cleanup-fault?loss=${loss === 'migration' ? 'before' : loss}`),
+        );
+      await house.fetch(new Request(`http://fixture/tick?now=${now}`));
+    }
+
+    const terminal: { jobs: StoredJob[]; due: number | null } = await (
+      await house.fetch(new Request('http://fixture/jobs'))
+    ).json();
+
+    const afterTerminal = await inspect();
+
+    let replay: {
+      before: WaiterState;
+      after: WaiterState;
+      replacement: HouseJob;
+      blocked: Awaited<ReturnType<typeof optional>>;
+    } | null = null;
+
+    if (loss && !settlement) {
+      const replacement = jobs().find(
+        (job) =>
+          job.phaseId === this.state().phase.id &&
+          job.seat === old.seat &&
+          job.kind === old.kind &&
+          (kind === 'required' || job.id.endsWith(':chat:0')),
+      )!;
+
+      if (!replacement) throw new Error('No recovered replacement job');
+      // The replacement has its own live waiter before the old cleanup is replayed.
+      const replacementHeld = { ...held, id: `${id}:replacement-held`, deadline: now + 120_000 };
+
+      if (!(await queue.reserveInference(replacementHeld)).allowed)
+        throw new Error('Replacement pressure not admitted');
+
+      const replacementRequest = {
+        id: `${replacement.id}:attempt:1`,
+        matchId: id,
+        mandatory: kind === 'required',
+        optionalKind: 'initial' as const,
+        estimate: 0.005,
+        deadline: replacement.deadline,
+      };
+
+      const denied = await queue.reserveInference(replacementRequest);
+
+      if (denied.allowed || !denied.retryable) throw new Error('Replacement waiter was not created');
+      await queue.recordInference(replacementHeld.id, 0);
+      const beforeReplay = await inspect();
+
+      if (loss === 'migration') await house.fetch(new Request('http://fixture/legacy-waiter-schema'));
+
+      try {
+        await house.fetch(new Request('http://fixture/restart'));
+      } catch {
+        /* Expected cold house restart. */
+      }
+
+      const cold = this.env.HOUSE_SEATS.getByName(`${id}:${old.seat}`);
+      await cold.enqueue(old);
+      now += 1000;
+      await cold.fetch(new Request(`http://fixture/tick?now=${now}`));
+      const afterReplay = await inspect();
+      const blocked = await optional();
+      replay = { before: beforeReplay, after: afterReplay, replacement, blocked };
+      // Wrong allocation must not retire the replacement, either.
+      await queue.retireInferenceWaiter({ id: replacementRequest.id, matchId: `${id}-other` });
+
+      if (!(await inspect()).waiters.some((row) => row.id === replacementRequest.id))
+        throw new Error('Cleanup crossed allocation identity');
+      await queue.retireInferenceWaiter(replacementRequest);
+    }
+
+    const after = await inspect();
+    const settledControl = settlement ? await optional() : null;
+
+    if (settlement) await queue.retireInferenceWaiter({ id: `${id}:foreign-waiter`, matchId: `${id}-other` });
+    const result = await optional();
+
+    const state: { jobs: StoredJob[] } = await (
+      await this.env.HOUSE_SEATS.getByName(`${id}:${old.seat}`).fetch(new Request('http://fixture/jobs'))
+    ).json();
+
+    return {
+      kind,
+      old,
+      oldPhase,
+      newPhase: this.state().phase.id,
+      waiting,
+      active,
+      before,
+      afterTerminal,
+      terminal,
+      replay,
+      after,
+      settledControl,
+      result,
+      job: state.jobs.find((row) => row.id === old.id)!,
+    };
+  }
+
   override async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === '/legacy-opening')
       return this.legacyOpening(url.searchParams.get('id')!, url.searchParams.has('cooldown'));
+
+    if (url.pathname === '/waiter-lifecycle')
+      return Response.json(
+        await this.waiterLifecycle(
+          url.searchParams.get('id')!,
+          url.searchParams.get('kind') === 'initial' ? 'initial' : 'required',
+          url.searchParams.has('settlement'),
+          url.searchParams.get('loss') ?? '',
+        ),
+      );
 
     if (url.pathname === '/history') {
       const result = await this.historyPage(

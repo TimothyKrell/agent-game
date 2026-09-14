@@ -61,6 +61,20 @@ export class HouseSeatObject extends DurableObject<Env> {
 
     if (!columns.some((column) => column.name === 'admission_reason'))
       ctx.storage.sql.exec('ALTER TABLE jobs ADD COLUMN admission_reason TEXT');
+
+    if (!columns.some((column) => column.name === 'waiter_id')) {
+      // Recover pre-migration admission waits, including already-obsolete jobs.
+      // A started attempt has already removed its waiter; its successor is a safe no-op.
+      const migrated = ctx.storage.transactionSync(() => {
+        ctx.storage.sql.exec('ALTER TABLE jobs ADD COLUMN waiter_id TEXT');
+
+        return ctx.storage.sql.exec(
+          "UPDATE jobs SET waiter_id=id || ':attempt:' || (attempts+1) WHERE response IS NULL",
+        ).rowsWritten;
+      });
+
+      if (migrated) ctx.waitUntil(this.arm());
+    }
   }
 
   async enqueue(job: HouseJob): Promise<void> {
@@ -83,7 +97,9 @@ export class HouseSeatObject extends DurableObject<Env> {
   }
   private async arm(): Promise<void> {
     const next = this.ctx.storage.sql
-      .exec<{ due: number | null }>("SELECT min(due_at) AS due FROM jobs WHERE status != 'done'")
+      .exec<{ due: number | null }>(
+        "SELECT min(due_at) AS due FROM jobs WHERE status != 'done' OR waiter_id IS NOT NULL",
+      )
       .one().due;
 
     if (next !== null) await this.ctx.storage.setAlarm(Math.max(Date.now() + 1, next));
@@ -104,8 +120,9 @@ export class HouseSeatObject extends DurableObject<Env> {
 
   private done(id: string, outcome: JobOutcome): void {
     this.ctx.storage.sql.exec(
-      "UPDATE jobs SET status = 'done', outcome = ?, completed_at = ? WHERE id = ?",
+      "UPDATE jobs SET status = 'done', outcome = ?, completed_at = ?, due_at = CASE WHEN waiter_id IS NOT NULL THEN ? ELSE due_at END WHERE id = ?",
       outcome,
+      Date.now(),
       Date.now(),
       id,
     );
@@ -117,7 +134,41 @@ export class HouseSeatObject extends DurableObject<Env> {
     }
   }
 
+  private async retireTerminalWaiter(): Promise<void> {
+    const row = this.ctx.storage.sql
+      .exec<{ id: string; data: string; waiter_id: string }>(
+        "SELECT id,data,waiter_id FROM jobs WHERE status='done' AND waiter_id IS NOT NULL AND due_at<=? ORDER BY due_at,id LIMIT 1",
+        Date.now(),
+      )
+      .toArray()[0];
+
+    if (!row) return;
+    const job: HouseJob = JSON.parse(row.data);
+
+    try {
+      await platformCoordinator(this.env).retireInferenceWaiter({ id: row.waiter_id, matchId: job.matchId });
+      this.ctx.storage.sql.exec(
+        "UPDATE jobs SET waiter_id=NULL WHERE id=? AND status='done' AND waiter_id=?",
+        row.id,
+        row.waiter_id,
+      );
+    } catch {
+      // This is durable cleanup, never a reason to reopen a terminal inference job.
+      this.ctx.storage.sql.exec(
+        "UPDATE jobs SET due_at=? WHERE id=? AND status='done' AND waiter_id=?",
+        Date.now() + 1000,
+        row.id,
+        row.waiter_id,
+      );
+      console.warn(
+        JSON.stringify({ event: 'house_waiter_cleanup_retry', job: row.id, waiter: row.waiter_id }),
+      );
+    }
+  }
+
   async alarm(): Promise<void> {
+    await this.retireTerminalWaiter();
+
     const row = this.ctx.storage.sql
       .exec<JobRow>(
         "SELECT * FROM jobs WHERE status != 'done' AND due_at <= ? ORDER BY CASE WHEN id LIKE '%:action' THEN 0 ELSE 1 END, due_at LIMIT 1",
@@ -220,6 +271,8 @@ export class HouseSeatObject extends DurableObject<Env> {
           );
 
           usageId = `${job.id}:attempt:${row.attempts + 1}`;
+          // Persist before RPC so an uncertain admission acknowledgement can be retired too.
+          this.ctx.storage.sql.exec('UPDATE jobs SET waiter_id=? WHERE id=?', usageId, row.id);
 
           const reserved = await platformCoordinator(this.env).reserveInference({
             id: usageId,
@@ -229,6 +282,9 @@ export class HouseSeatObject extends DurableObject<Env> {
             mandatory: job.kind === 'action',
             optionalKind: job.id.endsWith(':chat:1') ? 'followup' : 'initial',
           });
+
+          if (reserved.allowed || !reserved.retryable)
+            this.ctx.storage.sql.exec('UPDATE jobs SET waiter_id=NULL WHERE id=?', row.id);
 
           if (!reserved.allowed) {
             this.ctx.storage.sql.exec(
@@ -383,6 +439,7 @@ export class HouseSeatObject extends DurableObject<Env> {
         }),
       );
     } finally {
+      await this.retireTerminalWaiter();
       await this.arm();
     }
   }

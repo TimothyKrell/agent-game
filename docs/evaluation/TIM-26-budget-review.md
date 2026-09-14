@@ -245,7 +245,8 @@ Unknown actual usage never becomes zero merely because a request completed.
 Transient required waiters are durable in `inference_waiters`; optional admissions
 wait behind them across the shared coordinator. Follow-ups also wait behind
 transient initial requests in their own match. Waiters are removed on admission,
-permanent denial, or expiry of useful time. The same logical usage ID is retried
+permanent denial, terminal-job cleanup, allocation settlement, or expiry of useful
+time. The same logical usage ID is retried
 without incrementing provider attempts. A saved generated response still uses the
 existing receipt/recording path rather than running inference again. No new alarm
 or unbounded background polling loop is introduced.
@@ -365,6 +366,100 @@ waiter expiry, global RPM/daily scope, mixed mandatory/optional exemptions, and
 permanent exhaustion taking precedence over unrelated transient pressure. These
 run alongside the shared-game, model, stream and long-path tests. Worker/provider
 and build/type/lint checks are recorded in the dialogue report.
+
+## P2 follow-up: terminal waiter lifecycle
+
+Parent review reproduced a stale-priority defect in `b9667de`: after match recovery
+replaced the phase identity, the old runner correctly became `done/obsolete` with
+zero attempts, but its required waiter still blocked optional work in unrelated
+matches until the old deadline. Initial waiters similarly blocked same-match
+follow-ups, and allocation settlement did not remove either kind.
+
+### Focused correction
+
+- `retireInferenceWaiter({id, matchId})` deletes **only** that exact priority row.
+  It never updates, deletes, settles or refunds a `usage` row. A different phase,
+  generation, attempt or allocation cannot be retired by an old cleanup message.
+- The runner persists the exact usage ID in additive `jobs.waiter_id` **before**
+  calling admission, covering an uncertain admission acknowledgement. An acknowledged
+  admission or permanent denial clears it because the coordinator already removed
+  priority. A transient denial retains it through the existing same-ID retry.
+- Every terminal outcome makes any retained ID immediately due for cleanup. The
+  terminal status/outcome/completion time are committed first. Cleanup is outside
+  the inference exception handler, so a lost acknowledgement cannot reopen the
+  job, increment attempts, re-record usage or repeat a saved provider response.
+- A failed cleanup keeps the exact ID and schedules a durable alarm at **+1,000
+  ms**. A cold runner retries that cleanup; a successful acknowledgement clears
+  the local ID. At most one due cleanup is processed at each alarm entry/exit.
+  Existing live-job scheduling still uses the same `due_at` column; a terminal
+  row's `due_at` now means its cleanup retry time.
+- The transactional additive migration reconstructs the next possible waiting attempt ID for
+  old response-less jobs, including already-terminal jobs with no recorded denial
+  reason. Previously admitted attempts have already retired their priority; a
+  reconstructed absent ID is an idempotent no-op. Migration rearms pending cleanup.
+- Allocation settlement deletes all of **that allocation's** priority rows in the
+  existing settlement transaction, retaining other allocations' waiters and every
+  live/completed/unknown usage record. Settlement replay is idempotent.
+
+Retirement starts when the runner recognizes a terminal/obsolete job or the
+coordinator settles its allocation; this change does not proactively walk every
+sleeping runner on each phase update. Until recognition, normal runner wakeups and
+the existing useful-deadline expiry still apply. A cleanup transport outage retries
+at one-second intervals without additional inference; expiry remains a fallback
+bound on stale priority while delivery is unavailable.
+
+### Red/green evidence and final full-path check
+
+The first three real Worker/SQLite tests were **red on b9667de**: required recovery,
+initial recovery and allocation settlement each retained the old waiter. Artifacts
+are `.tim7/waiter-lifecycle-red/` and `.tim7/waiter-lifecycle-red.log`.
+
+**Ten final lifecycle tests pass** (7.33 seconds) using the actual coordinator,
+runner and match recovery paths, with no provider generation:
+
+| Cases | Evidence |
+| --- | --- |
+| Required and initial phase recovery | Real new phase ID; old job `done/obsolete`, attempts 0; old priority gone; previously blocked optional request admitted |
+| Cleanup delivery failure, both kinds | Waiter remains until durable +1,000-ms retry after actual house eviction/reconstruction |
+| Lost cleanup acknowledgement, both kinds | Coordinator already deleted old priority; identical retry is harmless; terminal timestamp and attempts unchanged |
+| Prior-schema migration, both kinds | Remove the new column and old denial reason in the isolated fixture; cold reconstruction recovers cleanup and retires the stale waiter |
+| Settlement, ordinary and lost acknowledgement | Actual coordinator eviction after settlement write, replay on a fresh stub; own waiters gone, foreign initial waiter still blocks follow-ups |
+
+The six cleanup-recovery cases install a **live replacement job's waiter before
+replaying old cleanup**. The replacement still enforces required/initial priority;
+wrong-allocation cleanup is also a no-op. Usage arrays are byte-for-byte equal
+across retirement, including a completed unknown $0.10 reservation and a still-live
+$0.05 reservation. Only explicitly recording the isolated pressure reservation
+releases its estimate. Fixture restart probes must reacquire fresh RPC stubs after
+eviction; correcting that probe behavior resolved the first cold-restart run's
+transport errors without changing production behavior.
+
+The same full-path gate again **finishes phase 178 with 392 mandatory choices**,
+zero required refusals, **$1.2804700**, **412/488 firsts** and **154 follow-ups**.
+All 392 normalized choices match the old `f802335` baseline. Provider calls remain
+958, peak RPM 110/concurrency 10, virtual duration 928,191 ms. Funding assumptions,
+ceilings, prices and phase clocks are unchanged.
+
+```sh
+# Red run: only the first three lifecycle tests/fixture added to b9667de.
+TIM26_WAITER_NAME=waiter-lifecycle-red npx vitest run tests/inference-waiter-lifecycle.test.ts
+
+# Final lifecycle and full-path commands.
+TIM26_WAITER_NAME=waiter-lifecycle-final-atomic npx vitest run tests/inference-waiter-lifecycle.test.ts
+TIM7_NAME=waiter-final-full TIM7_PHASES=200 TIM26_LATENCY=1000 TIM26_USAGE=estimated TIM26_BUDGET_GATE=1 npx vitest run --config vitest.dialogue-baseline.config.ts
+npx vitest run tests/dialogue-shared.test.ts tests/platform-queue.test.ts tests/house-model.test.ts tests/succession-ui-stream.test.ts tests/succession-long-path.test.ts
+TIM7_NAME=waiter-required-retry TIM7_PHASES=3 TIM26_LATENCY=1000 TIM26_REQUIRED_PRESSURE=1 npx vitest run --config vitest.dialogue-baseline.config.ts
+npm run test:provider
+```
+
+The existing focused suite passes **31/31** (3.04 seconds); the provider suite
+passes **3/3** (342.94 seconds). The live required-waiter cold-retry control also
+passes, preserving its same-ID retry and single provider attempt. Build, typecheck,
+lint, formatting and provider-receipt details are listed in the dialogue report.
+`.tim7/waiter-proof.mjs` regenerates `waiter-proof.json` with the normalized action
+digest, funding totals and per-case cleanup/priority/accounting results. All new
+evidence uses `waiter-*` paths; the original budget and parent `lead-budget-*`
+artifacts are untouched.
 
 ## Evidence / handoff
 

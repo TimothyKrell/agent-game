@@ -11,6 +11,12 @@ for selected allocation assumptions, exact coverage/denials, unchanged ceiling
 scope, cold-retry evidence, holdout and all commands. Original c38/73 snapshots
 and negative-control artifacts remain preserved in Git and `.tim7/`.
 
+**P2 lifecycle follow-up:** terminal/obsolete inference jobs and settled allocations
+now retire their durable priority waiters. Ten native Worker/SQLite lifecycle tests
+pass, including cleanup loss, cold replay, migration and live replacement controls.
+The full-path gate remains at phase 178/392 matching choices/$1.2804700 with no
+required refusals. See [the lifecycle report](TIM-26-budget-review.md#p2-follow-up-terminal-waiter-lifecycle).
+
 ### Original c38 measurement context
 
 The bounded scheduler correction is ready for review against baseline `f802335`
@@ -513,6 +519,43 @@ Checks on the budget implementation:
 
 All diagnostic/provider/Worker servers stopped on test completion. No paid
 inference, push, deployment, Linear mutation, package update or worktree deletion.
+
+## P2 terminal-waiter correction checks
+
+The parent reproduced stale required/initial priority after a runner became
+obsolete on phase recovery, plus stale priority after allocation settlement.
+Three red real-path tests first reproduced those cases on `b9667de`. The fix adds
+an exact-ID retirement RPC, durable terminal cleanup in the existing house job
+row, and allocation-scoped transactional retirement during settlement. It does
+not refund usage or modify the approved funding policy.
+
+- `TIM26_WAITER_NAME=waiter-lifecycle-final-atomic npx vitest run tests/inference-waiter-lifecycle.test.ts`
+  — **10 passed**, 7.33 seconds. Includes required/initial recovery, failures
+  before/after cleanup delivery, actual cold house restarts, old-schema migration,
+  live replacement waiter protection, settlement cold replay and unchanged
+  live/unknown usage accounting.
+- `TIM7_NAME=waiter-final-full TIM7_PHASES=200 TIM26_LATENCY=1000 TIM26_USAGE=estimated TIM26_BUDGET_GATE=1 npx vitest run --config vitest.dialogue-baseline.config.ts`
+  — **passed**, phase 178 finished; 392 baseline-matching mandatory choices,
+  412/488 firsts, 154 follow-ups, 958 provider calls, zero required refusals,
+  $1.2804700, RPM 110/concurrency 10, 928,191 virtual ms.
+- Existing coordinator/shared/model/stream/long-path focused command above —
+  **31 passed**, 3.04 seconds (`.tim7/waiter-focused.log`).
+- `npm run test:provider` — **3 passed**, 342.94 seconds; both acts, 731 fixture
+  HTTP calls, 1,273 events/32 pages, RPM 223, one intentional unknown-usage
+  failure, $0.052560 synthetic measured usage. Existing retry/saved-response/
+  provider-receipt idempotency assertions remain green (`.tim7/waiter-provider.log`).
+- `TIM7_NAME=waiter-required-retry TIM7_PHASES=3 TIM26_LATENCY=1000 TIM26_REQUIRED_PRESSURE=1 npx vitest run --config vitest.dialogue-baseline.config.ts`
+  — **passed**; a still-live required waiter survives cold restart, retries the
+  same usage ID after 1,000 ms, and completes with one provider attempt and one
+  accepted submission. Terminal cleanup does not retire live waiting jobs.
+- `npm run typecheck`, `npx tsc --noEmit`, `npm run build`, scoped Oxlint and
+  Prettier — **passed**. No package, lockfile or generated runtime-type changes.
+
+New evidence is `.tim7/waiter-*`, including `waiter-proof.json`/`waiter-proof.mjs`.
+The original c38/73/b966 budget artifacts and parent lead evidence remain preserved.
+Original comparison and b966 evidence SHA-256 checksums were reverified; all match.
+All test servers stopped. No package changes, paid inference, Linear writes,
+pushes, deployment or worktree cleanup.
 
 Evidence is retained under `.tim7/budget-*`; `budget-report.mjs` regenerates
 `budget-results.json`, including full normalized mandatory-choice comparison.
