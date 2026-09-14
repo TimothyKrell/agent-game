@@ -4,7 +4,7 @@
   --rp-ink: #071113;
   --rp-cyan: #bbf3ee;
   --rp-brass: #bda675;
-  padding: 28px 0 70px;
+  padding: 12px 0 70px;
   font-size: 14px;
 }
 .replay-prototype *,
@@ -94,23 +94,24 @@
   font-weight: 600;
   text-transform: uppercase;
 }
-.rp-breadcrumb {
+.rp-entry-note {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  align-items: center;
+  gap: 18px;
+}
+.rp-breadcrumb {
   color: var(--muted);
   font-size: 11px;
-  margin-bottom: 18px;
-}
-.rp-breadcrumb a {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  min-height: 44px;
+  flex-shrink: 0;
 }
 .rp-fixture-label {
   border-left: 2px solid #bda675;
   background: #bda6750a;
-  padding: 8px 12px;
+  padding: 5px 10px;
   color: var(--muted);
   font-size: 11px;
   line-height: 1.7;
@@ -121,11 +122,11 @@
   margin-right: 10px;
 }
 .rp-outcome {
-  margin: 22px 0 0;
+  margin: 8px 0 0;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 18px 28px;
+  gap: 4px 28px;
 }
 .rp-outcome-identity {
   display: flex;
@@ -133,12 +134,12 @@
   gap: 20px;
 }
 .rp-seal {
-  flex: 0 0 82px;
+  flex: 0 0 64px;
   color: #bda675;
 }
 .rp-seal .succession-seal {
-  width: 82px;
-  height: 82px;
+  width: 64px;
+  height: 64px;
 }
 .rp-live-seal {
   display: flex;
@@ -196,10 +197,10 @@
   grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  gap: 14px 24px;
+  gap: 4px 20px;
   color: var(--muted);
   font-size: 10px;
-  padding: 12px 0;
+  padding: 6px 0;
   border-top: 1px solid #315d6060;
 }
 .rp-view-state {
@@ -212,8 +213,8 @@
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  padding: 13px 18px;
-  margin-bottom: 28px;
+  padding: 6px 12px;
+  margin-bottom: 12px;
 }
 .rp-view-state > div {
   display: grid;
@@ -235,6 +236,7 @@
   align-items: center;
   flex-shrink: 0;
   cursor: pointer;
+  min-height: 44px;
 }
 .rp-visibility input {
   accent-color: #bbf3ee;
@@ -242,8 +244,10 @@
   height: 18px;
 }
 .rp-visibility span {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 8px;
 }
 .rp-visibility strong {
   font-size: 11px;
@@ -251,13 +255,13 @@
 .rp-chapter {
   scroll-margin-top: 110px;
   border-top: 1px solid #315d60;
-  margin-bottom: 26px;
+  margin-bottom: 8px;
 }
 .rp-chapter-heading {
   display: flex;
   width: 100%;
   text-align: left;
-  padding: 20px 0;
+  padding: 10px 0;
   gap: 20px;
   align-items: center;
   border: none !important;
@@ -275,7 +279,9 @@
 }
 .rp-chapter-heading-copy {
   display: grid;
-  gap: 6px;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 4px 12px;
   flex: 1;
 }
 .rp-chapter-heading-copy > strong {
@@ -284,10 +290,14 @@
   font-weight: 600;
   line-height: 1.4;
 }
-.rp-chapter-heading-copy > span:last-child {
+.rp-chapter-summary {
+  grid-column: 1 / -1;
   font-size: 12px;
   color: var(--muted);
-  line-height: 1.75;
+  line-height: 1.6;
+}
+.rp-act-final-tracks {
+  color: #9bb5b1;
 }
 .rp-chapter-toggle {
   display: flex;
@@ -304,9 +314,9 @@
   flex-wrap: wrap;
   gap: 20px;
   align-items: center;
-  padding: 16px 0;
+  padding: 8px 0;
   border-top: 1px solid #315d6060;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 .rp-playback-buttons {
   display: flex;
@@ -317,7 +327,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-width: 40px;
+  min-width: 44px;
   padding: 0 8px;
 }
 .replay-prototype .rp-play,
@@ -824,19 +834,12 @@
 .rp-hand .rp-capability strong {
   font-size: 15px;
 }
-.rp-desk-intro {
-  display: flex;
-  gap: 30px;
-  justify-content: space-between;
-  align-items: end;
-  padding: 4px 0 24px;
-}
-.rp-desk-intro h2 {
-  margin: 6px 0 0;
-}
-.rp-desk-intro p {
-  max-width: 320px;
+.replay-prototype .rp-layout-note {
   font-size: 12px;
+  margin: 0 0 8px;
+}
+.rp-layout-note strong {
+  color: #bbf3ee;
 }
 .rp-desk-columns {
   display: grid;
@@ -914,43 +917,6 @@
 .rp-focus-footnote {
   font-size: 11px !important;
   color: #799d9a;
-}
-.rp-dossier-map {
-  display: grid;
-  grid-template-columns: 1fr 1fr 32px 1fr;
-  gap: 24px;
-  align-items: center;
-  margin: 12px 0 30px;
-}
-.rp-dossier-title h2 {
-  font-family: 'Poiret One', sans-serif;
-  font-size: 36px;
-  font-weight: 400;
-  margin: 8px 0;
-  color: #bbf3ee;
-}
-.rp-dossier-map > button {
-  display: grid;
-  gap: 12px;
-  padding: 18px 22px;
-  text-align: left;
-  border: none;
-  border-block: 1px solid #bda67566;
-}
-.rp-dossier-map > button > span {
-  font-size: 10px;
-  color: #bda675;
-  line-height: 1.7;
-}
-.rp-dossier-map > button > span:last-child {
-  color: var(--muted);
-}
-.rp-dossier-map strong {
-  font-size: 24px;
-  font-weight: 500;
-}
-.rp-dossier-arrow {
-  color: #bda675;
 }
 .rp-ledger-heading,
 .rp-ledger > li {
@@ -1217,7 +1183,7 @@
     grid-template-columns: 1fr;
   }
   .rp-outcome-facts {
-    padding-left: 102px;
+    padding-left: 84px;
   }
   .rp-chronicle-layout {
     grid-template-columns: 175px minmax(0, 1fr);
@@ -1247,19 +1213,25 @@
 }
 @media (max-width: 760px) {
   .replay-prototype {
-    padding-top: 20px;
+    padding-top: 8px;
+  }
+  .rp-entry-note {
+    gap: 10px;
   }
   .rp-breadcrumb {
-    gap: 6px 16px;
     font-size: 10px;
   }
   .rp-fixture-label {
-    font-size: 10px;
-    padding-block: 7px;
+    font-size: 11px;
+    line-height: 1.5;
+    padding: 4px 8px;
+  }
+  .rp-fixture-label > span {
+    display: block;
   }
   .rp-outcome {
-    gap: 15px;
-    margin-top: 20px;
+    gap: 6px;
+    margin-top: 8px;
   }
   .rp-outcome-identity {
     gap: 12px;
@@ -1277,8 +1249,8 @@
     font-size: 36px;
   }
   .rp-outcome p {
-    font-size: 11px;
-    line-height: 1.8;
+    font-size: 12px;
+    line-height: 1.6;
   }
   .rp-outcome-facts {
     padding-left: 0;
@@ -1296,22 +1268,22 @@
     min-height: 48px;
   }
   .rp-matchline {
-    gap: 6px 14px;
-    font-size: 9px;
-    line-height: 1.7;
+    gap: 2px 14px;
+    font-size: 10px;
+    line-height: 1.6;
   }
   .rp-view-state {
     position: static;
-    padding: 12px;
-    margin-bottom: 22px;
+    padding: 8px 10px 4px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 2px;
   }
   .rp-view-state > div {
     flex-basis: 100%;
   }
   .rp-visibility {
-    padding-block: 4px;
+    padding-block: 0;
   }
   .rp-visibility input {
     margin: 0;
@@ -1320,36 +1292,17 @@
     display: block;
   }
   .rp-chapter-nav {
-    position: static;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 22px;
-  }
-  .rp-chapter-nav > .rp-kicker {
-    grid-column: 1 / -1;
-  }
-  .rp-chapter-nav > button {
-    margin-top: 0;
-    padding: 8px;
-    gap: 6px;
-  }
-  .rp-chapter-nav strong {
-    font-size: 11px;
-  }
-  .rp-chapter-nav small {
-    font-size: 9px;
-  }
-  .rp-nav-key,
-  .rp-chapter-nav .rp-reading-note {
     display: none;
   }
   .rp-chapter {
     scroll-margin-top: 10px;
   }
   .rp-chapter-heading {
-    gap: 12px;
-    padding: 18px 0;
+    gap: 10px;
+    padding: 10px 0;
+  }
+  .rp-chapter-heading-copy {
+    grid-template-columns: 1fr;
   }
   .rp-act-numeral {
     font-size: 34px;
@@ -1357,9 +1310,6 @@
   }
   .rp-chapter-heading-copy > strong {
     font-size: 17px;
-  }
-  .rp-chapter-heading-copy > span:last-child {
-    font-size: 11px;
   }
   .rp-chapter-toggle {
     flex-basis: 20px;
@@ -1458,16 +1408,6 @@
   .rp-archive p {
     font-size: 12px;
   }
-  .rp-desk-intro {
-    display: block;
-    padding-top: 0;
-  }
-  .rp-desk-intro h2 {
-    font-size: 21px;
-  }
-  .rp-desk-intro p {
-    max-width: none;
-  }
   .rp-desk-columns {
     display: flex;
     flex-direction: column;
@@ -1496,31 +1436,6 @@
   .rp-transcript p {
     font-size: 13px;
   }
-  .rp-dossier-map {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 0;
-  }
-  .rp-dossier-title {
-    grid-column: 1 / -1;
-  }
-  .rp-dossier-title h2 {
-    font-size: 32px;
-  }
-  .rp-dossier-title br {
-    display: none;
-  }
-  .rp-dossier-map > button {
-    padding: 14px 6px;
-    gap: 8px;
-  }
-  .rp-dossier-map strong {
-    font-size: 21px;
-  }
-  .rp-dossier-map > button > span {
-    font-size: 9px;
-  }
-  .rp-dossier-arrow,
   .rp-ledger-heading {
     display: none;
   }

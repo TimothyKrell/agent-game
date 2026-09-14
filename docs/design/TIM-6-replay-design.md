@@ -29,7 +29,7 @@ The floating review bar cycles A/B/C and wraps. Left/right arrow keys do the sam
 1. Read **Northstar wins** and the two act summaries. Act I awards a starting advantage; Act II awards the sole match victory.
 2. Open Act I. Read Velvet’s nomination, Northstar’s reply, the 7–2 vote, the fifth override and Quill’s execution.
 3. Open **All 10 starting states** in the return moment. Quill and Vesper are marked “Returned after execution”; all ten have two fresh influence. Six cooperative agents have 3 coins, four rogue-faction agents have 2.
-4. Use the round/position control, or A’s **The bluff fails** link. Read the connected declaration → dialogue → published challenge → disproof sequence. Velvet’s influence changes **2 → 1**, her coins stay **3 → 3**, and Tax is canceled.
+4. Use the round/position control, or A’s desktop **The bluff fails** link. Read the connected declaration → dialogue → published challenge → disproof sequence. Velvet’s influence changes **2 → 1**, her coins stay **3 → 3**, and Tax is canceled.
 5. Open **Guard rules** with click, tap, Enter or Space. Escape closes the dialog and restores focus to the trigger without changing the selected moment.
 6. Enable **Reveal archive hands**. At the declaration, open Velvet’s illustrative hand: Guard and Thief. The disclosure explicitly says this was secret during play. This is completed-match hindsight, not evidence the table had then.
 7. Visit the proved-claim example, Quill’s elimination, and **See the decisive move**. The winner summary stays fixed as the historical cursor changes.
@@ -75,9 +75,27 @@ Ink `#071113`; pale cyan `#BBF3EE`; teal `#1CD7C7`; brass `#BDA675`; muted green
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **A · Chronicle — recommended** | Chapter/key-moment navigation in a narrow desktop rail; full-width causal cards in a single reading column. Act disclosures contain the continuous record and controls.              | Best default for a newcomer: read down without opening a second surface. Discussion remains beside the decision it informed. Same card grammar stacks naturally on a phone. | Most vertical space. Production needs windowed automatic history retrieval and durable reading anchors. Key-moment links should only appear when supported by actual facts. |
 | **B · Replay desk**             | Each act has a continuous transcript on the left and a sticky, selected explanation on the right. The transcript is the selection surface; stepping changes the focused explanation. | Good for deliberate study: a large explanation, rule and delta have a stable place. Dense transcript gives an overview without a ten-seat rail.                             | Splits attention and repeats selected text. On phones, the selected panel sits above the transcript and selecting a row moves back to that panel. More interaction than A.  |
-| **C · Dossier**                 | Outcome bridge at the top; each expanded act is a wide, three-column ledger: position / actor-story / consequence-evidence.                                                          | Strongest expert scanning: compare what was claimed with what actually changed across several rows. Clear separation between fact and interpretation.                       | Width-hungry. On narrow screens the columns become stacked rows, so the expert scanning advantage diminishes. More editorial overhead before the first replay moment.       |
+| **C · Dossier**                 | Each expanded act is a wide, three-column ledger: position / actor-story / consequence-evidence, introduced by a single reading hint.                                                | Strongest expert scanning: compare what was claimed with what actually changed across several rows. Clear separation between fact and interpretation.                       | Width-hungry. On narrow screens the columns become stacked rows, so the expert scanning advantage diminishes. The column headings add a small amount of entry overhead.     |
 
 **Recommendation:** choose A’s reading structure and shared compact outcome header. Keep the capability cards/dialog used by all three. C’s explicit consequence heading is worth retaining in A. B is useful evidence for focused analysis, but should not make a new viewer select every event to understand a match.
+
+### Lead-review refinement · denser entry
+
+The first review at `98c8fe8` found that repeated introductory rows still postponed the actual story: A’s first desktop event began at approximately **846px**, and its narrow Act I summary began at **844px** with Act II only at **1016px**. The owner’s compact-header goal therefore needed a focused layout revision.
+
+The refined entry combines the arena backlink with the honest illustrative-data notice; consolidates winner metadata and the selected-position strip; places desktop chapter identity/outcome on one row with concise facts beneath; and reduces padding between summaries and playback. The winner remains 50px at 1440 and 36px at 390. A/B narrative body copy remains 16px, C’s ledger body remains 14px, and chapter titles remain 20px/17px. Step controls now have at least 44px width and 44px height (48px height on narrow screens).
+
+A’s narrow pre-chapter navigator is removed because the adjacent chapter disclosure buttons and their round controls already provide that navigation. B’s large editorial heading and C’s duplicate outcome bridge become single-line reading hints on desktop. The actual reading structures remain distinct: A’s connected cards, B’s transcript/detail pairing and C’s story/consequence ledger.
+
+Measured default-entry observations at scale 1, with no automatic scroll:
+
+| Variant | First desktop narrative at 1440 × 1080               | Act I summary / Act II start at 390 × 844 |
+| ------- | ---------------------------------------------------- | ----------------------------------------- |
+| A       | **571px**                                            | **542px / 675px**                         |
+| B       | **600px** (transcript; focused card begins at 627px) | **591px / 724px**                         |
+| C       | **646px**                                            | **570px / 704px**                         |
+
+These are design observations in `browser-inspection.json`, not production viewport assertions. A now exposes both act outcomes in the initial narrow view, with playback immediately below; all three show meaningful narrative content within the initial desktop viewport. The tradeoff is a more closely grouped top hierarchy and less editorial introduction. Final tracks, bonus/return facts, winner identity/reason, archive visibility and the actual site shell remain visible; the denser layout does not rely on truncation or smaller reading text. The 24 gallery captures below are refreshed for this revision.
 
 ## Screenshots and interaction evidence
 
@@ -103,7 +121,7 @@ Annotated review states:
 
 ## Storyboard and rule fidelity
 
-These are **19 authored illustrative moments**, not engine-generated evidence or a complete match. The interface labels that distinction at entry, at omitted-turn bridges, in hand disclosures, in the position count, and at the end. The example advances from Election 8 to Table round 11; omitted turns are not represented as secretly loaded history.
+These are **19 authored illustrative moments**, not engine-generated evidence or a complete match. The interface labels that distinction at entry, at omitted-turn bridges, in hand disclosures, and at the end; the position strip counts those same local moments. The example advances from Election 8 to Table round 11; omitted turns are not represented as secretly loaded history.
 
 | Moments | Representative facts                                                                                                                                                                                                                                                                |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -183,9 +201,11 @@ To reproduce the screenshots with Vite running:
 node scripts/capture-tim-6.prototype.mjs
 ```
 
-The inspection covers all three layouts at both widths; document containment; act expansion and cursor retention; all ten return states; public/archival ownership labels; Enter/Escape and focus restoration; URL cycling/reload; slider arrow isolation; round seeking; play, pause, scrub and stop-at-end; live detach/reattach; and absence of raw-data/tabs. These are browser interaction observations, not backend/rules-engine certification.
+The inspection covers all three layouts at both widths; document containment; Enter-operated chapter expansion and cursor retention; Space-operated archive visibility; all ten return states; public/archival ownership labels; Enter/Escape and rule-dialog focus restoration; URL cycling/reload; slider arrow isolation; round seeking; play, pause, scrub and stop-at-end; live detach/reattach; and absence of raw-data/tabs. It also records default entry coordinates, reading type sizes and playback target dimensions for the density review. These are browser interaction observations, not backend/rules-engine certification.
 
-Code checks passed: `npm run typecheck` (application, infrastructure and lint-plugin TypeScript projects), scoped Oxlint, scoped Prettier, and `npx vite build`. The generated production asset set contains only the normal app JS/CSS, with no prototype chunk or prototype labels/styles. The build is a local artifact check; nothing was deployed.
+Original mount checks at `98c8fe8` passed: `npm run typecheck` (application, infrastructure and lint-plugin TypeScript projects), scoped Oxlint, scoped Prettier, and `npx vite build`. The generated production asset set contained only the normal app JS/CSS, with no prototype chunk or prototype labels/styles. The build was a local artifact check; nothing was deployed.
+
+The density revision reran `npx tsc --noEmit`, scoped Oxlint/Prettier, and the existing headless Playwright capture/inspection: **53 checks passed, 24 captures refreshed, zero backend requests and zero browser application exceptions**. Entry observations confirm zero initial scroll, preserved reading type sizes, and 44×44 desktop / 44×48 narrow step targets. The site header remains 87px high at desktop and 189px at narrow; all density changes are within the prototype.
 
 ## Outstanding owner choice
 

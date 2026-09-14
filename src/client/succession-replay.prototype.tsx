@@ -97,11 +97,7 @@ function OutcomeHeader({ live, seek }: { live: boolean; seek: ViewProps['seek'] 
             SUCCESSION / {live ? 'ILLUSTRATIVE LIVE SNAPSHOT' : 'COMPLETED MATCH'}
           </div>
           <h1>{live ? 'The claim is on the table.' : 'Northstar wins.'}</h1>
-          <p>
-            {live
-              ? 'Act II · Table round 01 · Challenges sealed'
-              : 'Seat 04 · Last influence standing · One overall champion'}
-          </p>
+          <p>{live ? 'Act II · Table round 01 · Challenges sealed' : 'Seat 04 · Last influence standing'}</p>
         </div>
       </div>
       <div className="rp-outcome-facts">
@@ -119,9 +115,8 @@ function OutcomeHeader({ live, seek }: { live: boolean; seek: ViewProps['seek'] 
         </button>
       </div>
       <div className="rp-matchline">
-        <span>Table / TIM-6 illustrative match</span>
-        <span>10 agents · 2 acts · succession-1</span>
-        <span>{live ? 'Public spectator' : 'Original entrant wins · No forfeit'}</span>
+        <span>TIM-6 · 10 agents · 2 acts · succession-1</span>
+        <span>{live ? 'Public spectator' : 'Original entrant · No forfeit'}</span>
       </div>
     </header>
   );
@@ -153,16 +148,16 @@ function ChapterHeading({
           ACT {act === 1 ? 'I' : 'II'} / {info.subtitle}
         </span>
         <strong>{act === 2 && live ? 'An individual contest, still in play' : info.result}</strong>
-        <span>
+        <span className="rp-chapter-summary">
           {act === 1
-            ? info.detail
+            ? 'Overlord executed · 6 agents earn +1 starting coin · All 10 return.'
             : live
-              ? 'All ten returned. Current coins and influence belong to Act II.'
-              : info.detail}
+              ? 'All ten returned. Coins and influence now belong to Act II.'
+              : 'Last influence standing. The Act I bonus was a starting advantage, not a match win.'}
+          {act === 1 && (
+            <span className="rp-act-final-tracks"> Final tracks: 3 / 5 safeguards · 5 / 6 overrides.</span>
+          )}
         </span>
-        {act === 1 && (
-          <span className="rp-act-final-tracks">Final Act I tracks · 3 / 5 safeguards · 5 / 6 overrides</span>
-        )}
       </span>
       <span className="rp-chapter-toggle">
         <span>{open ? 'Close' : 'Open'} replay</span>
@@ -503,13 +498,9 @@ export function VariantA({ view }: { view: ViewProps }) {
 export function VariantB({ view }: { view: ViewProps }) {
   return (
     <div className="rp-desk-layout">
-      <div className="rp-desk-intro">
-        <div>
-          <div className="rp-kicker">THE REPLAY DESK</div>
-          <h2>Follow a decision. See what it changed.</h2>
-        </div>
-        <p>Choose a moment in the continuous record. Its full context opens alongside.</p>
-      </div>
+      <p className="rp-layout-note">
+        <strong>Replay desk</strong> · Select a moment to inspect its consequences.
+      </p>
       {([1, 2] satisfies Act[]).map((act) => {
         const focus = moments[view.selected].act === act ? view.selected : actInfo[act].start;
 
@@ -579,27 +570,9 @@ export function VariantB({ view }: { view: ViewProps }) {
 export function VariantC({ view }: { view: ViewProps }) {
   return (
     <div className="rp-dossier-layout">
-      <div className="rp-dossier-map">
-        <div className="rp-dossier-title">
-          <div className="rp-kicker">THE MATCH DOSSIER</div>
-          <h2>
-            Two acts.
-            <br />
-            One through-line.
-          </h2>
-        </div>
-        <button onClick={() => view.seek(0, true)}>
-          <span>I / FACTION OUTCOME</span>
-          <strong>Cooperative</strong>
-          <span>Execution → +1 starting coin</span>
-        </button>
-        <ArrowRight className="rp-dossier-arrow" />
-        <button onClick={() => view.seek(5, true)}>
-          <span>II / INDIVIDUAL OUTCOME</span>
-          <strong>{view.live ? 'Still in play' : 'Northstar'}</strong>
-          <span>{view.live ? '10 agents · no champion yet' : 'Final Coup → sole champion'}</span>
-        </button>
-      </div>
+      <p className="rp-layout-note">
+        <strong>Dossier</strong> · Read each decision beside its consequence.
+      </p>
       {([1, 2] satisfies Act[]).map((act) => (
         <section className="rp-chapter" id={`rp-act-${act}`} key={act}>
           <ChapterHeading act={act} open={view.open[act]} onClick={() => view.toggle(act)} live={view.live} />
@@ -806,27 +779,25 @@ export default function SuccessionReplayPrototype() {
 
   return (
     <div className={`page replay-prototype rp-variant-${variant}`}>
-      <div className="rp-breadcrumb">
-        <a href="/?gameId=succession">
+      <div className="rp-entry-note">
+        <a className="rp-breadcrumb" href="/?gameId=succession">
           <ChevronLeft size={15} /> Succession arena
         </a>
-        <span>Match replay / design study</span>
-      </div>
-      <div className="rp-fixture-label">
-        <span>ILLUSTRATIVE DATA</span> Authored completed-match excerpts · Local, read-only design prototype ·
-        Not a real match
+        <div className="rp-fixture-label">
+          <span>ILLUSTRATIVE DATA</span> Authored excerpts · Read-only · Not a real match
+        </div>
       </div>
       <OutcomeHeader live={live} seek={seek} />
       <section className="rp-view-state" aria-label="Replay viewing state">
         <div>
-          <span className="rp-kicker">{live ? 'PUBLIC HISTORY' : 'AT SELECTED MOMENT'}</span>
           <strong>
-            Act {moment.act === 1 ? 'I' : 'II'} · {moment.act === 1 ? 'Election' : 'Table round'}{' '}
+            <span className="rp-kicker">{live ? 'Public history' : 'Selected'}</span> · Act{' '}
+            {moment.act === 1 ? 'I' : 'II'} · {moment.act === 1 ? 'Election' : 'Round'}{' '}
             {String(moment.round).padStart(2, '0')} · {moment.position}
           </strong>
           <small>
-            Moment {selected + 1} of {limit + 1} illustrated moments · {playing ? 'Playing' : 'Paused'} ·{' '}
-            {archive && !live ? 'Archive disclosures enabled' : 'Public knowledge at that time'}
+            Moment {selected + 1} of {limit + 1} · {playing ? 'Playing' : 'Paused'} ·{' '}
+            {archive && !live ? 'Archive disclosures enabled' : 'Public at that time'}
           </small>
         </div>
         <label className="rp-visibility">
@@ -838,7 +809,7 @@ export default function SuccessionReplayPrototype() {
           />
           <span>
             <strong>Reveal archive hands</strong>
-            <small>{live ? 'Available after overall completion' : 'Illustrative · secret during play'}</small>
+            <small>{live ? 'After overall completion' : 'Secret during play'}</small>
           </span>
         </label>
       </section>

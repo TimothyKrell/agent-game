@@ -20,6 +20,8 @@ const pageErrors = [];
 
 const files = [];
 
+const entryObservations = [];
+
 await mkdir(directory, { recursive: true });
 
 function record(name, passed, evidence = '') {
@@ -71,6 +73,51 @@ try {
       await page.locator('.rp-outcome').waitFor();
       await capture(page, `${variant}-${size}.png`);
 
+      // Design-review observations, not pass/fail viewport thresholds.
+      entryObservations.push({
+        variant,
+        size,
+        ...(await page.evaluate(() => {
+          const bounds = (selector) => {
+            const box = document.querySelector(selector).getBoundingClientRect();
+
+            return {
+              top: Math.round(box.top),
+              bottom: Math.round(box.bottom),
+              height: Math.round(box.height),
+            };
+          };
+
+          return {
+            scrollY,
+            viewport: { width: innerWidth, height: innerHeight },
+            siteHeader: bounds('.header'),
+            actI: bounds('#rp-act-1 .rp-chapter-heading'),
+            actII: bounds('#rp-act-2 .rp-chapter-heading'),
+            playback: bounds('.rp-playback'),
+            firstNarrativeTop: Math.round(
+              Math.min(
+                ...[...document.querySelectorAll('[data-moment]')].map(
+                  (element) => element.getBoundingClientRect().top,
+                ),
+              ),
+            ),
+            winnerFont: getComputedStyle(document.querySelector('.rp-outcome h1')).fontSize,
+            narrativeFont: getComputedStyle(document.querySelector('.rp-event > p, .rp-ledger-story > p'))
+              .fontSize,
+            playbackTargets: [...document.querySelectorAll('.rp-playback button')].map((button) => {
+              const box = button.getBoundingClientRect();
+
+              return {
+                label: button.getAttribute('aria-label'),
+                width: Math.round(box.width),
+                height: Math.round(box.height),
+              };
+            }),
+          };
+        })),
+      });
+
       const dimensions = await page.evaluate(() => ({
         viewport: innerWidth,
         document: document.documentElement.scrollWidth,
@@ -105,7 +152,8 @@ try {
       );
 
       if (variant === 'A') {
-        await page.locator('#rp-act-1 .rp-chapter-heading').click();
+        await page.locator('#rp-act-1 .rp-chapter-heading').focus();
+        await page.keyboard.press('Enter');
         await capture(page, `${variant}-${size}-act-I.png`, page.locator('#rp-act-1'));
         record(
           `${size}: Act I discussion and vote reachable`,
@@ -125,7 +173,8 @@ try {
         );
         await capture(page, `${variant}-${size}-all-ten.png`, page.locator('[data-moment="5"]'));
         await page.locator('.rp-return-roster > summary').click();
-        await page.getByLabel('Reveal archive hands', { exact: false }).check();
+        await page.getByLabel('Reveal archive hands', { exact: false }).focus();
+        await page.keyboard.press('Space');
         const declaration = page.locator('[data-moment="6"]');
         await declaration.locator('.rp-archive > summary').click();
         record(
@@ -257,6 +306,7 @@ try {
     browser: 'System Chromium, headless, scale 1, reduced motion',
     note: 'Throwaway inspection, not a new test suite. Fixtures are authored excerpts; no production or backend invoked.',
     files,
+    entryObservations,
     checks,
   };
 

@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-14T21:16:55.149Z",
+  "capturedAt": "2026-09-14T21:27:41.793Z",
   "base": "http://127.0.0.1:5177/matches/tim-6-replay-prototype",
   "browser": "System Chromium, headless, scale 1, reduced motion",
   "note": "Throwaway inspection, not a new test suite. Fixtures are authored excerpts; no production or backend invoked.",
@@ -28,6 +28,302 @@
     "A-desktop-proof.png",
     "A-desktop-victory.png",
     "A-desktop-live-edge.png"
+  ],
+  "entryObservations": [
+    {
+      "variant": "A",
+      "size": "desktop",
+      "scrollY": 0,
+      "viewport": {
+        "width": 1440,
+        "height": 1080
+      },
+      "siteHeader": {
+        "top": 0,
+        "bottom": 87,
+        "height": 87
+      },
+      "actI": {
+        "top": 353,
+        "bottom": 424,
+        "height": 71
+      },
+      "actII": {
+        "top": 433,
+        "bottom": 504,
+        "height": 71
+      },
+      "playback": {
+        "top": 504,
+        "bottom": 565,
+        "height": 61
+      },
+      "firstNarrativeTop": 571,
+      "winnerFont": "50px",
+      "narrativeFont": "16px",
+      "playbackTargets": [
+        {
+          "label": "Play Act 2",
+          "width": 112,
+          "height": 44
+        },
+        {
+          "label": "Previous moment in Act 2",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "label": "Next moment in Act 2",
+          "width": 44,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "variant": "B",
+      "size": "desktop",
+      "scrollY": 0,
+      "viewport": {
+        "width": 1440,
+        "height": 1080
+      },
+      "siteHeader": {
+        "top": 0,
+        "bottom": 87,
+        "height": 87
+      },
+      "actI": {
+        "top": 381,
+        "bottom": 452,
+        "height": 71
+      },
+      "actII": {
+        "top": 461,
+        "bottom": 533,
+        "height": 71
+      },
+      "playback": {
+        "top": 533,
+        "bottom": 594,
+        "height": 61
+      },
+      "firstNarrativeTop": 600,
+      "winnerFont": "50px",
+      "narrativeFont": "16px",
+      "playbackTargets": [
+        {
+          "label": "Play Act 2",
+          "width": 112,
+          "height": 44
+        },
+        {
+          "label": "Previous moment in Act 2",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "label": "Next moment in Act 2",
+          "width": 44,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "variant": "C",
+      "size": "desktop",
+      "scrollY": 0,
+      "viewport": {
+        "width": 1440,
+        "height": 1080
+      },
+      "siteHeader": {
+        "top": 0,
+        "bottom": 87,
+        "height": 87
+      },
+      "actI": {
+        "top": 381,
+        "bottom": 452,
+        "height": 71
+      },
+      "actII": {
+        "top": 461,
+        "bottom": 533,
+        "height": 71
+      },
+      "playback": {
+        "top": 533,
+        "bottom": 594,
+        "height": 61
+      },
+      "firstNarrativeTop": 646,
+      "winnerFont": "50px",
+      "narrativeFont": "14px",
+      "playbackTargets": [
+        {
+          "label": "Play Act 2",
+          "width": 112,
+          "height": 44
+        },
+        {
+          "label": "Previous moment in Act 2",
+          "width": 44,
+          "height": 44
+        },
+        {
+          "label": "Next moment in Act 2",
+          "width": 44,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "variant": "A",
+      "size": "narrow",
+      "scrollY": 0,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "siteHeader": {
+        "top": 0,
+        "bottom": 189,
+        "height": 189
+      },
+      "actI": {
+        "top": 542,
+        "bottom": 666,
+        "height": 124
+      },
+      "actII": {
+        "top": 675,
+        "bottom": 781,
+        "height": 105
+      },
+      "playback": {
+        "top": 781,
+        "bottom": 898,
+        "height": 117
+      },
+      "firstNarrativeTop": 904,
+      "winnerFont": "36px",
+      "narrativeFont": "16px",
+      "playbackTargets": [
+        {
+          "label": "Play Act 2",
+          "width": 100,
+          "height": 48
+        },
+        {
+          "label": "Previous moment in Act 2",
+          "width": 44,
+          "height": 48
+        },
+        {
+          "label": "Next moment in Act 2",
+          "width": 44,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "variant": "B",
+      "size": "narrow",
+      "scrollY": 0,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "siteHeader": {
+        "top": 0,
+        "bottom": 189,
+        "height": 189
+      },
+      "actI": {
+        "top": 591,
+        "bottom": 715,
+        "height": 124
+      },
+      "actII": {
+        "top": 724,
+        "bottom": 829,
+        "height": 105
+      },
+      "playback": {
+        "top": 829,
+        "bottom": 946,
+        "height": 117
+      },
+      "firstNarrativeTop": 979,
+      "winnerFont": "36px",
+      "narrativeFont": "16px",
+      "playbackTargets": [
+        {
+          "label": "Play Act 2",
+          "width": 100,
+          "height": 48
+        },
+        {
+          "label": "Previous moment in Act 2",
+          "width": 44,
+          "height": 48
+        },
+        {
+          "label": "Next moment in Act 2",
+          "width": 44,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "variant": "C",
+      "size": "narrow",
+      "scrollY": 0,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "siteHeader": {
+        "top": 0,
+        "bottom": 189,
+        "height": 189
+      },
+      "actI": {
+        "top": 570,
+        "bottom": 695,
+        "height": 124
+      },
+      "actII": {
+        "top": 704,
+        "bottom": 809,
+        "height": 105
+      },
+      "playback": {
+        "top": 809,
+        "bottom": 926,
+        "height": 117
+      },
+      "firstNarrativeTop": 932,
+      "winnerFont": "36px",
+      "narrativeFont": "14px",
+      "playbackTargets": [
+        {
+          "label": "Play Act 2",
+          "width": 100,
+          "height": 48
+        },
+        {
+          "label": "Previous moment in Act 2",
+          "width": 44,
+          "height": 48
+        },
+        {
+          "label": "Next moment in Act 2",
+          "width": 44,
+          "height": 48
+        }
+      ]
+    }
   ],
   "checks": [
     {
