@@ -7,16 +7,32 @@ import type { Action2, ActionRequest2, Observation2 } from '../shared/succession
 import { api } from './api';
 import { historyPath, SuccessionCurrent, SuccessionHistory } from './succession-stream';
 import { matchReadKey, matchReadScope } from './succession-replay-data';
-import type { MatchReadScope } from './succession-replay-data';
 
 type SubmittedDecision = {
   request: ActionRequest2;
-  scope: MatchReadScope;
+  matchId: string;
+  owner: string;
   ticket: number;
   lifecycle: number;
 };
 
 const scopeIdentity = (view: Observation2) => hashKey(matchReadKey(matchReadScope(view)));
+
+function commandOwner(view: Observation2) {
+  const seat = view.seats.find((candidate) => candidate.number === view.you?.seat);
+
+  // Archive visibility and other seats do not revoke this controller's receipt.
+  // A takeover can advance its public seat while leaving you.generation unchanged.
+  return hashKey([
+    view.matchId,
+    view.you?.agentId,
+    view.you?.seat,
+    view.you?.generation,
+    view.you?.forfeited,
+    seat?.generation,
+    seat?.forfeited,
+  ]);
+}
 
 export function useSuccessionMatch(initial: Observation2) {
   const queryClient = useQueryClient();
@@ -34,6 +50,7 @@ export function useSuccessionMatch(initial: Observation2) {
   const pageRequest = useRef(0);
   const pageBusy = useRef(false);
   const lifecycle = useRef(0);
+  const commandLifecycle = useRef(0);
   const currentRequest = useRef<AbortController | null>(null);
   const historyRequest = useRef<AbortController | null>(null);
   const submitted = useRef<SubmittedDecision | null>(null);
@@ -58,6 +75,10 @@ export function useSuccessionMatch(initial: Observation2) {
       pageBusy.current = false;
       setLoadingHistory(false);
       setHistoryError('');
+    }
+
+    if (previous && commandOwner(previous) !== commandOwner(next)) {
+      commandLifecycle.current++;
       submitted.current = null;
       mutation.reset();
       setReceipt('');
@@ -142,8 +163,9 @@ export function useSuccessionMatch(initial: Observation2) {
   const owns = (decision: SubmittedDecision | undefined) =>
     !!decision &&
     active.current &&
-    decision.lifecycle === lifecycle.current &&
-    hashKey(matchReadKey(decision.scope)) === scopeIdentity(current.current.value ?? initial);
+    decision.lifecycle === commandLifecycle.current &&
+    decision.matchId === initial.matchId &&
+    decision.owner === commandOwner(current.current.value ?? initial);
 
   const mutation = useMutation({
     retry: false,
@@ -151,15 +173,12 @@ export function useSuccessionMatch(initial: Observation2) {
     networkMode: 'always',
     mutationFn: async (decision: SubmittedDecision) => {
       const result = await api(
-        `/api/matches/${encodeURIComponent(decision.scope.matchId)}/actions`,
+        `/api/matches/${encodeURIComponent(decision.matchId)}/actions`,
         ActionReceipt2Schema,
         decision.request,
       );
 
-      if (
-        result.actionId !== decision.request.actionId ||
-        result.observation.matchId !== decision.scope.matchId
-      )
+      if (result.actionId !== decision.request.actionId || result.observation.matchId !== decision.matchId)
         throw new Error('The decision receipt does not match this submission.');
 
       return result;
@@ -178,6 +197,16 @@ export function useSuccessionMatch(initial: Observation2) {
 
   useEffect(() => {
     active.current = true;
+    commandLifecycle.current++;
+
+    return () => {
+      active.current = false;
+      commandLifecycle.current++;
+      submitted.current = null;
+    };
+  }, [initial.matchId]);
+
+  useEffect(() => {
     lifecycle.current++;
     setConnected(false);
     setLoadingHistory(false);
@@ -241,9 +270,7 @@ export function useSuccessionMatch(initial: Observation2) {
     return () => {
       closed = true;
       connection++;
-      active.current = false;
       lifecycle.current++;
-      submitted.current = null;
       currentRequest.current?.abort();
       historyRequest.current?.abort();
       pageRequest.current++;
@@ -295,9 +322,10 @@ export function useSuccessionMatch(initial: Observation2) {
         decisionId: accepted.decision.id,
         action,
       },
-      scope: matchReadScope(accepted),
+      matchId: accepted.matchId,
+      owner: commandOwner(accepted),
       ticket: current.current.ticket(),
-      lifecycle: lifecycle.current,
+      lifecycle: commandLifecycle.current,
     };
 
     submitted.current = decision;
@@ -317,9 +345,6 @@ export function useSuccessionMatch(initial: Observation2) {
     loadingHistory,
     history: reader.current,
     historyVersion,
-    refresh: () => {
-      mutation.reset();
-      setRetry((value) => value + 1);
-    },
+    refresh: () => setRetry((value) => value + 1),
   };
 }

@@ -288,6 +288,56 @@ test('concurrent readers share one request; playback bounds the cache and evicte
   await expect.poll(async () => (await metrics(page)).entries).toBe(0);
 });
 
+for (const departure of ['unmount', 'seek'] as const) {
+  test(`a remaining reader keeps its shared pending request when the other reader chooses ${departure}`, async ({
+    page,
+  }) => {
+    await transport(page);
+    const held = capture<Route>();
+    let reads = 0;
+    const failures: string[] = [];
+    page.on('requestfailed', (request) => {
+      const url = new URL(request.url());
+
+      if (url.pathname.endsWith('/replay') && url.searchParams.get('through') === '512')
+        failures.push(request.failure()?.errorText ?? 'failed');
+    });
+    await page.route('**/api/matches/query-fixture/replay?*', (route) => {
+      if (new URL(route.request().url()).searchParams.get('through') !== '512') return route.fallback();
+      reads++;
+
+      if (reads === 1) held.save(route);
+      else
+        return route.fulfill({ status: 503, json: { error: { message: 'The shared read was restarted' } } });
+    });
+    await page.clock.install();
+    await page.goto('/tim10-harness');
+    await expect.poll(held.ready).toBe(true);
+    await page.getByRole('button', { name: 'Mount mirror' }).click();
+    await page.clock.runFor(100);
+    expect(reads).toBe(1);
+
+    if (departure === 'unmount') await page.getByRole('button', { name: 'Unmount replay' }).click();
+    else {
+      await primary(page).getByRole('slider').fill('10');
+      await displayed(page, 10);
+    }
+
+    await page.clock.runFor(100);
+    const original = fixture.frame(512);
+    original.seats[0].name = 'Original shared read';
+    await held.get().fulfill({ json: original });
+    const remaining = page.getByLabel('Mirror replay');
+    await expect(remaining.getByLabel('At selected event', { exact: true })).toContainText(
+      'AT SELECTED EVENT 512',
+    );
+    await expect(remaining.getByText('Original shared read', { exact: true })).toBeVisible();
+    await expect(remaining.getByRole('alert')).toHaveCount(0);
+    expect(reads).toBe(1);
+    expect(failures).toEqual([]);
+  });
+}
+
 test('offline reads show a paused state and resume without inventing a displayed frame', async ({
   page,
   context,
@@ -427,6 +477,124 @@ test('double submission is guarded and a receipt acknowledges its ID after a new
   await expect(page.getByLabel('Current phase')).toHaveText('newer-phase');
 });
 
+for (const outcome of ['success', 'failure'] as const) {
+  test(`current retry preserves an unresolved command and its ${outcome}`, async ({ page }) => {
+    const server = await transport(page, fixture.controller);
+    const held = capture<Route>();
+    const ids: string[] = [];
+    await page.route('**/api/matches/query-fixture/actions', (route) => {
+      const request = Schema.decodeUnknownSync(ActionRequest2Schema)(route.request().postDataJSON());
+      ids.push(request.actionId);
+
+      if (ids.length === 1) {
+        held.save(route);
+
+        return;
+      }
+
+      return route.fulfill({
+        json: { actionId: request.actionId, accepted: true, observation: fixture.controller },
+      });
+    });
+    await page.goto('/tim10-harness');
+    const submit = page.getByRole('button', { name: 'Submit decision', exact: true });
+    await submit.click();
+    await expect.poll(held.ready).toBe(true);
+    server.corrupt();
+    await expect(page.getByLabel('Command error')).toContainText('could not be read');
+    await page.getByRole('button', { name: 'Recheck current' }).click();
+    await expect.poll(server.currentReads).toBe(2);
+    await expect(page.getByLabel('Connection')).toHaveText('connected');
+    await expect(submit).toBeDisabled();
+    await page.getByRole('button', { name: 'Call act directly twice' }).click();
+    await held
+      .get()
+      .fulfill(
+        outcome === 'success'
+          ? { json: { actionId: ids[0], accepted: true, observation: fixture.controller } }
+          : { status: 409, json: { error: { message: 'Held decision rejected' } } },
+      );
+    await expect(submit).toBeEnabled();
+    expect(ids).toHaveLength(1);
+
+    if (outcome === 'success')
+      await expect(page.getByLabel('Command receipt')).toHaveText(`Accepted decision ${ids[0]}`);
+    else {
+      await expect(page.getByLabel('Command error')).toHaveText('Held decision rejected');
+      await page.getByRole('button', { name: 'Recheck current' }).click();
+      await expect.poll(server.currentReads).toBe(3);
+      await expect(page.getByLabel('Command error')).toHaveText('Held decision rejected');
+      await submit.click();
+      await expect(page.getByLabel('Command receipt')).toHaveText(`Accepted decision ${ids[1]}`);
+      await expect(page.getByLabel('Command error')).toHaveText('');
+      expect(ids).toHaveLength(2);
+      expect(ids[1]).not.toBe(ids[0]);
+    }
+  });
+}
+
+for (const outcome of ['success', 'failure'] as const) {
+  test(`another seat's takeover preserves the submitting controller's ${outcome}`, async ({ page }) => {
+    const server = await transport(page, fixture.controller);
+    const held = capture<Route>();
+    await page.route('**/api/matches/query-fixture/actions', (route) => held.save(route));
+    await page.goto('/tim10-harness');
+    await expect(page.getByLabel('Connection')).toHaveText('connected');
+    const submit = page.getByRole('button', { name: 'Submit decision', exact: true });
+    await submit.click();
+    await expect.poll(held.ready).toBe(true);
+    const request = Schema.decodeUnknownSync(ActionRequest2Schema)(held.get().request().postDataJSON());
+
+    if (!fixture.controller.you) throw new Error('Missing submitting controller');
+    const other = (fixture.controller.you.seat + 1) % 10;
+
+    const newer: Observation2 = {
+      ...fixture.controller,
+      phase: { ...fixture.controller.phase, id: 'other-seat-takeover' },
+      seats: fixture.controller.seats.map((seat) =>
+        seat.number === other
+          ? { ...seat, generation: seat.generation + 1, forfeited: true, house: true }
+          : seat,
+      ),
+    };
+
+    server.publish(newer);
+    await expect(page.getByLabel('Current phase')).toHaveText('other-seat-takeover');
+    await expect.soft(submit).toBeDisabled();
+    await held
+      .get()
+      .fulfill(
+        outcome === 'success'
+          ? { json: { actionId: request.actionId, accepted: true, observation: fixture.controller } }
+          : { status: 409, json: { error: { message: 'Current controller rejection' } } },
+      );
+
+    if (outcome === 'success')
+      await expect(page.getByLabel('Command receipt')).toHaveText(`Accepted decision ${request.actionId}`);
+    else await expect(page.getByLabel('Command error')).toHaveText('Current controller rejection');
+    await expect(submit).toBeEnabled();
+    await expect(page.getByLabel('Current phase')).toHaveText('other-seat-takeover');
+  });
+}
+
+test('a command receipt introducing the terminal archive retains its acknowledgment', async ({ page }) => {
+  const server = await transport(page, fixture.controller);
+  const held = capture<Route>();
+  await page.route('**/api/matches/query-fixture/actions', (route) => held.save(route));
+  await page.goto('/tim10-harness');
+  await expect(page.getByLabel('Connection')).toHaveText('connected');
+  await page.getByRole('button', { name: 'Submit decision', exact: true }).click();
+  await expect.poll(held.ready).toBe(true);
+  const request = Schema.decodeUnknownSync(ActionRequest2Schema)(held.get().request().postDataJSON());
+  const archive = { ...fixture.terminal, you: fixture.controller.you };
+  await held.get().fulfill({ json: { actionId: request.actionId, accepted: true, observation: archive } });
+  await expect(page.getByLabel('Current epoch')).toHaveText('archive');
+  await expect(page.getByLabel('Command receipt')).toHaveText(`Accepted decision ${request.actionId}`);
+  server.deliver(fixture.controller);
+  await expect(page.getByLabel('Current epoch')).toHaveText('archive');
+  await expect(page.getByLabel('Command receipt')).toHaveText(`Accepted decision ${request.actionId}`);
+});
+
 test('command rejection and offline failure release pending without automatic replay', async ({
   page,
   context,
@@ -503,17 +671,78 @@ for (const outcome of ['success', 'failure'] as const) {
     await page.getByRole('button', { name: 'Submit decision', exact: true }).click();
     await expect.poll(pending.ready).toBe(true);
     const second = Schema.decodeUnknownSync(ActionRequest2Schema)(pending.get().request().postDataJSON());
+    const oldRequest = pending.get();
     await page.getByRole('button', { name: 'Unmount game' }).click();
+
+    const newController = {
+      ...fixture.controller,
+      you: { ...fixture.controller.you, agentId: 'new-controller', generation: 1 },
+      seats: fixture.controller.seats.map((seat) =>
+        seat.number === fixture.controller.you?.seat
+          ? { ...seat, agentId: 'new-controller', generation: 1 }
+          : seat,
+      ),
+    };
+
+    server.snapshot(newController);
+    await page.getByRole('button', { name: 'Mount game', exact: true }).click();
+    await expect(page.getByLabel('Current controller')).toHaveText('new-controller');
+    await expect(page.getByLabel('Connection')).toHaveText('connected');
+    pending.clear();
+    await page.getByRole('button', { name: 'Submit decision', exact: true }).click();
+    await expect.poll(pending.ready).toBe(true);
+    const third = Schema.decodeUnknownSync(ActionRequest2Schema)(pending.get().request().postDataJSON());
+    await oldRequest.fulfill(
+      outcome === 'success'
+        ? { json: { actionId: second.actionId, accepted: true, observation: fixture.controller } }
+        : { status: 409, json: { error: { message: 'Unmounted failure' } } },
+    );
+    await expect(page.getByRole('button', { name: 'Submit decision', exact: true })).toBeDisabled();
+    await expect(page.getByLabel('Command error')).toHaveText('');
+    await expect(page.getByLabel('Command receipt')).toHaveText('');
     await pending
+      .get()
+      .fulfill({ json: { actionId: third.actionId, accepted: true, observation: newController } });
+    await expect(page.getByLabel('Command receipt')).toHaveText(`Accepted decision ${third.actionId}`);
+    await expect(page.getByLabel('Current controller')).toHaveText('new-controller');
+  });
+
+  test(`a public-seat-only takeover suppresses the old command's ${outcome}`, async ({ page }) => {
+    const server = await transport(page, fixture.controller);
+    const held = capture<Route>();
+    await page.route('**/api/matches/query-fixture/actions', (route) => held.save(route));
+    await page.goto('/tim10-harness');
+    await page.getByRole('button', { name: 'Submit decision', exact: true }).click();
+    await expect.poll(held.ready).toBe(true);
+    const request = Schema.decodeUnknownSync(ActionRequest2Schema)(held.get().request().postDataJSON());
+
+    const cutoff: Observation2 = {
+      ...fixture.controller,
+      private: null,
+      decision: null,
+      phase: { ...fixture.controller.phase, id: 'own-seat-replaced' },
+      seats: fixture.controller.seats.map((seat) =>
+        seat.number === fixture.controller.you?.seat
+          ? { ...seat, generation: seat.generation + 1, forfeited: true, house: true }
+          : seat,
+      ),
+    };
+
+    server.publish(cutoff);
+    await expect(page.getByLabel('Current phase')).toHaveText('own-seat-replaced');
+    await page.routeWebSocket('**/api/matches/query-fixture/events?*', () => {});
+    server.corrupt();
+    await expect(page.getByLabel('Command error')).toContainText('could not be read');
+    await held
       .get()
       .fulfill(
         outcome === 'success'
-          ? { json: { actionId: second.actionId, accepted: true, observation: fixture.controller } }
-          : { status: 409, json: { error: { message: 'Unmounted failure' } } },
+          ? { json: { actionId: request.actionId, accepted: true, observation: fixture.controller } }
+          : { status: 409, json: { error: { message: 'Old public-seat command failed' } } },
       );
-    await page.getByRole('button', { name: 'Mount game', exact: true }).click();
-    await expect(page.getByLabel('Command error')).toHaveText('');
     await expect(page.getByLabel('Command receipt')).toHaveText('');
+    await expect(page.getByLabel('Command error')).toContainText('could not be read');
+    await expect(page.getByLabel('Current phase')).toHaveText('own-seat-replaced');
   });
 }
 

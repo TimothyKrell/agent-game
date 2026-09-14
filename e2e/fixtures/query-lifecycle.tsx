@@ -77,6 +77,7 @@ function Game({ initial }: { initial: Observation2 }) {
   return (
     <>
       <output aria-label="Current phase">{view.phase.id}</output>
+      <output aria-label="Current controller">{view.you?.agentId ?? 'public'}</output>
       <output aria-label="Current epoch">{view.history.visibilityEpoch}</output>
       <output aria-label="Connection">{connected ? 'connected' : 'disconnected'}</output>
       <output aria-label="Command receipt">{receipt}</output>
@@ -96,6 +97,7 @@ function Game({ initial }: { initial: Observation2 }) {
       <button disabled={pending} onClick={() => submit(true)}>
         Submit twice
       </button>
+      <button onClick={() => submit(true)}>Call act directly twice</button>
       <button onClick={refresh}>Recheck current</button>
       <button onClick={() => setShow(!show)}>{show ? 'Unmount replay' : 'Mount replay'}</button>
       <button onClick={() => setMirror(!mirror)}>{mirror ? 'Remove mirror' : 'Mount mirror'}</button>
@@ -143,15 +145,20 @@ function OneLoader() {
   return data && <ProtocolOne initial={data} />;
 }
 
-function App() {
+function GameLoader() {
   const { data } = useLoad('/api/matches/query-fixture', Observation2Schema);
+
+  return data && <Game initial={data} />;
+}
+
+function App() {
   const [mounted, setMounted] = useState(true);
 
   return (
     <>
       <button onClick={() => setMounted(!mounted)}>{mounted ? 'Unmount game' : 'Mount game'}</button>
       <CacheMetrics />
-      {location.search.includes('protocol-one') ? <OneLoader /> : mounted && data && <Game initial={data} />}
+      {location.search.includes('protocol-one') ? <OneLoader /> : mounted && <GameLoader />}
     </>
   );
 }
