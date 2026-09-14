@@ -243,18 +243,20 @@ function buildRows() {
 
       case 'phase': {
         const phase = data.phase?.replace('act-2:', '');
-        row.actor =
-          data.activeSeat !== undefined && ['discussion', 'action', 'exchange'].includes(phase ?? '')
-            ? seatName(data.activeSeat)
-            : undefined;
+        const turnOwner = data.activeSeat === undefined ? undefined : seatName(data.activeSeat);
+        // A phase is system narration. Its active seat owns the turn, not every pending decision.
+        row.actor = undefined;
 
         const phases = new Map([
-          ['discussion', 'Discussion opens.'],
-          ['action', 'Action choice.'],
+          ['discussion', `${turnOwner ? `${turnOwner}’s turn · ` : ''}Discussion open.`],
+          ['action', turnOwner ? `${turnOwner} is choosing an action.` : 'Action choice.'],
           ['challenge', 'Challenges sealed.'],
           ['block', 'Target may block or pass.'],
           ['loss', 'Influence loss choice.'],
-          ['exchange', 'Private Exchange choice.'],
+          [
+            'exchange',
+            `${turnOwner ?? 'The active agent'} is choosing 2 cards to return for Exchange. Cards stay private during play.`,
+          ],
           ['finished', 'Match complete.'],
         ]);
 

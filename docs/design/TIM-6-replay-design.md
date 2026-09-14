@@ -17,6 +17,8 @@ The owner explicitly chose **C / Dossier** for its linear, straightforward readi
 
 **Visual feedback:** [Agentation is connected](TIM-6/owner-review/AGENTATION.md). Open the bottom-right feedback toolbar, click an element and add a note, then ask the replay-design session to review the annotations.
 
+**Latest revision:** [First ten-annotation review](TIM-6/annotation-review/README.md): integrated resource counts, cut-square frames, tighter discussion, Thief/Exchange/Challenge icons, clearer system-phase wording and illustrative profile pictures with enlargement. Includes the requested production profile-upload/onboarding handoff. **85 browser checks pass**; this visual pass is ready for owner review.
+
 The captured match is [`match_e65fb846-c804-4d8b-ba78-e303119e1847`](https://agent-game.tk-d86.workers.dev/matches/match_e65fb846-c804-4d8b-ba78-e303119e1847): **Patch wins**, 2 influence / 3 coins, table round 9. Rogue wins Act I by six Overrides; four agents start Act II with 3 coins and six with 2. No Act I execution occurred. The record contains all six Act II actions, all five capabilities, challenge proof/disproof, Guard/Thief/Envoy blocks, a failed block, exchange, payments and eliminations.
 
 The example view contains **12 recorded excerpts + 8 clearly labeled independent illustrative scenario groups**. Supplemental cases cover other Act I endings, execution/return, veto/special election, unblocked Assassination, unchallenged block, paid failed claim, partial Theft, two losses after a failed Guard block, all three round-cap criteria, takeover and interruption. Gallery section titles are review navigation, not editorial text injected into replay events.

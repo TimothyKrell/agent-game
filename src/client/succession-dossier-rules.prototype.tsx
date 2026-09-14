@@ -3,8 +3,9 @@ import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Struct } from 'effect';
-import { Coins, CircleHelp, Shield, Skull, X } from 'lucide-react';
+import { ArrowRight, Coins, CircleHelp, Landmark, Shield, Skull, Swords, X } from 'lucide-react';
 import { InfluenceBack } from './deco';
+import { AgentText } from './succession-dossier-profiles.prototype';
 import { capabilityRules } from './succession-replay-fixture.prototype';
 import type { Capability } from './succession-replay-fixture.prototype';
 
@@ -91,17 +92,38 @@ export function RuleIcon({ term }: { term: RuleTermName }) {
     return (
       <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
         <path d="M9 5h46v5h4v44h-4v5H9v-5H5V10h4Z" opacity=".45" />
-        <path d={capabilityRules[term].mark} />
+        <path
+          d={
+            term === 'Thief'
+              ? 'M14 25 24 22l8 3 8-3 10 3-2 13-8 5-8-6-8 6-8-5ZM19 29l9 2-4 5-5-2Zm26 0-9 2 4 5 5-2ZM14 27l-5-4m41 4 5-4'
+              : capabilityRules[term].mark
+          }
+        />
       </svg>
     );
 
-  if (term === 'Coins') return <Coins aria-hidden="true" />;
+  if (term === 'Coins' || term === 'Income') return <Coins aria-hidden="true" />;
+
+  if (term === 'Tax') return <Landmark aria-hidden="true" />;
+
+  if (term === 'Theft') return <RuleIcon term="Thief" />;
+
+  if (term === 'Assassination') return <RuleIcon term="Assassin" />;
+
+  if (term === 'Exchange')
+    return (
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+        <path d="M7 12h10v15H7Zm8-7h10v15h-5M4 8h7l-3-3m3 3-3 3M28 24h-7l3-3m-3 3 3 3" />
+      </svg>
+    );
+
+  if (term === 'Challenge') return <Swords aria-hidden="true" />;
 
   if (term === 'Influence') return <InfluenceBack />;
 
-  if (term === 'Safeguard') return <Shield aria-hidden="true" />;
+  if (term === 'Safeguard' || term === 'Block') return <Shield aria-hidden="true" />;
 
-  if (term === 'Override' || term === 'Execution') return <Skull aria-hidden="true" />;
+  if (term === 'Override' || term === 'Execution' || term === 'Coup') return <Skull aria-hidden="true" />;
 
   return <CircleHelp aria-hidden="true" />;
 }
@@ -119,14 +141,30 @@ const HelpContext = createContext({
   leave: () => {},
 });
 
-export function RuleTerm({ term, children }: { term: RuleTermName; children?: ReactNode }) {
+export function RuleTerm({
+  term,
+  children,
+  value,
+  before,
+}: {
+  term: RuleTermName;
+  children?: ReactNode;
+  value?: number;
+  before?: number;
+}) {
   const help = useContext(HelpContext);
 
   return (
     <button
       type="button"
-      className={`dp-term ${term === 'Coins' ? 'dp-term-coins' : ''}`}
+      className={`dp-term ${term === 'Coins' ? 'dp-term-coins' : ''} ${value !== undefined ? 'dp-resource-term' : ''}`}
+      data-rule-term={term}
       aria-label={`${children ?? term} rules`}
+      aria-description={
+        value === undefined
+          ? undefined
+          : `${before !== undefined && before !== value ? `${before} to ` : ''}${value} ${term}`
+      }
       aria-haspopup="dialog"
       onPointerEnter={(event) => {
         if (event.pointerType === 'mouse') help.show(term, event.currentTarget, false);
@@ -134,7 +172,28 @@ export function RuleTerm({ term, children }: { term: RuleTermName; children?: Re
       onPointerLeave={help.leave}
       onClick={(event) => help.show(term, event.currentTarget, true)}
     >
-      <RuleIcon term={term} />
+      {term === 'Influence' && value !== undefined ? (
+        <span className="dp-influence-cards" aria-hidden="true">
+          {[0, 1].map((index) => (
+            <span key={index} className={index >= value ? 'is-lost' : ''}>
+              <InfluenceBack />
+            </span>
+          ))}
+        </span>
+      ) : (
+        <RuleIcon term={term} />
+      )}
+      {value !== undefined && (
+        <span className="dp-numbers" aria-label={`${term}: ${before ?? value} to ${value}`}>
+          {before !== undefined && before !== value && (
+            <>
+              <span>{before}</span>
+              <ArrowRight size={13} />
+            </>
+          )}
+          <b>{value}</b>
+        </span>
+      )}
       <span>{children ?? term}</span>
     </button>
   );
@@ -166,7 +225,7 @@ export function RuleText({ text }: { text: string }) {
         {part}
       </RuleTerm>
     ) : (
-      part
+      <AgentText key={index} text={part} />
     );
   });
 }

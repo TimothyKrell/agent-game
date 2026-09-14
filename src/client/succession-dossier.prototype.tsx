@@ -1,10 +1,11 @@
 /** TIM-6 owner revision: a linear dossier with real recorded speech and mechanical facts. */
 import { Fragment, useEffect, useState } from 'react';
-import { ArrowRight, Check, ChevronDown, ChevronLeft, Eye, MessageCircle, X } from 'lucide-react';
-import { InfluenceBack, SuccessionSeal } from './deco';
+import { ArrowRight, Check, ChevronDown, ChevronLeft, Eye, X } from 'lucide-react';
+import { InfluenceBack } from './deco';
 import { useLocation, navigate } from './navigation';
 import { PrototypeSwitcher } from './prototype-switcher';
 import { RuleHelpProvider, RuleTerm, RuleText } from './succession-dossier-rules.prototype';
+import { AgentName, AgentPictureProvider, AgentPortrait } from './succession-dossier-profiles.prototype';
 import {
   additionalExamples,
   dossierRows,
@@ -44,34 +45,14 @@ function ResourceDelta({ delta }: { delta: DossierDelta }) {
       className={`dp-delta ${delta.influence[1] === 0 ? 'dp-eliminated' : ''}`}
       aria-label={`${delta.name} public resources`}
     >
-      <strong>{delta.name}</strong>
+      <strong>
+        <AgentName name={delta.name} />
+      </strong>
       <div className="dp-resources">
         {(['Coins', 'Influence'] as const).map((term) => {
           const [before, after] = term === 'Coins' ? delta.coins : delta.influence;
 
-          return (
-            <div key={term} className={term === 'Coins' ? 'dp-coins' : 'dp-influence'}>
-              <RuleTerm term={term} />
-              <div className="dp-numbers" aria-label={`${term}: ${before} to ${after}`}>
-                {before !== after && (
-                  <>
-                    <span>{before}</span>
-                    <ArrowRight size={16} />
-                  </>
-                )}
-                <b>{after}</b>
-                {term === 'Influence' && (
-                  <span className="dp-influence-cards" aria-hidden="true">
-                    {[0, 1].map((index) => (
-                      <span key={index} className={index >= after ? 'is-lost' : ''}>
-                        <InfluenceBack />
-                      </span>
-                    ))}
-                  </span>
-                )}
-              </div>
-            </div>
-          );
+          return <RuleTerm key={term} term={term} before={before} value={after} />;
         })}
       </div>
       {delta.lost && (
@@ -90,7 +71,9 @@ function Evidence({ row }: { row: DossierRow }) {
     <>
       {row.stateChanges?.map((state) => (
         <div key={state.name} className="dp-state-change">
-          <strong>{state.name}</strong>
+          <strong>
+            <AgentName name={state.name} />
+          </strong>
           <span>
             {state.before}
             <ArrowRight size={16} />
@@ -125,7 +108,7 @@ function Evidence({ row }: { row: DossierRow }) {
               {row.votes.map((vote) => (
                 <span key={vote.name} className={vote.approve ? 'approved' : 'rejected'}>
                   {vote.approve ? <Check size={13} /> : <X size={13} />}
-                  {vote.name}
+                  <AgentName name={vote.name} />
                 </span>
               ))}
             </div>
@@ -138,7 +121,9 @@ function Evidence({ row }: { row: DossierRow }) {
           <div>
             {row.responses.map((response) => (
               <span key={response.name}>
-                <b>{response.name}</b>
+                <b>
+                  <AgentName name={response.name} />
+                </b>
                 <RuleText text={response.choice} />
               </span>
             ))}
@@ -200,10 +185,12 @@ function Evidence({ row }: { row: DossierRow }) {
             <div className="dp-starting-seats">
               {row.returnSeats.map((seat, index) => (
                 <div key={index}>
-                  <strong>{seat.name}</strong>
+                  <strong>
+                    <AgentName name={seat.name} />
+                  </strong>
                   <small>Act I: {seat.role}</small>
                   <span>
-                    {seat.coins} <RuleTerm term="Coins" /> · 2 <RuleTerm term="Influence" />
+                    <RuleTerm term="Coins" value={seat.coins} /> <RuleTerm term="Influence" value={2} />
                   </span>
                   {seat.returned && <em>Returned after execution</em>}
                 </div>
@@ -229,7 +216,9 @@ function Evidence({ row }: { row: DossierRow }) {
           <tbody>
             {row.scores.map((score) => (
               <tr key={score.name}>
-                <th>{score.name}</th>
+                <th>
+                  <AgentName name={score.name} />
+                </th>
                 <td>{score.influence}</td>
                 <td>{score.coins}</td>
                 <td>{score.priority}</td>
@@ -280,8 +269,9 @@ function RecordRow({ row }: { row: DossierRow }) {
       >
         {row.actor && (
           <div className="dp-actor">
-            {row.type === 'chat' && <MessageCircle size={15} />}
-            <strong>{row.actor}</strong>
+            <strong>
+              <AgentName name={row.actor} />
+            </strong>
           </div>
         )}
         {row.type === 'chat' ? (
@@ -408,9 +398,7 @@ function DossierContent() {
       ) : (
         <header className="rp-outcome dp-outcome">
           <div className="rp-outcome-identity">
-            <div className="rp-seal">
-              <SuccessionSeal />
-            </div>
+            <AgentPortrait name={winner.name} large />
             <div>
               <div className="rp-kicker">SUCCESSION · COMPLETED</div>
               <h1>{winner.name} wins.</h1>
@@ -418,15 +406,9 @@ function DossierContent() {
             </div>
           </div>
           <div className="dp-winner-facts">
-            <div>
-              <b>{winner.influence}</b>
-              <RuleTerm term="Influence" />
-            </div>
-            <div>
-              <b>{winner.coins}</b>
-              <RuleTerm term="Coins" />
-            </div>
-            <button onClick={decisiveMove}>
+            <RuleTerm term="Influence" value={winner.influence} />
+            <RuleTerm term="Coins" value={winner.coins} />
+            <button className="dp-final-move" onClick={decisiveMove}>
               Final move <ArrowRight size={16} />
             </button>
           </div>
@@ -436,6 +418,7 @@ function DossierContent() {
           </div>
         </header>
       )}
+      <p className="dp-portrait-note">Illustrative profile pictures · Click a portrait to enlarge</p>
       <div className="dp-reading-options">
         <label className="rp-visibility">
           <input type="checkbox" checked={archive} onChange={(event) => setArchive(event.target.checked)} />
@@ -531,8 +514,10 @@ function DossierContent() {
 
 export default function SuccessionDossierPrototype() {
   return (
-    <RuleHelpProvider>
-      <DossierContent />
-    </RuleHelpProvider>
+    <AgentPictureProvider>
+      <RuleHelpProvider>
+        <DossierContent />
+      </RuleHelpProvider>
+    </AgentPictureProvider>
   );
 }

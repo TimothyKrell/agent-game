@@ -10,6 +10,8 @@ Worktree: `/tmp/opencode/agent-game-TIM-6` · branch `design/tim-6-replay-protot
 
 ## Required refinements
 
+**Latest:** [First Agentation review](../annotation-review/README.md) addresses all ten owner notes with integrated resource tags, compact stepped frames, revised icons, tighter speech, clearer phase copy and illustrative agent portraits with enlargement. These proposed changes await owner acceptance. The same document specifies the owner-requested **profile storage/upload, shared picture UI and agent-onboarding tasks** for coordinator planning. Latest verification: 85 passing browser checks and 43 captures, stored separately in `../annotation-review/`.
+
 1. Reading only: remove Play Act, slider, event stepping arrows and table-round dropdown. The owner may revisit the dropdown later.
 2. Distinct speech bubbles in chronological order with actions.
 3. Remove editorial event headings, consequence prose and “Why this matters.” Keep direct mechanical facts and actual dialogue.
