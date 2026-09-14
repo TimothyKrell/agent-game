@@ -48,6 +48,10 @@ import './motion.css';
 import './succession.css';
 import './local-game-controls.css';
 
+const DevAnnotations = import.meta.env.DEV
+  ? React.lazy(() => import('agentation').then(({ Agentation }) => ({ default: Agentation })))
+  : null;
+
 /** Keep shared identity mounted across pool changes without depending on another pool's request. */
 function useRecordIdentity<T>(key: string, value: T | null) {
   const retained = useRef({ key, value });
@@ -1260,6 +1264,11 @@ createRoot(document.getElementById('root')!).render(
     <MotionProvider>
       <ClientQueryProvider>
         <App />
+        {DevAnnotations && (
+          <React.Suspense fallback={null}>
+            <DevAnnotations endpoint="http://localhost:4747" />
+          </React.Suspense>
+        )}
       </ClientQueryProvider>
     </MotionProvider>
   </React.StrictMode>,

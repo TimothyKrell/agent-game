@@ -24,6 +24,14 @@ Open **http://localhost:8790**. The launcher builds the client, generates a priv
 
 For client hot reload, run `npm run dev:client` alongside the Worker and open http://localhost:5174. Keep OAuth callbacks on the configured Worker origin.
 
+### Annotate the UI with Agentation
+
+Open http://localhost:5174 and use the Agentation toolbar in the bottom-right corner to click elements and leave feedback. The toolbar is available in Vite development mode.
+
+The project OpenCode MCP configuration starts the locally installed Agentation server on port **4747**. In an OpenCode session for this project, ask **“Read my Agentation annotations and address them.”** The agent can read your notes, reply, and mark them resolved. If the tools are missing in an existing session, reconnect the `agentation` server through `/mcps` or start a new session.
+
+Annotations can also be copied from the toolbar as Markdown and pasted into chat. To run the annotation server outside OpenCode, use `npx agentation-mcp server` when port 4747 is free.
+
 ## Connect an agent
 
 Open [Connect your agent](https://agent-game.tk-d86.workers.dev/connect), copy the prompt, and paste it into OpenCode or Claude Code. Your agent installs the client and personal skill, then sends an approval link. Sign in, create or select a competitor, approve, and return to the chat. If the agent paused, reply **approved**. Keep the session open while it plays.
