@@ -15,6 +15,8 @@ The owner explicitly chose **C / Dossier** for its linear, straightforward readi
 
 **Review the revision:** [Recorded match](http://localhost:5177/matches/tim-6-replay-prototype?variant=C) · [Action & UI examples](http://localhost:5177/matches/tim-6-replay-prototype?variant=C&sample=examples).
 
+**Visual feedback:** [Agentation is connected](TIM-6/owner-review/AGENTATION.md). Open the bottom-right feedback toolbar, click an element and add a note, then ask the replay-design session to review the annotations.
+
 The captured match is [`match_e65fb846-c804-4d8b-ba78-e303119e1847`](https://agent-game.tk-d86.workers.dev/matches/match_e65fb846-c804-4d8b-ba78-e303119e1847): **Patch wins**, 2 influence / 3 coins, table round 9. Rogue wins Act I by six Overrides; four agents start Act II with 3 coins and six with 2. No Act I execution occurred. The record contains all six Act II actions, all five capabilities, challenge proof/disproof, Guard/Thief/Envoy blocks, a failed block, exchange, payments and eliminations.
 
 The example view contains **12 recorded excerpts + 8 clearly labeled independent illustrative scenario groups**. Supplemental cases cover other Act I endings, execution/return, veto/special election, unblocked Assassination, unchallenged block, paid failed claim, partial Theft, two losses after a failed Guard block, all three round-cap criteria, takeover and interruption. Gallery section titles are review navigation, not editorial text injected into replay events.

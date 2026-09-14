@@ -1,8 +1,12 @@
 /** Owner-revision browser inspection. Separate evidence from the original A/B/C review. */
 import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
-const directory = new URL('../docs/design/TIM-6/owner-review/', import.meta.url).pathname;
+const directory =
+  resolve(
+    process.env.TIM6_CAPTURE_DIR ?? new URL('../docs/design/TIM-6/owner-review/', import.meta.url).pathname,
+  ) + '/';
 
 const base = 'http://127.0.0.1:5177/matches/tim-6-replay-prototype?variant=C';
 
@@ -66,6 +70,7 @@ try {
     check(
       `${size}: reading-only controls`,
       (await page
+        .locator('.dp-prototype')
         .locator(
           'input[type="range"], .rp-playback, .rp-round, .rp-view-state, .rp-consequence, .rp-explanation',
         )

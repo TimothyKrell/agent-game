@@ -3,7 +3,7 @@
  * /matches/tim-6-replay-prototype?variant=A|B|C route. A/B retain the original storyboard.
  * Owner chose C; its revised recorded-match dossier is in succession-dossier.prototype.tsx.
  */
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   ArrowDown,
   ArrowRight,
@@ -27,6 +27,10 @@ import { actInfo, capabilityRules, moments, returnSeats } from './succession-rep
 import type { Capability, ReplayMoment } from './succession-replay-fixture.prototype';
 import './succession-replay.prototype.css';
 import SuccessionDossierPrototype from './succession-dossier.prototype';
+
+const DevAnnotations = import.meta.env.DEV
+  ? lazy(() => import('agentation').then(({ Agentation }) => ({ default: Agentation })))
+  : null;
 
 type Act = 1 | 2;
 
@@ -898,5 +902,14 @@ function LegacyReplayPrototype() {
 export default function SuccessionReplayPrototype() {
   const variant = new URL(useLocation()).searchParams.get('variant');
 
-  return variant === 'C' ? <SuccessionDossierPrototype /> : <LegacyReplayPrototype />;
+  return (
+    <>
+      {variant === 'C' ? <SuccessionDossierPrototype /> : <LegacyReplayPrototype />}
+      {DevAnnotations && (
+        <Suspense fallback={null}>
+          <DevAnnotations endpoint="http://localhost:4747" />
+        </Suspense>
+      )}
+    </>
+  );
 }

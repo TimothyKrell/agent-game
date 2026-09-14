@@ -22,6 +22,7 @@ Worktree: `/tmp/opencode/agent-game-TIM-6` · branch `design/tim-6-replay-protot
 - [Revised C: full recorded match](http://localhost:5177/matches/tim-6-replay-prototype?variant=C)
 - [20 action/process example groups](http://localhost:5177/matches/tim-6-replay-prototype?variant=C&sample=examples): 12 real excerpts, 8 illustrative groups.
 - [Primary design document](../../TIM-6-replay-design.md) and [new inspection](browser-inspection.json).
+- [Agentation setup and verified annotation flow](AGENTATION.md): the replay-design session can now receive feedback from the port-5177 prototype. This worktree uses the same pinned dev dependencies as the setup session and an MCP-only connection to the existing port-4747 HTTP server. Include this small package/lockfile integration when coordinating the branches.
 
 Source is the public completed archive of `match_e65fb846-c804-4d8b-ba78-e303119e1847`: Patch wins; Katniss Everdeen participates; rogue wins Act I by six Overrides. All six actions and all five capabilities occur. Retrieval used 32 authorized bounded pages, frozen epoch/head, no credentials and no mutations. The local preview makes no backend calls.
 
