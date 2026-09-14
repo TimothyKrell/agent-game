@@ -26,6 +26,7 @@ interface SavedResponse {
   notes: string;
   usageId: string | null;
   cost: number | null;
+  observedChat?: { seat: number; at: number } | null;
 }
 
 type JobOutcome =
@@ -309,6 +310,7 @@ export class HouseSeatObject extends DurableObject<Env> {
           notes: nextNotes,
           usageId,
           cost,
+          observedChat: job.kind === 'chat' ? input.lastChat : undefined,
         };
         this.ctx.storage.sql.exec(
           "UPDATE jobs SET response = ?, status = 'result' WHERE id = ?",
@@ -319,7 +321,15 @@ export class HouseSeatObject extends DurableObject<Env> {
 
       if (response.usageId)
         await platformCoordinator(this.env).recordInference(response.usageId, response.cost);
-      const accepted = response.request ? await match.submitHouse(job, response.request) : { ok: true };
+      let accepted = response.request ? await match.submitHouse(job, response.request) : { ok: true };
+
+      if (
+        !response.request &&
+        job.kind === 'chat' &&
+        job.id.endsWith(':chat:0') &&
+        response.observedChat !== undefined
+      )
+        accepted = await match.completeHouseSilence(job, response.observedChat);
 
       if (accepted.ok)
         this.ctx.storage.sql.exec(

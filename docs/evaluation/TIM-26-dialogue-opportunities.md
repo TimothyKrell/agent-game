@@ -2,6 +2,14 @@
 
 ## Review outcome
 
+**Follow-up review:** the matched old/new comparison now confirms that the broader
+paid-house scheduler regresses the measured full path's mandatory reliability.
+The budget release gate remains open; see
+[TIM-26-budget-review.md](TIM-26-budget-review.md) for the measured baseline,
+transient-pressure ledger and options awaiting parent agreement. The silent-peer
+correction below is independent of budget policy. The original c38 measurements
+and review snapshot remain preserved in Git and `.tim7/`.
+
 The bounded scheduler correction is ready for review against baseline `f802335`
 (integrated TIM-7 diagnostic `534e56f`). In the 100-phase, all-house Succession
 fixture, initial coverage rises from **136/340 to 340/340 eligible seat-windows**.
@@ -347,3 +355,96 @@ is intentional and verifies saved-response replay without another inference.
 Relevant platform references checked: [alarms](https://developers.cloudflare.com/durable-objects/api/alarms/),
 [SQLite storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/),
 and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
+
+## Follow-up: silent first activation followed by peer speech
+
+The review found a missing case in c38: a first null response never changed
+`lastChatAt`, so later peer speech could not request a second activation. Both
+real-path regressions went red with **one HTTP call instead of two** per house
+seat, including when the peer arrived during first generation.
+
+### Durable correction
+
+- `houseObservation` supplies the public last-chat identity alongside the
+  entitled observation. It is stored with the generated response in the house
+  job's existing durable response field.
+- A completed silent `chat:0` calls `completeHouseSilence` only after its response
+  has been saved. The match stores one private `silent_completion` JSON value on
+  that existing outbox row: completion time and last chat seen at the first read.
+  The additive column defaults to null for existing rows.
+- The scheduler offers `chat:1` when a different seat has spoken since that read,
+  including during first generation. It uses the original completion time plus
+  the existing cooldown; the runner retains current cooldown and usable-time
+  checks. Queuing `chat:0` alone cannot authorize a second job.
+- The completion RPC validates the canonical scheduled job and current living
+  controller/generation/phase/deadline before first write. Replays must retain
+  the same observed-chat identity; an existing record never moves the completion
+  time. A lost acknowledgement retries the stored response without re-inference.
+- No game action, public no-op event, or public speech timestamp represents
+  silence. A silent `chat:1` is terminal for that phase. Previously seen peer
+  speech does not trigger a new opportunity. Pre-upgrade saved responses without
+  observed-chat metadata retain their old behavior.
+
+The report's wanted/received follow-ups now derive from completed initial jobs,
+including null responses, and distinguish a second **activation** from a second
+accepted utterance. A silent second response satisfies the activation gate.
+Missing silent follow-ups are no longer omitted from the opportunity assertions.
+
+### Real-path regression matrix
+
+Commands use `npx vitest run --config vitest.dialogue-baseline.config.ts` with the
+following environment. All retain real provider HTTP, coordinator, SQL, entitled
+prompt, socket and history checks. `TIM7_NAME` identifies preserved artifacts.
+
+| TIM7_NAME | Environment beyond name | Calls / silent results / house chats | Result |
+| --- | --- | --- | --- |
+| silent-peer-after-red | TIM26_SILENT_FIRST=1 TIM26_HOUSES=4 TIM26_LATENCY=1000 | 4 / 4 / 0 | Red before fix: expected 2 calls per seat |
+| silent-peer-during-red | same, TIM26_PEER_AT=1000 | 4 / 4 / 0 | Red before fix: expected 2 calls per seat |
+| silent-peer-after-green | TIM26_SILENT_FIRST=1 TIM26_HOUSES=4 TIM26_LATENCY=1000 | 8 / 4 / 4 | Passed; peer at 4,000 ms |
+| silent-peer-during-green | same, TIM26_PEER_AT=1000 | 8 / 4 / 4 | Passed; peer while first generations are in flight |
+| silent-peer-second-null | TIM26_SILENT_FIRST=1 TIM7_SILENT=1 TIM26_HOUSES=4 TIM26_LATENCY=1000 | 8 / 8 / 0 | Passed; valid null second results |
+| silent-peer-recovery | TIM26_SILENT_FIRST=1 TIM26_HOUSES=4 TIM26_LATENCY=1000 TIM26_RECOVERY=1 | 8 / 4 / 4 | Passed; lost acknowledgement, cold house restart, duplicate enqueue |
+| silent-no-peer | TIM7_SILENT=1 TIM26_LATENCY=1000 | 10 / 10 / 0 | Passed; exactly one activation per seat, no peer |
+| silent-peer-already-seen | TIM7_SILENT=1 TIM26_HOUSES=4 TIM26_LATENCY=1000 TIM26_PEER_AT=0 | 4 / 4 / 0 | Passed; peer was already in first prompt |
+| silent-peer-too-late | TIM7_SILENT=1 TIM26_HOUSES=4 TIM26_LATENCY=1000 TIM26_PEER_AT=19000 | 4 / 4 / 0 | Passed; four explicit insufficient-time skips |
+
+Positive mixed cases assert four wanted and four actual second activations, fresh
+external peer text in every second provider prompt, and at most two logical jobs.
+The no-peer control retains only two socket frames/history head 4; private
+completion adds no public event. The null-second control publishes only the six
+external messages. The recovery control confirms one actual eviction and two
+identical stored completion acknowledgements, one reservation/inference for the
+replayed first job, and a final silent outcome. Its job completion includes the
+250-ms delivery retry; provider generation remains 1,000 ms.
+
+The initial implementation also exposed and corrected the report's assumption
+that the first accepted utterance must be the first activation: it incorrectly
+requested a third utterance after a silent first result. The current report
+uses the two durable slot identities instead.
+
+Additional follow-up checks:
+
+- `TIM7_NAME=silent-fix-opening` — opening passed, 20 chats/20 calls.
+- `TIM7_NAME=silent-fix-full TIM7_PHASES=100 TIM26_LATENCY=1000` — passed, unchanged
+  340/340 firsts, 340 second activations, 680 chats/930 calls, peak concurrency 10,
+  peak RPM 160, no skips and identical 661,098-ms virtual duration.
+- `npm run typecheck` and `npx tsc --noEmit` — passed after correcting a fixture
+  nullable reference and using the appropriate job/observed-chat comparisons
+  rather than the action-request-specific `stableJson` helper.
+- `npx vitest run tests/dialogue-shared.test.ts tests/platform-queue.test.ts tests/house-model.test.ts tests/succession-ui-stream.test.ts tests/succession-long-path.test.ts`
+  — 22 passed.
+- `npx vitest run tests/succession-worker.test.ts tests/succession-worker-bounds.test.ts`
+  — 7 passed, including SQL/recovery, controller/privacy, sockets and large archives.
+- `npm run test:provider` — 3 passed (359.21 seconds), both acts completed;
+  764 actual fixture HTTP calls, 1,320 events/33 pages, peak RPM 223, one
+  intentionally unknown-usage failure, $0.054936 synthetic measured usage.
+- `TIM7_NAME=silent-peer-recovery-final ... TIM26_RECOVERY=1` and
+  `TIM7_NAME=silent-peer-during-final ... TIM26_PEER_AT=1000` repeat the corresponding
+  matrix commands with the final assertions — both passed. The former explicitly
+  measures 1,250 ms for the one replayed job and 1,000 ms for every other job.
+- Final `npm run typecheck`, scoped Oxlint, Prettier checks, and Git whitespace
+  checks — passed.
+
+Budget comparison artifacts remain in the separate comparison worktree. No
+coordinator budget rule, clock, price, model or prompt policy changes accompany
+this silent-peer fix.

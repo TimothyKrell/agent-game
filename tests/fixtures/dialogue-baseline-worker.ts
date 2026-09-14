@@ -87,6 +87,8 @@ export type DialogueTrace = {
   observation: Observation2;
   virtualMs: number;
   inference: InferenceReport;
+  silenceCompletions: { job: string; at: number; stored: string | null; repeated: boolean }[];
+  coldRestarts: number;
 };
 
 type Reservation = Parameters<MatchmakingObject['reserveInference']>[0] & {
@@ -120,6 +122,8 @@ export class DialogueHouse extends HouseSeatObject {
 
   async fetch(request: Request) {
     const url = new URL(request.url);
+
+    if (url.pathname === '/restart') this.ctx.abort('TIM-26 fixture cold house restart');
 
     if (url.pathname === '/tick' || url.pathname === '/start') {
       if (this.running) throw new Error('Only one alarm may run per house seat');
@@ -217,6 +221,33 @@ export class DialogueMatch extends MatchObject {
   private readonly due: () => number | null;
   private readonly reads: ContextRead[] = [];
   private readonly submissions: Submission[] = [];
+  private failSilentAcknowledgement = false;
+  private readonly silenceCompletions: DialogueTrace['silenceCompletions'] = [];
+
+  override async completeHouseSilence(...args: Parameters<MatchObject['completeHouseSilence']>) {
+    const result = await super.completeHouseSilence(...args);
+
+    const stored = this.ctx.storage.sql
+      .exec<{ silent_completion: string | null }>(
+        'SELECT silent_completion FROM outbox WHERE id=?',
+        args[0].id,
+      )
+      .one().silent_completion;
+
+    this.silenceCompletions.push({
+      job: args[0].id,
+      at: now,
+      stored,
+      repeated: this.silenceCompletions.some((entry) => entry.job === args[0].id),
+    });
+
+    if (result.ok && this.failSilentAcknowledgement) {
+      this.failSilentAcknowledgement = false;
+      throw new Error('TIM-26 fixture lost silent completion acknowledgement');
+    }
+
+    return result;
+  }
 
   constructor(ctx: DurableObjectState, env: Env) {
     const due = manualAlarm(ctx);
@@ -438,6 +469,10 @@ export class DialogueMatch extends MatchObject {
     const phaseLimit = Number(url.searchParams.get('phases') ?? 1);
     const lag = Number(url.searchParams.get('lag') ?? 0);
     const latency = url.searchParams.has('latency') ? Number(url.searchParams.get('latency')) : null;
+    const externalChatAt = Number(url.searchParams.get('peerAt') ?? 4000);
+    const recovery = url.searchParams.has('recovery');
+    this.failSilentAcknowledgement = recovery;
+    let coldRestarts = 0;
     const externalSpoken = new Set<string>();
 
     if (!Number.isInteger(phaseLimit) || phaseLimit < 1 || phaseLimit > 200 || lag < 0 || lag > 30_000)
@@ -517,7 +552,7 @@ export class DialogueMatch extends MatchObject {
 
       const externalDue =
         runtime.discussion && external.length && !externalSpoken.has(state.phase.id)
-          ? state.phase.startedAt + 4000
+          ? state.phase.startedAt + externalChatAt
           : Infinity;
 
       if (!Number.isFinite(Math.min(matchDue, houseDue, completionAt, externalDue))) break;
@@ -552,6 +587,28 @@ export class DialogueMatch extends MatchObject {
         for (const entry of completing) {
           const stub = houses.find((house) => house.seat === entry.seat)!.stub;
           await stub.fetch(new Request('http://fixture/settle'));
+
+          if (recovery && !coldRestarts) {
+            const status: { jobs: StoredJob[] } = await (
+              await stub.fetch(new Request('http://fixture/jobs'))
+            ).json();
+
+            const pending = status.jobs.find(
+              (row) => row.status === 'pending' && row.response !== null && row.id.endsWith(':chat:0'),
+            );
+
+            if (pending) {
+              try {
+                await stub.fetch(new Request('http://fixture/restart'));
+              } catch {
+                /* Expected eviction. */
+              }
+
+              const fresh = this.env.HOUSE_SEATS.getByName(`${id}:${entry.seat}`);
+              await fresh.enqueue(JSON.parse(pending.data));
+              coldRestarts++;
+            }
+          }
         }
       } else if (matchDue <= houseDue) {
         now = Math.max(now, matchDue);
@@ -653,6 +710,8 @@ export class DialogueMatch extends MatchObject {
       observation: observation.value,
       virtualMs: now - origin,
       inference,
+      silenceCompletions: this.silenceCompletions,
+      coldRestarts,
     } satisfies DialogueTrace);
   }
 }

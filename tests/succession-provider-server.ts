@@ -186,7 +186,7 @@ export async function startSuccessionProvider(
   options: {
     failFirstAction?: boolean;
     mode?: 'play' | 'invalid' | 'timeout';
-    dialogue?: 'reply' | 'silent';
+    dialogue?: 'reply' | 'silent' | 'silent-first';
     controlled?: boolean;
     usage?: 'fixture' | 'estimated' | 'ceiling';
     chatPerAct?: boolean;
@@ -285,10 +285,16 @@ export async function startSuccessionProvider(
 
       const previous = prompt.chat.findLast((entry) => entry.seat !== prompt.you?.seat);
 
+      const initialSilence =
+        options.dialogue === 'silent-first' &&
+        !requests.some(
+          (entry) => entry.prompt.task === 'chat' && entry.prompt.you?.seat === prompt.you?.seat,
+        );
+
       const message =
-        prompt.task !== 'chat' || options.dialogue === 'silent'
+        prompt.task !== 'chat' || options.dialogue === 'silent' || initialSilence
           ? null
-          : options.dialogue === 'reply'
+          : options.dialogue === 'reply' || options.dialogue === 'silent-first'
             ? `TIM-7 seat${prompt.you?.seat}: ${previous ? `reply to seat${previous.seat}: ${previous.text.slice(0, 90)}` : 'Who will respond?'}`
             : !alreadySpoke
               ? seatMarker

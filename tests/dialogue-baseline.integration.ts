@@ -7,13 +7,14 @@ import type { DialogueTrace } from './fixtures/dialogue-baseline-worker';
 import { dialogueReport } from './fixtures/dialogue-baseline-report';
 import type { HistoryPage2, Observation2 } from '../src/shared/succession';
 import { SuccessionHistory } from '../src/client/succession-stream';
+import type { HouseJob } from '../src/server/house-contract';
 
 it('measures eligible speakers and fresh follow-up opportunities through the real house path', async () => {
   const requestedUsage = process.env.TIM26_USAGE;
   const usage = requestedUsage === 'ceiling' || requestedUsage === 'estimated' ? requestedUsage : 'fixture';
 
   const provider = await startSuccessionProvider({
-    dialogue: process.env.TIM7_SILENT ? 'silent' : 'reply',
+    dialogue: process.env.TIM7_SILENT ? 'silent' : process.env.TIM26_SILENT_FIRST ? 'silent-first' : 'reply',
     controlled: process.env.TIM26_LATENCY !== undefined,
     usage,
   });
@@ -48,7 +49,7 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
     await expect.poll(() => frames.length).toBeGreaterThan(0);
 
     const response = await worker.fetch(
-      `/run?phases=${process.env.TIM7_PHASES ?? 1}&lag=${process.env.TIM7_LAG ?? 0}${process.env.TIM26_LATENCY === undefined ? '' : `&latency=${process.env.TIM26_LATENCY}`}`,
+      `/run?phases=${process.env.TIM7_PHASES ?? 1}&lag=${process.env.TIM7_LAG ?? 0}&peerAt=${process.env.TIM26_PEER_AT ?? 4000}${process.env.TIM26_LATENCY === undefined ? '' : `&latency=${process.env.TIM26_LATENCY}`}${process.env.TIM26_RECOVERY ? '&recovery=1' : ''}`,
     );
 
     const text = await response.text();
@@ -121,6 +122,51 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
 
     const report = dialogueReport(trace, provider.requests);
 
+    if (process.env.TIM26_SILENT_FIRST) {
+      const phase = trace.phases[0];
+
+      for (const seat of phase.eligible) {
+        const calls = provider.requests.filter(
+          (entry) => entry.prompt.task === 'chat' && entry.prompt.you?.seat === seat,
+        );
+
+        expect(
+          calls,
+          'A silent first activation receives one fresh peer-triggered second activation',
+        ).toHaveLength(2);
+        expect(calls[0].message).toBeNull();
+        const peerAt = phase.start + Number(process.env.TIM26_PEER_AT ?? 4000);
+        const firstCompletion = calls[0].activation!.at + Number(process.env.TIM26_LATENCY);
+
+        if (process.env.TIM26_PEER_AT === '1000') expect(firstCompletion).toBeGreaterThan(peerAt);
+        else expect(firstCompletion).toBeLessThan(peerAt);
+        expect(calls[1].activation!.at).toBeGreaterThanOrEqual(Math.max(peerAt, firstCompletion + 5000));
+        expect(calls[1].prompt.chat.some((entry) => entry.text.startsWith('External seat'))).toBe(true);
+        expect(
+          trace.submissions.filter((entry) => entry.job.seat === seat && entry.type === 'chat' && entry.ok),
+        ).toHaveLength(process.env.TIM7_SILENT ? 0 : 1);
+      }
+
+      expect(report.coverage[0].followupWanted).toHaveLength(phase.eligible.length);
+      expect(report.coverage[0].missingFollowup).toEqual([]);
+    }
+
+    if (process.env.TIM26_RECOVERY) {
+      expect(trace.coldRestarts).toBe(1);
+      const repeated = trace.silenceCompletions.find((entry) => entry.repeated)!;
+      expect(repeated).toBeDefined();
+      expect(repeated.stored).toBe(
+        trace.silenceCompletions.find((entry) => entry.job === repeated.job)!.stored,
+      );
+      const job = trace.houseJobs.find((entry) => entry.id === repeated.job)!;
+      expect(job).toMatchObject({ attempts: 1, status: 'done', outcome: 'silent' });
+      expect(
+        trace.inference.reservations.filter(
+          (entry) => entry.allowed && entry.id.startsWith(`${job.id}:attempt:`),
+        ),
+      ).toHaveLength(1);
+    }
+
     const budgetExhaustion = usage === 'ceiling' || process.env.TIM26_EXPECT_INTERRUPTED === '1';
 
     if (!budgetExhaustion) {
@@ -143,7 +189,12 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
 
     if (process.env.TIM7_SILENT) {
       expect(report.acceptedChat).toBe(0);
-      expect(report.silent).toBe(report.coverage.reduce((sum, phase) => sum + phase.eligible.length, 0));
+      expect(report.silent).toBe(
+        report.coverage.reduce(
+          (sum, phase) => sum + phase.eligible.length + phase.followupActivated.length,
+          0,
+        ),
+      );
     }
 
     if (
@@ -181,11 +232,24 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
 
     if (Number(process.env.TIM26_LATENCY) > 0) {
       expect(trace.inference.peakConcurrent, 'Provider requests genuinely overlap').toBeGreaterThan(1);
+      const replayed = trace.silenceCompletions.find((entry) => entry.repeated);
+
+      const replayedJob: HouseJob | null = replayed
+        ? JSON.parse(trace.houseJobs.find((entry) => entry.id === replayed.job)!.data)
+        : null;
 
       for (const sample of report.samples
-        .flatMap((phase) => phase.activations)
+        .flatMap((phase) => phase.activations.map((sample) => ({ ...sample, phaseId: phase.phaseId })))
         .filter((entry) => entry.virtualResponseMs !== null))
-        expect(sample.virtualResponseMs).toBe(Number(process.env.TIM26_LATENCY));
+        expect(sample.virtualResponseMs).toBe(
+          Number(process.env.TIM26_LATENCY) +
+            (replayedJob &&
+            sample.ordinal === 1 &&
+            sample.seat === replayedJob.seat &&
+            sample.phaseId === replayedJob.phaseId
+              ? 250
+              : 0),
+        );
     }
 
     expect(
@@ -221,7 +285,7 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
     // Admission/time skips are an explicit result, never a disguised successful activation.
     const missing = report.coverage.flatMap((phase) => [
       ...phase.missing.map((seat) => ({ phase, seat, ordinal: 0 })),
-      ...(!process.env.TIM7_SILENT ? phase.missingFollowup.map((seat) => ({ phase, seat, ordinal: 1 })) : []),
+      ...phase.missingFollowup.map((seat) => ({ phase, seat, ordinal: 1 })),
     ]);
 
     const justified = missing.filter(({ phase, seat, ordinal }) => {
@@ -252,7 +316,7 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
         )
         .toEqual([]);
 
-    if (!process.env.TIM7_REPORT_ONLY && !process.env.TIM7_SILENT)
+    if (!process.env.TIM7_REPORT_ONLY)
       expect
         .soft(
           missing.filter((entry) => entry.ordinal === 1 && !justified.includes(entry)),
