@@ -182,7 +182,11 @@ function selectChoice(prompt: SuccessionProviderPrompt): Choice {
 }
 
 export async function startSuccessionProvider(
-  options: { failFirstAction?: boolean; mode?: 'play' | 'invalid' | 'timeout' } = {},
+  options: {
+    failFirstAction?: boolean;
+    mode?: 'play' | 'invalid' | 'timeout';
+    dialogue?: 'reply' | 'silent';
+  } = {},
 ): Promise<{
   url: string;
   requests: CapturedProviderRequest[];
@@ -199,6 +203,13 @@ export async function startSuccessionProvider(
 
   const server = createServer((request, response) => {
     const handle = async () => {
+      // Local runtime/port discovery may probe this diagnostic server; this is not inference.
+      if (options.dialogue && request.method === 'GET' && request.url === '/') {
+        response.writeHead(204).end();
+
+        return;
+      }
+
       if (request.method !== 'POST' || request.url !== '/v1/responses') {
         errors.push(`Unexpected provider route: ${request.method} ${request.url}`);
         response.writeHead(404).end();
@@ -224,7 +235,16 @@ export async function startSuccessionProvider(
       const alreadySpoke =
         prompt.notes.includes('public-chat-sent') || prompt.chat.some((entry) => entry.text === seatMarker);
 
-      const message = prompt.task === 'chat' && !alreadySpoke ? seatMarker : null;
+      const previous = prompt.chat.findLast((entry) => entry.seat !== prompt.you?.seat);
+
+      const message =
+        prompt.task !== 'chat' || options.dialogue === 'silent'
+          ? null
+          : options.dialogue === 'reply'
+            ? `TIM-7 seat${prompt.you?.seat}: ${previous ? `reply to seat${previous.seat}: ${previous.text.slice(0, 90)}` : 'Who will respond?'}`
+            : !alreadySpoke
+              ? seatMarker
+              : null;
 
       const notes = [
         `provider-note-seat${prompt.you?.seat ?? 'none'}-generation${prompt.you?.generation ?? 0}`,

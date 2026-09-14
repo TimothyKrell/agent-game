@@ -13,3 +13,4 @@ coverage/
 *.cpuprofile
 .agent-game/
 public/downloads/*.tgz
+.tim7/
