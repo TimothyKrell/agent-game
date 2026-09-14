@@ -41,6 +41,7 @@ type ContextRead = {
   open: boolean;
   head: number;
   latestChat: { seat: number; at: number } | null;
+  latestChatSequence: number | null;
   chat: { eventKey: string; seat?: number; at: number; text: string }[];
 };
 
@@ -75,6 +76,7 @@ type StoredJob = {
   completedAt: number | null;
   outcome?: string | null;
   completed_at?: number | null;
+  admission_reason?: string | null;
 };
 
 export type DialogueTrace = {
@@ -96,12 +98,33 @@ type Reservation = Parameters<MatchmakingObject['reserveInference']>[0] & {
   allowed: boolean;
   retryAt: number;
   accountedUsd: number;
+  reason?: string;
+  retryable?: boolean;
+  before: ReturnType<DialogueCoordinator['pressure']>;
+};
+
+type UsageRow = {
+  id: string;
+  created_at: number;
+  expires_at: number;
+  reserved: number;
+  actual: number | null;
+  done: number;
+  kind: string | null;
 };
 
 type InferenceReport = {
   summary: ReturnType<MatchmakingObject['inferenceSummary']>;
   reservations: Reservation[];
   peakConcurrent: number;
+  usage: UsageRow[];
+  recordings: {
+    id: string;
+    at: number;
+    actual: number | null;
+    before: ReturnType<DialogueCoordinator['pressure']>;
+    after: ReturnType<DialogueCoordinator['pressure']>;
+  }[];
 };
 
 export class DialogueHouse extends HouseSeatObject {
@@ -166,6 +189,31 @@ export class DialogueHouse extends HouseSeatObject {
 export class DialogueCoordinator extends MatchmakingObject {
   private readonly reservations: Reservation[] = [];
   private peakConcurrent = 0;
+  private readonly recordings: InferenceReport['recordings'] = [];
+  private injectRequiredPressure = false;
+  private releasePressureAt: number | null = null;
+
+  pressure(matchId: string) {
+    const rows = this.ctx.storage.sql
+      .exec<UsageRow>('SELECT * FROM usage WHERE match_id=?', matchId)
+      .toArray();
+
+    return {
+      accounted: rows.reduce((n, row) => n + (row.actual ?? row.reserved), 0),
+      settled: rows.filter((row) => row.done).reduce((n, row) => n + (row.actual ?? row.reserved), 0),
+      inFlight: rows.filter((row) => !row.done),
+    };
+  }
+
+  override recordInference(id: string, actual: number | null) {
+    const matchId = this.ctx.storage.sql
+      .exec<{ match_id: string }>('SELECT match_id FROM usage WHERE id=?', id)
+      .one().match_id;
+
+    const before = this.pressure(matchId);
+    super.recordInference(id, actual);
+    this.recordings.push({ id, actual, at: now, before, after: this.pressure(matchId) });
+  }
 
   constructor(ctx: DurableObjectState, env: Env) {
     manualAlarm(ctx);
@@ -173,12 +221,37 @@ export class DialogueCoordinator extends MatchmakingObject {
   }
 
   override reserveInference(input: Parameters<MatchmakingObject['reserveInference']>[0]) {
+    if (this.releasePressureAt !== null && now >= this.releasePressureAt) {
+      this.recordInference('fixture-held-required', 0);
+      this.releasePressureAt = null;
+    }
+
+    if (this.injectRequiredPressure && input.mandatory) {
+      this.injectRequiredPressure = false;
+
+      const held = super.reserveInference({
+        id: 'fixture-held-required',
+        matchId: input.matchId,
+        mandatory: true,
+        estimate:
+          Number(this.env.HOUSE_MATCH_RESERVATION_USD) -
+          this.pressure(input.matchId).accounted -
+          input.estimate / 2,
+        deadline: input.deadline,
+      });
+
+      if (!held.allowed) throw new Error('Failed to arrange required-pressure probe');
+      this.releasePressureAt = now + 1000;
+    }
+
+    const before = this.pressure(input.matchId);
     const result = super.reserveInference(input);
     this.reservations.push({
       ...input,
       at: now,
       ...result,
       accountedUsd: this.inferenceSummary(input.matchId).accountedUsd,
+      before,
     });
 
     const running = this.ctx.storage.sql
@@ -193,6 +266,8 @@ export class DialogueCoordinator extends MatchmakingObject {
   async fetch(request: Request) {
     const url = new URL(request.url);
     const id = url.searchParams.get('id')!;
+
+    if (url.pathname === '/required-pressure') this.injectRequiredPressure = true;
 
     if (url.pathname === '/allocate') {
       const { snapshot, grants }: { snapshot: MatchSnapshot; grants: Record<string, string> } =
@@ -213,6 +288,10 @@ export class DialogueCoordinator extends MatchmakingObject {
       summary: this.inferenceSummary(id),
       reservations: this.reservations,
       peakConcurrent: this.peakConcurrent,
+      usage: this.ctx.storage.sql
+        .exec<UsageRow>('SELECT * FROM usage WHERE match_id=? ORDER BY created_at,id', id)
+        .toArray(),
+      recordings: this.recordings,
     } satisfies InferenceReport);
   }
 }
@@ -270,6 +349,13 @@ export class DialogueMatch extends MatchObject {
         open: input.observation.chat.open,
         head: input.observation.history.streamHead,
         latestChat: this.state().lastChat,
+        latestChatSequence:
+          this.ctx.storage.sql
+            .exec<{ seq: number }>(
+              "SELECT s.seq FROM history_streams s JOIN events e ON e.id=s.event_id WHERE s.stream=? AND json_extract(e.data,'$.type')='chat' ORDER BY s.seq DESC LIMIT 1",
+              `seat:${seat}`,
+            )
+            .toArray()[0]?.seq ?? null,
         chat: input.recent
           .filter((event) => event.type === 'chat')
           .map(({ eventKey, seat, at, text }) => ({ eventKey, seat, at, text })),
@@ -471,6 +557,12 @@ export class DialogueMatch extends MatchObject {
     const latency = url.searchParams.has('latency') ? Number(url.searchParams.get('latency')) : null;
     const externalChatAt = Number(url.searchParams.get('peerAt') ?? 4000);
     const recovery = url.searchParams.has('recovery');
+    const requiredPressure = url.searchParams.has('requiredPressure');
+
+    if (requiredPressure)
+      await this.env.MATCHMAKING.getByName('secret-overlord').fetch(
+        new Request(`http://fixture/required-pressure?id=${id}`),
+      );
     this.failSilentAcknowledgement = recovery;
     let coldRestarts = 0;
     const externalSpoken = new Set<string>();
@@ -647,6 +739,30 @@ export class DialogueMatch extends MatchObject {
           }
 
           if (!ready) throw new Error('Alarm did not reach provider or skip');
+
+          if (requiredPressure && !coldRestarts) {
+            const status: { running: boolean; jobs: StoredJob[] } = await (
+              await nextHouse.stub.fetch(new Request('http://fixture/jobs'))
+            ).json();
+
+            const waiting = status.jobs.find(
+              (row) =>
+                row.status === 'pending' && row.attempts === 0 && row.admission_reason === 'match-budget',
+            );
+
+            if (!status.running && waiting) {
+              try {
+                await nextHouse.stub.fetch(new Request('http://fixture/restart'));
+              } catch {
+                /* Expected eviction. */
+              }
+
+              await this.env.HOUSE_SEATS.getByName(`${id}:${nextHouse.seat}`).enqueue(
+                JSON.parse(waiting.data),
+              );
+              coldRestarts++;
+            }
+          }
         }
       }
     }

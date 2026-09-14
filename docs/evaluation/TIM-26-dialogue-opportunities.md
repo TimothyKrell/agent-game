@@ -2,13 +2,16 @@
 
 ## Review outcome
 
-**Follow-up review:** the matched old/new comparison now confirms that the broader
-paid-house scheduler regresses the measured full path's mandatory reliability.
-The budget release gate remains open; see
-[TIM-26-budget-review.md](TIM-26-budget-review.md) for the measured baseline,
-transient-pressure ledger and options awaiting parent agreement. The silent-peer
-correction below is independent of budget policy. The original c38 measurements
-and review snapshot remain preserved in Git and `.tim7/`.
+**Final budget follow-up:** the parent-approved aggregate policy now passes the
+matched real full path: **phase 178 finished, all 392 mandatory choices, no required
+refusals/timeouts, $1.2804700 total**, with **412/488 funded firsts and 154 funded
+follow-ups**. Seed 1 also finishes under $1.50. See
+[TIM-26-budget-review.md](TIM-26-budget-review.md#selected-policy-and-verification)
+for selected allocation assumptions, exact coverage/denials, unchanged ceiling
+scope, cold-retry evidence, holdout and all commands. Original c38/73 snapshots
+and negative-control artifacts remain preserved in Git and `.tim7/`.
+
+### Original c38 measurement context
 
 The bounded scheduler correction is ready for review against baseline `f802335`
 (integrated TIM-7 diagnostic `534e56f`). In the 100-phase, all-house Succession
@@ -20,7 +23,7 @@ and prompts are unchanged.
 **This is conditional opportunity fairness, not unconditional full-match dialogue
 or affordability.** The real coordinator denies some follow-ups at its rolling
 limit. Combined wakeup/generation delay removes 93 follow-ups from this sample.
-The four-bytes-per-token charge fits 100 phases but interrupts a longer run at
+Before budget protection, the four-bytes-per-token charge fits 100 phases but interrupts a longer run at
 phase 121 when a mandatory reservation cannot fit alongside in-flight estimates.
 These are measured tradeoffs for TIM-14 review, not successful activations.
 
@@ -356,7 +359,7 @@ Relevant platform references checked: [alarms](https://developers.cloudflare.com
 [SQLite storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/),
 and [Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).
 
-## Follow-up: silent first activation followed by peer speech
+## Follow-up: silent first activation followed by peer speech (73d028b)
 
 The review found a missing case in c38: a first null response never changed
 `lastChatAt`, so later peer speech could not request a second activation. Both
@@ -448,3 +451,69 @@ Additional follow-up checks:
 Budget comparison artifacts remain in the separate comparison worktree. No
 coordinator budget rule, clock, price, model or prompt policy changes accompany
 this silent-peer fix.
+
+## Approved budget protection follow-up
+
+After reviewing `73d028b` and the matched comparison, the parent approved a
+bounded aggregate policy. Its full method, values, scopes, results and commands
+are in [the budget review](TIM-26-budget-review.md#selected-policy-and-verification).
+
+Production changes from 73:
+
+- `src/server/coordinator.ts`: optional ceiling at half of a paid all-house
+  allocation, follow-up ceiling at one quarter of that optional envelope;
+  additive usage-kind accounting and durable priority waiters; distinguish
+  settled/unknown/expired usage from genuinely transient outstanding estimates;
+  check every applicable budget before returning a retry. Preserve existing
+  match/daily/mixed/preview exemptions and global rate limits.
+- `src/server/matchmaking.ts`: carry the typed internal reservation request over
+  the existing RPC boundary.
+- `src/server/house-seat.ts`: label the optional slot, persist/log denial reason,
+  and retry only an explicit transient response within useful time, using the
+  same attempt ID. Existing saved-response receipts and two logical slots remain.
+
+The unprotected real full-path test is **red** at phase 121 on 73. Final policy is
+**green** at the real 178-phase finish, **392/392 matching mandatory choices**,
+no required refusal/timeout, $1.2804700. Initial funding improves from baseline
+205/488 to **412/488**. Funded follow-ups are **154**, 15–16 per seat; explicit
+budget skips replace unfunded inference. Healthy cheap generation still has all
+340 firsts and 340 follow-ups. Holdout seed 1 finishes at phase 173/$1.2558148 with
+406/451 firsts. One-second wakeup plus one-second generation also finishes the
+seed-7 full path, at $1.2805172.
+
+Required-pressure integration injects a separately identified held reservation,
+releases it after one second, and actually cold-restarts/re-enqueues the waiting
+house job. The same usage ID is admitted once, with one provider attempt and one
+accepted submission. This probe is isolated from the full-path and holdout cost
+runs. Silent-first/peer lost-ack recovery still passes with 8 calls. Ceiling
+charging remains an honest interruption at phase 65/$1.4943304; the selected
+fractions do not guarantee all model/path combinations are affordable.
+
+Checks on the budget implementation:
+
+- `npx vitest run tests/dialogue-shared.test.ts tests/platform-queue.test.ts tests/house-model.test.ts tests/succession-ui-stream.test.ts tests/succession-long-path.test.ts`
+  — **31 passed**, including 9 new coordinator accounting/priority/replay scenarios.
+- `npx vitest run tests/succession-worker.test.ts tests/succession-worker-bounds.test.ts`
+  — **7 passed**, 187.17 seconds, exercising controller/privacy, actual SQLite,
+  recovery, history and sockets with the new schema/runner policy.
+- `npm run test:provider` — initial policy **3 passed**, 308.19 seconds, both acts,
+  662 fixture HTTP calls, 1,190 events/30 pages, RPM 223, one intentional unknown
+  usage failure, $0.047592 synthetic measured usage. After the cross-ceiling
+  permanent-denial precedence refinement, **the final run also passed 3/3**
+  (280.45 seconds): both acts, 615 fixture HTTP calls, 1,105 events/27 pages,
+  RPM 217, one intentional unknown-usage failure, $0.044208 synthetic measured
+  usage. Different provider-suite game paths are expected; only the dedicated
+  diagnostic fixture uses the fixed comparison seed/choices.
+- `npm run typecheck`, `npx tsc --noEmit`, `npm run build`, scoped Oxlint,
+  Prettier and staged whitespace checks — passed. The nine changed files are
+  production coordinator/RPC/runner, four test/fixture files, and two reports.
+- Preserved comparison fixture and evidence SHA-256 hashes still match
+  `.tim7/comparison/manifest.json`; package/lockfile and generated runtime types
+  remain unchanged.
+
+All diagnostic/provider/Worker servers stopped on test completion. No paid
+inference, push, deployment, Linear mutation, package update or worktree deletion.
+
+Evidence is retained under `.tim7/budget-*`; `budget-report.mjs` regenerates
+`budget-results.json`, including full normalized mandatory-choice comparison.
+The separate c38/f802 comparison worktree and its checksums are untouched.

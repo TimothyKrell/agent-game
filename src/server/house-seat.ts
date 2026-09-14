@@ -58,6 +58,9 @@ export class HouseSeatObject extends DurableObject<Env> {
 
     if (!columns.some((column) => column.name === 'completed_at'))
       ctx.storage.sql.exec('ALTER TABLE jobs ADD COLUMN completed_at INTEGER');
+
+    if (!columns.some((column) => column.name === 'admission_reason'))
+      ctx.storage.sql.exec('ALTER TABLE jobs ADD COLUMN admission_reason TEXT');
   }
 
   async enqueue(job: HouseJob): Promise<void> {
@@ -224,12 +227,28 @@ export class HouseSeatObject extends DurableObject<Env> {
             estimate,
             deadline: job.deadline,
             mandatory: job.kind === 'action',
+            optionalKind: job.id.endsWith(':chat:1') ? 'followup' : 'initial',
           });
 
           if (!reserved.allowed) {
+            this.ctx.storage.sql.exec(
+              'UPDATE jobs SET admission_reason=? WHERE id=?',
+              reserved.reason,
+              row.id,
+            );
+            console.log(
+              JSON.stringify({
+                event: 'house_admission_denied',
+                job: job.id,
+                reason: reserved.reason,
+                retryable: reserved.retryable,
+                retryAt: reserved.retryAt,
+                deadline: job.deadline,
+              }),
+            );
             const budget = job.kind === 'chat' ? houseChatBudget(job.model) : 500;
 
-            if (reserved.retryAt + budget < job.deadline)
+            if (reserved.retryable && reserved.retryAt + budget < job.deadline)
               this.ctx.storage.sql.exec('UPDATE jobs SET due_at = ? WHERE id = ?', reserved.retryAt, row.id);
             else this.done(row.id, 'admission-denied');
 

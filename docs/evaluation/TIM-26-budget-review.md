@@ -2,21 +2,29 @@
 
 ## Decision summary
 
-**The paid-house full-path reliability regression is confirmed on the matched
-fixture.** Baseline `f802335` finishes with 392 mandatory calls and $0.9774196
+**The approved bounded policy closes the measured paid-house reliability gate.**
+The final seed-7 run finishes at phase 178 with all **392 mandatory choices**,
+**zero mandatory refusals/timeouts**, **412/488 funded initial activations** and
+**154 follow-ups**, at **$1.2804700**. The seed-1 holdout also finishes under the
+unchanged $1.50 reservation. See [selected policy and verification](#selected-policy-and-verification).
+
+The original regression remains preserved as a negative control. Baseline
+`f802335` finishes with 392 mandatory calls and $0.9774196 charged; unprotected
+`73d028b` repeats c38's interruption at phase 121/$1.461404. Only the approved
+budget-protection policy changes production behavior in this follow-up.
+
+### Original comparison conclusion (preserved from 73d028b)
+
+The paid-house full-path reliability regression was confirmed on the matched
+fixture. Baseline `f802335` finishes with 392 mandatory calls and $0.9774196
 charged. Reviewed `c38b4d0` interrupts at phase 121, after 320 mandatory calls
 and $1.461404 charged. More optional inference consumes the balance; mandatory
 in-flight estimates then cause an avoidable immediate refusal.
 
-A bounded transient-pressure retry addresses that immediate refusal, but is not
-an established full-path fix. Recommend protecting measured future mandatory
-headroom and bounding aggregate optional demand, with initial opportunities
-ahead of follow-ups. No budget policy/default is implemented in this follow-up;
-the parent must agree the approach and require a full-path regression check
-before integrating the broader paid-house scheduling change.
-
-The accompanying production change only fixes silent-first/peer follow-ups.
-It does not resolve this budget release gate.
+A bounded transient-pressure retry addresses that immediate refusal but does not
+alone establish full-path affordability. The parent subsequently approved
+aggregate optional limits and required-capacity protection; the implementation
+and new release-gate results below supersede the earlier pending-policy status.
 
 ## Apples-to-apples method
 
@@ -114,7 +122,7 @@ This is transient conservative pressure, made reachable by accumulated optional
 spend. The published report's “in-flight estimates” finding is now supported by
 the unchanged-old-side measurement and a timestamped ledger.
 
-## Bounded options within $1.50 / $5 and current clocks
+## Bounded options considered before approval
 
 ### 1. Retry genuinely transient pressure
 
@@ -183,6 +191,181 @@ finish, no optional-induced mandatory refusal/timeout, the same $1.50/$5/clocks,
 and explicit, fairly allocated optional skips**. Also retain the 100-phase
 coverage, latency, concurrency, silence and mixed-controller regressions.
 
+## Selected policy and verification
+
+### Runtime policy
+
+`src/server/coordinator.ts` applies two named allocation assumptions to **paid,
+all-house allocations only**, using the allocation's actual reservation:
+
+| Control | Allocation fraction | At the existing $1.50 reservation |
+| --- | ---: | ---: |
+| Aggregate optional ceiling (`OPTIONAL_SHARE`) | 0.50 | $0.750000 |
+| Follow-up sub-ceiling (`FOLLOWUP_SHARE` = 0.25 of optional) | 0.125 | $0.187500 |
+| Required capacity protected against optional spending | at least 0.50 | at least $0.750000 |
+| Optional capacity follow-ups cannot consume | at least 0.375 | at least $0.562500 |
+
+These are conservative allocation fractions, not a prediction of future actions.
+The measured baseline's $0.5652728 required charge plus $0.061246 peak required
+estimate batch provides evidence that protecting half of $1.50 is plausible;
+neither that cost nor any phase/action count appears in the production policy.
+Required work can use the entire remaining match balance. Initial work may use
+the entire optional envelope; follow-ups cannot borrow from its protected share.
+Unused required capacity is deliberately not speculatively released to chat.
+Different reservations scale both ceilings; model prices feed the existing
+per-request estimate and recorded actual usage. There is no seed quota, future
+trace lookup, tokenizer change, or budget/clock/model change.
+
+Each new usage row stores `kind=required|initial|followup`. Existing rows receive
+a nullable additive column; canonical old usage IDs classify their existing
+costs without rewriting them. Unknown old non-action IDs count against optional
+funding conservatively. Every envelope accounts `actual ?? reserved`, including
+all live estimates and the **full reserve for completed unknown usage**. Expired
+unfinished rows remain charged at their reserve and cannot justify retrying.
+`inferenceSummary().funding` separates first/follow-up/required call counts,
+cumulative admission estimates, measured charges, current accounted cost and
+irreversible cost. The house runner persists the last `admission_reason`, keeps
+the existing explicit outcome, and logs reason/retryability/deadline. A successful
+retried job may retain its prior denial reason; it is still counted as activated
+only if inference actually ran.
+
+As with the existing summary, `funding.calls` counts admitted usage rows, including
+unknown failures or zero-cost releases; actual HTTP calls are counted separately
+from the provider trace. The full-path tables have a one-to-one correspondence;
+the injected pressure probe explicitly has one extra zero-charge reservation.
+
+All applicable budget ceilings are checked before choosing a retry. Any permanent
+exhaustion wins over another ceiling's temporary pressure or an RPM wait. When
+every irreversible balance plus the requested estimate fits, but live reservations
+block admission, retry in **1,000 ms** only if the existing useful-time allowance
+still fits (500 ms required; 1,150 ms optional). RPM continues using the actual
+oldest request plus 60,001 ms. Otherwise return a permanent denial at the deadline.
+Unknown actual usage never becomes zero merely because a request completed.
+
+Transient required waiters are durable in `inference_waiters`; optional admissions
+wait behind them across the shared coordinator. Follow-ups also wait behind
+transient initial requests in their own match. Waiters are removed on admission,
+permanent denial, or expiry of useful time. The same logical usage ID is retried
+without incrementing provider attempts. A saved generated response still uses the
+existing receipt/recording path rather than running inference again. No new alarm
+or unbounded background polling loop is introduced.
+
+**Existing ceiling scope is preserved:** both kinds of paid all-house work obey
+the full match cap; only optional work obeys the daily inference-admission check.
+Mandatory calls already bypass that daily check (including mixed matches), with
+paid all-house funding protected by existing match allocation/admission. Mixed
+matches retain their existing exemption from the match cap and these new
+all-house sub-ceilings; mixed optional work still obeys the global daily ceiling.
+Preview retains its prior match-cap exemption. Global rolling limits remain
+**180 optional / 250 mandatory** across games and allocations. The configured
+$5 daily budget and $1.50 reservation are unchanged.
+
+### Red/green full-path gate and holdout
+
+`TIM26_BUDGET_GATE=1` requires a real finish, no unserved required jobs, more than
+two-thirds funded initial coverage, explicit optional skips, and bounded/fair
+follow-up funding. Seed 7 additionally requires exactly 178 phases/392 required
+choices. On unprotected `73d028b`, it fails at the **finish** assertion with the
+same phase-121 interruption. It is not an expected-interruption acceptance test.
+
+| Run | Status / phases | Required calls / charged USD | Initial calls / charged USD | Follow-up calls / charged USD | Total USD | Peak RPM / concurrency | Virtual ms |
+| --- | --- | --- | --- | --- | ---: | --- | ---: |
+| f802 baseline, seed 7 | finished / 178 | 392 / 0.5652728 | old optional slots combined: 289 / 0.4121468 | included at left | 0.9774196 | 89 / 10 | 928,197 |
+| unprotected 73, seed 7 | interrupted / 121 | 320 / 0.4162808 | 400 / 0.5292992 | 400 / 0.5158240 | 1.4614040 | 160 / 10 | 795,120 |
+| **protected, seed 7** | **finished / 178** | **392 / 0.5355676** | **412 / 0.5619080** | **154 / 0.1829944** | **1.2804700** | **110 / 10** | **928,191** |
+| holdout, seed 1 | finished / 173 | 373 / 0.5117564 | 406 / 0.5609756 | 154 / 0.1830828 | 1.2558148 | 111 / 10 | 861,190 |
+| seed 7 + 1,000 ms wakeup lag | finished / 178 | 392 / 0.5355676 | 412 / 0.5619080 | 154 / 0.1830416 | 1.2805172 | 99 / 10 | 1,051,191 |
+
+All protected estimated runs have zero required refusals, unknown costs, rejected
+submissions, and unserved required actions. Seed-7's complete **392-choice**
+sequence matches the old baseline by act/phase kind/round/seat/legal choice index
+and normalized payload, not just action count. Only opaque `tim7-<number>` IDs
+are normalized. The combined-delay run matches as well. Holdout choices are
+intentionally not compared to seed 7; its different seed successfully finishes.
+
+The seed-7 conservative estimate sums are $2.3743104 required, $2.4112752 initial,
+and $0.7930288 follow-up; those cumulative estimates are **not** settled spend.
+All final usage is settled, and all four kinds of ceiling remain enforced.
+
+**Coverage is budget-limited:** initial coverage is **190/190 Act I + 222/298 Act
+II = 412/488 (84.4%)**, versus old **205/488 (42.0%)**. There are 76 explicit
+initial budget skips. Funded firsts by seat 0–9 are
+`[42,42,41,41,41,41,41,40,41,42]`; totals reflect living participation. The 154
+funded follow-ups by seat are `[15,15,15,15,16,16,16,16,15,15]`. Follow-ups have
+229 explicit budget skips and three time skips. Later Act II gets no funded
+follow-ups once their aggregate share has been spent. This is fair rotating
+allocation while funds remain, not a promise of funded dialogue in every phase.
+
+Reservation refusals and skipped jobs differ: seed 7 has **43 transient follow-up
+budget refusals + 41 transient initial budget refusals**, followed by **229 / 76
+permanent** refusals respectively. No transient required refusal was needed on
+the protected full path. Holdout first coverage is **406/451 (90.0%)**, with 45
+initial budget skips; follow-ups are again 15–16 per seat, 225 budget skips and one
+time skip. Combined-delay coverage/calls remain the same as seed 7, with 121
+follow-up budget skips and 111 time skips, plus the same 76 initial budget skips.
+
+### Reliability and regression controls
+
+- **Real required-pressure/restart probe:** a clearly isolated fixture mode uses
+  the real coordinator to hold an extra required reservation before the first
+  mandatory decision, then releases it for $0 after 1,000 ms. The runner records
+  one transient denial, is actually evicted/reconstructed with duplicate enqueue,
+  and retries the same usage ID at +1,000 ms. It submits successfully with **one
+  provider attempt, one usage row and one accepted submission**. There are 41 provider calls
+  plus one explicitly synthetic, zero-charge reservation; it is excluded from the
+  ordinary full-path runs. The initial probe needed its job inspection endpoint
+  corrected before the cold-restart assertion passed; the retry itself worked.
+- **Healthy 100-phase generation:** 340/340 firsts and 340/340 follow-ups, 930
+  provider calls, $0.066960 synthetic charges, concurrency 10/RPM 160, no refusals
+  or skips. The default healthy low-cost fixture retains all coverage.
+- **Silent-peer recovery:** 4 silent firsts + 4 fresh replies, 8 provider calls,
+  one lost acknowledgement and cold restart; no duplicate inference or public
+  no-op. Both the silent-record and coordinator changes are exercised together.
+- **Ceiling-charge negative control:** requested 200 phases interrupts at 65,
+  133 required + 110 initial + 39 follow-up calls, $1.4943304 settled. Six required
+  requests first meet transient pressure, then are permanently refused after
+  outstanding estimates settle at full charge. This explicitly remains a funding
+  failure, not a green completion. At this point required charges are $0.7464192
+  and optional $0.7479112; this particular negative run does not establish the
+  cost of a different, chat-free path. The complete protected path's recorded
+  required estimates alone sum to $2.3743104 at the ceiling charging rule, above
+  $1.50. Coordinator tests separately verify permanent mandatory-only exhaustion.
+
+The protected full path initially exposed an incorrect freshness assertion: the
+last chat aged outside the existing 64-event entitled recent-history window.
+The fixture now records its actual **seat-stream sequence** and distinguishes
+aged-out history from a missing recent chat. All in-window latest chats and the
+latest supplied recent chat still must reach the actual provider prompt. The
+history/window and production prompt are unchanged. All socket/history-delivery
+checks pass; evidence records the aged-out counts.
+
+### Reproduction commands and checks
+
+All commands below use the original seed/choices/provider/prices and local
+`vitest.dialogue-baseline.config.ts`. Final commands (prefix each with the name):
+
+```sh
+TIM7_NAME=budget-final-ceilings-full TIM7_PHASES=200 TIM26_LATENCY=1000 TIM26_USAGE=estimated TIM26_BUDGET_GATE=1 npx vitest run --config vitest.dialogue-baseline.config.ts
+TIM7_NAME=budget-final-holdout TIM26_SEED=1 TIM7_PHASES=200 TIM26_LATENCY=1000 TIM26_USAGE=estimated TIM26_BUDGET_GATE=1 npx vitest run --config vitest.dialogue-baseline.config.ts
+TIM7_NAME=budget-combined-deadline TIM7_PHASES=200 TIM26_LATENCY=1000 TIM7_LAG=1000 TIM26_USAGE=estimated TIM26_BUDGET_GATE=1 npx vitest run --config vitest.dialogue-baseline.config.ts
+TIM7_NAME=budget-healthy-generation TIM7_PHASES=100 TIM26_LATENCY=1000 npx vitest run --config vitest.dialogue-baseline.config.ts
+TIM7_NAME=budget-silent-peer-recovery TIM26_SILENT_FIRST=1 TIM26_HOUSES=4 TIM26_LATENCY=1000 TIM26_RECOVERY=1 npx vitest run --config vitest.dialogue-baseline.config.ts
+TIM7_NAME=budget-final-required-retry TIM7_PHASES=3 TIM26_LATENCY=1000 TIM26_REQUIRED_PRESSURE=1 npx vitest run --config vitest.dialogue-baseline.config.ts
+TIM7_NAME=budget-final-ceiling-negative TIM7_PHASES=200 TIM26_LATENCY=1000 TIM26_USAGE=ceiling npx vitest run --config vitest.dialogue-baseline.config.ts
+```
+
+Red: run the full-gate command with `TIM7_NAME=budget-protection-red` after adding
+only the gate to unprotected `73d028b`. Both initial full-gate and coordinator
+red logs are retained. The original four-side comparison is untouched.
+
+Coordinator SQLite tests exercise scaled allocations, follow-up and initial
+priority, live versus settled/unknown/expired usage, legacy additive migration,
+cold reconstruction/replay, same-ID admission/settlement, useful-time bounds,
+waiter expiry, global RPM/daily scope, mixed mandatory/optional exemptions, and
+permanent exhaustion taking precedence over unrelated transient pressure. These
+run alongside the shared-game, model, stream and long-path tests. Worker/provider
+and build/type/lint checks are recorded in the dialogue report.
+
 ## Evidence / handoff
 
 Comparison directory: `/tmp/opencode/agent-game-TIM-26-budget-comparison/.tim7/comparison/`.
@@ -193,7 +376,13 @@ action counts/digests, refusal ledger and feasibility arithmetic). Run
 `node .tim7/comparison/summarize.mjs` there to regenerate the compact comparison.
 A minimal copy is at `/tmp/opencode/agent-game-TIM-26/.tim7/TIM-26-budget-comparison-results.json`.
 
+New evidence is in `/tmp/opencode/agent-game-TIM-26/.tim7/budget-*/` and associated
+logs, with `budget-report.mjs`/`budget-results.json` containing cost/coverage,
+denial groups and normalized choice-sequence verification. Source snapshots
+`c38b4d0` and `73d028b` remain immutable ancestors. The production policy reads
+none of these artifacts. No package/lockfile, price, clock, or model change.
+
 The detached comparison worktree intentionally retains the three old production
 files and disposable measurement adaptations for archive/reproduction. No user
 worktree was removed. All test servers stop in `finally`; previous c38 artifacts
-remain intact. The parent owns integration, budget-policy approval and cleanup.
+remain intact. The parent owns final integration and cleanup.

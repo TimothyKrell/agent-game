@@ -49,7 +49,7 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
     await expect.poll(() => frames.length).toBeGreaterThan(0);
 
     const response = await worker.fetch(
-      `/run?phases=${process.env.TIM7_PHASES ?? 1}&lag=${process.env.TIM7_LAG ?? 0}&peerAt=${process.env.TIM26_PEER_AT ?? 4000}${process.env.TIM26_LATENCY === undefined ? '' : `&latency=${process.env.TIM26_LATENCY}`}${process.env.TIM26_RECOVERY ? '&recovery=1' : ''}`,
+      `/run?phases=${process.env.TIM7_PHASES ?? 1}&lag=${process.env.TIM7_LAG ?? 0}&peerAt=${process.env.TIM26_PEER_AT ?? 4000}${process.env.TIM26_LATENCY === undefined ? '' : `&latency=${process.env.TIM26_LATENCY}`}${process.env.TIM26_RECOVERY ? '&recovery=1' : ''}${process.env.TIM26_REQUIRED_PRESSURE ? '&requiredPressure=1' : ''}`,
     );
 
     const text = await response.text();
@@ -122,6 +122,27 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
 
     const report = dialogueReport(trace, provider.requests);
 
+    if (process.env.TIM26_REQUIRED_PRESSURE) {
+      expect(trace.coldRestarts).toBe(1);
+      const denial = trace.inference.reservations.find((row) => row.mandatory && !row.allowed)!;
+      expect(denial).toMatchObject({ reason: 'match-budget', retryable: true });
+      const funded = trace.inference.reservations.find((row) => row.id === denial.id && row.allowed)!;
+      expect(funded.at - denial.at).toBe(1000);
+      expect(trace.houseJobs.find((row) => `${row.id}:attempt:1` === denial.id)).toMatchObject({
+        attempts: 1,
+        outcome: 'accepted',
+      });
+      expect(trace.inference.usage.filter((row) => row.id === denial.id)).toHaveLength(1);
+      expect(
+        trace.submissions.filter((row) => `${row.job.id}:attempt:1` === denial.id && row.ok),
+      ).toHaveLength(1);
+      expect(trace.inference.usage.find((row) => row.id === 'fixture-held-required')).toMatchObject({
+        done: 1,
+        actual: 0,
+      });
+      expect(trace.inference.summary.calls).toBe(provider.requests.length + 1);
+    }
+
     if (process.env.TIM26_SILENT_FIRST) {
       const phase = trace.phases[0];
 
@@ -168,8 +189,47 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
     }
 
     const budgetExhaustion = usage === 'ceiling' || process.env.TIM26_EXPECT_INTERRUPTED === '1';
+    const budgetGate = process.env.TIM26_BUDGET_GATE === '1';
 
-    if (!budgetExhaustion) {
+    if (budgetGate) {
+      expect(trace.observation.status, 'Budget protection completes the real full path').toBe('finished');
+      expect(trace.inference.summary.accountedUsd).toBeLessThanOrEqual(1.5);
+      const actions = provider.requests.filter((entry) => entry.prompt.task === 'action');
+
+      if (Number(process.env.TIM26_SEED ?? 7) === 7) {
+        expect(trace.phases).toHaveLength(178);
+        expect(actions).toHaveLength(392);
+      }
+
+      const unserved = trace.houseJobs.filter((row) => {
+        const job: HouseJob = JSON.parse(row.data);
+
+        return job.kind === 'action' && row.status === 'done' && row.response === null;
+      });
+
+      expect(unserved, 'No required job is lost to optional inference or timeout').toEqual([]);
+      const funded = report.inference.funding;
+      expect(
+        funded.filter((row) => row.kind !== 'required').reduce((n, row) => n + row.accountedUsd, 0),
+      ).toBeLessThanOrEqual(0.75);
+      expect(funded.find((row) => row.kind === 'followup')!.accountedUsd).toBeLessThanOrEqual(0.1875);
+
+      const followups = Array.from(
+        { length: 10 },
+        (_, seat) => report.coverage.filter((phase) => phase.followupActivated.includes(seat)).length,
+      );
+
+      expect(Math.min(...followups), 'Every seat shares the funded follow-ups').toBeGreaterThan(0);
+      expect(
+        Math.max(...followups) - Math.min(...followups),
+        'Rotating order distributes the constrained follow-up allocation',
+      ).toBeLessThanOrEqual(2);
+      expect(report.coverage.reduce((n, phase) => n + phase.activated.length, 0)).toBeGreaterThan(
+        (report.coverage.reduce((n, phase) => n + phase.eligible.length, 0) * 2) / 3,
+      );
+    }
+
+    if (!budgetExhaustion && !budgetGate) {
       expect(trace.observation.status).not.toBe('interrupted');
       expect(
         report.coverage.flatMap((phase) => phase.missing),
@@ -179,7 +239,7 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
         trace.phases.length >= Number(process.env.TIM7_PHASES ?? 1) ||
           trace.observation.status === 'finished',
       ).toBe(true);
-    } else {
+    } else if (!budgetGate) {
       expect(trace.observation.status, 'The charged fixture must expose the unchanged funding ceiling').toBe(
         'interrupted',
       );
@@ -202,6 +262,7 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
       !Number(process.env.TIM7_LAG) &&
       Number(process.env.TIM26_HOUSES ?? 10) === 10 &&
       !budgetExhaustion &&
+      !budgetGate &&
       !process.env.TIM7_SILENT
     )
       expect(

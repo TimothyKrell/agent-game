@@ -2,6 +2,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { GameId } from '../game/contracts';
 import type { AgentPrincipal } from './auth';
 import { PlatformQueue } from './coordinator';
+import type { InferenceRequest } from './coordinator';
 
 export type { MatchInitialization, PlatformQueueStatus } from './coordinator';
 
@@ -50,13 +51,7 @@ export class MatchmakingObject extends DurableObject<Env> {
     return this.queue.exhibition(gameId);
   }
 
-  reserveInference(input: {
-    id: string;
-    matchId: string;
-    estimate: number;
-    deadline: number;
-    mandatory: boolean;
-  }) {
+  reserveInference(input: InferenceRequest) {
     return this.queue.reserveInference(input);
   }
 

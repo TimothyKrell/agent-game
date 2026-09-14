@@ -135,8 +135,11 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
       recentChats: read.chat.length,
       promptChats: request?.prompt.chat.length ?? 0,
       latestAvailable: !!read.latestChat,
+      latestAgedOut: read.latestChatSequence !== null && read.latestChatSequence <= read.head - 64,
       recentHasLatest:
-        !read.latestChat || (latest?.seat === read.latestChat.seat && latest.at === read.latestChat.at),
+        !read.latestChat ||
+        (read.latestChatSequence !== null && read.latestChatSequence <= read.head - 64) ||
+        (latest?.seat === read.latestChat.seat && latest.at === read.latestChat.at),
       promptHasRecentLatest:
         !latest ||
         request?.prompt.chat.some((entry) => entry.text === latest.text && entry.seat === latest.seat),
@@ -232,10 +235,12 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
         attempts: row.attempts,
         expired: row.completedAt !== null && row.completedAt >= row.job.deadline,
         outcome: row.outcome ?? null,
+        admissionReason: row.admission_reason ?? null,
       })),
     context: {
       reads: reads.length,
       recentMissingLatest: reads.filter((read) => !read.recentHasLatest).length,
+      latestAgedOut: reads.filter((read) => read.latestAgedOut).length,
       promptMissingRecentLatest: reads.filter((read) => !read.promptHasRecentLatest).length,
       maxPromptBytes: Math.max(0, ...provider.map((request) => request.promptBytes)),
     },
