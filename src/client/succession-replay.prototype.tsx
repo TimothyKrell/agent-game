@@ -1,7 +1,7 @@
 /**
  * TIM-6 THROWAWAY: Three structurally different two-act replays on the existing
- * /matches/tim-6-replay-prototype?variant=A|B|C route. Authored illustrative data only.
- * Question: is the default reading experience a chronicle, replay desk, or dossier?
+ * /matches/tim-6-replay-prototype?variant=A|B|C route. A/B retain the original storyboard.
+ * Owner chose C; its revised recorded-match dossier is in succession-dossier.prototype.tsx.
  */
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -26,6 +26,7 @@ import type { PrototypeName } from './prototype-switcher';
 import { actInfo, capabilityRules, moments, returnSeats } from './succession-replay-fixture.prototype';
 import type { Capability, ReplayMoment } from './succession-replay-fixture.prototype';
 import './succession-replay.prototype.css';
+import SuccessionDossierPrototype from './succession-dossier.prototype';
 
 type Act = 1 | 2;
 
@@ -668,7 +669,7 @@ function RuleDialog({ capability, close }: { capability: Capability; close: () =
   );
 }
 
-export default function SuccessionReplayPrototype() {
+function LegacyReplayPrototype() {
   const url = new URL(useLocation());
   const param = url.searchParams.get('variant');
   const variant: PrototypeName = param === 'B' || param === 'C' ? param : 'A';
@@ -892,4 +893,10 @@ export default function SuccessionReplayPrototype() {
       {capability && <RuleDialog capability={capability} close={() => setCapability(null)} />}
     </div>
   );
+}
+
+export default function SuccessionReplayPrototype() {
+  const variant = new URL(useLocation()).searchParams.get('variant');
+
+  return variant === 'C' ? <SuccessionDossierPrototype /> : <LegacyReplayPrototype />;
 }

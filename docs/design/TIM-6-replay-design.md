@@ -1,6 +1,40 @@
 # TIM-6 · A readable two-act replay
 
-**Review-ready throwaway prototype · Recommendation: A / Chronicle.**
+**Owner choice: C / Dossier · Revised preview ready for review.**
+
+## Owner direction · 14 September 2026
+
+The owner explicitly chose **C / Dossier** for its linear, straightforward reading structure. This supersedes the original A recommendation below. The owner requested a revised prototype before judging full integration:
+
+- Remove Play Act, scrubbing, previous/next event arrows and the round dropdown.
+- Use distinct inline speech bubbles for dialogue.
+- Remove editorial event eyebrows, consequence commentary and “Why this matters.” Render recorded actions, claims, responses and state changes directly.
+- Turn capability names and rules vocabulary into icon-bearing interactive terms. Hover previews the explanation; click, tap, Enter or Space pins a small anchored dialog. Coins and influence get the same treatment.
+- Make affected-agent resource values, lost cards and status changes larger and clearer.
+- Use the completed live Succession match and provide broad action/process examples.
+
+**Review the revision:** [Recorded match](http://localhost:5177/matches/tim-6-replay-prototype?variant=C) · [Action & UI examples](http://localhost:5177/matches/tim-6-replay-prototype?variant=C&sample=examples).
+
+The captured match is [`match_e65fb846-c804-4d8b-ba78-e303119e1847`](https://agent-game.tk-d86.workers.dev/matches/match_e65fb846-c804-4d8b-ba78-e303119e1847): **Patch wins**, 2 influence / 3 coins, table round 9. Rogue wins Act I by six Overrides; four agents start Act II with 3 coins and six with 2. No Act I execution occurred. The record contains all six Act II actions, all five capabilities, challenge proof/disproof, Guard/Thief/Envoy blocks, a failed block, exchange, payments and eliminations.
+
+The example view contains **12 recorded excerpts + 8 clearly labeled independent illustrative scenario groups**. Supplemental cases cover other Act I endings, execution/return, veto/special election, unblocked Assassination, unchallenged block, paid failed claim, partial Theft, two losses after a failed Guard block, all three round-cap criteria, takeover and interruption. Gallery section titles are review navigation, not editorial text injected into replay events.
+
+### Revision evidence and handoff
+
+- [Coordinator handoff](TIM-6/owner-review/HANDOFF.md): explicit choice, refinements and implementation boundary.
+- [Browser inspection](TIM-6/owner-review/browser-inspection.json): **58 checks passed**, **31 new screenshots**, no application exceptions or backend requests while browsing the local preview.
+- Static checks passed: application TypeScript, scoped Oxlint and Prettier, and `npx vite build`. The generated production assets contain no dossier prototype selectors, example labels or captured match ID.
+- [Desktop entry](TIM-6/owner-review/screenshots/desktop-entry.png) / [narrow entry](TIM-6/owner-review/screenshots/narrow-entry.png).
+- [Speech](TIM-6/owner-review/screenshots/desktop-speech.png), [resource/loss record](TIM-6/owner-review/screenshots/desktop-loss.png), [hover rule](TIM-6/owner-review/screenshots/desktop-rule-hover.png), [pinned rule](TIM-6/owner-review/screenshots/desktop-guard-rules.png), [private Exchange draw](TIM-6/owner-review/screenshots/desktop-archive-exchange.png).
+- All **416 actual quotes** are preserved exactly. All **974 public entries** remain in canonical source order. The ten reconstructed final coin/influence balances match the captured terminal state. The full capture has **2,018 archive events**, retrieved in **32 bounded pages**; audit facts remain in the source capture, outside the reading surface.
+- Implementation sources: `src/client/succession-dossier.prototype.tsx`, `succession-dossier-data.prototype.ts`, `succession-dossier-rules.prototype.tsx`, `succession-dossier.prototype.css`, and `succession-replay-record.prototype.json`.
+- Reproduce the new inspection with `node scripts/capture-tim-6-dossier.prototype.mjs` while `npm run prototype:replay` runs. `scripts/capture-tim-6-record.prototype.mjs` is the read-only archive capture utility.
+
+The new C route is a completed-record fixture, fully local after capture. Production bounded windowing, archive authority transitions and live following still belong to integration. The owner has chosen the reading direction; this revised rendering awaits their feedback. The original 24 screenshots, original inspection and A/B comparison remain preserved as earlier design evidence.
+
+---
+
+## Original three-way review · before owner selection
 
 Three working compositions answer the same question: **Should a newcomer read the match as a continuous chronicle, inspect it at a replay desk, or scan an outcome dossier?** Each includes a compact winner header, two expandable acts, one chronological speech/action record, contextual status changes, and keyboard-accessible capability explanations. The variants share the Luminous art direction and authored data; their reading structures differ.
 
@@ -207,8 +241,8 @@ Original mount checks at `98c8fe8` passed: `npm run typecheck` (application, inf
 
 The density revision reran `npx tsc --noEmit`, scoped Oxlint/Prettier, and the existing headless Playwright capture/inspection: **53 checks passed, 24 captures refreshed, zero backend requests and zero browser application exceptions**. Entry observations confirm zero initial scroll, preserved reading type sizes, and 44×44 desktop / 44×48 narrow step targets. The site header remains 87px high at desktop and 189px at narrow; all density changes are within the prototype.
 
-## Outstanding owner choice
+## Original owner-choice request · resolved above
 
-**Choose A, B or C as the production reading structure (recommend A), and confirm that TIM-6 may supersede frames 50–51’s older replay composition while retaining the Luminous tokens, vectors and visibility semantics of frames 50–55.** A second useful preference is whether Act I should initially be open on completed matches; the review default keeps its summary closed to make the individual contest prominent.
+The original review requested a choice among A/B/C and confirmation of the successor composition. **The owner has now selected C, with the refinements recorded at the top of this document.** The initial Act I open/closed preference remains unconfirmed; C currently keeps its summary closed and Act II open.
 
-This branch is the owner-review artifact. The selected production design belongs in TIM-19–TIM-23 after that choice; this delivery stops here. The parent session coordinates Linear updates and any subsequent branch integration.
+This branch is the owner-review artifact. Production work belongs in the coordinator’s integration plan. The parent session coordinates Linear updates and any subsequent branch integration; the revised C remains available for the owner’s next design review.
