@@ -29,7 +29,7 @@ export interface ContinuousStoryOptions {
 export interface ContinuousStorySnapshot {
   model: StoryModel;
   rows: StoryModel['rows'];
-  status: 'idle' | 'loading' | 'ready' | 'error' | 'reset';
+  status: 'idle' | 'loading' | 'paused' | 'ready' | 'error' | 'reset';
   error: string;
   following: boolean;
   newEvents: number;
@@ -210,7 +210,7 @@ export class ContinuousSuccessionHistory {
   }
   retry = () => (this.snapshot.status === 'reset' ? this.onReset() : this.read(this.intent));
 
-  private fetch<T, Key extends readonly unknown[]>(
+  private async fetch<T, Key extends readonly unknown[]>(
     options: { queryKey: Key; queryFn?: QueryFunction<T, Key> | SkipToken },
     key: readonly unknown[],
   ) {
@@ -218,13 +218,38 @@ export class ContinuousSuccessionHistory {
 
     if (!fn || fn === skipToken) throw new Error('A selected story read requires a query function.');
 
-    return this.client.fetchQuery({
+    const ticket = this.ticket;
+    const cache = this.client.getQueryCache();
+
+    const pending = this.client.fetchQuery({
       queryKey: key,
       queryFn: (context) => fn({ ...context, queryKey: options.queryKey }),
       staleTime: Infinity,
       gcTime: 0,
       retry: false,
     });
+
+    const query = cache.find({ queryKey: key, exact: true });
+
+    const sync = () => {
+      if (!query || !this.active || ticket !== this.ticket || query.state.fetchStatus === 'idle') return;
+      const status = query.state.fetchStatus === 'paused' ? 'paused' : 'loading';
+
+      if (this.snapshot.status !== status) this.publish({ status });
+    };
+
+    const unsubscribe = cache.subscribe((event) => {
+      if (event.query === query) sync();
+    });
+
+    // fetchQuery can enter paused before the subscription is installed.
+    sync();
+
+    try {
+      return await pending;
+    } finally {
+      unsubscribe();
+    }
   }
 
   private async read(intent: string): Promise<void> {
@@ -247,11 +272,17 @@ export class ContinuousSuccessionHistory {
     this.publish({ status: 'loading', error: '' });
 
     try {
-      if (this.options.act && this.landmarkAct !== this.current.act) {
+      while (this.options.act && this.landmarkAct !== this.current.act) {
+        const act = this.current.act;
         const options = roundIndexOptions(this.scope);
-        const index = await this.fetch(options, [...ownedKey, 'landmarks']);
+        const index = await this.fetch(options, [...ownedKey, 'landmarks', act]);
 
         if (!valid()) return;
+        this.client.removeQueries({ queryKey: [...ownedKey, 'landmarks'] });
+
+        // A return may arrive while the old Act I index is in flight. Refresh it
+        // before computing either chapter boundary; ordinary head growth is independent.
+        if (act !== this.current.act) continue;
         const first = index.rounds.find((round) => round.act === this.options.act);
         const next = index.rounds.find((round) => round.act > this.options.act!);
         this.lower =
@@ -261,9 +292,10 @@ export class ContinuousSuccessionHistory {
               ? Math.max(0, first.through - 1)
               : this.current.history.streamHead;
         this.upper = next ? next.through - 1 : this.current.history.streamHead;
-        this.landmarkAct = this.current.act;
-        this.client.removeQueries({ queryKey: [...ownedKey, 'landmarks'] });
-      } else this.availability();
+        this.landmarkAct = act;
+      }
+
+      this.availability();
       const upper = this.upper; // Freeze each selected operation even while current head grows.
       let after = this.snapshot.after;
 
@@ -377,10 +409,10 @@ export class ContinuousSuccessionHistory {
 
         if (
           this.snapshot.status === 'ready' &&
-          this.snapshot.following &&
-          this.snapshot.delivered < this.upper
+          ((this.options.act && this.landmarkAct !== this.current.act) ||
+            (this.snapshot.following && this.snapshot.delivered < this.upper))
         )
-          void this.read('follow');
+          void this.read(this.snapshot.following ? 'follow' : 'later');
       }
     }
   }

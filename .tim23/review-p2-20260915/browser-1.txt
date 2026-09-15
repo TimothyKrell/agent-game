@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 e2e/continuous-story.spec.ts:160:1 › announces paused Query reads as offline waiting, keeps delivered rows and cancels hidden or unmounted pauses (938ms)
+
+  1 passed (2.4s)

@@ -1,0 +1,119 @@
+
+> agent-game@0.2.0 lint
+> oxlint .
+
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+    ,-[src/client/succession-timeline.tsx:48:5]
+ 47 |     if (scrollRoot === 'self') return true;
+ 48 |     const visible = Array.from(
+    :     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 49 |       document.querySelectorAll<HTMLElement>('[data-story-scroll-root="document"]'),
+    `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+    ,-[src/client/succession-timeline.tsx:55:5]
+ 54 |     });
+ 55 |     const focused = document.activeElement;
+    :     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 56 |     const focusRect = focused?.getBoundingClientRect();
+    `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+    ,-[src/client/succession-timeline.tsx:57:5]
+ 56 |     const focusRect = focused?.getBoundingClientRect();
+ 57 |     const focusedReader =
+    :     ^^^^^^^^^^^^^^^^^^^^^
+ 58 |       focusRect && focusRect.bottom > 0 && focusRect.top < window.innerHeight
+    `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[src/client/succession-timeline.tsx:137:7]
+ 136 |       if (!current.enabled || current.status !== 'ready') return;
+ 137 |       if (!ownsViewport()) return;
+     :       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 138 |       ownsPosition.current = true;
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[src/client/succession-timeline.tsx:205:7]
+ 204 |       }
+ 205 |       const edge = end.current?.getBoundingClientRect().bottom ?? Infinity;
+     :       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 206 |
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[e2e/continuous-story.spec.ts:377:3]
+ 376 |   await ready(page, 'secondary');
+ 377 |   const target = await timeline(page, 'secondary').evaluate(
+     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 378 |     (root) => window.scrollY + root.getBoundingClientRect().top + 300,
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[e2e/continuous-story.spec.ts:380:3]
+ 379 |   );
+ 380 |   await page.evaluate((y) => window.scrollTo(0, y), target);
+     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 381 |   const settled = await page.evaluate(
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[e2e/continuous-story.spec.ts:381:3]
+ 380 |   await page.evaluate((y) => window.scrollTo(0, y), target);
+ 381 |   const settled = await page.evaluate(
+     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 382 |     () =>
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[e2e/continuous-story.spec.ts:387:3]
+ 386 |   );
+ 387 |   expect(Math.abs(settled - target)).toBeLessThanOrEqual(1);
+     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 388 |   await timeline(page, 'secondary').focus();
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[e2e/continuous-story.spec.ts:392:3]
+ 391 |   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(beforeKey);
+ 392 |   for (let index = 0; index < 3; index++) {
+     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 393 |     const before = Number(await timeline(page, 'secondary').getAttribute('data-story-delivered'));
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[e2e/continuous-story.spec.ts:402:3]
+ 401 |   }
+ 402 |   for (let index = 0; index < 3; index++) {
+     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 403 |     const before = Number(await timeline(page, 'secondary').getAttribute('data-story-after'));
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[e2e/continuous-story.spec.ts:412:3]
+ 411 |   }
+ 412 |   const secondFocus = timeline(page, 'secondary').locator('[data-story-key]').nth(25).getByRole('button');
+     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 413 |   await secondFocus.focus();
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[e2e/continuous-story.spec.ts:420:3]
+ 419 |   expect(await secondFocus.evaluate((node) => node.getBoundingClientRect().top)).toBeCloseTo(focusedTop, 0);
+ 420 |   const firstTarget = await timeline(page).evaluate(
+     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 421 |     (root) => window.scrollY + root.getBoundingClientRect().top + 200,
+     `----
+
+  x anti-slop(require-readable-spacing): Expected blank line before this statement.
+     ,-[e2e/continuous-story.spec.ts:423:3]
+ 422 |   );
+ 423 |   await page.evaluate((y) => window.scrollTo(0, y), firstTarget);
+     :   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 424 |   await timeline(page).focus();
+     `----
+
+Found 0 warnings and 14 errors.
+Finished in 1.2s on 225 files with 120 rules using 32 threads.

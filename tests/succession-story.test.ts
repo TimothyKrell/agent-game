@@ -251,6 +251,68 @@ describe('canonical Succession story windows', () => {
     }
   });
 
+  it('preserves the final Tax reaction through the canonical 120-turn cap after 119 legal Exchange turns', async () => {
+    const game = await storyAct2(5);
+    const { random } = game;
+    let state = game.state;
+
+    for (let turn = 0; turn < 119; turn++) {
+      const actor = board2(state).activeSeat;
+      const declared = choose(state, random, actor, { type: 'exchange' });
+      const responses = collect(declared.state, random);
+      const board = board2(responses.state);
+
+      const returned = choose(responses.state, random, actor, {
+        type: 'return-influence',
+        cardIds: [board.resources[actor].hand[0].id, board.pending!.exchange![0].id],
+      });
+
+      expect(returned.state.status).toBe('active');
+      state = evolveSuccession(
+        returned.state,
+        { type: 'advance', now: returned.state.phase.deadline! },
+        random,
+      ).state;
+    }
+
+    expect(board2(state)).toMatchObject({ round: 12, slot: 9 });
+    expect(board2(state).resources.every((seat) => seat.hand.length === 2)).toBe(true);
+    const actor = board2(state).activeSeat;
+    const declared = choose(state, random, actor, { type: 'tax' });
+    const responses = collect(declared.state, random);
+    expect(responses.state.status).toBe('finished');
+    const window = storyWindow(state, [declared, ...responses.evolutions], 'archive');
+    const model = buildSuccessionStory(window);
+    const ended = row(model, 'turn-ended');
+
+    const terminal = model.rows.find(
+      (entry) => entry.fact.kind === 'phase' && entry.fact.phase === 'finished',
+    )!;
+
+    const reaction = model.rows.findLast((entry) => entry.fact.kind === 'reaction')!;
+    expect(model.rows.slice(-5).map((entry) => entry.fact.kind)).toEqual([
+      'turn-ended',
+      'phase',
+      'finished',
+      'reaction',
+      'audit',
+    ]);
+    expect(get(ended.action).action).toBe('tax');
+    expect(get(ended.resolution)).toBe('applied');
+    expect(reaction.action).toEqual(ended.action);
+    expect(reaction.resolution).toEqual(ended.resolution);
+    expect(get(reaction.turnOwner)).toBe(actor);
+    expect(terminal.action.status).toBe('unavailable');
+    expect(row(model, 'finished').action.status).toBe('unavailable');
+
+    const gap = buildSuccessionStory({
+      ...window,
+      events: window.events.filter((event) => event.id !== terminal.source.cursor),
+    });
+
+    expect(gap.rows.findLast((entry) => entry.fact.kind === 'reaction')!.action.status).toBe('unavailable');
+  });
+
   it('links canonical post-resolution Exchange hand updates without retaining the completed action on next-turn rows', async () => {
     const { state, random } = await storyAct2(6);
     const actor = board2(state).activeSeat;
