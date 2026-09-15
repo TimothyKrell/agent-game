@@ -3,7 +3,33 @@ import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Struct } from 'effect';
-import { ArrowRight, Coins, CircleHelp, Landmark, Shield, Skull, Swords, X } from 'lucide-react';
+import {
+  ArrowRight,
+  Ban,
+  BookOpen,
+  CircleOff,
+  Coins,
+  Crown,
+  FileCheck2,
+  FileText,
+  Flag,
+  Gavel,
+  Handshake,
+  Hourglass,
+  Landmark,
+  ListOrdered,
+  Search,
+  Shield,
+  ShieldAlert,
+  Shuffle,
+  Skull,
+  Swords,
+  UserCheck,
+  UserRoundCog,
+  Users,
+  Vote,
+  X,
+} from 'lucide-react';
 import { InfluenceBack } from './deco';
 import { AgentText } from './succession-dossier-profiles.prototype';
 import { capabilityRules } from './succession-replay-fixture.prototype';
@@ -79,9 +105,100 @@ const otherRules = {
     'Act II ends after table round 12.',
     'Compare surviving influence, then coins, then the secret precommitted priority. The supplied decisive criterion determines the single mechanical winner. Eliminated ring positions are skipped, not renumbered.',
   ],
+  Coordinator: [
+    'Nominate an Executor, then pass two policies if elected.',
+    'The candidacy normally rotates through living agents. An elected Coordinator draws three policies, discards one privately and passes two to the Executor. The Coordinator also decides veto requests and uses any executive power awarded by an enacted Override.',
+  ],
+  Executor: [
+    'Choose which of two policies becomes law.',
+    'The Coordinator nominates an eligible agent as Executor; the table votes on them together. If elected, the Executor privately receives two policies, enacts one and discards the other. After five Overrides, they may request a veto. Executor is an elected office, not the agent who performs an execution.',
+  ],
+  Overlord: [
+    'The hidden leader of the rogue faction in Act I.',
+    'Electing the Overlord as Executor after at least three Overrides wins Act I for the rogues. Executing the Overlord wins Act I for the cooperatives. The Overlord returns for Act II with everyone else and has no special power there.',
+  ],
+  Cooperative: [
+    'One of six agents on the cooperative faction in Act I.',
+    'The faction wins Act I by enacting five Safeguards or executing the Overlord. Its members then start Act II with three coins instead of two. All ten agents return, and factions dissolve for Act II.',
+  ],
+  Rogue: [
+    'The Act I faction of three rogues and the Overlord.',
+    'Ordinary rogues recognize one another and the Overlord; the Overlord does not recognize them. The faction wins Act I with six Overrides or by electing the Overlord as Executor after at least three Overrides. The winning faction receives a one-coin starting bonus for Act II.',
+  ],
+  Government: [
+    'The nominated Coordinator and Executor, elected together.',
+    'Living agents vote to approve or reject this pair. Approval requires more than half of the living agents; a tie rejects. An approved government selects a policy unless an Overlord election has already ended Act I.',
+  ],
+  Nomination: [
+    'The Coordinator candidate chooses an eligible Executor.',
+    'They cannot nominate themselves. The last elected Executor is ineligible; the last elected Coordinator is also ineligible while more than five agents remain. The living table then votes on the proposed pair.',
+  ],
+  Election: [
+    'Vote on the proposed government.',
+    'Living agents submit sealed approve or reject ballots. They are published together. More than half must approve; a tie rejects. A rejection advances the election tracker.',
+  ],
+  Policy: [
+    'A Safeguard or an Override enacted onto the Act I board.',
+    'The deck starts with six Safeguards and eleven Overrides. An elected government normally selects a policy from a three-card draw. Election chaos instead enacts the top card. Enacted policies never return to the deck.',
+  ],
+  Chaos: [
+    'The third tracker advance automatically enacts the top policy.',
+    'A rejected government or accepted veto advances the tracker. At three, enact the top policy, reset the tracker and clear term limits. The policy counts toward faction victory, but grants no executive power.',
+  ],
+  'Term limits': [
+    'Recent officeholders cannot immediately serve as Executor.',
+    'The last elected Executor is ineligible. The last elected Coordinator is also ineligible while more than five agents are alive. Failed nominees acquire no limits. A vetoed government still establishes limits unless chaos clears them.',
+  ],
+  'Executive power': [
+    'An enacted Override may require the Coordinator to use a power.',
+    'The ten-agent board grants investigation at the first two Overrides, a special election at the third, and execution at the fourth and fifth. Powers are mandatory when awarded. A policy enacted by election chaos grants no power.',
+  ],
+  Elimination: [
+    'At zero influence, an agent is out of Act II.',
+    'Eliminated agents cannot act, react, speak or be targeted. Their remaining coins stay frozen. The last agent with influence wins; if several survive table round twelve, the round-cap comparison decides the winner.',
+  ],
 };
 
 export type RuleTermName = Capability | keyof typeof otherRules;
+
+// Every supported term must have an intentional icon; a new rule cannot silently get a placeholder.
+const ruleIcons = {
+  Coins: <Coins aria-hidden="true" />,
+  Influence: <InfluenceBack />,
+  Income: <Coins aria-hidden="true" />,
+  Tax: <Landmark aria-hidden="true" />,
+  Theft: <RuleIcon term="Thief" />,
+  Assassination: <RuleIcon term="Assassin" />,
+  Exchange: (
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+      <path d="M7 12h10v15H7Zm8-7h10v15h-5M4 8h7l-3-3m3 3-3 3M28 24h-7l3-3m-3 3 3 3" />
+    </svg>
+  ),
+  Coup: <Skull aria-hidden="true" />,
+  Challenge: <Swords aria-hidden="true" />,
+  Block: <Shield aria-hidden="true" />,
+  Safeguard: <Shield aria-hidden="true" />,
+  Override: <ShieldAlert aria-hidden="true" />,
+  Veto: <Ban aria-hidden="true" />,
+  'Election tracker': <ListOrdered aria-hidden="true" />,
+  Execution: <Skull aria-hidden="true" />,
+  Investigation: <Search aria-hidden="true" />,
+  'Special election': <Flag aria-hidden="true" />,
+  'Round cap': <Hourglass aria-hidden="true" />,
+  Coordinator: <UserRoundCog aria-hidden="true" />,
+  Executor: <FileCheck2 aria-hidden="true" />,
+  Overlord: <Crown aria-hidden="true" />,
+  Cooperative: <Handshake aria-hidden="true" />,
+  Rogue: <ShieldAlert aria-hidden="true" />,
+  Government: <Users aria-hidden="true" />,
+  Nomination: <UserCheck aria-hidden="true" />,
+  Election: <Vote aria-hidden="true" />,
+  Policy: <FileText aria-hidden="true" />,
+  Chaos: <Shuffle aria-hidden="true" />,
+  'Term limits': <BookOpen aria-hidden="true" />,
+  'Executive power': <Gavel aria-hidden="true" />,
+  Elimination: <CircleOff aria-hidden="true" />,
+} satisfies Record<keyof typeof otherRules, ReactNode>;
 
 function isCapability(term: RuleTermName): term is Capability {
   return term in capabilityRules;
@@ -102,30 +219,7 @@ export function RuleIcon({ term }: { term: RuleTermName }) {
       </svg>
     );
 
-  if (term === 'Coins' || term === 'Income') return <Coins aria-hidden="true" />;
-
-  if (term === 'Tax') return <Landmark aria-hidden="true" />;
-
-  if (term === 'Theft') return <RuleIcon term="Thief" />;
-
-  if (term === 'Assassination') return <RuleIcon term="Assassin" />;
-
-  if (term === 'Exchange')
-    return (
-      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
-        <path d="M7 12h10v15H7Zm8-7h10v15h-5M4 8h7l-3-3m3 3-3 3M28 24h-7l3-3m-3 3 3 3" />
-      </svg>
-    );
-
-  if (term === 'Challenge') return <Swords aria-hidden="true" />;
-
-  if (term === 'Influence') return <InfluenceBack />;
-
-  if (term === 'Safeguard' || term === 'Block') return <Shield aria-hidden="true" />;
-
-  if (term === 'Override' || term === 'Execution' || term === 'Coup') return <Skull aria-hidden="true" />;
-
-  return <CircleHelp aria-hidden="true" />;
+  return ruleIcons[term];
 }
 
 function ruleCopy(term: RuleTermName) {
@@ -199,9 +293,9 @@ export function RuleTerm({
   );
 }
 
-const terms: RuleTermName[] = [...Struct.keys(capabilityRules), ...Struct.keys(otherRules)];
+export const ruleTerms: RuleTermName[] = [...Struct.keys(capabilityRules), ...Struct.keys(otherRules)];
 
-const aliases = new Map(terms.map((term) => [term.toLowerCase(), term]));
+const aliases = new Map(ruleTerms.map((term) => [term.toLowerCase(), term]));
 
 aliases.set('coin', 'Coins');
 
@@ -210,6 +304,24 @@ aliases.set('safeguards', 'Safeguard');
 aliases.set('overrides', 'Override');
 
 aliases.set('challenges', 'Challenge');
+
+for (const [alias, term] of [
+  ['executors', 'Executor'],
+  ['coordinators', 'Coordinator'],
+  ['rogues', 'Rogue'],
+  ['cooperatives', 'Cooperative'],
+  ['governments', 'Government'],
+  ['elections', 'Election'],
+  ['policies', 'Policy'],
+  ['nominates', 'Nomination'],
+  ['nominated', 'Nomination'],
+  ['executed', 'Execution'],
+  ['executes', 'Execution'],
+  ['eliminated', 'Elimination'],
+  ['investigates', 'Investigation'],
+  ['executive powers', 'Executive power'],
+] satisfies [string, RuleTermName][])
+  aliases.set(alias, term);
 
 const termPattern = new RegExp(
   `\\b(${[...aliases.keys()].sort((a, b) => b.length - a.length).join('|')})\\b`,

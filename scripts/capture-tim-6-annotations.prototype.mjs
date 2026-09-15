@@ -1,8 +1,13 @@
 /** Browser inspection for the first owner Agentation batch. Keeps previous review evidence intact. */
 import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
-const directory = new URL('../docs/design/TIM-6/annotation-review/', import.meta.url).pathname;
+const directory =
+  resolve(
+    process.env.TIM6_CAPTURE_DIR ??
+      new URL('../docs/design/TIM-6/annotation-review/', import.meta.url).pathname,
+  ) + '/';
 
 const browser = await chromium.launch({
   executablePath: '/usr/bin/chromium',
@@ -37,6 +42,7 @@ try {
       viewport,
       isMobile: size === 'narrow',
       hasTouch: size === 'narrow',
+      reducedMotion: 'reduce',
     });
 
     page.on('pageerror', (error) => errors.push(error.message));
@@ -164,7 +170,11 @@ try {
 
     await page.getByRole('button', { name: 'Action & UI examples', exact: true }).click();
     await page.locator('#dp-example-execution-return .dp-return summary').click();
-    const fallback = page.getByRole('button', { name: 'View Vesper profile picture', exact: true });
+
+    const fallback = page
+      .locator('#dp-event-ex-return')
+      .getByRole('button', { name: 'View Vesper profile picture', exact: true });
+
     await fallback.click();
     await page.getByRole('dialog', { name: 'Vesper', exact: true }).waitFor();
     check(

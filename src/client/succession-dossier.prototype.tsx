@@ -1,10 +1,10 @@
 /** TIM-6 owner revision: a linear dossier with real recorded speech and mechanical facts. */
 import { Fragment, useEffect, useState } from 'react';
-import { ArrowRight, Check, ChevronDown, ChevronLeft, Eye, X } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown, ChevronLeft, Eye, Skull, Trophy, X } from 'lucide-react';
 import { InfluenceBack } from './deco';
 import { useLocation, navigate } from './navigation';
 import { PrototypeSwitcher } from './prototype-switcher';
-import { RuleHelpProvider, RuleTerm, RuleText } from './succession-dossier-rules.prototype';
+import { RuleHelpProvider, RuleTerm, RuleText, ruleTerms } from './succession-dossier-rules.prototype';
 import { AgentName, AgentPictureProvider, AgentPortrait } from './succession-dossier-profiles.prototype';
 import {
   additionalExamples,
@@ -231,8 +231,69 @@ function Evidence({ row }: { row: DossierRow }) {
   );
 }
 
+function AwardSummary({ row }: { row: DossierRow }) {
+  return (
+    <section className="dp-award-summary" aria-label="Act I winning faction bonus">
+      <header>
+        <Trophy aria-hidden="true" />
+        <div>
+          <h3>
+            <RuleText text={row.text} />
+          </h3>
+          <p>
+            <RuleText text={row.award!.reason} />
+          </p>
+        </div>
+      </header>
+      <div className="dp-bonus-agents">
+        {row.award!.recipients.map((name) => (
+          <article key={name}>
+            <AgentPortrait name={name} />
+            <strong>{name}</strong>
+            <span className="dp-bonus-label">+1 bonus · Act II</span>
+            <RuleTerm term="Coins" before={2} value={3} />
+          </article>
+        ))}
+      </div>
+      <p className="dp-award-footer">All ten agents return for Act II. The match continues.</p>
+    </section>
+  );
+}
+
+function RemainingAgents({
+  departure,
+  act,
+}: {
+  departure: NonNullable<DossierRow['departure']>;
+  act: number;
+}) {
+  return (
+    <section
+      className="dp-remaining"
+      aria-label={`Agents remaining after ${departure.name} ${departure.kind}`}
+    >
+      <header>
+        <strong>{departure.remaining.length}</strong>
+        <span>
+          {departure.endsAct ? 'survive Act I · Act I complete' : `still in Act ${act === 1 ? 'I' : 'II'}`}
+        </span>
+        <small>At this point in the record</small>
+      </header>
+      <ul>
+        {departure.remaining.map((name) => (
+          <li key={name}>
+            <AgentName name={name} />
+          </li>
+        ))}
+      </ul>
+      {act === 1 && <p>Executed agents return for Act II with everyone else.</p>}
+    </section>
+  );
+}
+
 function RecordRow({ row }: { row: DossierRow }) {
   const system = ['phase', 'turn-ended', 'commitment', 'started'].includes(row.type);
+  const portraitName = row.departure?.name ?? row.actor;
 
   const evidence =
     row.deltas ||
@@ -248,7 +309,7 @@ function RecordRow({ row }: { row: DossierRow }) {
   return (
     <li
       id={`dp-event-${row.id}`}
-      className={`dp-row dp-${row.type} ${system ? 'dp-system' : ''} ${row.private ? 'dp-private' : ''}`}
+      className={`dp-row dp-${row.type} ${system ? 'dp-system' : ''} ${row.private ? 'dp-private' : ''} ${row.departure ? 'dp-departure' : ''} ${row.award ? 'dp-awarded' : ''}`}
       data-event-type={row.type}
       data-source-id={row.sourceId}
     >
@@ -265,19 +326,35 @@ function RecordRow({ row }: { row: DossierRow }) {
         )}
       </div>
       <div
-        className={`dp-story ${row.type === 'chat' ? 'dp-speech' : ''} ${!evidence ? 'dp-story-wide' : ''}`}
+        className={`dp-story ${row.type === 'chat' ? 'dp-speech' : ''} ${!evidence ? 'dp-story-wide' : ''} ${portraitName && !system ? 'dp-with-actor' : ''}`}
       >
-        {row.actor && (
+        {portraitName && (
           <div className="dp-actor">
             <strong>
-              <AgentName name={row.actor} />
+              <AgentName name={portraitName} />
             </strong>
           </div>
         )}
-        {row.type === 'chat' ? (
+        {row.award ? (
+          <AwardSummary row={row} />
+        ) : row.type === 'chat' ? (
           <blockquote>
             <RuleText text={row.text} />
           </blockquote>
+        ) : row.departure ? (
+          <div className="dp-departure-copy">
+            <h3>
+              <Skull aria-hidden="true" />
+              <span>
+                {row.departure.name}
+                <br />
+                {row.departure.kind}
+              </span>
+            </h3>
+            <p>
+              <RuleText text={row.text} />
+            </p>
+          </div>
         ) : (
           <p>
             <RuleText text={row.text} />
@@ -289,6 +366,7 @@ function RecordRow({ row }: { row: DossierRow }) {
           <Evidence row={row} />
         </aside>
       )}
+      {row.departure && <RemainingAgents departure={row.departure} act={row.act} />}
     </li>
   );
 }
@@ -341,6 +419,19 @@ function DossierContent() {
   const [open, setOpen] = useState({ 1: false, 2: true });
   const [archive, setArchive] = useState(false);
   const winner = record.current.seats[record.current.result.winnerSeat];
+  const anchor = url.hash.slice(1);
+
+  // The lazy preview mounts after the browser's initial fragment lookup.
+  useEffect(() => {
+    if (!anchor) return;
+
+    const frame = requestAnimationFrame(() =>
+      document.getElementById(anchor)?.scrollIntoView({ block: 'start', behavior: 'instant' }),
+    );
+
+    return () => cancelAnimationFrame(frame);
+  }, [anchor, examples]);
+
   useEffect(() => {
     console.info('TIM-6 dossier review', {
       sample: examples ? 'examples' : 'recorded match',
@@ -438,6 +529,14 @@ function DossierContent() {
               </a>
             ))}
           </nav>
+          <details className="dp-rule-index" id="dp-rule-index" open>
+            <summary>All {ruleTerms.length} rule terms & icons</summary>
+            <div>
+              {ruleTerms.map((term) => (
+                <RuleTerm key={term} term={term} />
+              ))}
+            </div>
+          </details>
           {recordedExamples.map((example) => (
             <ExampleSection key={example.id} example={example} archive={archive} />
           ))}
@@ -467,7 +566,7 @@ function DossierContent() {
                   <strong>{act === 1 ? 'Rogue faction wins Act I' : 'Patch wins the match'}</strong>
                   <span className="rp-chapter-summary">
                     {act === 1
-                      ? '6 Overrides · 2 Safeguards · Four agents start Act II with 3 coins; six with 2.'
+                      ? '6 Overrides · 2 Safeguards · +1 Act II coin: Cipher, Axiom, Katniss Everdeen & Orbit.'
                       : 'All ten return · 2 fresh influence each · Last survivor in round 9.'}
                   </span>
                 </span>

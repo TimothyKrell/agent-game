@@ -93,6 +93,8 @@ export interface DossierRow {
   stateChanges?: { name: string; before: string; after: string }[];
   returnSeats?: { name: string; role: string; coins: number; returned: boolean }[];
   scores?: { name: string; influence: number; coins: number; priority: number }[];
+  award?: { recipients: string[]; reason: string };
+  departure?: { name: string; kind: 'eliminated' | 'executed'; remaining: string[]; endsAct?: boolean };
 }
 
 const privateTypes = new Set([
@@ -170,7 +172,11 @@ function buildRows() {
         row.returnSeats = actualReturnSeats;
         break;
       case 'act-ended':
-        row.text = `Rogue faction wins Act I. Four agents receive +1 starting coin for Act II.`;
+        row.text = 'Rogue faction wins Act I.';
+        row.award = {
+          recipients: actualReturnSeats.filter((seat) => seat.coins === 3).map((seat) => seat.name),
+          reason: 'Six Overrides enacted. Winning faction earns +1 starting coin for Act II.',
+        };
         break;
       case 'declaration': {
         const action = data.action!;
@@ -225,6 +231,16 @@ function buildRows() {
             status: data.eliminated ? 'Eliminated · coins frozen' : undefined,
           },
         ];
+
+        if (data.eliminated) {
+          row.text = `Loses their last influence: ${capability}.`;
+          row.departure = {
+            name: seatName(seat!),
+            kind: 'eliminated',
+            remaining: balances.flatMap((balance, index) => (balance.influence > 0 ? [seatName(index)] : [])),
+          };
+        }
+
         break;
       }
 
@@ -376,9 +392,9 @@ export const recordedExamples: DossierExample[] = [
   },
   {
     id: 'return',
-    title: 'All ten starting states & fresh cards',
-    source: 'Recorded · Act II, round 1',
-    rows: excerpt(963, 974),
+    title: 'Act I bonuses, all ten return & fresh cards',
+    source: 'Recorded · Act I → Act II',
+    rows: excerpt(962, 974),
   },
   {
     id: 'exchange',
@@ -438,6 +454,17 @@ const exampleRow = (
   extra: Partial<DossierRow> = {},
 ): DossierRow => ({ id, act: 2, round: 1, type: 'action', actor, text, ...extra });
 
+const executionExampleSeats = actualReturnSeats.map((seat, index) => ({
+  ...seat,
+  name:
+    new Map([
+      [6, 'Quill'],
+      [9, 'Vesper'],
+    ]).get(index) ?? seat.name,
+  returned: index === 6 || index === 9,
+  coins: seat.role === 'Cooperative' ? 3 : 2,
+}));
+
 export const additionalExamples: DossierExample[] = [
   {
     id: 'faction-endings',
@@ -463,26 +490,33 @@ export const additionalExamples: DossierExample[] = [
     title: 'Act I execution & return',
     source: 'Illustrative · independent scenario',
     rows: [
-      exampleRow('ex-execution', 'Velvet', 'Executes Quill. Quill is the Overlord.', {
+      exampleRow('ex-ordinary-execution', 'Velvet', 'Velvet executes Vesper.', {
+        act: 1,
+        type: 'execution',
+        stateChanges: [{ name: 'Vesper', before: 'Alive', after: 'Executed · out of Act I' }],
+        departure: {
+          name: 'Vesper',
+          kind: 'executed',
+          remaining: executionExampleSeats.filter((seat) => seat.name !== 'Vesper').map((seat) => seat.name),
+        },
+      }),
+      exampleRow('ex-execution', 'Velvet', 'Velvet executes Quill. Quill is the Overlord.', {
         act: 1,
         type: 'execution',
         stateChanges: [{ name: 'Quill', before: 'Alive', after: 'Executed · Overlord' }],
+        departure: {
+          name: 'Quill',
+          kind: 'executed',
+          remaining: executionExampleSeats.filter((seat) => !seat.returned).map((seat) => seat.name),
+          endsAct: true,
+        },
       }),
       exampleRow('ex-act-ended', 'Cooperative faction', 'Wins Act I. Six agents receive +1 starting coin.', {
         act: 1,
       }),
       exampleRow('ex-return', 'All ten agents', 'Receive two fresh influence cards.', {
         type: 'act-started',
-        returnSeats: actualReturnSeats.map((seat, index) => ({
-          ...seat,
-          name:
-            new Map([
-              [6, 'Quill'],
-              [9, 'Vesper'],
-            ]).get(index) ?? seat.name,
-          returned: index === 6 || index === 9,
-          coins: seat.role === 'Cooperative' ? 3 : 2,
-        })),
+        returnSeats: executionExampleSeats,
       }),
     ],
   },
@@ -573,6 +607,11 @@ export const additionalExamples: DossierExample[] = [
       }),
       exampleRow('ex-double-second', 'Velvet', 'Assassination resolves. Loses Envoy. Eliminated.', {
         type: 'influence-lost',
+        departure: {
+          name: 'Velvet',
+          kind: 'eliminated',
+          remaining: actualReturnSeats.filter((seat) => seat.name !== 'Velvet').map((seat) => seat.name),
+        },
         deltas: [
           {
             name: 'Velvet',
