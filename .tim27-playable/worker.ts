@@ -8,8 +8,46 @@ import { parsePreviewArtifactManifest, registerPreviewArtifacts } from '../src/s
 import { hashSecret, isLoopback, json, readJson } from '../src/server/http';
 import type { PreviewBrokerIntent } from '../src/shared/preview-broker';
 import type { MatchInitialization } from '../src/server/coordinator';
+import { HouseSeatObject as ApplicationHouseSeat } from '../src/server/house-seat';
+import type { HouseJob } from '../src/server/house-contract';
 
-export { HouseSeatObject } from '../src/server/worker';
+export class HouseSeatObject extends ApplicationHouseSeat {
+  private fixtureRunning = false;
+
+  async alarm() {
+    this.fixtureRunning = true;
+
+    try {
+      await super.alarm();
+    } finally {
+      this.fixtureRunning = false;
+    }
+  }
+
+  fixtureJob(id: string) {
+    const row = this.ctx.storage.sql
+      .exec<{
+        status: string;
+        outcome: string | null;
+        admission_reason: string | null;
+        due_at: number;
+      }>('SELECT status,outcome,admission_reason,due_at FROM jobs WHERE id=?', id)
+      .toArray()[0];
+
+    // A returned source admission deferral is not active inference. The logical discussion may expire
+    // that optional retry; the production next-phase checks retire it. Never wait out its rate window.
+    const deferred = row?.status === 'pending' && row.admission_reason !== null && row.due_at > Date.now();
+
+    return {
+      status: row?.status ?? 'undelivered',
+      outcome: row?.outcome ?? null,
+      admissionReason: row?.admission_reason ?? null,
+      deferred,
+      running: this.fixtureRunning,
+      complete: !this.fixtureRunning && (row?.status === 'done' || deferred),
+    };
+  }
+}
 
 // Production scheduler is inherited unchanged: no alarm override or deleteAlarm on admission.
 export class PlayableCoordinator extends MatchmakingObject {
@@ -60,6 +98,33 @@ export class PlayableCoordinator extends MatchmakingObject {
 
 // Reuses accepted clock-only controls. Normal initialize/arm/house outbox all run in production code.
 export class PlayableMatch extends ClockMatch {
+  async fixtureDiscussion(
+    phaseId: string,
+  ): Promise<{ complete: boolean; jobs: ({ id: string } & ReturnType<HouseSeatObject['fixtureJob']>)[] }> {
+    const rows = this.ctx.storage.sql
+      .exec<{ data: string }>(
+        "SELECT data FROM outbox WHERE json_extract(data,'$.phaseId')=? AND id LIKE '%:chat:0'",
+        phaseId,
+      )
+      .toArray();
+
+    const jobs = await Promise.all(
+      rows.map(async (row) => {
+        const job: HouseJob = JSON.parse(row.data);
+
+        // SAFETY: the playable config binds this production-derived test class under HOUSE_SEATS.
+        const seat = this.env.HOUSE_SEATS.getByName(
+          `${job.matchId}:${job.seat}`,
+        ) as DurableObjectStub<HouseSeatObject>;
+
+        const result = await seat.fixtureJob(job.id);
+
+        return { id: job.id, ...result };
+      }),
+    );
+
+    return { complete: jobs.every((job) => job.complete), jobs };
+  }
   fixtureQuery(sql: string, values: (string | number | null)[]) {
     return this.ctx.storage.sql.exec(sql, ...values).toArray();
   }
@@ -74,9 +139,10 @@ export class PlayableMatch extends ClockMatch {
   }
 }
 
-type FixtureEnv = Omit<Env, 'MATCHMAKING' | 'MATCHES'> & {
+type FixtureEnv = Omit<Env, 'MATCHMAKING' | 'MATCHES' | 'HOUSE_SEATS'> & {
   MATCHMAKING: DurableObjectNamespace<PlayableCoordinator>;
   MATCHES: DurableObjectNamespace<PlayableMatch>;
+  HOUSE_SEATS: DurableObjectNamespace<HouseSeatObject>;
 };
 
 const SqlSchema = Schema.Struct({
@@ -85,6 +151,8 @@ const SqlSchema = Schema.Struct({
 });
 
 const traffic: {
+  at: number;
+  completedAt?: number;
   path: string;
   method: string;
   credentialHash: string | null;
@@ -92,6 +160,12 @@ const traffic: {
   protocol: string | null;
   status?: number;
 }[] = [];
+
+let holdAction: 'chat' | 'required' | null = null;
+
+const heldActions: { phaseId: string; type: string }[] = [];
+
+const activeActions = new Map<string, number>();
 
 export default {
   async fetch(request, env, ctx): Promise<Response> {
@@ -128,6 +202,20 @@ export default {
       }
 
       if (url.pathname === '/fixture/traffic') return json(traffic);
+
+      if (url.pathname === '/fixture/action-hold') {
+        const input = await readJson(
+          request,
+          Schema.Struct({ action: Schema.NullOr(Schema.Literals(['chat', 'required'])) }),
+        );
+
+        holdAction = input.action;
+
+        return json({ holding: holdAction });
+      }
+
+      if (url.pathname === '/fixture/held-actions')
+        return json(heldActions.map(({ phaseId, type }) => ({ phaseId, type })));
 
       if (url.pathname === '/fixture/broker-config') {
         await configurePreviewBroker(
@@ -218,10 +306,20 @@ export default {
           }),
         );
 
+        if (activeActions.get(input.matchId)) return json({ advanced: false, reason: 'native-http-pending' });
+
+        const house =
+          input.kind === 'discussion'
+            ? await env.MATCHES.getByName(input.matchId).fixtureDiscussion(input.phaseId)
+            : null;
+
+        if (house && !house.complete) return json({ advanced: false, reason: 'house-pending', house });
+
+        if (activeActions.get(input.matchId)) return json({ advanced: false, reason: 'native-http-pending' });
         await env.MATCHES.getByName(input.matchId).fixtureClock(input.kind, input.phaseId);
         await env.MATCHES.getByName(input.matchId).fixtureAlarm();
 
-        return json({ advanced: true });
+        return json({ advanced: true, house });
       }
 
       return identity.fetch(request, env);
@@ -230,6 +328,7 @@ export default {
     const token = request.headers.get('authorization');
 
     const record: (typeof traffic)[number] = {
+      at: Date.now(),
       path: url.pathname + url.search,
       method: request.method,
       credentialHash: token ? await hashSecret(token) : null,
@@ -239,6 +338,9 @@ export default {
 
     traffic.push(record);
 
+    const actionMatch =
+      request.method === 'POST' && url.pathname.match(/^\/api\/matches\/([^/]+)\/actions$/)?.[1];
+
     if (url.pathname.startsWith('/downloads/')) {
       const archive = await env.AGENT_PICTURES.get(`fixture${url.pathname}`);
 
@@ -247,9 +349,30 @@ export default {
         : new Response('Unpublished fixture archive', { status: 404 });
     }
 
-    const response = await application.fetch(request, env, ctx);
-    record.status = response.status;
+    if (actionMatch) activeActions.set(actionMatch, (activeActions.get(actionMatch) ?? 0) + 1);
 
-    return response;
+    try {
+      if (actionMatch && holdAction !== null) {
+        const input = await request.clone().json<{ phaseId: string; action: { type: string } }>();
+        const kind = input.action.type === 'chat' ? 'chat' : 'required';
+
+        if (holdAction === kind) {
+          const held = { phaseId: input.phaseId, type: input.action.type };
+          heldActions.push(held);
+          const until = Date.now() + 5000;
+
+          while (holdAction === kind && Date.now() < until) await new Promise((done) => setTimeout(done, 10));
+          heldActions.splice(heldActions.indexOf(held), 1);
+        }
+      }
+
+      const response = await application.fetch(request, env, ctx);
+      record.status = response.status;
+      record.completedAt = Date.now();
+
+      return response;
+    } finally {
+      if (actionMatch) activeActions.set(actionMatch, activeActions.get(actionMatch)! - 1);
+    }
   },
 } satisfies ExportedHandler<FixtureEnv>;

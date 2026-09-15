@@ -5,11 +5,46 @@ import { resolve } from 'node:path';
 
 const directory = resolve(process.argv[2]);
 
-const results = JSON.parse(await readFile(`${directory}/results.json`, 'utf8'));
+const entries = await readdir(directory, { withFileTypes: true });
+
+const root = entries.some((entry) => entry.name === 'evidence' && entry.isDirectory())
+  ? `${directory}/evidence`
+  : directory;
+
+const cases = (await readdir(root, { withFileTypes: true }))
+  .filter((entry) => entry.isDirectory() && entry.name.startsWith('case-'))
+  .map((entry) => `${root}/${entry.name}`);
+
+const records = await Promise.all(
+  (cases.length ? cases : [root]).map(async (path) =>
+    JSON.parse(await readFile(`${path}/results.json`, 'utf8')),
+  ),
+);
+
+const results = {
+  upstream: records[0].upstream,
+  sourceArchiveSha256: records[0].sourceArchiveSha256,
+  fixtureDirectory: records.map((record) => record.fixtureDirectory),
+  providerUrl: records[0].providerUrl,
+  providerCalls: records.flatMap((record) => record.providerCalls),
+  captures: records.flatMap((record) => record.captures),
+  paidCalls: records.reduce((sum, record) => sum + record.paidCalls, 0),
+};
+
+assert.ok(
+  records.every(
+    (record) =>
+      record.upstream === results.upstream && record.sourceArchiveSha256 === results.sourceArchiveSha256,
+  ),
+);
 
 const tests = JSON.parse(await readFile(`${directory}/vitest.json`, 'utf8'));
 
-assert.equal(tests.numPassedTests, 5);
+const journeys = tests.testResults.find((file) => file.name.endsWith('/tests/preview-playable.test.ts'));
+
+assert.equal(journeys.assertionResults.length, 5);
+
+assert.ok(journeys.assertionResults.every((test) => test.status === 'passed'));
 
 assert.equal(tests.numFailedTests, 0);
 
@@ -23,9 +58,13 @@ const digest = async (path) => {
 
 const evidence = [];
 
-for (const name of (await readdir(directory)).sort()) {
-  if (name === 'verification.json') continue;
-  evidence.push(await digest(`${directory}/${name}`));
+for (const path of [directory, ...cases]) {
+  for (const entry of (await readdir(path, { withFileTypes: true })).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  )) {
+    if (!entry.isFile() || entry.name === 'verification.json') continue;
+    evidence.push(await digest(`${path}/${entry.name}`));
+  }
 }
 
 const code = [];
@@ -72,16 +111,7 @@ console.log(
       providerHttpRequests: results.providerCalls.length,
       completed,
       boundaries: results.captures.filter((capture) => !capture.sourceUsage),
-      verification: [
-        'build',
-        'typecheck',
-        'fixture-typecheck',
-        'lint',
-        'fixture-lint',
-        'format',
-        'asset-exclusion',
-        'git diff --check',
-      ],
+      verificationLogs: evidence.flatMap((entry) => (entry.path.endsWith('.log') ? [entry.path] : [])),
       code,
       evidence,
     },

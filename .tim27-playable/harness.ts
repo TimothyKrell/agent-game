@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, symlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createServer } from 'node:http';
 import { generateKeyPairSync, randomUUID } from 'node:crypto';
@@ -12,9 +12,11 @@ import { artifacts, hash } from '../.tim27-cli/artifacts';
 
 const run = promisify(execFile);
 
-export const evidence = resolve(
+const evidenceRoot = resolve(
   process.env.TIM27_PLAYABLE_EVIDENCE_DIR ?? `.tim27-playable/runs/run-${randomUUID()}`,
 );
+
+export let evidence = evidenceRoot;
 
 export const base = Number(process.env.TIM27_PLAYABLE_PORT_BASE ?? 6431);
 
@@ -67,6 +69,8 @@ const keys = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 const workers: (Awaited<ReturnType<typeof unstable_dev>> | undefined)[] = [];
 
 const nativeProcesses: ChildProcess[] = [];
+
+const nativeResults: Promise<unknown>[] = [];
 
 const provider = createServer((request, response) => {
   void (async () => {
@@ -204,7 +208,12 @@ export function cli(config: string, args: string[], extra: Partial<NodeJS.Proces
 
   if (args[0] === 'play') nativeProcesses.push(command.child);
 
-  return command.then((output) => JSON.parse(output.stdout));
+  return command.then(async (output) => {
+    if (args[0] === 'play' && extra.PLAYABLE_NATIVE_LOG)
+      await writeFile(`${extra.PLAYABLE_NATIVE_LOG}.stderr.txt`, output.stderr);
+
+    return JSON.parse(output.stdout);
+  });
 }
 
 export async function startWorker(index: number) {
@@ -278,6 +287,34 @@ export async function events(path: string) {
   }
 }
 
+export async function discussion(matchId: string, phaseId: string, child: { log: string }) {
+  const journal = await events(child.log);
+  const failure = journal.find((event) => event.type === 'failure');
+  expect(failure, 'Native fixture failed before discussion completion').toBeUndefined();
+
+  if (!journal.some((event) => event.type === 'phase-ready' && event.phase === phaseId))
+    return { advanced: false, reason: 'native-phase-pending' };
+
+  const result = JSON.parse(
+    await (await post(target, '/fixture/clock', { matchId, phaseId, kind: 'discussion' })).text(),
+  );
+
+  if (result.advanced)
+    captures.push({ discussion: phaseId, matchId, nativeReady: true, house: result.house, at: Date.now() });
+
+  return result;
+}
+
+export async function observe(matchId: string, token: string) {
+  const response = await fetch(`${target}/api/matches/${matchId}`, {
+    headers: { authorization: `Bearer ${token}`, 'X-Agent-Game-Protocols': '1,2' },
+  });
+
+  expect(response.ok).toBe(true);
+
+  return JSON.parse(await response.text());
+}
+
 export async function publish(revision = commit, marker = 'PLAYABLE_BRANCH_A', epoch = incarnation) {
   commit = revision;
   incarnation = epoch;
@@ -338,10 +375,11 @@ export async function native(config: string, harness: 'opencode' | 'claude', nam
   const nativeDir = `${directory}/native-${name}`;
   await mkdir(nativeDir);
   await writeFile(
-    `${nativeDir}/${harness === 'opencode' ? 'opencode2' : 'claude'}`,
+    `${nativeDir}/native.cjs`,
     `#!${process.execPath}\n${await readFile('.tim27-playable/native.cjs', 'utf8')}`,
     { mode: 0o700 },
   );
+  await symlink('native.cjs', `${nativeDir}/${harness === 'opencode' ? 'opencode2' : 'claude'}`);
   const log = `${evidence}/${name}.jsonl`;
 
   const promise = cli(config, ['play', '--harness', harness, '--runtime', '6', '--child-slice', '5'], {
@@ -352,21 +390,35 @@ export async function native(config: string, harness: 'opencode' | 'claude', nam
   });
 
   // Attach rejection immediately while the test independently drives explicit logical windows.
-  const result = promise.then(
-    (value) => ({ value, error: null }),
-    (error: Error) => ({ value: null, error: error.message }),
-  );
+  const result = promise
+    .then(
+      (value) => ({ value, error: null }),
+      (error: Error & { stdout?: string }) => ({ value: null, error: error.message, stdout: error.stdout }),
+    )
+    .then(async (result) => {
+      await writeFile(`${log}.result.json`, JSON.stringify(result, null, 2) + '\n');
+
+      return result;
+    });
+
+  nativeResults.push(result);
 
   return { log, result };
 }
 
 export async function initialize() {
-  await mkdir(evidence, { recursive: true });
-  expect(
-    (await readdir(evidence)).filter((name) => /\.(json|jsonl)$/.test(name)),
-    'Use a fresh evidence directory',
-  ).toEqual([]);
-  directory = await mkdtemp('/tmp/opencode/tim27-playable-');
+  await mkdir(evidenceRoot, { recursive: true });
+  evidence = await mkdtemp(`${evidenceRoot}/case-`);
+  directory = `${evidence}/runtime`;
+  await mkdir(directory);
+  providerCalls.length = 0;
+  captures.length = 0;
+  nativeProcesses.length = 0;
+  nativeResults.length = 0;
+  providerMode.delay = 0;
+  providerMode.missingUsage = false;
+  providerMode.hold = false;
+  incarnation = 'playable-incarnation-1';
   upstream = (await run('git', ['rev-parse', 'HEAD'])).stdout.trim();
   commit = upstream;
   await new Promise<void>((done) => provider.listen(base + 3, '127.0.0.1', done));
@@ -423,6 +475,38 @@ export async function initialize() {
 }
 
 export async function shutdown() {
+  const cleanupErrors: unknown[] = [];
+
+  const cleanup = async <T>(work: () => Promise<T>) => {
+    try {
+      await work();
+    } catch (error) {
+      cleanupErrors.push(error);
+    }
+  };
+
+  const snapshot = async (name: string) => {
+    const results = await Promise.all(
+      [source, target].map(async (origin) => {
+        try {
+          return {
+            origin,
+            allocations: await query(origin, 'SELECT id,state,reservation FROM allocations', [], true),
+            usage: await query(origin, 'SELECT * FROM usage', [], true),
+            faults: await query(origin, 'SELECT * FROM playable_faults', [], true),
+            controls: await query(origin, 'SELECT * FROM playable_controls'),
+            traffic: await (await post(origin, '/fixture/traffic', {})).json(),
+          };
+        } catch (error) {
+          return { origin, error: String(error) };
+        }
+      }),
+    );
+
+    await writeFile(`${evidence}/${name}.json`, JSON.stringify(results, null, 2) + '\n');
+  };
+
+  await cleanup(() => snapshot('before-cleanup'));
   providerMode.hold = false;
 
   for (const child of nativeProcesses) {
@@ -437,7 +521,18 @@ export async function shutdown() {
     });
   }
 
-  await Promise.all(workers.map((worker) => worker?.stop()));
+  for (const origin of [source, target]) {
+    if (!workers[origin === source ? 0 : 1]) continue;
+    await cleanup(() => post(origin, '/fixture/action-hold', { action: null }));
+    await cleanup(() => query(origin, 'DELETE FROM playable_faults', [], true));
+    await cleanup(() => query(origin, 'DELETE FROM playable_controls'));
+  }
+
+  await cleanup(() => Promise.all(nativeResults));
+  await cleanup(() => snapshot('after-cleanup'));
+
+  await Promise.all(workers.map((worker) => cleanup(async () => worker?.stop())));
+  workers.length = 0;
   provider.closeAllConnections();
   await new Promise<void>((done) => provider.close(() => done()));
   await writeFile(
@@ -450,10 +545,14 @@ export async function shutdown() {
         providerUrl,
         providerCalls,
         captures,
+        cleanupErrors: cleanupErrors.map(String),
         paidCalls: 0,
       },
       null,
       2,
     ) + '\n',
   );
+
+  if (cleanupErrors.length)
+    throw new AggregateError(cleanupErrors, 'Playable cleanup failed after preserving evidence');
 }

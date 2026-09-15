@@ -1,0 +1,178 @@
+[
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/summary.json",
+    "target": ".tim27-playable/ci-evidence/green/summary.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/verification.json",
+    "target": ".tim27-playable/ci-evidence/green/verification.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/vitest.log",
+    "target": ".tim27-playable/ci-evidence/green/vitest.log"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/vitest.json",
+    "target": ".tim27-playable/ci-evidence/green/vitest.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source.json",
+    "target": ".tim27-playable/ci-evidence/green/tested-source.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source-verified.json",
+    "target": ".tim27-playable/ci-evidence/green/tested-source-verified.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/cpu-affinity.json",
+    "target": ".tim27-playable/ci-evidence/green/cpu-affinity.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/invocation.json",
+    "target": ".tim27-playable/ci-evidence/green/invocation.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-4CaVEH/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-4CaVEH/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/succession.jsonl",
+    "target": ".tim27-playable/ci-evidence/green/case-4CaVEH/succession.jsonl"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-6CMZW5/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-6CMZW5/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-6CMZW5/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-6CMZW5/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-8OLWQK/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/held-house-control.json",
+    "target": ".tim27-playable/ci-evidence/green/case-8OLWQK/held-house-control.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-8OLWQK/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-EFJwkK/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/held-chat-control.json",
+    "target": ".tim27-playable/ci-evidence/green/case-EFJwkK/held-chat-control.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-EFJwkK/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-F5MZzD/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-F5MZzD/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/secret-overlord.jsonl",
+    "target": ".tim27-playable/ci-evidence/green/case-F5MZzD/secret-overlord.jsonl"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-FngNeL/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-FngNeL/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-JlcOjp/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-JlcOjp/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-jCZTnn/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-jCZTnn/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-jCZTnn/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-jCZTnn/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-mRY4Nz/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/held-required-control.json",
+    "target": ".tim27-playable/ci-evidence/green/case-mRY4Nz/held-required-control.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-mRY4Nz/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-wOJZnJ/bootstrap.json",
+    "target": ".tim27-playable/ci-evidence/green/case-wOJZnJ/bootstrap.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-wOJZnJ/cascade-control.json",
+    "target": ".tim27-playable/ci-evidence/green/case-wOJZnJ/cascade-control.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-wOJZnJ/results.json",
+    "target": ".tim27-playable/ci-evidence/green/case-wOJZnJ/results.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/accepted-evidence.diff",
+    "target": ".tim27-playable/ci-evidence/checks/accepted-evidence.diff"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/fixture-typecheck.log",
+    "target": ".tim27-playable/ci-evidence/checks/fixture-typecheck.log"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/format.log",
+    "target": ".tim27-playable/ci-evidence/checks/format.log"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/lint.log",
+    "target": ".tim27-playable/ci-evidence/checks/lint.log"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/original-ci-preservation.json",
+    "target": ".tim27-playable/ci-evidence/checks/original-ci-preservation.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/production-package.diff",
+    "target": ".tim27-playable/ci-evidence/checks/production-package.diff"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/syntax.json",
+    "target": ".tim27-playable/ci-evidence/checks/syntax.json"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/typecheck.log",
+    "target": ".tim27-playable/ci-evidence/checks/typecheck.log"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/whitespace.log",
+    "target": ".tim27-playable/ci-evidence/checks/whitespace.log"
+  },
+  {
+    "source": ".tim27-playable/runs/ci-validation-2/worker-exclusion.json",
+    "target": ".tim27-playable/ci-evidence/checks/worker-exclusion.json"
+  }
+]

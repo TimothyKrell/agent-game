@@ -120,12 +120,21 @@ if (args[0] === 'api') {
         spoken = true;
       }
 
+      log({ type: 'phase-ready', phase: view.phase.id, matchId: view.matchId });
       cli('wait', '--timeout', '1');
     }
 
     throw new Error('Native fixture step ceiling reached');
   })().catch((error) => {
-    log({ type: 'failure', message: error.message });
+    let problem;
+
+    try {
+      problem = JSON.parse(String(error.stdout)).error;
+    } catch {
+      /* Retain process message below. */
+    }
+
+    log({ type: 'failure', message: error.message, problem });
     console.error(error.message);
     process.exitCode = 1;
   });

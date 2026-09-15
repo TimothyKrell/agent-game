@@ -1,0 +1,1512 @@
+{
+  "sourceBase": "debd8a4a071bc43483b6af8be463e1904d169efc",
+  "finalRun": "ci-green-two-cpu-3",
+  "copiedArtifactsVerified": 63,
+  "code": [
+    {
+      "path": ".tim27-playable/.gitattributes",
+      "bytes": 131,
+      "sha256": "0dfd7b0a33d21deb8fc0841a109fb84c39f18217e716439a65ad132b4625b60d"
+    },
+    {
+      "path": ".tim27-playable/harness.ts",
+      "bytes": 17426,
+      "sha256": "d4b92b7aaf6226778c099c9eefd1f738aca0f353508828ca9f14068c56fbbe6e"
+    },
+    {
+      "path": ".tim27-playable/worker.ts",
+      "bytes": 13344,
+      "sha256": "3c779e0e347b501b118dfade9358d15f78605714d2a04cfabe434e0c6a5e542e"
+    },
+    {
+      "path": ".tim27-playable/native.cjs",
+      "bytes": 3861,
+      "sha256": "c8a88c2c4f355710ed798fce2b9b4e0146af78deb50b66f77fee2c611342e7b0"
+    },
+    {
+      "path": ".tim27-playable/report.mjs",
+      "bytes": 4050,
+      "sha256": "8144522c2a5731d7ead0ffc0e6d595eb065dc91dbd442ff7832be7faa3ef1727"
+    },
+    {
+      "path": ".tim27-playable/ci.config.mjs",
+      "bytes": 1945,
+      "sha256": "81a76e2f68eef4909cbb9e70c67c5900f7c219f152bcfd8f361a099a8da178c7"
+    },
+    {
+      "path": ".tim27-playable/clock-ordering.test.ts",
+      "bytes": 3574,
+      "sha256": "c5d8bb828e9314bcfbafffedbd53d0649d054ef23e225ed524a8d658a00969bf"
+    },
+    {
+      "path": ".tim27-playable/required-ordering.test.ts",
+      "bytes": 3176,
+      "sha256": "4bbcaccc9ff216076569fbaa5c90cc64ff4418ce858185c47139fc95210e66ff"
+    },
+    {
+      "path": ".tim27-playable/isolation.test.ts",
+      "bytes": 2510,
+      "sha256": "8e80f08995186363bc2a70378cba28800b63fcfe0d95213506cd4df418291a30"
+    },
+    {
+      "path": "tests/preview-playable.test.ts",
+      "bytes": 21881,
+      "sha256": "5cc2cb8f087f757900fc38b2f0cd87a14b06e5271341fe02132adb8fab53badb"
+    },
+    {
+      "path": "docs/evidence/TIM-27-playable-ci.md",
+      "bytes": 14496,
+      "sha256": "745a8b457c0462d12d753f191813e71ebfe51819012ecaafabf0de268b88070d"
+    }
+  ],
+  "copied": [
+    {
+      "path": ".tim27-playable/ci-evidence/baseline/bootstrap.json",
+      "bytes": 205,
+      "sha256": "76076b2166a7bc88d5c74f6d06c8c7c9d5d67c55a77a909a63515fbaebd5667c"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/baseline/results.json",
+      "bytes": 164121,
+      "sha256": "40b536b1538476ec67b664da546ed615c5f592b6faf826bb35b57163989aee42"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/baseline/vitest.json",
+      "bytes": 2410,
+      "sha256": "3de94ecdc2b3d55637f22eaa9851775e5774e8466c2f86b283034fc5419b3108"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/baseline/vitest.log",
+      "bytes": 8159,
+      "sha256": "3873e057c857504d7b419d7bd2fdbc85bd873274e5826da364ef70d6a67bba2b"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/accepted-evidence.diff",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/final-document-format.log",
+      "bytes": 66,
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/fixture-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/format.log",
+      "bytes": 66,
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/lint.log",
+      "bytes": 93,
+      "sha256": "33e8c3f9c5e98086aff1a7ddc67c61f544aee71e4d8b08578aedecb55de7ff2e"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/original-ci-preservation.json",
+      "bytes": 38,
+      "sha256": "d0c8a919890f00b43ed896384030be0f78456b0820f97828beb176de641950c0"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/production-package.diff",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/syntax.json",
+      "bytes": 126,
+      "sha256": "a79d7b5901597ce2a3ba447f7b75434700aa4983847d866386153682bdbf76d6"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/whitespace.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/checks/worker-exclusion.json",
+      "bytes": 52,
+      "sha256": "bc813fabe4ec4cf265827a0363bdfa16f1298bf21a57ba61b54d965d39858550"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/copies.json",
+      "bytes": 2974,
+      "sha256": "e25ee9897a5b5ae1334fb07a71afb95af63c822810db12bdfcb174016c848588"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-4CaVEH/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-4CaVEH/results.json",
+      "bytes": 738714,
+      "sha256": "7fb189f00f6619832cde13b7d9bd69d666bf991ccaf46d49f870120caba63064"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-4CaVEH/succession.jsonl",
+      "bytes": 185888,
+      "sha256": "3ba1fb19df2c9e29d5045fdc97e0dc54c950a52ed7b90b1b6a74af9273e914c7"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-6CMZW5/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-6CMZW5/results.json",
+      "bytes": 412,
+      "sha256": "518caf2887b51f6f75964e57996dd1a8da94c39f227a1752350bc0c98085ed25"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-8OLWQK/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-8OLWQK/held-house-control.json",
+      "bytes": 7212,
+      "sha256": "fc131d2095a7d0eb9d3b3093c334a4d9cc371effea52d77975a5f34c0feef86f"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-8OLWQK/results.json",
+      "bytes": 7288,
+      "sha256": "e79f175602aafc51a92f2e02406b208b35d29672f93f2892e2f48c88865b1148"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-EFJwkK/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-EFJwkK/held-chat-control.json",
+      "bytes": 942,
+      "sha256": "ff9ea87cc9c2cc8308419cf18f6193182cf5ad1c5e947705deee0805432234eb"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-EFJwkK/results.json",
+      "bytes": 2268,
+      "sha256": "9d5d3e8bf5111a958861bad6d50bf19c6186dd4e9d1fe5eee55d0f99021bdd8b"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-F5MZzD/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-F5MZzD/results.json",
+      "bytes": 231784,
+      "sha256": "1ec94067f47acd325b2e4f6e78f34e94ddff979327985e9a523994ee9c68231f"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-F5MZzD/secret-overlord.jsonl",
+      "bytes": 77977,
+      "sha256": "fa2d71db74f29f5a792239541020d2c08c3f867ac55182a56bb691d4e66f7c9e"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-FngNeL/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-FngNeL/results.json",
+      "bytes": 43326,
+      "sha256": "037a37bbfe0a8e7ea408a7f2ddbbd320d85bbfa37547370ba2c2aceda09bffb2"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-JlcOjp/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-JlcOjp/results.json",
+      "bytes": 12901,
+      "sha256": "695298e0c515a7e0815a551e5e51752910c38df112073eb833d93d82df529f68"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-jCZTnn/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-jCZTnn/results.json",
+      "bytes": 2436,
+      "sha256": "f9ceb67988245774254fa372a5b1cce8216af00d4d773fed66319ba96acf6121"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-mRY4Nz/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-mRY4Nz/held-required-control.json",
+      "bytes": 3535,
+      "sha256": "9733af5295d865774348ebac010aa7222c1015ea3c1d324b802e8d3f4b613a2c"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-mRY4Nz/results.json",
+      "bytes": 14235,
+      "sha256": "bfa60f17880c855531d7bbb33406f5bef20f233b59d8145bf85bce28ff47705a"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-wOJZnJ/bootstrap.json",
+      "bytes": 205,
+      "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-wOJZnJ/cascade-control.json",
+      "bytes": 389,
+      "sha256": "925195495c93d016c3cb4d437683025e5d271f2236e3de92eb1831fa44200e22"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/case-wOJZnJ/results.json",
+      "bytes": 2268,
+      "sha256": "61858b600748b1ebe711d0643b57128cd5799f7169d6ba43b7f82e1fd3c85c96"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/cpu-affinity.json",
+      "bytes": 1550,
+      "sha256": "4e246e57b0c90ab0dc552f95a31ac59e9feeec3feaa2611e1a0708fa5927c0da"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/invocation.json",
+      "bytes": 954,
+      "sha256": "756cb1cb2f2b62175b6b0a22ea9e667f23e877b9f5af89d38e4be751dc5ebc0b"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/summary.json",
+      "bytes": 7511,
+      "sha256": "d88129861d988b00880eb2fc65c87539993584e82b96c9cadd35dfa713c47f86"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/tested-source-verified.json",
+      "bytes": 53,
+      "sha256": "7ac76893ba8f382024b6c4c274049f5efe0b60af1caa407f0321693c807b9369"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/tested-source.json",
+      "bytes": 1297,
+      "sha256": "fe1779349605f9cc2539ebbace97e94cb0b31a12da0e26d1fb4aaa614e917807"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/verification.json",
+      "bytes": 484790,
+      "sha256": "6430cffc85942f111381f0ed44c6a9f9971a6c5a5b921d38a6395f9021b660de"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/vitest.json",
+      "bytes": 4590,
+      "sha256": "bb48c6ec087ba96b48fbb8536b5ddae0232d6db84d8f4dff8c6d68339f7eb938"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green/vitest.log",
+      "bytes": 29195,
+      "sha256": "a2fe69b28c11cd4af368d41bac447631da9a9c8fbec21b3efb3f1dafbaa1fc3b"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/green-copies.json",
+      "bytes": 7407,
+      "sha256": "f95d687c94afcf01cead77e8f4a28fc734a528eaee99274f05fdb21dd212652c"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/intermediate/cascade-control.json",
+      "bytes": 389,
+      "sha256": "38a1308918bb412075e311d2cba4588ed5479eb94c64bde56b2192abc21dea6c"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/intermediate/house-timings.json",
+      "bytes": 7457,
+      "sha256": "77c14d5012ef0cf9f6ec5b64e72850fa0431bc114c871fee9ff2dc51469b5abc"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/intermediate/phase-timings.json",
+      "bytes": 4296,
+      "sha256": "869a3b1f989b1227404045e31228291ef3e0efcd94b124db8bbb894ff23e4114"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/intermediate/tested.patch",
+      "bytes": 17217,
+      "sha256": "3da1ec679bca535493d3f14e5b8c1c7fa3f38f423f9357baf8dbdc02a6693654"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/intermediate/vitest.json",
+      "bytes": 4703,
+      "sha256": "774335a5b00c83f52e856f04f876335f4ce29a4c7ae6939272e6cec756b590aa"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/intermediate/vitest.log",
+      "bytes": 43748,
+      "sha256": "69720a76b34b89fc4d1873dbfe8261562253c589595d8478a1e256fc523c7241"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/original-ci/failures.json",
+      "bytes": 52786,
+      "sha256": "f8ad958429e7bc39a1d98b8b97789174ec77c71ee02ab93fd8f498d557e26d86"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/original-ci/provenance.json",
+      "bytes": 817,
+      "sha256": "230e150b6de4a351f074e7ac2294f2c6c847f165e3707e664e45547073176832"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/red-chat/held-chat-control.json",
+      "bytes": 1220,
+      "sha256": "342d0bb111a7156c00ad0f231e3750a926e46f8c4fb1c8dd5bd75f9faaee0f97"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/red-chat/vitest.json",
+      "bytes": 1570,
+      "sha256": "210bba4dd7be897d7a6afb2de92eb55cc58097fa133f45290d514e5b92b0ae1e"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/red-chat/vitest.log",
+      "bytes": 8096,
+      "sha256": "f071bd79e754a98aa17b027ab3fff9852f1524a07554284c10a70ca452f8c7f3"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/red-required/held-required-control.json",
+      "bytes": 3891,
+      "sha256": "2acf480d3a78047cac15912a65fc1ecac889fdb82b44f04e6dc42cb3863faca6"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/red-required/tested.patch",
+      "bytes": 14030,
+      "sha256": "b63075834c18b1bc94f95fb838f048e043cf508b11ba6b1fd8025441430bf2ee"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/red-required/vitest.json",
+      "bytes": 1614,
+      "sha256": "b47122fa7d371ea86ba303dbe04af929af768921c69288d5f286caabd3eac0c9"
+    },
+    {
+      "path": ".tim27-playable/ci-evidence/red-required/vitest.log",
+      "bytes": 2974,
+      "sha256": "c0f4e19a54d18987ab74c12914902c13d0d9dd08b344f010909da63fea113b99"
+    }
+  ],
+  "retained": [
+    {
+      "run": "ci-green-two-cpu-1",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/evidence/case-6nriB8/bootstrap.json",
+          "bytes": 205,
+          "sha256": "1c9826aeb6c62b60010a974170b233e3525f79ee4586129b156bfc8baa484696"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/evidence/case-a71AnK/after-cleanup.json",
+          "bytes": 22972,
+          "sha256": "2edce119d87739f6281521c4c71cd051e1504249b838ce8696da97de3a59875b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/evidence/case-a71AnK/before-cleanup.json",
+          "bytes": 22972,
+          "sha256": "2edce119d87739f6281521c4c71cd051e1504249b838ce8696da97de3a59875b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/evidence/case-a71AnK/bootstrap.json",
+          "bytes": 205,
+          "sha256": "1c9826aeb6c62b60010a974170b233e3525f79ee4586129b156bfc8baa484696"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/evidence/case-a71AnK/results.json",
+          "bytes": 2245,
+          "sha256": "58449068b61db872a17795f2c705c9baf1dfb3e9878134890460ddafdd5a5898"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/evidence/case-qvnWo7/after-cleanup.json",
+          "bytes": 1106967,
+          "sha256": "21809938bcf607a03b52951fea71413eb92d84e44e2155771e6ecf92100587b7"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/evidence/case-qvnWo7/before-cleanup.json",
+          "bytes": 1106967,
+          "sha256": "21809938bcf607a03b52951fea71413eb92d84e44e2155771e6ecf92100587b7"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/evidence/case-qvnWo7/bootstrap.json",
+          "bytes": 205,
+          "sha256": "1c9826aeb6c62b60010a974170b233e3525f79ee4586129b156bfc8baa484696"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/evidence/case-qvnWo7/results.json",
+          "bytes": 30863,
+          "sha256": "8ac234b251836f69a93fae332cd6e3238575d086166d77d2b909b7e9da209ba9"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/tested.patch",
+          "bytes": 14763,
+          "sha256": "1716c24a22a8e6545691493e42bd1842422313210cdff35f6b33b1b46377702e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-1/vitest.log",
+          "bytes": 11382,
+          "sha256": "36b7f708a52916a464d57e151700a8e27932915234270e81f83d0a16a7fbb349"
+        }
+      ]
+    },
+    {
+      "run": "ci-green-two-cpu-2",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-50oRmb/after-cleanup.json",
+          "bytes": 36894,
+          "sha256": "3640de015d16b9141ab78da83f722ab0fbd9fb91009da208314ac48ca8c24adf"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-50oRmb/before-cleanup.json",
+          "bytes": 36894,
+          "sha256": "3640de015d16b9141ab78da83f722ab0fbd9fb91009da208314ac48ca8c24adf"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-50oRmb/bootstrap.json",
+          "bytes": 205,
+          "sha256": "71bc01e49e602270e6c09f8fce3d88fb600cdebe4ced0164408decfeac26e42a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-50oRmb/recovered-branch-A.jsonl",
+          "bytes": 52421,
+          "sha256": "21e9693fda12780c03781312502523274184542ba04eeea5bd6010c80ed2c93a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-50oRmb/recovered-branch-A.jsonl.result.json",
+          "bytes": 1493,
+          "sha256": "2b7f8498c5fdd39e9b2d064ce85bf5f3bbcb8edf0aa8b3d7e08421bf5d6b1ebe"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-50oRmb/recovered-branch-A.jsonl.stderr.txt",
+          "bytes": 398,
+          "sha256": "0a1497259d36a6e60280d8b071752128bf0f57a072d07841b1c09703a07a5241"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-50oRmb/results.json",
+          "bytes": 12887,
+          "sha256": "6c252e37183beee3a20863182ec1dd6dbd55b3c38d1c377bcbbf8aed9c00c38f"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-G1hu0A/after-cleanup.json",
+          "bytes": 23289,
+          "sha256": "7733a6c46cda75dcb5d71ef72a37a0338d78882bd997b05b175391a882dd0e3a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-G1hu0A/before-cleanup.json",
+          "bytes": 20846,
+          "sha256": "27b5a00171c0edd56659c64fb0f74780180bdaefd4b1895bcb0a7836117972b1"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-G1hu0A/bootstrap.json",
+          "bytes": 205,
+          "sha256": "71bc01e49e602270e6c09f8fce3d88fb600cdebe4ced0164408decfeac26e42a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-G1hu0A/held-chat-control.json",
+          "bytes": 942,
+          "sha256": "062f263f4cbcd6f2ff436d82c6e3f6306f08840e2216765e7acab309276b9f94"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-G1hu0A/held-chat.jsonl",
+          "bytes": 44866,
+          "sha256": "82a02f11ca438592cfd99daa5a633c2d044347a453403378e8701b6c16d6c3c4"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-G1hu0A/held-chat.jsonl.result.json",
+          "bytes": 1085,
+          "sha256": "bbdb68639048f3fbbaa11b9510a0fa4327fcdb95abea4fa6aa54ccc05db8db6d"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-G1hu0A/held-chat.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "819a4a3ba74ce5c055f28d684a4f807f185bec3bb5a83dd8b6a64b5a864729fe"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-G1hu0A/results.json",
+          "bytes": 2245,
+          "sha256": "cd01f1bc06d1659a515d074bfe62a18f15a463c59dfa4592ce974402ed7c07ef"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-M1td7R/after-cleanup.json",
+          "bytes": 14095,
+          "sha256": "82362b81dc3109a9dd2d296f83ae222a743fccd3a1af3e6b3bc8322576b2906f"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-M1td7R/before-cleanup.json",
+          "bytes": 14095,
+          "sha256": "82362b81dc3109a9dd2d296f83ae222a743fccd3a1af3e6b3bc8322576b2906f"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-M1td7R/bootstrap.json",
+          "bytes": 205,
+          "sha256": "71bc01e49e602270e6c09f8fce3d88fb600cdebe4ced0164408decfeac26e42a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-M1td7R/results.json",
+          "bytes": 2413,
+          "sha256": "26a8948ef0125f114522ee0cda6091b46b1bbaa5a83b4b1b6b43fcc9b78b12df"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Ma405y/after-cleanup.json",
+          "bytes": 28607,
+          "sha256": "dbaa82764c4fcac5a0754c9a9c57fb754177526e70f1173747a07acf7f5804f9"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Ma405y/before-cleanup.json",
+          "bytes": 28682,
+          "sha256": "c9f1816c7715afd5eb85cf9f2a804efb2f376faa4989ad5ebc8691f9868c2df3"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Ma405y/bootstrap.json",
+          "bytes": 205,
+          "sha256": "71bc01e49e602270e6c09f8fce3d88fb600cdebe4ced0164408decfeac26e42a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Ma405y/cascade-control.json",
+          "bytes": 389,
+          "sha256": "38a1308918bb412075e311d2cba4588ed5479eb94c64bde56b2192abc21dea6c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Ma405y/results.json",
+          "bytes": 2245,
+          "sha256": "5113b055f2dd41c651a7c295e16c4227b210cddfdf6454f854620eb341476bf7"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Y8Ppnb/after-cleanup.json",
+          "bytes": 3306759,
+          "sha256": "db5d4b6006ea7871492fffb977c0fd24e6ccc56ee4f48cd0cad5907e03c71fc9"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Y8Ppnb/before-cleanup.json",
+          "bytes": 3306759,
+          "sha256": "db5d4b6006ea7871492fffb977c0fd24e6ccc56ee4f48cd0cad5907e03c71fc9"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Y8Ppnb/bootstrap.json",
+          "bytes": 205,
+          "sha256": "71bc01e49e602270e6c09f8fce3d88fb600cdebe4ced0164408decfeac26e42a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Y8Ppnb/house-timings.json",
+          "bytes": 7457,
+          "sha256": "77c14d5012ef0cf9f6ec5b64e72850fa0431bc114c871fee9ff2dc51469b5abc"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Y8Ppnb/phase-timings.json",
+          "bytes": 4296,
+          "sha256": "869a3b1f989b1227404045e31228291ef3e0efcd94b124db8bbb894ff23e4114"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Y8Ppnb/results.json",
+          "bytes": 212861,
+          "sha256": "29e378f7263149a3eb8935c136821636c526eb6d2f3f1762b6c7185fb5e72d74"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Y8Ppnb/succession.jsonl",
+          "bytes": 242932,
+          "sha256": "3645dbcf9b6a5a00cee70b67bd13dd1883e624908f88e70f0aae83dbbdc465dc"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-Y8Ppnb/succession.jsonl.result.json",
+          "bytes": 1828,
+          "sha256": "251902b6a2f23bac3a4d6f086fefb54e36a22e14be2a6c93dee9e58765899488"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-ddcVeH/after-cleanup.json",
+          "bytes": 7644,
+          "sha256": "0119f56fd0b04a0f0b636d6170a8182f1c6de2ef1fe093c8bb859642e5a2da33"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-ddcVeH/before-cleanup.json",
+          "bytes": 7644,
+          "sha256": "0119f56fd0b04a0f0b636d6170a8182f1c6de2ef1fe093c8bb859642e5a2da33"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-ddcVeH/bootstrap.json",
+          "bytes": 205,
+          "sha256": "71bc01e49e602270e6c09f8fce3d88fb600cdebe4ced0164408decfeac26e42a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-ddcVeH/results.json",
+          "bytes": 389,
+          "sha256": "80624b447544f77d4f5d887b40d778012cebb1aba639bbe53a5a06b6d5948e4b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-gRyxea/after-cleanup.json",
+          "bytes": 243056,
+          "sha256": "15f05bb84f53b6e3b4b90443770966362652f7f4a28846df3eb9d183a36fe674"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-gRyxea/before-cleanup.json",
+          "bytes": 243056,
+          "sha256": "15f05bb84f53b6e3b4b90443770966362652f7f4a28846df3eb9d183a36fe674"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-gRyxea/bootstrap.json",
+          "bytes": 205,
+          "sha256": "71bc01e49e602270e6c09f8fce3d88fb600cdebe4ced0164408decfeac26e42a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-gRyxea/claude-timeout.jsonl",
+          "bytes": 67309,
+          "sha256": "5459237376164ee5c5e0fb3962c431f116d150476ad3b2f1c913cdb8835e12ea"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-gRyxea/claude-timeout.jsonl.result.json",
+          "bytes": 1058,
+          "sha256": "9644dea321586cfa9164ce317a63a2cb74ec7aed47ede05e0c158d912f0859fa"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-gRyxea/claude-timeout.jsonl.stderr.txt",
+          "bytes": 140,
+          "sha256": "4162625b23e2ee724e8b7e87f4537670366d35aea64d8ebd3f9827b21ea4180e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-gRyxea/results.json",
+          "bytes": 37708,
+          "sha256": "689790bb88eb2ae4ace300b062aabb0298de288bfe71c1d5d863204830b056c9"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-lFjBwW/after-cleanup.json",
+          "bytes": 44101,
+          "sha256": "db1924d7efba7a73a478213266191dc06b0cdd444df31779e02a60ed81fb3a84"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-lFjBwW/before-cleanup.json",
+          "bytes": 33799,
+          "sha256": "6a143e2b574ac1eadf11939e313f3b2a1d2fda66ba78a4ba6db2aac89d0f1c35"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-lFjBwW/bootstrap.json",
+          "bytes": 205,
+          "sha256": "71bc01e49e602270e6c09f8fce3d88fb600cdebe4ced0164408decfeac26e42a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-lFjBwW/held-required-control.json",
+          "bytes": 2291,
+          "sha256": "d14394604a654c1ae5d26ebf150a2213a77772340aa8a41074b6c7bbf857190d"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-lFjBwW/held-required.jsonl",
+          "bytes": 45679,
+          "sha256": "625f774596d990e6c133ec8c3b9f57bc32abba71b59358e05cf44206898538e1"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-lFjBwW/held-required.jsonl.result.json",
+          "bytes": 1082,
+          "sha256": "afc88f886faf57bf3d82389d5c793e0d463809aaeb16d211fb4a7a8c6b5f0014"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-lFjBwW/held-required.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "2ca522b097366e6344a78e0b7b84e5b080d5140373897b8ea830a12d3392caa7"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-lFjBwW/results.json",
+          "bytes": 4290,
+          "sha256": "368a1ca71d3d256e4c569af3849204c39454a4c0a91e90e582975b5ce272d8cd"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-p5cLo3/after-cleanup.json",
+          "bytes": 526824,
+          "sha256": "aa3604debb1686b8c9cc636f936087931ebbd155730067644612e04d665ad63b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-p5cLo3/before-cleanup.json",
+          "bytes": 526824,
+          "sha256": "aa3604debb1686b8c9cc636f936087931ebbd155730067644612e04d665ad63b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-p5cLo3/bootstrap.json",
+          "bytes": 205,
+          "sha256": "71bc01e49e602270e6c09f8fce3d88fb600cdebe4ced0164408decfeac26e42a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-p5cLo3/results.json",
+          "bytes": 144691,
+          "sha256": "e3b3406f4504b093b4e4c0dfb3f0d9463e4ab2fc3e479808993b52e71ef1e648"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-p5cLo3/secret-overlord.jsonl",
+          "bytes": 81101,
+          "sha256": "b314eda45df1a03dc2e1f4b2652e348f91d27e58c49c299434dc32f6cfbc9f74"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-p5cLo3/secret-overlord.jsonl.result.json",
+          "bytes": 1071,
+          "sha256": "025a11963768954c8bbe0665a6ba7b608bff612c80c7e8aa736194fcd61b13d8"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/evidence/case-p5cLo3/secret-overlord.jsonl.stderr.txt",
+          "bytes": 142,
+          "sha256": "cd9143472f3a7937ad61ad349e02f5fa98326c2ea2dd3fdc0c2d4649ed37d1d4"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/tested.patch",
+          "bytes": 17217,
+          "sha256": "3da1ec679bca535493d3f14e5b8c1c7fa3f38f423f9357baf8dbdc02a6693654"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/vitest.json",
+          "bytes": 4703,
+          "sha256": "774335a5b00c83f52e856f04f876335f4ce29a4c7ae6939272e6cec756b590aa"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-2/vitest.log",
+          "bytes": 43748,
+          "sha256": "69720a76b34b89fc4d1873dbfe8261562253c589595d8478a1e256fc523c7241"
+        }
+      ]
+    },
+    {
+      "run": "ci-green-two-cpu-3",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/cpu-affinity.json",
+          "bytes": 1550,
+          "sha256": "4e246e57b0c90ab0dc552f95a31ac59e9feeec3feaa2611e1a0708fa5927c0da"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/after-cleanup.json",
+          "bytes": 2363465,
+          "sha256": "da6884d015077353a3fd6f9dfb40a5006fca3f44007d8b3a6086dd40f8f1e414"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/before-cleanup.json",
+          "bytes": 2363465,
+          "sha256": "da6884d015077353a3fd6f9dfb40a5006fca3f44007d8b3a6086dd40f8f1e414"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/results.json",
+          "bytes": 738714,
+          "sha256": "7fb189f00f6619832cde13b7d9bd69d666bf991ccaf46d49f870120caba63064"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/succession.jsonl",
+          "bytes": 185888,
+          "sha256": "3ba1fb19df2c9e29d5045fdc97e0dc54c950a52ed7b90b1b6a74af9273e914c7"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/succession.jsonl.result.json",
+          "bytes": 1996,
+          "sha256": "8fe2c3d236ce54cc4697b720caeaff7946684ebb76b50fbcf027f161af06360b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-4CaVEH/succession.jsonl.stderr.txt",
+          "bytes": 140,
+          "sha256": "4162625b23e2ee724e8b7e87f4537670366d35aea64d8ebd3f9827b21ea4180e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-6CMZW5/after-cleanup.json",
+          "bytes": 7644,
+          "sha256": "d96878500c40b41ead6a6a1965840fbaf8766c4c55357de3e0290d8bdd9ed9a3"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-6CMZW5/before-cleanup.json",
+          "bytes": 7644,
+          "sha256": "d96878500c40b41ead6a6a1965840fbaf8766c4c55357de3e0290d8bdd9ed9a3"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-6CMZW5/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-6CMZW5/results.json",
+          "bytes": 412,
+          "sha256": "518caf2887b51f6f75964e57996dd1a8da94c39f227a1752350bc0c98085ed25"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/after-cleanup.json",
+          "bytes": 43477,
+          "sha256": "d62f66e2a58bd3afdbb238c4757308a464882c0ee05e2f604710abc006792e05"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/before-cleanup.json",
+          "bytes": 29335,
+          "sha256": "2c7960557e17dfb2f87b041ad17734e1cb2bd7f10613267a552c4ddf1bf8a3dd"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/held-house-control.json",
+          "bytes": 7212,
+          "sha256": "fc131d2095a7d0eb9d3b3093c334a4d9cc371effea52d77975a5f34c0feef86f"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/held-house.jsonl",
+          "bytes": 45776,
+          "sha256": "505921b2852bf27e6aca3aa54f0357fe239dc1428ef3b889947cd9130305e1b5"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/held-house.jsonl.result.json",
+          "bytes": 1084,
+          "sha256": "4c51d64185b679e22e3a53ef5ce8d64244527e616fc28e466ad15a965556a81d"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/held-house.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "e6f201c5ff36b5c453c230fd8455a2406d307df2cda611285d8d8d2ddcf8b957"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-8OLWQK/results.json",
+          "bytes": 7288,
+          "sha256": "e79f175602aafc51a92f2e02406b208b35d29672f93f2892e2f48c88865b1148"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/after-cleanup.json",
+          "bytes": 23298,
+          "sha256": "eb67e2204eb07b12c0845de450f166d3760c02fc3a77028ab379465f49c83fa1"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/before-cleanup.json",
+          "bytes": 19485,
+          "sha256": "0ed71ad765f825954171e168dce00a4ed5f670eaf56e72ec77b25484fb5bfe98"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/held-chat-control.json",
+          "bytes": 942,
+          "sha256": "ff9ea87cc9c2cc8308419cf18f6193182cf5ad1c5e947705deee0805432234eb"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/held-chat.jsonl",
+          "bytes": 44871,
+          "sha256": "9593a268fa0c01d92329ad0884256a02444af021192a711b6c40c368fa4b28cb"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/held-chat.jsonl.result.json",
+          "bytes": 1083,
+          "sha256": "84b2105c47a0ccf5cd0fa3d1107c73484fa9ca785287a1b0086f684959ce9051"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/held-chat.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "41fe358b91e9574105a0d959c4183a4a08aadd4bd1b95f66dcbbe4d8d4805b06"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/results.json",
+          "bytes": 2268,
+          "sha256": "9d5d3e8bf5111a958861bad6d50bf19c6186dd4e9d1fe5eee55d0f99021bdd8b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/after-cleanup.json",
+          "bytes": 653109,
+          "sha256": "f02251e44cc73ebcebe9522d8994061aa54313cbe22d078b90916d50696765f3"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/before-cleanup.json",
+          "bytes": 653109,
+          "sha256": "f02251e44cc73ebcebe9522d8994061aa54313cbe22d078b90916d50696765f3"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/results.json",
+          "bytes": 231784,
+          "sha256": "1ec94067f47acd325b2e4f6e78f34e94ddff979327985e9a523994ee9c68231f"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/secret-overlord.jsonl",
+          "bytes": 77977,
+          "sha256": "fa2d71db74f29f5a792239541020d2c08c3f867ac55182a56bb691d4e66f7c9e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/secret-overlord.jsonl.result.json",
+          "bytes": 1074,
+          "sha256": "89e7616bbaa4ac076ac9512af6a24a88ddd2945370af321da7ae6d96cdffe0d6"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-F5MZzD/secret-overlord.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "ce7333428f32d19bd47c7eca0e7de12f1fb886fce3ac2620275fb5e1d8dd514f"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/after-cleanup.json",
+          "bytes": 243601,
+          "sha256": "7f530ea4bbbd4766033178d1d32a183ef284e44e629f7663d58ef162194bbda7"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/before-cleanup.json",
+          "bytes": 243601,
+          "sha256": "7f530ea4bbbd4766033178d1d32a183ef284e44e629f7663d58ef162194bbda7"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/claude-timeout.jsonl",
+          "bytes": 67313,
+          "sha256": "714c62263876284e8107fb78413218103edbe902e88c9b8773bb723238f7c68b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/claude-timeout.jsonl.result.json",
+          "bytes": 1061,
+          "sha256": "73e1b2163db7816098c01285d6c5ac45ae50513cdcabece97f14bb52369973b5"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/claude-timeout.jsonl.stderr.txt",
+          "bytes": 140,
+          "sha256": "4162625b23e2ee724e8b7e87f4537670366d35aea64d8ebd3f9827b21ea4180e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/results.json",
+          "bytes": 43326,
+          "sha256": "037a37bbfe0a8e7ea408a7f2ddbbd320d85bbfa37547370ba2c2aceda09bffb2"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/after-cleanup.json",
+          "bytes": 37499,
+          "sha256": "b46a1b50b5622c108ffb8453517a39877f57c497d6d9661945e202c6a089a7df"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/before-cleanup.json",
+          "bytes": 37499,
+          "sha256": "b46a1b50b5622c108ffb8453517a39877f57c497d6d9661945e202c6a089a7df"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/recovered-branch-A.jsonl",
+          "bytes": 52637,
+          "sha256": "09a6560954ab80a704e5b7ccc82243a0d347216ba38f5adc6fc245f56cf7bbbc"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/recovered-branch-A.jsonl.result.json",
+          "bytes": 1491,
+          "sha256": "119d29d383520c4700695f8dfa92b814c9080a640d6a8e8c813969433b39b503"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/recovered-branch-A.jsonl.stderr.txt",
+          "bytes": 471,
+          "sha256": "91f7d3184b9d391411ce8bd68ce2433326122c67e67825dc5ff53469093c483c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/results.json",
+          "bytes": 12901,
+          "sha256": "695298e0c515a7e0815a551e5e51752910c38df112073eb833d93d82df529f68"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-jCZTnn/after-cleanup.json",
+          "bytes": 14095,
+          "sha256": "5f50701886551e03758bb432e696c1c7a07573d1d03533ae80e7297934ac12fb"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-jCZTnn/before-cleanup.json",
+          "bytes": 14095,
+          "sha256": "5f50701886551e03758bb432e696c1c7a07573d1d03533ae80e7297934ac12fb"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-jCZTnn/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-jCZTnn/results.json",
+          "bytes": 2436,
+          "sha256": "f9ceb67988245774254fa372a5b1cce8216af00d4d773fed66319ba96acf6121"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/after-cleanup.json",
+          "bytes": 85722,
+          "sha256": "872efce6aa5f7a6013295f63e562257cdfbd3136796e76486c7715cff21b7e94"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/before-cleanup.json",
+          "bytes": 68457,
+          "sha256": "154d1345fef699ddca953acc544ba9366cdc4d2163787c0fdf955cf642f25937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/held-required-control.json",
+          "bytes": 3535,
+          "sha256": "9733af5295d865774348ebac010aa7222c1015ea3c1d324b802e8d3f4b613a2c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/held-required.jsonl",
+          "bytes": 47961,
+          "sha256": "5c0a4ad6c193353ccf2bdc2733c7f466cd958b7f4ff3fdd4bc9c7c918156f7df"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/held-required.jsonl.result.json",
+          "bytes": 1085,
+          "sha256": "e93ce501d3cb02372d7500b36694de2a1b3691ba17d5fc7a0cde69c45d6fec36"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/held-required.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "85b8b0310fb8bc93a20172804e59ca3a3f5b0253a04d39b1d790af259bd6d831"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/results.json",
+          "bytes": 14235,
+          "sha256": "bfa60f17880c855531d7bbb33406f5bef20f233b59d8145bf85bce28ff47705a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-wOJZnJ/after-cleanup.json",
+          "bytes": 28598,
+          "sha256": "21d940ac55f01a331b58775f9d48ae72348cff626049acb048e0d131ef75e3ee"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-wOJZnJ/before-cleanup.json",
+          "bytes": 28673,
+          "sha256": "44e48c0881f71278262de5ed815a76397fc90952838176624346c7c31e704c7c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-wOJZnJ/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-wOJZnJ/cascade-control.json",
+          "bytes": 389,
+          "sha256": "925195495c93d016c3cb4d437683025e5d271f2236e3de92eb1831fa44200e22"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/evidence/case-wOJZnJ/results.json",
+          "bytes": 2268,
+          "sha256": "61858b600748b1ebe711d0643b57128cd5799f7169d6ba43b7f82e1fd3c85c96"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/invocation.json",
+          "bytes": 954,
+          "sha256": "756cb1cb2f2b62175b6b0a22ea9e667f23e877b9f5af89d38e4be751dc5ebc0b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/summary.json",
+          "bytes": 7511,
+          "sha256": "d88129861d988b00880eb2fc65c87539993584e82b96c9cadd35dfa713c47f86"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source/ci.config.mjs",
+          "bytes": 1945,
+          "sha256": "81a76e2f68eef4909cbb9e70c67c5900f7c219f152bcfd8f361a099a8da178c7"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source/clock-ordering.test.ts",
+          "bytes": 3574,
+          "sha256": "c5d8bb828e9314bcfbafffedbd53d0649d054ef23e225ed524a8d658a00969bf"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source/harness.ts",
+          "bytes": 17426,
+          "sha256": "d4b92b7aaf6226778c099c9eefd1f738aca0f353508828ca9f14068c56fbbe6e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source/isolation.test.ts",
+          "bytes": 2510,
+          "sha256": "8e80f08995186363bc2a70378cba28800b63fcfe0d95213506cd4df418291a30"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source/native.cjs",
+          "bytes": 3861,
+          "sha256": "c8a88c2c4f355710ed798fce2b9b4e0146af78deb50b66f77fee2c611342e7b0"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source/preview-playable.test.ts",
+          "bytes": 21881,
+          "sha256": "5cc2cb8f087f757900fc38b2f0cd87a14b06e5271341fe02132adb8fab53badb"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source/required-ordering.test.ts",
+          "bytes": 3176,
+          "sha256": "4bbcaccc9ff216076569fbaa5c90cc64ff4418ce858185c47139fc95210e66ff"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source/worker.ts",
+          "bytes": 13344,
+          "sha256": "3c779e0e347b501b118dfade9358d15f78605714d2a04cfabe434e0c6a5e542e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source-verified.json",
+          "bytes": 53,
+          "sha256": "7ac76893ba8f382024b6c4c274049f5efe0b60af1caa407f0321693c807b9369"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/tested-source.json",
+          "bytes": 1297,
+          "sha256": "fe1779349605f9cc2539ebbace97e94cb0b31a12da0e26d1fb4aaa614e917807"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/verification.json",
+          "bytes": 484790,
+          "sha256": "6430cffc85942f111381f0ed44c6a9f9971a6c5a5b921d38a6395f9021b660de"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/vitest.json",
+          "bytes": 4590,
+          "sha256": "bb48c6ec087ba96b48fbb8536b5ddae0232d6db84d8f4dff8c6d68339f7eb938"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-green-two-cpu-3/vitest.log",
+          "bytes": 29195,
+          "sha256": "a2fe69b28c11cd4af368d41bac447631da9a9c8fbec21b3efb3f1dafbaa1fc3b"
+        }
+      ]
+    },
+    {
+      "run": "ci-held-green-2",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-held-green-2/evidence/case-Hu0RrV/after-cleanup.json",
+          "bytes": 22945,
+          "sha256": "b0081f96f017a63735e63d6005a84c5288fddcf15bb81c95735a2297edacbb9c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-2/evidence/case-Hu0RrV/before-cleanup.json",
+          "bytes": 22945,
+          "sha256": "b0081f96f017a63735e63d6005a84c5288fddcf15bb81c95735a2297edacbb9c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-2/evidence/case-Hu0RrV/bootstrap.json",
+          "bytes": 205,
+          "sha256": "a9bef699a3b259ef9f5da91a386841ccd260a640f409dd1148984e698a625235"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-2/evidence/case-Hu0RrV/held-chat.jsonl.result.json",
+          "bytes": 1268,
+          "sha256": "1372b45b62f97c93ab5e39dd4ca60cbceb6d58359042cb9139ee4e7f37d7e32a"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-2/evidence/case-Hu0RrV/results.json",
+          "bytes": 2242,
+          "sha256": "c83f178cb384af61f09ca1e73996690adc3328e147d8684ebc57fbc68012a3c8"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-2/vitest.json",
+          "bytes": 1275,
+          "sha256": "2800819e626fff87363736e37f420e18a623d23398ce05a0c42494fc66a3b83e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-2/vitest.log",
+          "bytes": 6091,
+          "sha256": "b6eea87e5fcfc266a97ece0bf6b5087ea9b08f964bde7f4fb3b689931974d806"
+        }
+      ]
+    },
+    {
+      "run": "ci-held-green-3",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-held-green-3/esm-native-reduction.json",
+          "bytes": 686,
+          "sha256": "f15dee2879c2722b7a9e6d1599bfd4dbef2e4ca37c885996e7abecc006f08f07"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-3/evidence/case-wIPRzt/after-cleanup.json",
+          "bytes": 22960,
+          "sha256": "18ffb39b5ef44fa0c0cfe0fbd8228e0c898c2ac62f229c67632deb4d2c6e841e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-3/evidence/case-wIPRzt/before-cleanup.json",
+          "bytes": 22960,
+          "sha256": "18ffb39b5ef44fa0c0cfe0fbd8228e0c898c2ac62f229c67632deb4d2c6e841e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-3/evidence/case-wIPRzt/bootstrap.json",
+          "bytes": 205,
+          "sha256": "7e4731972cb0aeab4f5f3fa819ad835f33c01eef74eb7cb268ad8f0ec94bc38d"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-3/evidence/case-wIPRzt/held-chat.jsonl.result.json",
+          "bytes": 1271,
+          "sha256": "fc9491e91356c142d61d29b755094ff226efaa76d1606c88f202eea2356a7d60"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-3/evidence/case-wIPRzt/held-chat.jsonl.stderr.txt",
+          "bytes": 303,
+          "sha256": "1af16e7d8cedb94b83b7b76c8bdf2dac8b272a26f2100582dd3265ab4c2404b4"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-3/evidence/case-wIPRzt/results.json",
+          "bytes": 2242,
+          "sha256": "bc728ddb6aa915d6fb42af8160ee1fe026e883ce27e16ba4d8f85fcec288261c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-3/vitest.json",
+          "bytes": 1276,
+          "sha256": "11e3d2921d3d0090b50bb8c437f6461d28d79064a1d4cdaed39c36f1a55fea64"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-green-3/vitest.log",
+          "bytes": 3045,
+          "sha256": "26796bfc46a2a613cfd78feb39e6e267a36356a0000f6a16915f59d5e4eaf4e5"
+        }
+      ]
+    },
+    {
+      "run": "ci-held-red-1",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-held-red-1/evidence/bootstrap.json",
+          "bytes": 205,
+          "sha256": "76076b2166a7bc88d5c74f6d06c8c7c9d5d67c55a77a909a63515fbaebd5667c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-1/evidence/held-chat-control.json",
+          "bytes": 1079,
+          "sha256": "b204ace97aea77ecffaac8b243f196dfaf1952ac21e91db49f274720a2ccc687"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-1/evidence/held-chat.jsonl",
+          "bytes": 44314,
+          "sha256": "eb8ab335764862e6445c5786c1568b8c89ef53e57b8567f3b9f25cce170a4746"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-1/evidence/results.json",
+          "bytes": 3195,
+          "sha256": "7ab8b636114e2acfb5e37880d3680d4848d088d025f704b6c27b752c9db05ffd"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-1/vitest.json",
+          "bytes": 1570,
+          "sha256": "2367d5e358f04fb02a09b39b6e70b5abb5acec527e32d908db70a18bc5403660"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-1/vitest.log",
+          "bytes": 5288,
+          "sha256": "ffe8bac12afe3123e2b7873ad1dfef351ecd79a41baf52b879bf71823a2a4731"
+        }
+      ]
+    },
+    {
+      "run": "ci-held-red-2",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-held-red-2/evidence/bootstrap.json",
+          "bytes": 205,
+          "sha256": "76076b2166a7bc88d5c74f6d06c8c7c9d5d67c55a77a909a63515fbaebd5667c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-2/evidence/held-chat-control.json",
+          "bytes": 1220,
+          "sha256": "342d0bb111a7156c00ad0f231e3750a926e46f8c4fb1c8dd5bd75f9faaee0f97"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-2/evidence/held-chat.jsonl",
+          "bytes": 44410,
+          "sha256": "b2de63578e120184f645c7f0b94b3fb8b6fe7fc9f26310f0d5d02f6ea923d33f"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-2/evidence/results.json",
+          "bytes": 3607,
+          "sha256": "e0ebc94e727ee7e98b1e4f0bbb9801c633f56e1ff496865694f610ee78c65d0b"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-2/vitest.json",
+          "bytes": 1570,
+          "sha256": "210bba4dd7be897d7a6afb2de92eb55cc58097fa133f45290d514e5b92b0ae1e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-held-red-2/vitest.log",
+          "bytes": 8096,
+          "sha256": "f071bd79e754a98aa17b027ab3fff9852f1524a07554284c10a70ca452f8c7f3"
+        }
+      ]
+    },
+    {
+      "run": "ci-original-34957418324",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-original-34957418324/failures.json",
+          "bytes": 52786,
+          "sha256": "f8ad958429e7bc39a1d98b8b97789174ec77c71ee02ab93fd8f498d557e26d86"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-original-34957418324/provenance.json",
+          "bytes": 817,
+          "sha256": "230e150b6de4a351f074e7ac2294f2c6c847f165e3707e664e45547073176832"
+        }
+      ]
+    },
+    {
+      "run": "ci-red-two-cpu-1",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-red-two-cpu-1/evidence/bootstrap.json",
+          "bytes": 205,
+          "sha256": "76076b2166a7bc88d5c74f6d06c8c7c9d5d67c55a77a909a63515fbaebd5667c"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-red-two-cpu-1/evidence/results.json",
+          "bytes": 164121,
+          "sha256": "40b536b1538476ec67b664da546ed615c5f592b6faf826bb35b57163989aee42"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-red-two-cpu-1/evidence/secret-overlord.jsonl",
+          "bytes": 75015,
+          "sha256": "79e0ecca3d3603efa069683f1a74a0aa966266e74687d5a672f745127a79fbe8"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-red-two-cpu-1/vitest.json",
+          "bytes": 2410,
+          "sha256": "3de94ecdc2b3d55637f22eaa9851775e5774e8466c2f86b283034fc5419b3108"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-red-two-cpu-1/vitest.log",
+          "bytes": 8159,
+          "sha256": "3873e057c857504d7b419d7bd2fdbc85bd873274e5826da364ef70d6a67bba2b"
+        }
+      ]
+    },
+    {
+      "run": "ci-required-red-1",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/evidence/case-89vTTw/after-cleanup.json",
+          "bytes": 71634,
+          "sha256": "80127d0f0e5180d1e1c09f2b6418e101415bc9c75421c410da696cceed050161"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/evidence/case-89vTTw/before-cleanup.json",
+          "bytes": 67239,
+          "sha256": "4ce44a009920517d3075f6c07a585955402107cfac273ae10bd88cea55a304bd"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/evidence/case-89vTTw/bootstrap.json",
+          "bytes": 205,
+          "sha256": "6b6f38502b408690fe2fb70a927f99754c5afbb1a1d4123586931cd125458fba"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/evidence/case-89vTTw/held-required-control.json",
+          "bytes": 3891,
+          "sha256": "2acf480d3a78047cac15912a65fc1ecac889fdb82b44f04e6dc42cb3863faca6"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/evidence/case-89vTTw/held-required.jsonl",
+          "bytes": 46648,
+          "sha256": "679dbc2acb6efa4022c6aa289d686710c841bf6d94f1f4336b1d5a021caa6af7"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/evidence/case-89vTTw/held-required.jsonl.result.json",
+          "bytes": 1078,
+          "sha256": "c6c3a7110a0d1f8c5bb45bf567e80ead36fecf0aeff772533a6c7bc8f9fd79d5"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/evidence/case-89vTTw/held-required.jsonl.stderr.txt",
+          "bytes": 502,
+          "sha256": "2bcbbfee7c9c7d184f623810a7d361c433d881251bb60fe34be5557793898a94"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/evidence/case-89vTTw/results.json",
+          "bytes": 7618,
+          "sha256": "b692d897ca66ac7fca4dbae9dbc3109048302a1603e32176b57c1570cd7923ae"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/tested.patch",
+          "bytes": 14030,
+          "sha256": "b63075834c18b1bc94f95fb838f048e043cf508b11ba6b1fd8025441430bf2ee"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/vitest.json",
+          "bytes": 1614,
+          "sha256": "b47122fa7d371ea86ba303dbe04af929af768921c69288d5f286caabd3eac0c9"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-required-red-1/vitest.log",
+          "bytes": 2974,
+          "sha256": "c0f4e19a54d18987ab74c12914902c13d0d9dd08b344f010909da63fea113b99"
+        }
+      ]
+    },
+    {
+      "run": "ci-validation-1",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-validation-1/fixture-typecheck.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-1/lint.log",
+          "bytes": 5121,
+          "sha256": "652cdfb8e249fb09470cf7691bb43d8f3d493c753246171859aad234df2850f7"
+        }
+      ]
+    },
+    {
+      "run": "ci-validation-2",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/accepted-evidence.diff",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/fixture-typecheck.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/format.log",
+          "bytes": 66,
+          "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/lint.log",
+          "bytes": 93,
+          "sha256": "33e8c3f9c5e98086aff1a7ddc67c61f544aee71e4d8b08578aedecb55de7ff2e"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/original-ci-preservation.json",
+          "bytes": 38,
+          "sha256": "d0c8a919890f00b43ed896384030be0f78456b0820f97828beb176de641950c0"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/production-package.diff",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/syntax.json",
+          "bytes": 126,
+          "sha256": "a79d7b5901597ce2a3ba447f7b75434700aa4983847d866386153682bdbf76d6"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/typecheck.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/whitespace.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/ci-validation-2/worker-exclusion.json",
+          "bytes": 52,
+          "sha256": "bc813fabe4ec4cf265827a0363bdfa16f1298bf21a57ba61b54d965d39858550"
+        }
+      ]
+    }
+  ],
+  "retainedRuntimeNote": "Each case results.json identifies its separate retained SQLite/R2/native runtime. Runtime and home contents are excluded from this lightweight reviewer manifest. Parent owns archival of the full worktree/runtime state. All setup failures, red controls, the interrupted run and the failed combined run remain under the listed original run paths."
+}

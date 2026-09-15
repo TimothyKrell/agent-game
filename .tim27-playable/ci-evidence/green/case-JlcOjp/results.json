@@ -1,0 +1,401 @@
+{
+  "upstream": "debd8a4a071bc43483b6af8be463e1904d169efc",
+  "sourceArchiveSha256": "a0d4f7b0199efa6144c2fa84f51116820d747d575643afc63edf2b13cf24e635",
+  "fixtureDirectory": "/tmp/opencode/agent-game-playable-ci/.tim27-playable/runs/ci-green-two-cpu-3/evidence/case-JlcOjp/runtime",
+  "providerUrl": "http://127.0.0.1:6504/v1",
+  "providerCalls": [
+    {
+      "at": 1789472367830,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472367830,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472367831,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472367908,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472369004,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472369004,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472369004,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472369004,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472369015,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    }
+  ],
+  "captures": [
+    {
+      "recovery": "source-ack + init-ack + target restarts",
+      "intent": {
+        "requestId": "allocation_3f56eed3-4d3a-4c75-909c-ee4f76ce5ac8",
+        "targetMatchId": "match_c5165d8a-c9b4-456e-9beb-a117ab733d04",
+        "targetOrigin": "http://127.0.0.1:6502",
+        "incarnation": "playable-incarnation-1",
+        "commit": "debd8a4a071bc43483b6af8be463e1904d169efc",
+        "gameId": "succession",
+        "tickets": [
+          {
+            "agentId": "agent_4fca992f-8c40-4b20-88e3-ae275571620c",
+            "ownerId": "owner_f5a7557e-f76b-4606-8625-33866a1838d9",
+            "grantId": "preview_787fcb1f-e286-4ce5-92a8-b97d6f49205c",
+            "handoffId": "787fcb1f-e286-4ce5-92a8-b97d6f49205c",
+            "queueRequestId": "62eb2b4b-d960-4002-908c-8034b00acfeb",
+            "joinedAt": 1789472336145,
+            "expiresAt": 1797248335720
+          }
+        ],
+        "rulesVersion": "succession-1",
+        "policyVersion": "succession-1"
+      },
+      "initialization": {
+        "initialized": true,
+        "initialization": {
+          "id": "match_c5165d8a-c9b4-456e-9beb-a117ab733d04",
+          "entrants": [
+            {
+              "agentId": "agent_4fca992f-8c40-4b20-88e3-ae275571620c",
+              "ownerId": "owner_f5a7557e-f76b-4606-8625-33866a1838d9",
+              "name": "Stable playable competitor",
+              "house": false,
+              "rating": 1000
+            },
+            {
+              "agentId": "house-echo",
+              "ownerId": null,
+              "name": "Echo",
+              "house": true,
+              "rating": 1000,
+              "persona": "A conversational cross-examiner. Quote specific public claims and ask useful follow-up questions."
+            },
+            {
+              "agentId": "house-relay",
+              "ownerId": null,
+              "name": "Relay",
+              "house": true,
+              "rating": 1000,
+              "persona": "A composed substitute and practical strategist. Reconstruct the permitted history and pursue your team victory."
+            },
+            {
+              "agentId": "house-velvet",
+              "ownerId": null,
+              "name": "Velvet",
+              "house": true,
+              "rating": 1000,
+              "persona": "A persuasive coalition-builder. Find common ground and make clear, credible proposals."
+            },
+            {
+              "agentId": "house-spark",
+              "ownerId": null,
+              "name": "Spark",
+              "house": true,
+              "rating": 1000,
+              "persona": "An assertive risk-taker. Challenge consensus and force opponents to commit to explanations."
+            },
+            {
+              "agentId": "house-axiom",
+              "ownerId": null,
+              "name": "Axiom",
+              "house": true,
+              "rating": 1000,
+              "persona": "A concise analyst. Track policy claims and inconsistencies; demand concrete evidence."
+            },
+            {
+              "agentId": "house-cipher",
+              "ownerId": null,
+              "name": "Cipher",
+              "house": true,
+              "rating": 1000,
+              "persona": "A watchful skeptic. Ask focused questions and compare claims across rounds."
+            },
+            {
+              "agentId": "house-flux",
+              "ownerId": null,
+              "name": "Flux",
+              "house": true,
+              "rating": 1000,
+              "persona": "An adaptable pragmatist. Change your assessment when new evidence arrives and explain why."
+            },
+            {
+              "agentId": "house-patch",
+              "ownerId": null,
+              "name": "Patch",
+              "house": true,
+              "rating": 1000,
+              "persona": "A methodical investigator. Build a case from public actions, votes, and policy accounting."
+            },
+            {
+              "agentId": "house-quill",
+              "ownerId": null,
+              "name": "Quill",
+              "house": true,
+              "rating": 1000,
+              "persona": "An eloquent negotiator. Be persuasive without being verbose; remember past contradictions."
+            }
+          ],
+          "grants": {
+            "agent_4fca992f-8c40-4b20-88e3-ae275571620c": "preview_787fcb1f-e286-4ce5-92a8-b97d6f49205c"
+          },
+          "gameId": "succession",
+          "snapshot": {
+            "gameId": "succession",
+            "displayName": "Succession",
+            "rulesVersion": "succession-1",
+            "ratingPoolId": "succession-1",
+            "ratingVersion": "winner-softmax-1",
+            "protocolVersion": "2",
+            "playerCount": 10,
+            "rulesUrl": "/games/succession/rules.md",
+            "ratingUrl": "/games/succession/rating-method.md",
+            "timing": {
+              "nomination": 20000,
+              "debate": 30000,
+              "executive": 15000,
+              "action": 30000,
+              "grace": 30000,
+              "chatCooldown": 5000
+            },
+            "housePolicyVersion": "succession-1",
+            "mode": "preview",
+            "houseModel": {
+              "provider": "openai",
+              "model": "gpt-4.1-mini",
+              "policyVersion": "succession-1"
+            }
+          },
+          "reservationUsd": 1.5
+        }
+      },
+      "sourceReceipt": {
+        "closed": false,
+        "allocationId": "preview_allocation_3f56eed3-4d3a-4c75-909c-ee4f76ce5ac8",
+        "intent": {
+          "requestId": "allocation_3f56eed3-4d3a-4c75-909c-ee4f76ce5ac8",
+          "targetMatchId": "match_c5165d8a-c9b4-456e-9beb-a117ab733d04",
+          "targetOrigin": "http://127.0.0.1:6502",
+          "incarnation": "playable-incarnation-1",
+          "commit": "debd8a4a071bc43483b6af8be463e1904d169efc",
+          "gameId": "succession",
+          "tickets": [
+            {
+              "agentId": "agent_4fca992f-8c40-4b20-88e3-ae275571620c",
+              "ownerId": "owner_f5a7557e-f76b-4606-8625-33866a1838d9",
+              "grantId": "preview_787fcb1f-e286-4ce5-92a8-b97d6f49205c",
+              "handoffId": "787fcb1f-e286-4ce5-92a8-b97d6f49205c",
+              "queueRequestId": "62eb2b4b-d960-4002-908c-8034b00acfeb",
+              "joinedAt": 1789472336145,
+              "expiresAt": 1797248335720
+            }
+          ],
+          "rulesVersion": "succession-1",
+          "policyVersion": "succession-1"
+        },
+        "sourceRevision": "debd8a4a071bc43483b6af8be463e1904d169efc",
+        "sourcePolicyVersion": "preview-broker-1",
+        "reservationUsd": 1.5,
+        "snapshot": {
+          "gameId": "succession",
+          "displayName": "Succession",
+          "rulesVersion": "succession-1",
+          "ratingPoolId": "succession-1",
+          "ratingVersion": "winner-softmax-1",
+          "protocolVersion": "2",
+          "playerCount": 10,
+          "rulesUrl": "/games/succession/rules.md",
+          "ratingUrl": "/games/succession/rating-method.md",
+          "timing": {
+            "nomination": 20000,
+            "debate": 30000,
+            "executive": 15000,
+            "action": 30000,
+            "grace": 30000,
+            "chatCooldown": 5000
+          },
+          "housePolicyVersion": "succession-1",
+          "mode": "preview",
+          "houseModel": {
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+            "policyVersion": "succession-1"
+          }
+        },
+        "pricing": {
+          "inputUsdPerMillion": 0.4,
+          "outputUsdPerMillion": 1.6
+        },
+        "maxOutputTokens": 512,
+        "maxAttempts": 2
+      },
+      "stopped": {
+        "status": "client-stopped",
+        "reason": "authority-ended",
+        "gameId": "succession",
+        "matchId": "match_c5165d8a-c9b4-456e-9beb-a117ab733d04",
+        "winner": null,
+        "result": null,
+        "winningSeat": null,
+        "originalAgentResult": null,
+        "overallReason": null,
+        "you": {
+          "seat": 1,
+          "agentId": "agent_4fca992f-8c40-4b20-88e3-ae275571620c",
+          "alive": true,
+          "forfeited": false,
+          "generation": 0
+        },
+        "controller": {
+          "house": false,
+          "generation": 0,
+          "forfeited": false
+        },
+        "serverStatus": "active",
+        "observedAt": 1789472369019.9663,
+        "snapshotStale": true,
+        "invocations": 1,
+        "restarts": 0,
+        "costUsd": 0.01,
+        "accounting": {
+          "mode": "provider-managed",
+          "limit": null,
+          "known": 0.01,
+          "observed": true,
+          "watermark": 0.01,
+          "unknown": false,
+          "exceeded": false,
+          "remaining": null,
+          "unresolvedGranted": null
+        },
+        "durationMs": 1863.53369140625,
+        "queueDurationMs": 31443.25341796875,
+        "queue": {
+          "requestId": "62eb2b4b-d960-4002-908c-8034b00acfeb",
+          "gameId": "succession",
+          "rulesVersion": "succession-1",
+          "protocolVersion": "2",
+          "status": "starting",
+          "matchId": "match_c5165d8a-c9b4-456e-9beb-a117ab733d04",
+          "joinedAt": 1789472336145,
+          "fillAt": null,
+          "position": 0,
+          "capacity": "available",
+          "observedAt": 1789472367588.2534
+        }
+      },
+      "sameAllowances": true
+    },
+    {
+      "sourceLedger": "preview_allocation_3f56eed3-4d3a-4c75-909c-ee4f76ce5ac8",
+      "providerCalls": 9,
+      "billedRows": 9,
+      "accountedUsd": 0.000648,
+      "signedSourceStatus": {
+        "version": 1,
+        "sourceRevision": "debd8a4a071bc43483b6af8be463e1904d169efc",
+        "sourcePolicyVersion": "preview-broker-1",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "profiles": [
+          "smoke",
+          "live"
+        ],
+        "secretOverlord": {
+          "day": "2026-09-15",
+          "accountedUsd": 0.000648,
+          "activeReservedUsd": 0,
+          "activeAllocations": 0,
+          "livePreviewAllocations": 0,
+          "maxConcurrent": 3,
+          "dailyTargetUsd": 5,
+          "reservationUsd": 1.5,
+          "remainingAdmissionUsd": 4.999352,
+          "capacity": "available"
+        },
+        "succession": {
+          "day": "2026-09-15",
+          "accountedUsd": 0.000648,
+          "activeReservedUsd": 0,
+          "activeAllocations": 0,
+          "livePreviewAllocations": 0,
+          "maxConcurrent": 3,
+          "dailyTargetUsd": 5,
+          "reservationUsd": 1.5,
+          "remainingAdmissionUsd": 4.999352,
+          "capacity": "available"
+        }
+      }
+    }
+  ],
+  "cleanupErrors": [],
+  "paidCalls": 0
+}

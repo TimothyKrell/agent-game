@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterEach, beforeEach, expect, it } from 'vitest';
 import { Schema } from 'effect';
 import { gameDescriptor } from '../src/game/descriptors';
 import { decodeGameState, inspectGame } from '../src/game/registry';
@@ -30,11 +30,13 @@ import {
   publish,
   commit,
   incarnation,
+  discussion,
+  observe,
 } from '../.tim27-playable/harness';
 
-beforeAll(initialize, 120000);
+beforeEach(initialize, 120000);
 
-afterAll(shutdown, 30000);
+afterEach(shutdown, 30000);
 
 for (const [harness, game] of [
   ['opencode', 'secret-overlord'],
@@ -79,33 +81,20 @@ for (const [harness, game] of [
     const child = await native(f.selected.configPath, harness, game);
     let finished = false;
     let steps = 0;
-    let phase = '';
-    let phaseSeen = Date.now();
     let view;
     const until = Date.now() + 300000;
 
     while (Date.now() < until) {
-      view = await cli(f.selected.configPath, ['observe']);
+      view = await observe(assigned.matchId, f.state.token);
 
       if (view.status !== 'active') {
         finished = true;
         break;
       }
 
-      if (view.phase.id !== phase) {
-        phase = view.phase.id;
-        phaseSeen = Date.now();
-      }
-
       // Explicit accepted test-only logical-window control, after real normal-profile admission.
-      if (view.phase.kind.includes('discussion') && Date.now() - phaseSeen > 1200) {
-        await post(target, '/fixture/clock', {
-          matchId: assigned.matchId,
-          phaseId: phase,
-          kind: 'discussion',
-        });
-        steps++;
-      }
+      if (view.phase.kind.includes('discussion'))
+        if ((await discussion(assigned.matchId, view.phase.id, child)).advanced) steps++;
 
       await pause(200);
     }
@@ -442,14 +431,9 @@ it('runs native Claude on a normal source-funded Secret Overlord seat and preser
   });
   let view;
   await waitFor(async () => {
-    view = await cli(f.selected.configPath, ['observe']);
+    view = await observe(assignment.matchId, f.state.token);
 
-    if (view.phase.kind.includes('discussion'))
-      await post(target, '/fixture/clock', {
-        matchId: assignment.matchId,
-        phaseId: view.phase.id,
-        kind: 'discussion',
-      });
+    if (view.phase.kind.includes('discussion')) await discussion(assignment.matchId, view.phase.id, child);
 
     return (await events(child.log)).some((event) => event.type === 'simulated-latency');
   }, 30000);
