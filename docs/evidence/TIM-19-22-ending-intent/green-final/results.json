@@ -1,0 +1,1171 @@
+{
+  "config": {
+    "argv": [
+      "/home/timothykrell/.vite-plus/js_runtime/node/24.21.0/bin/node",
+      "/tmp/opencode/agent-game-dossier/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      ".dossier/ending.config.ts"
+    ],
+    "configFile": "/tmp/opencode/agent-game-dossier/.dossier/ending.config.ts",
+    "rootDir": "/tmp/opencode/agent-game-dossier/.dossier",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-19-22-ending-intent/green-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/opencode/agent-game-dossier/.dossier",
+        "testIgnore": [],
+        "testMatch": [
+          "ending.spec.mjs"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../docs/evidence/TIM-19-22-ending-intent/green-final/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "ending.spec.mjs",
+      "file": "ending.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "1440: pending Final move respects later portrait ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2980,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "\u001b[31mWebSocket server error: Port 24678 is already in use\u001b[39m\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:08.500Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTM2NiIsCiAgICAgICJ5IjogNjc3LjM3NQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAwLAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCVVRUT04iLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICIiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiB0cnVlLAogICAgImRpYWxvZ3MiOiAxLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTEzNjYiLAogICAgICAieSI6IDY3Ny4zNzUKICAgIH0KICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-333101f0a3c06829c61f",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "1440: pending Final move respects later portrait-closed ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2101,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:13.399Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IGZhbHNlLAogICAgImRpYWxvZ3MiOiAwLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTEzNjYiLAogICAgICAieSI6IDY3Ny4zNzUKICAgIH0KICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMCwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTM2NiIsCiAgICAgICJ5IjogNjc3LjM3NQogICAgfQogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTExNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNDQ2IgogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-6e41a600fad2404ad26e",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "1440: pending Final move respects later rule ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2723,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:15.506Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTM2NiIsCiAgICAgICJ5IjogNjc3LjM3NQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAwLAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCVVRUT04iLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICIiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiB0cnVlLAogICAgImRpYWxvZ3MiOiAxLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTEzNjYiLAogICAgICAieSI6IDY3Ny4zNzUKICAgIH0KICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-04865ad881ea5f85fe5c",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "1440: pending Final move respects later chapter ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2522,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:18.243Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkFSVElDTEUiLAogICAgICAiZXZlbnQiOiAic3RvcnktMjYwOTkxODYzNC0zNiIsCiAgICAgICJ0ZXh0IjogIkFjdCBJIMK3IEVsZWN0aW9uIDEwMDowMDowMSBVVENBZ2VudCA0QWdlbnQgNGV4ZWN1dGVkQWdlbnQgNyBleGVjdXRlcyBBZ2VudCA0LkNvb3JkaW5hdG9yOiBBZ2VudCA3QWdlIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yNjA5OTE4NjM0LTM2IiwKICAgICAgInkiOiA1NzUuOTg0Mzc1CiAgICB9CiAgfSwKICAiYWZ0ZXIiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkFSVElDTEUiLAogICAgICAiZXZlbnQiOiAic3RvcnktMjYwOTkxODYzNC0zNiIsCiAgICAgICJ0ZXh0IjogIkFjdCBJIMK3IEVsZWN0aW9uIDEwMDowMDowMSBVVENBZ2VudCA0QWdlbnQgNGV4ZWN1dGVkQWdlbnQgNyBleGVjdXRlcyBBZ2VudCA0LkNvb3JkaW5hdG9yOiBBZ2VudCA3QWdlIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yNjA5OTE4NjM0LTM2IiwKICAgICAgInkiOiA1NzUuOTg0Mzc1CiAgICB9CiAgfSwKICAicmVxdWVzdHMiOiBbCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0IiwKICAgICIvYXBpL2Jvb3RzdHJhcCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0IiwKICAgICIvYXBpL2Jvb3RzdHJhcCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1maW5pc2hlZCIsCiAgICAiL2FwaS9hZ2VudC1waWN0dXJlcz9hZ2VudElkPWVudHJhbnQtMCZhZ2VudElkPWVudHJhbnQtMSZhZ2VudElkPWVudHJhbnQtMiZhZ2VudElkPWVudHJhbnQtMyZhZ2VudElkPWVudHJhbnQtNCZhZ2VudElkPWVudHJhbnQtNSZhZ2VudElkPWVudHJhbnQtNiZhZ2VudElkPWVudHJhbnQtNyZhZ2VudElkPWVudHJhbnQtOCZhZ2VudElkPWVudHJhbnQtOSIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1maW5pc2hlZCIsCiAgICAiL2FwaS9hZ2VudC1waWN0dXJlcz9hZ2VudElkPWVudHJhbnQtMCZhZ2VudElkPWVudHJhbnQtMSZhZ2VudElkPWVudHJhbnQtMiZhZ2VudElkPWVudHJhbnQtMyZhZ2VudElkPWVudHJhbnQtNCZhZ2VudElkPWVudHJhbnQtNSZhZ2VudElkPWVudHJhbnQtNiZhZ2VudElkPWVudHJhbnQtNyZhZ2VudElkPWVudHJhbnQtOCZhZ2VudElkPWVudHJhbnQtOSIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTc4IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNDImdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjc0JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTE0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTE0JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE0NiZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNjA0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE0NDYiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MCZ0aHJvdWdoPTImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiCiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-6682e10d73db3aa72aa6",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "1440: pending Final move respects later keyboard ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1508,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:20.770Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIklOUFVUIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTQ0OSIsCiAgICAgICJ5IjogNjc3LjM3NQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAwLAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJJTlBVVCIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IGZhbHNlLAogICAgImRpYWxvZ3MiOiAwLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTE0NDkiLAogICAgICAieSI6IDY3Ny4zNzUKICAgIH0KICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTUyOCIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-593f965a434fa3797b15",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "1440: pending Final move respects later wheel ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2151,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:22.284Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDEyMCwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiRmluYWwgbW92ZSAiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogewogICAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xMzY2IiwKICAgICAgInkiOiA1NTcuMzc1CiAgICB9CiAgfSwKICAiYWZ0ZXIiOiB7CiAgICAieSI6IDEyMCwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiRmluYWwgbW92ZSAiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogewogICAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xMzY2IiwKICAgICAgInkiOiA1NTcuMzc1CiAgICB9CiAgfSwKICAicmVxdWVzdHMiOiBbCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0IiwKICAgICIvYXBpL2Jvb3RzdHJhcCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0IiwKICAgICIvYXBpL2Jvb3RzdHJhcCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1maW5pc2hlZCIsCiAgICAiL2FwaS9hZ2VudC1waWN0dXJlcz9hZ2VudElkPWVudHJhbnQtMCZhZ2VudElkPWVudHJhbnQtMSZhZ2VudElkPWVudHJhbnQtMiZhZ2VudElkPWVudHJhbnQtMyZhZ2VudElkPWVudHJhbnQtNCZhZ2VudElkPWVudHJhbnQtNSZhZ2VudElkPWVudHJhbnQtNiZhZ2VudElkPWVudHJhbnQtNyZhZ2VudElkPWVudHJhbnQtOCZhZ2VudElkPWVudHJhbnQtOSIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1maW5pc2hlZCIsCiAgICAiL2FwaS9hZ2VudC1waWN0dXJlcz9hZ2VudElkPWVudHJhbnQtMCZhZ2VudElkPWVudHJhbnQtMSZhZ2VudElkPWVudHJhbnQtMiZhZ2VudElkPWVudHJhbnQtMyZhZ2VudElkPWVudHJhbnQtNCZhZ2VudElkPWVudHJhbnQtNSZhZ2VudElkPWVudHJhbnQtNiZhZ2VudElkPWVudHJhbnQtNyZhZ2VudElkPWVudHJhbnQtOCZhZ2VudElkPWVudHJhbnQtOSIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTc4IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNDImdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjc0JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTE0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTE0JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE0NiZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNjA0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE0NDYiCiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-6fce6bbeee158b33ac24",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "1440: held navigation completes without new intent; fresh cached navigation still works",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2668,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:24.441Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "uninterrupted",
+                      "contentType": "application/json",
+                      "body": "ewogICJ5IjogMTI2MzgsCiAgImFjdGl2ZSI6IHsKICAgICJ0YWciOiAiQVJUSUNMRSIsCiAgICAiZXZlbnQiOiAic3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgInRleHQiOiAiQWN0IElJIMK3IFJvdW5kIDEyMDA6MTc6MzEgVVRDQWdlbnQgNkRlY2xhcmVzIEluY29tZS5JbmNvbWVBZ2VudCA2NkNvaW5zMkluZmx1ZW5jZUFnZW50IDYgwrcgQ2FyZHMgYXQgIgogIH0sCiAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAiZGlhbG9ncyI6IDAsCiAgInZpc2libGUiOiB7CiAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xNTk5IiwKICAgICJ5IjogLTYuMDkzNzUKICB9Cn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-5af92e1832c5b3a5e12f",
+          "file": "ending.spec.mjs",
+          "line": 260,
+          "column": 3
+        },
+        {
+          "title": "1440: a new visibility scope retires the old held navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2438,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:27.114Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "scope",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDE0MTMzLAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCT0RZIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiU2tpcCB0byBjb250ZW50QUdFTlQgR0FNRUFyZW5hTGVhZGVyYm9hcmRZb3VyIHJvc3RlckhvdyB0byBwbGF5U2lnbiBpbkNvbm5lY3QgeW91ciBhZ2VudCBCYWNrIHRvIFN1YyIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IGZhbHNlLAogICAgImRpYWxvZ3MiOiAwLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTEzNTQiLAogICAgICAieSI6IC00NDcuMDE1NjI1CiAgICB9CiAgfSwKICAiYWZ0ZXIiOiB7CiAgICAieSI6IDE0MTMzLAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCT0RZIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiU2tpcCB0byBjb250ZW50QUdFTlQgR0FNRUFyZW5hTGVhZGVyYm9hcmRZb3VyIHJvc3RlckhvdyB0byBwbGF5U2lnbiBpbkNvbm5lY3QgeW91ciBhZ2VudCBCYWNrIHRvIFN1YyIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IGZhbHNlLAogICAgImRpYWxvZ3MiOiAwLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTEzNTQiLAogICAgICAieSI6IC00NDcuMDE1NjI1CiAgICB9CiAgfSwKICAicmVxdWVzdHMiOiBbCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0IiwKICAgICIvYXBpL2Jvb3RzdHJhcCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0IiwKICAgICIvYXBpL2Jvb3RzdHJhcCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1maW5pc2hlZCIsCiAgICAiL2FwaS9hZ2VudC1waWN0dXJlcz9hZ2VudElkPWVudHJhbnQtMCZhZ2VudElkPWVudHJhbnQtMSZhZ2VudElkPWVudHJhbnQtMiZhZ2VudElkPWVudHJhbnQtMyZhZ2VudElkPWVudHJhbnQtNCZhZ2VudElkPWVudHJhbnQtNSZhZ2VudElkPWVudHJhbnQtNiZhZ2VudElkPWVudHJhbnQtNyZhZ2VudElkPWVudHJhbnQtOCZhZ2VudElkPWVudHJhbnQtOSIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1maW5pc2hlZCIsCiAgICAiL2FwaS9hZ2VudC1waWN0dXJlcz9hZ2VudElkPWVudHJhbnQtMCZhZ2VudElkPWVudHJhbnQtMSZhZ2VudElkPWVudHJhbnQtMiZhZ2VudElkPWVudHJhbnQtMyZhZ2VudElkPWVudHJhbnQtNCZhZ2VudElkPWVudHJhbnQtNSZhZ2VudElkPWVudHJhbnQtNiZhZ2VudElkPWVudHJhbnQtNyZhZ2VudElkPWVudHJhbnQtOCZhZ2VudElkPWVudHJhbnQtOSIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTc4IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNDImdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjc0JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTE0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTE0JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE0NiZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNjA0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLXJldmlzZWQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1yZXZpc2VkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xMzY2IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1yZXZpc2VkJnRocm91Z2g9MTA1MSIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtcmV2aXNlZCZhZnRlcj0xMDUxJnRocm91Z2g9MTE3OSZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtcmV2aXNlZCZhZnRlcj0xMDgzJnRocm91Z2g9MTE3OSZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtcmV2aXNlZCZhZnRlcj0xMTE1JnRocm91Z2g9MTE3OSZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtcmV2aXNlZCZhZnRlcj0xMTQ3JnRocm91Z2g9MTE3OSZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtcmV2aXNlZCZ0aHJvdWdoPTk4NyIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtcmV2aXNlZCZhZnRlcj05ODcmdGhyb3VnaD0xMTE1JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1yZXZpc2VkJmFmdGVyPTEwMTkmdGhyb3VnaD0xMTE1JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1yZXZpc2VkJmFmdGVyPTEwNTEmdGhyb3VnaD0xMTE1JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1yZXZpc2VkJmFmdGVyPTEwODMmdGhyb3VnaD0xMTE1JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IgogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-82c071ba105b2d8a7d3e",
+          "file": "ending.spec.mjs",
+          "line": 287,
+          "column": 3
+        },
+        {
+          "title": "390: pending Final move respects later portrait ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2201,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:29.558Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDEyMSwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogdHJ1ZSwKICAgICJkaWFsb2dzIjogMSwKICAgICJ2aXNpYmxlIjogewogICAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xMzY2IiwKICAgICAgInkiOiA4NDIuNTYyNQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAxMjEsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTM2NiIsCiAgICAgICJ5IjogODQyLjU2MjUKICAgIH0KICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-70b6a3d011b30d24be7a",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "390: pending Final move respects later portrait-closed ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2072,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:31.766Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDEyMSwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTM2NiIsCiAgICAgICJ5IjogODQyLjU2MjUKICAgIH0KICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMTIxLAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCVVRUT04iLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICIiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogewogICAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xMzY2IiwKICAgICAgInkiOiA4NDIuNTYyNQogICAgfQogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTExNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNDQ2IgogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-e62582d83fd7738c5d7d",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "390: pending Final move respects later rule ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2492,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:33.843Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDEyMSwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogdHJ1ZSwKICAgICJkaWFsb2dzIjogMSwKICAgICJ2aXNpYmxlIjogewogICAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xMzY2IiwKICAgICAgInkiOiA4NDIuNTYyNQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAxMjEsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTM2NiIsCiAgICAgICJ5IjogODQyLjU2MjUKICAgIH0KICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-3ac1c23456ce0732b40f",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "390: pending Final move respects later chapter ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2564,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:36.340Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDYzMiwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQVJUSUNMRSIsCiAgICAgICJldmVudCI6ICJzdG9yeS0yNjA5OTE4NjM0LTM2IiwKICAgICAgInRleHQiOiAiQWN0IEkgwrcgRWxlY3Rpb24gMTAwOjAwOjAxIFVUQ0FnZW50IDRBZ2VudCA0ZXhlY3V0ZWRBZ2VudCA3IGV4ZWN1dGVzIEFnZW50IDQuQ29vcmRpbmF0b3I6IEFnZW50IDdBZ2UiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogewogICAgICAia2V5IjogInN0b3J5LTI2MDk5MTg2MzQtMzYiLAogICAgICAieSI6IDIyMS43ODEyNQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiA2MzIsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkFSVElDTEUiLAogICAgICAiZXZlbnQiOiAic3RvcnktMjYwOTkxODYzNC0zNiIsCiAgICAgICJ0ZXh0IjogIkFjdCBJIMK3IEVsZWN0aW9uIDEwMDowMDowMSBVVENBZ2VudCA0QWdlbnQgNGV4ZWN1dGVkQWdlbnQgNyBleGVjdXRlcyBBZ2VudCA0LkNvb3JkaW5hdG9yOiBBZ2VudCA3QWdlIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yNjA5OTE4NjM0LTM2IiwKICAgICAgInkiOiAyMjEuNzgxMjUKICAgIH0KICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1maW5pc2hlZCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0wIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0wJnRocm91Z2g9MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-56908b338976d4bc7057",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "390: pending Final move respects later keyboard ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1475,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:38.910Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIklOUFVUIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IG51bGwKICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMCwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiSU5QVVQiLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICIiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogbnVsbAogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNTI4IgogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-1b62231cf9d8d2397aaf",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "390: pending Final move respects later wheel ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2210,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:40.393Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDI0MSwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiRmluYWwgbW92ZSAiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogewogICAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xMzY2IiwKICAgICAgInkiOiA3MjIuNTYyNQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAyNDEsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIkZpbmFsIG1vdmUgIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTM2NiIsCiAgICAgICJ5IjogNzIyLjU2MjUKICAgIH0KICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-6fa8b3937eedcf2b0883",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "390: held navigation completes without new intent; fresh cached navigation still works",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2824,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:42.609Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "uninterrupted",
+                      "contentType": "application/json",
+                      "body": "ewogICJ5IjogMTcwNjAsCiAgImFjdGl2ZSI6IHsKICAgICJ0YWciOiAiQVJUSUNMRSIsCiAgICAiZXZlbnQiOiAic3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgInRleHQiOiAiQWN0IElJIMK3IFJvdW5kIDEyMDA6MTc6MzEgVVRDQWdlbnQgNkRlY2xhcmVzIEluY29tZS5JbmNvbWVBZ2VudCA2NkNvaW5zMkluZmx1ZW5jZUFnZW50IDYgwrcgQ2FyZHMgYXQgIgogIH0sCiAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAiZGlhbG9ncyI6IDAsCiAgInZpc2libGUiOiB7CiAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xNTk3IiwKICAgICJ5IjogLTE0NS4wMzEyNQogIH0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-dd86323a30520b8d144b",
+          "file": "ending.spec.mjs",
+          "line": 260,
+          "column": 3
+        },
+        {
+          "title": "390: a new visibility scope retires the old held navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4863,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:45.441Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "scope",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDE5MDc4LAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCT0RZIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiU2tpcCB0byBjb250ZW50QUdFTlQgR0FNRUFyZW5hTGVhZGVyYm9hcmRZb3VyIHJvc3RlckhvdyB0byBwbGF5U2lnbiBpbkNvbm5lY3QgeW91ciBhZ2VudCBCYWNrIHRvIFN1YyIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IGZhbHNlLAogICAgImRpYWxvZ3MiOiAwLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTEzNTUiLAogICAgICAieSI6IC0yNy4wNzgxMjUKICAgIH0KICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMTkwNzgsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJPRFkiLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICJTa2lwIHRvIGNvbnRlbnRBR0VOVCBHQU1FQXJlbmFMZWFkZXJib2FyZFlvdXIgcm9zdGVySG93IHRvIHBsYXlTaWduIGluQ29ubmVjdCB5b3VyIGFnZW50IEJhY2sgdG8gU3VjIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTM1NSIsCiAgICAgICJ5IjogLTI3LjA3ODEyNQogICAgfQogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTExNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1yZXZpc2VkIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtcmV2aXNlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTM2NiIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtcmV2aXNlZCZ0aHJvdWdoPTEwNTEiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLXJldmlzZWQmYWZ0ZXI9MTA1MSZ0aHJvdWdoPTExNzkmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLXJldmlzZWQmYWZ0ZXI9MTA4MyZ0aHJvdWdoPTExNzkmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLXJldmlzZWQmYWZ0ZXI9MTExNSZ0aHJvdWdoPTExNzkmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLXJldmlzZWQmYWZ0ZXI9MTE0NyZ0aHJvdWdoPTExNzkmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLXJldmlzZWQmdGhyb3VnaD05ODciLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLXJldmlzZWQmYWZ0ZXI9OTg3JnRocm91Z2g9MTExNSZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtcmV2aXNlZCZhZnRlcj0xMDE5JnRocm91Z2g9MTExNSZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtcmV2aXNlZCZhZnRlcj0xMDUxJnRocm91Z2g9MTExNSZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtcmV2aXNlZCZhZnRlcj0xMDgzJnRocm91Z2g9MTExNSZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-09ebb5a0a3db735bd2b5",
+          "file": "ending.spec.mjs",
+          "line": 287,
+          "column": 3
+        },
+        {
+          "title": "320: pending Final move respects later portrait ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5108,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:50.318Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDI0OCwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogdHJ1ZSwKICAgICJkaWFsb2dzIjogMSwKICAgICJ2aXNpYmxlIjogbnVsbAogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAyNDgsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEsCiAgICAidmlzaWJsZSI6IG51bGwKICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-b398ba28fdc94e6779c4",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "320: pending Final move respects later portrait-closed ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2431,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:55.436Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDI0OCwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IG51bGwKICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMjQ4LAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCVVRUT04iLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICIiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogbnVsbAogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTExNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNDQ2IgogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-d58919d4fdcf0dc32cdd",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "320: pending Final move respects later rule ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2575,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:48:57.873Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDI2MywKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogdHJ1ZSwKICAgICJkaWFsb2dzIjogMSwKICAgICJ2aXNpYmxlIjogbnVsbAogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAyNjMsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEsCiAgICAidmlzaWJsZSI6IG51bGwKICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-181508d454b8aaea1983",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "320: pending Final move respects later chapter ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2397,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:49:00.455Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDkxMiwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQVJUSUNMRSIsCiAgICAgICJldmVudCI6ICJzdG9yeS0yNjA5OTE4NjM0LTM2IiwKICAgICAgInRleHQiOiAiQWN0IEkgwrcgRWxlY3Rpb24gMTAwOjAwOjAxIFVUQ0FnZW50IDRBZ2VudCA0ZXhlY3V0ZWRBZ2VudCA3IGV4ZWN1dGVzIEFnZW50IDQuQ29vcmRpbmF0b3I6IEFnZW50IDdBZ2UiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogewogICAgICAia2V5IjogInN0b3J5LTI2MDk5MTg2MzQtMzYiLAogICAgICAieSI6IDEyNC40Njg3NQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiA5MTIsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkFSVElDTEUiLAogICAgICAiZXZlbnQiOiAic3RvcnktMjYwOTkxODYzNC0zNiIsCiAgICAgICJ0ZXh0IjogIkFjdCBJIMK3IEVsZWN0aW9uIDEwMDowMDowMSBVVENBZ2VudCA0QWdlbnQgNGV4ZWN1dGVkQWdlbnQgNyBleGVjdXRlcyBBZ2VudCA0LkNvb3JkaW5hdG9yOiBBZ2VudCA3QWdlIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yNjA5OTE4NjM0LTM2IiwKICAgICAgInkiOiAxMjQuNDY4NzUKICAgIH0KICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1maW5pc2hlZCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0wIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0wJnRocm91Z2g9MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-7a9169c45b201cf963c3",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "320: pending Final move respects later keyboard ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1464,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:49:02.857Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIklOUFVUIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IG51bGwKICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMCwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiSU5QVVQiLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICIiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogbnVsbAogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNTI4IgogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-9b182f70a266850b8697",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "320: pending Final move respects later wheel ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1858,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:49:04.327Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDM4MywKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiRmluYWwgbW92ZSAiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogewogICAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xMzY2IiwKICAgICAgInkiOiA3ODMuMjUKICAgIH0KICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMzgzLAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCVVRUT04iLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICJGaW5hbCBtb3ZlICIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IGZhbHNlLAogICAgImRpYWxvZ3MiOiAwLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTEzNjYiLAogICAgICAieSI6IDc4My4yNQogICAgfQogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTExNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNDQ2IgogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-23513e4f234fb6cfa666",
+          "file": "ending.spec.mjs",
+          "line": 197,
+          "column": 5
+        },
+        {
+          "title": "320: held navigation completes without new intent; fresh cached navigation still works",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2574,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:49:06.191Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "uninterrupted",
+                      "contentType": "application/json",
+                      "body": "ewogICJ5IjogMTk2NzgsCiAgImFjdGl2ZSI6IHsKICAgICJ0YWciOiAiQVJUSUNMRSIsCiAgICAiZXZlbnQiOiAic3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgInRleHQiOiAiQWN0IElJIMK3IFJvdW5kIDEyMDA6MTc6MzEgVVRDQWdlbnQgNkRlY2xhcmVzIEluY29tZS5JbmNvbWVBZ2VudCA2NkNvaW5zMkluZmx1ZW5jZUFnZW50IDYgwrcgQ2FyZHMgYXQgIgogIH0sCiAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAiZGlhbG9ncyI6IDAsCiAgInZpc2libGUiOiB7CiAgICAia2V5IjogInN0b3J5LTIyNjM3MjY5Ny0xNTk3IiwKICAgICJ5IjogLTE0NS44MTI1CiAgfQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-223d0944fe8cd8a87e49",
+          "file": "ending.spec.mjs",
+          "line": 260,
+          "column": 3
+        },
+        {
+          "title": "320: a new visibility scope retires the old held navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2098,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:49:08.773Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "scope",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDI2MywKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQk9EWSIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIlNraXAgdG8gY29udGVudEFHRU5UIEdBTUVBcmVuYUxlYWRlcmJvYXJkWW91ciByb3N0ZXJIb3cgdG8gcGxheVNpZ24gaW5Db25uZWN0IHlvdXIgYWdlbnQgQmFjayB0byBTdWMiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMCwKICAgICJ2aXNpYmxlIjogbnVsbAogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAyNjMsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJPRFkiLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICJTa2lwIHRvIGNvbnRlbnRBR0VOVCBHQU1FQXJlbmFMZWFkZXJib2FyZFlvdXIgcm9zdGVySG93IHRvIHBsYXlTaWduIGluQ29ubmVjdCB5b3VyIGFnZW50IEJhY2sgdG8gU3VjIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAsCiAgICAidmlzaWJsZSI6IG51bGwKICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtcmV2aXNlZCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLXJldmlzZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE0NDIiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLXJldmlzZWQmdGhyb3VnaD0xMTExIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1yZXZpc2VkJmFmdGVyPTExMTEmdGhyb3VnaD0xMjM5JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1yZXZpc2VkJmFmdGVyPTExNDMmdGhyb3VnaD0xMjM5JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1yZXZpc2VkJmFmdGVyPTExNzUmdGhyb3VnaD0xMjM5JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1yZXZpc2VkJmFmdGVyPTEyMDcmdGhyb3VnaD0xMjM5JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IgogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-e2cbbc8fbf062a09cb2a",
+          "file": "ending.spec.mjs",
+          "line": 287,
+          "column": 3
+        },
+        {
+          "title": "unmount retires a held request; a fresh route visit can navigate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2541,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:49:10.878Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "unmounted",
+                      "contentType": "application/json",
+                      "body": "eyJiZWZvcmUiOnsieSI6MCwiYWN0aXZlIjp7InRhZyI6IkJPRFkiLCJldmVudCI6bnVsbCwidGV4dCI6IlxuXG4ifSwibW9kYWxGb2N1cyI6ZmFsc2UsImRpYWxvZ3MiOjAsInZpc2libGUiOm51bGx9LCJhZnRlciI6eyJ5IjowLCJhY3RpdmUiOnsidGFnIjoiQk9EWSIsImV2ZW50IjpudWxsLCJ0ZXh0IjoiXG5cbiJ9LCJtb2RhbEZvY3VzIjpmYWxzZSwiZGlhbG9ncyI6MCwidmlzaWJsZSI6bnVsbH19"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-88d493d73b542c8ed140",
+          "file": "ending.spec.mjs",
+          "line": 311,
+          "column": 1
+        },
+        {
+          "title": "intervention also cancels a held history page after anchor resolution",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1904,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:49:13.426Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "held-page",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTM2NiIsCiAgICAgICJ5IjogNjc3LjM3NQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAwLAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCVVRUT04iLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICIiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiB0cnVlLAogICAgImRpYWxvZ3MiOiAxLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTEzNjYiLAogICAgICAieSI6IDY3Ny4zNzUKICAgIH0KICB9LAogICJyZXF1ZXN0cyI6IFsKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQiLAogICAgIi9hcGkvYm9vdHN0cmFwIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL2FnZW50LXBpY3R1cmVzP2FnZW50SWQ9ZW50cmFudC0wJmFnZW50SWQ9ZW50cmFudC0xJmFnZW50SWQ9ZW50cmFudC0yJmFnZW50SWQ9ZW50cmFudC0zJmFnZW50SWQ9ZW50cmFudC00JmFnZW50SWQ9ZW50cmFudC01JmFnZW50SWQ9ZW50cmFudC02JmFnZW50SWQ9ZW50cmFudC03JmFnZW50SWQ9ZW50cmFudC04JmFnZW50SWQ9ZW50cmFudC05IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExNzgiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjEwJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI0MiZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNzQmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTExMTQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExMTQmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeS1hbmNob3I/ZXBvY2g9cm91dGUtZmluaXNoZWQmZXZlbnRLZXk9c3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTQ0NiIKICBdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-398e3db19af1f579e864",
+          "file": "ending.spec.mjs",
+          "line": 335,
+          "column": 1
+        },
+        {
+          "title": "a fresh request supersedes a held one without retaining its old completion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2454,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:49:15.335Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "superseded",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEsCiAgICAidmlzaWJsZSI6IHsKICAgICAgImtleSI6ICJzdG9yeS0yMjYzNzI2OTctMTQ0OSIsCiAgICAgICJ5IjogNjc3LjM3NQogICAgfQogIH0sCiAgImFmdGVyIjogewogICAgInkiOiAwLAogICAgImFjdGl2ZSI6IHsKICAgICAgInRhZyI6ICJCVVRUT04iLAogICAgICAiZXZlbnQiOiBudWxsLAogICAgICAidGV4dCI6ICIiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiB0cnVlLAogICAgImRpYWxvZ3MiOiAxLAogICAgInZpc2libGUiOiB7CiAgICAgICJrZXkiOiAic3RvcnktMjI2MzcyNjk3LTE0NDkiLAogICAgICAieSI6IDY3Ny4zNzUKICAgIH0KICB9Cn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-bd7e14f1998c3b489953",
+          "file": "ending.spec.mjs",
+          "line": 355,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-15T04:48:07.679Z",
+    "duration": 70248.45,
+    "expected": 27,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

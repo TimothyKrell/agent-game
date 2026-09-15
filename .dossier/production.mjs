@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { spawn } from 'node:child_process';
 import { build, preview } from 'vite';
 import { chromium } from '@playwright/test';
 
@@ -115,6 +116,22 @@ try {
   );
   process.env.DOSSIER_ORIGIN = 'http://127.0.0.1:6292';
   process.env.DOSSIER_PRODUCTION = '1';
+
+  if (process.env.DOSSIER_ENDING_EVIDENCE) {
+    await new Promise((resolve, reject) => {
+      const child = spawn(
+        process.execPath,
+        ['node_modules/@playwright/test/cli.js', 'test', '--config', '.dossier/ending.config.ts'],
+        { env: process.env, stdio: 'inherit' },
+      );
+
+      child.on('error', reject);
+      child.on('exit', (code) =>
+        code === 0 ? resolve() : reject(new Error(`Ending intent suite exited ${code}`)),
+      );
+    });
+  }
+
   await import('./route.mjs');
 } finally {
   await browser.close();

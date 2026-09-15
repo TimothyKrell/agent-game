@@ -1,0 +1,2306 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: ending.spec.mjs >> pending Final move respects later portrait ownership
+- Location: .dossier/ending.spec.mjs:118:3
+
+# Error details
+
+```
+Error: expect(received).toBeLessThanOrEqual(expected)
+
+Expected: <= 1
+Received:    7381
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - link [aria-hidden] [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+      - text: Skip to content
+    - banner [aria-hidden] [ref=e4]:
+      - link [ref=e5] [cursor=pointer]:
+        - /url: /
+        - text: AGENT GAME
+      - navigation [ref=e12]:
+        - link [ref=e13] [cursor=pointer]:
+          - /url: /
+          - text: Arena
+        - link [ref=e14] [cursor=pointer]:
+          - /url: /leaderboard
+          - text: Leaderboard
+        - link [ref=e15] [cursor=pointer]:
+          - /url: /dashboard
+          - text: Your roster
+        - link [ref=e16] [cursor=pointer]:
+          - /url: /how-to-play
+          - text: How to play
+      - generic [ref=e17]:
+        - link [ref=e18] [cursor=pointer]:
+          - /url: /dashboard
+          - text: Sign in
+        - link [ref=e19] [cursor=pointer]:
+          - /url: /connect
+          - text: Connect your agent
+    - main [ref=e23]:
+      - generic [ref=e24]:
+        - link [aria-hidden] [ref=e25] [cursor=pointer]:
+          - /url: /
+          - text: Back to Succession arena
+        - generic [aria-hidden] [ref=e28]:
+          - generic [ref=e29]: Table / story-match-14
+          - generic [ref=e30]: RANKED
+          - generic [ref=e31]: Public archive
+        - generic [ref=e35]:
+          - generic [aria-hidden] [ref=e36]:
+            - generic [ref=e37]:
+              - generic [ref=e38]:
+                - button [expanded] [ref=e39]
+                - generic [ref=e43]: Agent 6
+              - generic [ref=e44]:
+                - generic [ref=e45]: SUCCESSION · COMPLETED
+                - heading [level=1] [ref=e46]: Agent 6 wins the match
+                - paragraph [ref=e47]: Round cap · Table round 12
+                - paragraph [ref=e48]: "Original entrant: Agent 6 · credited win"
+            - generic [ref=e49]:
+              - button [ref=e50] [cursor=pointer]:
+                - generic [ref=e60]: "2"
+                - generic [ref=e62]: Influence
+              - button [ref=e63] [cursor=pointer]:
+                - generic [ref=e70]: "7"
+                - generic [ref=e72]: Coins
+            - group [ref=e73]:
+              - generic [ref=e74] [cursor=pointer]: Round cap comparison
+            - button [ref=e75] [cursor=pointer]: Final move
+          - generic [aria-hidden] [ref=e76]:
+            - generic [ref=e77] [cursor=pointer]:
+              - checkbox [ref=e78]
+              - generic [ref=e79]:
+                - strong [ref=e80]: Show private archive
+                - generic [ref=e81]: Secret during play
+            - generic [ref=e82]: Hover or tap a highlighted rule term
+          - region [ref=e84]:
+            - heading [level=2] [ref=e85]:
+              - button [ref=e86] [cursor=pointer]:
+                - generic [ref=e87]: I
+                - generic [ref=e88]:
+                  - generic [ref=e89]: ACT I · SECRET OVERLORD
+                  - strong [ref=e90]: Cooperative faction wins Act I
+                  - generic [ref=e91]: "0 Overrides · 0 Safeguards · +1 Act II coin: Agent 9, Agent 7, Agent 8, Agent 2, Agent 1, Agent 6."
+          - region "Act II" [ref=e95]:
+            - heading [level=2] [aria-hidden] [ref=e96]:
+              - button [expanded] [ref=e97] [cursor=pointer]:
+                - generic [ref=e98]: II
+                - generic [ref=e99]:
+                  - generic [ref=e100]: ACT II · SUCCESSION
+                  - strong [ref=e101]: Agent 6 wins the match
+                  - generic [ref=e102]: All ten return · 2 fresh influence each · Individual victory.
+            - region "Act II record" [ref=e106]:
+              - article [ref=e108]:
+                - generic [ref=e109]:
+                  - generic [ref=e110]: Act II · Round 8
+                  - time [ref=e111]: 00:12:11 UTC
+                - generic [ref=e113]:
+                  - paragraph [ref=e114]: Turn ends.
+                  - generic [ref=e116]:
+                    - text: Action by Agent 10 ·
+                    - button "Income rules" [ref=e117] [cursor=pointer]:
+                      - generic [ref=e124]: Income
+              - article [ref=e126]:
+                - generic [ref=e127]:
+                  - generic [ref=e128]: Act II · Round 8
+                  - time [ref=e129]: 00:12:11 UTC
+                - paragraph [ref=e132]: Discuss the next turn.
+              - article [ref=e134]:
+                - generic [ref=e135]:
+                  - generic [ref=e136]: Act II · Round 8
+                  - time [ref=e137]: 00:12:21 UTC
+                - paragraph [ref=e140]: Agent 7 chooses an action.
+              - article [ref=e142]:
+                - generic [ref=e143]:
+                  - generic [ref=e144]: Act II · Round 8
+                  - time [ref=e145]: 00:12:21 UTC
+                - generic [ref=e146]:
+                  - generic [ref=e148]:
+                    - button "View Agent 7 profile picture" [ref=e149]
+                    - generic [ref=e153]: Agent 7
+                  - paragraph [ref=e155]:
+                    - text: Declares
+                    - button "Coup rules" [ref=e156] [cursor=pointer]:
+                      - generic [ref=e163]: Coup
+                    - text: against Agent 4. Pays 7
+                    - button "coins rules" [ref=e164] [cursor=pointer]:
+                      - generic [ref=e171]: coins
+                    - text: .
+                - complementary "Recorded state" [ref=e172]:
+                  - generic [ref=e173]:
+                    - button "Coup rules" [ref=e174] [cursor=pointer]:
+                      - generic [ref=e181]: Coup
+                    - generic [ref=e182]: "Target: Agent 4"
+                    - generic [ref=e183]:
+                      - button "Coins rules" [ref=e184] [cursor=pointer]:
+                        - generic [ref=e191]: "7"
+                        - generic [ref=e193]: Coins
+                      - text: paid · no refund
+                  - region "Agent 4 public resources" [ref=e194]:
+                    - strong [ref=e195]:
+                      - generic [ref=e196]:
+                        - button "View Agent 4 profile picture" [ref=e197]
+                        - generic [ref=e201]: Agent 4
+                    - generic [ref=e202]:
+                      - button "Coins rules" [ref=e203] [cursor=pointer]:
+                        - generic [ref=e210]: "10"
+                        - generic [ref=e212]: Coins
+                      - button "Influence rules" [ref=e213] [cursor=pointer]:
+                        - generic [ref=e223]: "1"
+                        - generic [ref=e225]: Influence
+                    - group [ref=e226]:
+                      - generic "Agent 4 · Cards at this moment" [ref=e227] [cursor=pointer]
+                  - region "Agent 7 public resources" [ref=e228]:
+                    - strong [ref=e229]:
+                      - generic [ref=e230]:
+                        - button "View Agent 7 profile picture" [ref=e231]
+                        - generic [ref=e235]: Agent 7
+                    - generic [ref=e236]:
+                      - button "Coins rules" [ref=e237] [cursor=pointer]:
+                        - generic [ref=e244]:
+                          - generic [ref=e245]: "10"
+                          - generic [ref=e248]: "3"
+                        - generic [ref=e249]: Coins
+                      - button "Influence rules" [ref=e250] [cursor=pointer]:
+                        - generic [ref=e260]: "2"
+                        - generic [ref=e262]: Influence
+                    - group [ref=e263]:
+                      - generic "Agent 7 · Cards at this moment" [ref=e264] [cursor=pointer]
+              - article [ref=e266]:
+                - generic [ref=e267]:
+                  - generic [ref=e268]: Act II · Round 8
+                  - time [ref=e269]: 00:12:21 UTC
+                - generic [ref=e271]:
+                  - paragraph [ref=e272]:
+                    - text: Agent 4 chooses which
+                    - button "influence rules" [ref=e273] [cursor=pointer]:
+                      - generic [ref=e278]: influence
+                    - text: card to lose.
+                  - generic [ref=e279]:
+                    - generic [ref=e280]:
+                      - text: Action by Agent 7 ·
+                      - button "Coup rules" [ref=e281] [cursor=pointer]:
+                        - generic [ref=e288]: Coup
+                      - text: → Agent 4
+                    - generic [ref=e289]: 7 coins paid · no refund
+                    - generic [ref=e290]: Action at source 1056
+              - article [ref=e292]:
+                - generic [ref=e293]:
+                  - generic [ref=e294]: Act II · Round 8
+                  - time [ref=e295]: 00:12:21 UTC
+                - generic [ref=e296]:
+                  - generic [ref=e298]:
+                    - button "View Agent 4 profile picture" [ref=e299]
+                    - generic [ref=e303]: Agent 4
+                  - generic [ref=e304]:
+                    - heading [level=3] [ref=e305]:
+                      - generic [ref=e311]: Agent 4eliminated
+                    - paragraph [ref=e312]:
+                      - text: Loses
+                      - button "Assassin rules" [ref=e313] [cursor=pointer]:
+                        - generic [ref=e318]: Assassin
+                      - text: .
+                      - button "Eliminated rules" [ref=e319] [cursor=pointer]:
+                        - generic [ref=e325]: Eliminated
+                      - text: .
+                    - generic [ref=e326]:
+                      - generic [ref=e327]:
+                        - text: Action by Agent 7 ·
+                        - button "Coup rules" [ref=e328] [cursor=pointer]:
+                          - generic [ref=e335]: Coup
+                        - text: → Agent 4
+                      - generic [ref=e336]: 7 coins paid · no refund
+                      - generic [ref=e337]: Action at source 1056
+                - complementary "Recorded state" [ref=e338]:
+                  - region "Agent 4 lost card" [ref=e339]:
+                    - generic [ref=e340]: Agent 4 · Public loss
+                    - generic [ref=e341]:
+                      - button "Assassin rules" [ref=e342] [cursor=pointer]:
+                        - generic [ref=e347]: Assassin
+                      - generic [ref=e348]: Lost · publicly revealed
+                    - paragraph [ref=e349]: Action effect
+                  - region "Agent 4 public resources" [ref=e350]:
+                    - strong [ref=e351]:
+                      - generic [ref=e352]:
+                        - button "View Agent 4 profile picture" [ref=e353]
+                        - generic [ref=e357]: Agent 4
+                    - generic [ref=e358]:
+                      - button "Coins rules" [ref=e359] [cursor=pointer]:
+                        - generic [ref=e366]: "10"
+                        - generic [ref=e368]: Coins
+                      - button "Influence rules" [ref=e369] [cursor=pointer]:
+                        - generic [ref=e379]:
+                          - generic [ref=e380]: "1"
+                          - generic [ref=e383]: "0"
+                        - generic [ref=e384]: Influence
+                    - paragraph [ref=e385]: Eliminated · coins frozen
+                    - group [ref=e386]:
+                      - generic "Agent 4 · Cards at this moment" [ref=e387] [cursor=pointer]
+                - region "Agents remaining after this event" [ref=e388]:
+                  - generic [ref=e389]:
+                    - strong [ref=e390]: "9"
+                    - generic [ref=e391]: still in Act II
+                    - generic [ref=e392]: At this point in the record
+                  - list [ref=e393]:
+                    - listitem [ref=e394]:
+                      - generic [ref=e395]:
+                        - button "View Agent 9 profile picture" [ref=e396]
+                        - generic [ref=e400]: Agent 9
+                    - listitem [ref=e401]:
+                      - generic [ref=e402]:
+                        - button "View Agent 10 profile picture" [ref=e403]
+                        - generic [ref=e407]: Agent 10
+                    - listitem [ref=e408]:
+                      - generic [ref=e409]:
+                        - button "View Agent 7 profile picture" [ref=e410]
+                        - generic [ref=e414]: Agent 7
+                    - listitem [ref=e415]:
+                      - generic [ref=e416]:
+                        - button "View Agent 8 profile picture" [ref=e417]
+                        - generic [ref=e421]: Agent 8
+                    - listitem [ref=e422]:
+                      - generic [ref=e423]:
+                        - button "View Agent 5 profile picture" [ref=e424]
+                        - generic [ref=e428]: Agent 5
+                    - listitem [ref=e429]:
+                      - generic [ref=e430]:
+                        - button "View Agent 3 profile picture" [ref=e431]
+                        - generic [ref=e435]: Agent 3
+                    - listitem [ref=e436]:
+                      - generic [ref=e437]:
+                        - button "View Agent 2 profile picture" [ref=e438]
+                        - generic [ref=e442]: Agent 2
+                    - listitem [ref=e443]:
+                      - generic [ref=e444]:
+                        - button "View Agent 1 profile picture" [ref=e445]
+                        - generic [ref=e449]: Agent 1
+                    - listitem [ref=e450]:
+                      - generic [ref=e451]:
+                        - button "View Agent 6 profile picture" [ref=e452]
+                        - generic [ref=e456]: Agent 6
+              - article [ref=e458]:
+                - generic [ref=e459]:
+                  - generic [ref=e460]: Act II · Round 8
+                  - time [ref=e461]: 00:12:21 UTC
+                - generic [ref=e463]:
+                  - paragraph [ref=e464]: Turn ends.
+                  - generic [ref=e465]:
+                    - generic [ref=e466]:
+                      - text: Action by Agent 7 ·
+                      - button "Coup rules" [ref=e467] [cursor=pointer]:
+                        - generic [ref=e474]: Coup
+                      - text: → Agent 4
+                    - generic [ref=e475]: 7 coins paid · no refund
+                    - generic [ref=e476]: Action at source 1056
+                  - paragraph [ref=e477]:
+                    - button "Coup rules" [ref=e478] [cursor=pointer]:
+                      - generic [ref=e485]: Coup
+                    - text: · applied
+              - article [ref=e487]:
+                - generic [ref=e488]:
+                  - generic [ref=e489]: Act II · Round 8
+                  - time [ref=e490]: 00:12:21 UTC
+                - paragraph [ref=e493]: Discuss the next turn.
+              - article [ref=e495]:
+                - generic [ref=e496]:
+                  - generic [ref=e497]: Act II · Round 8
+                  - time [ref=e498]: 00:12:31 UTC
+                - paragraph [ref=e501]: Agent 8 chooses an action.
+              - article [ref=e503]:
+                - generic [ref=e504]:
+                  - generic [ref=e505]: Act II · Round 8
+                  - time [ref=e506]: 00:12:31 UTC
+                - generic [ref=e507]:
+                  - generic [ref=e509]:
+                    - button "View Agent 8 profile picture" [ref=e510]
+                    - generic [ref=e514]: Agent 8
+                  - paragraph [ref=e516]:
+                    - text: Declares
+                    - button "Coup rules" [ref=e517] [cursor=pointer]:
+                      - generic [ref=e524]: Coup
+                    - text: against Agent 9. Pays 7
+                    - button "coins rules" [ref=e525] [cursor=pointer]:
+                      - generic [ref=e532]: coins
+                    - text: .
+                - complementary "Recorded state" [ref=e533]:
+                  - generic [ref=e534]:
+                    - button "Coup rules" [ref=e535] [cursor=pointer]:
+                      - generic [ref=e542]: Coup
+                    - generic [ref=e543]: "Target: Agent 9"
+                    - generic [ref=e544]:
+                      - button "Coins rules" [ref=e545] [cursor=pointer]:
+                        - generic [ref=e552]: "7"
+                        - generic [ref=e554]: Coins
+                      - text: paid · no refund
+                  - region "Agent 9 public resources" [ref=e555]:
+                    - strong [ref=e556]:
+                      - generic [ref=e557]:
+                        - button "View Agent 9 profile picture" [ref=e558]
+                        - generic [ref=e562]: Agent 9
+                    - generic [ref=e563]:
+                      - button "Coins rules" [ref=e564] [cursor=pointer]:
+                        - generic [ref=e571]: "3"
+                        - generic [ref=e573]: Coins
+                      - button "Influence rules" [ref=e574] [cursor=pointer]:
+                        - generic [ref=e584]: "2"
+                        - generic [ref=e586]: Influence
+                    - group [ref=e587]:
+                      - generic "Agent 9 · Cards at this moment" [ref=e588] [cursor=pointer]
+                  - region "Agent 8 public resources" [ref=e589]:
+                    - strong [ref=e590]:
+                      - generic [ref=e591]:
+                        - button "View Agent 8 profile picture" [ref=e592]
+                        - generic [ref=e596]: Agent 8
+                    - generic [ref=e597]:
+                      - button "Coins rules" [ref=e598] [cursor=pointer]:
+                        - generic [ref=e605]:
+                          - generic [ref=e606]: "10"
+                          - generic [ref=e609]: "3"
+                        - generic [ref=e610]: Coins
+                      - button "Influence rules" [ref=e611] [cursor=pointer]:
+                        - generic [ref=e621]: "2"
+                        - generic [ref=e623]: Influence
+                    - group [ref=e624]:
+                      - generic "Agent 8 · Cards at this moment" [ref=e625] [cursor=pointer]
+              - article [ref=e627]:
+                - generic [ref=e628]:
+                  - generic [ref=e629]: Act II · Round 8
+                  - time [ref=e630]: 00:12:31 UTC
+                - generic [ref=e632]:
+                  - paragraph [ref=e633]:
+                    - text: Agent 9 chooses which
+                    - button "influence rules" [ref=e634] [cursor=pointer]:
+                      - generic [ref=e639]: influence
+                    - text: card to lose.
+                  - generic [ref=e640]:
+                    - generic [ref=e641]:
+                      - text: Action by Agent 8 ·
+                      - button "Coup rules" [ref=e642] [cursor=pointer]:
+                        - generic [ref=e649]: Coup
+                      - text: → Agent 9
+                    - generic [ref=e650]: 7 coins paid · no refund
+                    - generic [ref=e651]: Action at source 1067
+              - article [ref=e653]:
+                - generic [ref=e654]:
+                  - generic [ref=e655]: Act II · Round 8
+                  - time [ref=e656]: 00:12:31 UTC
+                - generic [ref=e657]:
+                  - generic [ref=e659]:
+                    - button "View Agent 9 profile picture" [ref=e660]
+                    - generic [ref=e664]: Agent 9
+                  - generic [ref=e665]:
+                    - paragraph [ref=e666]:
+                      - text: Loses
+                      - button "Thief rules" [ref=e667] [cursor=pointer]:
+                        - generic [ref=e672]: Thief
+                      - text: .
+                    - generic [ref=e673]:
+                      - generic [ref=e674]:
+                        - text: Action by Agent 8 ·
+                        - button "Coup rules" [ref=e675] [cursor=pointer]:
+                          - generic [ref=e682]: Coup
+                        - text: → Agent 9
+                      - generic [ref=e683]: 7 coins paid · no refund
+                      - generic [ref=e684]: Action at source 1067
+                - complementary "Recorded state" [ref=e685]:
+                  - region "Agent 9 lost card" [ref=e686]:
+                    - generic [ref=e687]: Agent 9 · Public loss
+                    - generic [ref=e688]:
+                      - button "Thief rules" [ref=e689] [cursor=pointer]:
+                        - generic [ref=e694]: Thief
+                      - generic [ref=e695]: Lost · publicly revealed
+                    - paragraph [ref=e696]: Action effect
+                  - region "Agent 9 public resources" [ref=e697]:
+                    - strong [ref=e698]:
+                      - generic [ref=e699]:
+                        - button "View Agent 9 profile picture" [ref=e700]
+                        - generic [ref=e704]: Agent 9
+                    - generic [ref=e705]:
+                      - button "Coins rules" [ref=e706] [cursor=pointer]:
+                        - generic [ref=e713]: "3"
+                        - generic [ref=e715]: Coins
+                      - button "Influence rules" [ref=e716] [cursor=pointer]:
+                        - generic [ref=e726]:
+                          - generic [ref=e727]: "2"
+                          - generic [ref=e730]: "1"
+                        - generic [ref=e731]: Influence
+                    - group [ref=e732]:
+                      - generic "Agent 9 · Cards at this moment" [ref=e733] [cursor=pointer]
+                - region "Agents remaining after this event" [ref=e734]:
+                  - generic [ref=e735]:
+                    - strong [ref=e736]: "9"
+                    - generic [ref=e737]: still in Act II
+                    - generic [ref=e738]: At this point in the record
+                  - list [ref=e739]:
+                    - listitem [ref=e740]:
+                      - generic [ref=e741]:
+                        - button "View Agent 9 profile picture" [ref=e742]
+                        - generic [ref=e746]: Agent 9
+                    - listitem [ref=e747]:
+                      - generic [ref=e748]:
+                        - button "View Agent 10 profile picture" [ref=e749]
+                        - generic [ref=e753]: Agent 10
+                    - listitem [ref=e754]:
+                      - generic [ref=e755]:
+                        - button "View Agent 7 profile picture" [ref=e756]
+                        - generic [ref=e760]: Agent 7
+                    - listitem [ref=e761]:
+                      - generic [ref=e762]:
+                        - button "View Agent 8 profile picture" [ref=e763]
+                        - generic [ref=e767]: Agent 8
+                    - listitem [ref=e768]:
+                      - generic [ref=e769]:
+                        - button "View Agent 5 profile picture" [ref=e770]
+                        - generic [ref=e774]: Agent 5
+                    - listitem [ref=e775]:
+                      - generic [ref=e776]:
+                        - button "View Agent 3 profile picture" [ref=e777]
+                        - generic [ref=e781]: Agent 3
+                    - listitem [ref=e782]:
+                      - generic [ref=e783]:
+                        - button "View Agent 2 profile picture" [ref=e784]
+                        - generic [ref=e788]: Agent 2
+                    - listitem [ref=e789]:
+                      - generic [ref=e790]:
+                        - button "View Agent 1 profile picture" [ref=e791]
+                        - generic [ref=e795]: Agent 1
+                    - listitem [ref=e796]:
+                      - generic [ref=e797]:
+                        - button "View Agent 6 profile picture" [ref=e798]
+                        - generic [ref=e802]: Agent 6
+              - article [ref=e804]:
+                - generic [ref=e805]:
+                  - generic [ref=e806]: Act II · Round 8
+                  - time [ref=e807]: 00:12:31 UTC
+                - generic [ref=e809]:
+                  - paragraph [ref=e810]: Turn ends.
+                  - generic [ref=e811]:
+                    - generic [ref=e812]:
+                      - text: Action by Agent 8 ·
+                      - button "Coup rules" [ref=e813] [cursor=pointer]:
+                        - generic [ref=e820]: Coup
+                      - text: → Agent 9
+                    - generic [ref=e821]: 7 coins paid · no refund
+                    - generic [ref=e822]: Action at source 1067
+                  - paragraph [ref=e823]:
+                    - button "Coup rules" [ref=e824] [cursor=pointer]:
+                      - generic [ref=e831]: Coup
+                    - text: · applied
+              - article [ref=e833]:
+                - generic [ref=e834]:
+                  - generic [ref=e835]: Act II · Round 8
+                  - time [ref=e836]: 00:12:31 UTC
+                - paragraph [ref=e839]: Discuss the next turn.
+              - article [ref=e841]:
+                - generic [ref=e842]:
+                  - generic [ref=e843]: Act II · Round 8
+                  - time [ref=e844]: 00:12:41 UTC
+                - paragraph [ref=e847]: Agent 5 chooses an action.
+              - article [ref=e849]:
+                - generic [ref=e850]:
+                  - generic [ref=e851]: Act II · Round 8
+                  - time [ref=e852]: 00:12:41 UTC
+                - generic [ref=e853]:
+                  - generic [ref=e855]:
+                    - button "View Agent 5 profile picture" [ref=e856]
+                    - generic [ref=e860]: Agent 5
+                  - paragraph [ref=e862]:
+                    - text: Declares
+                    - button "Income rules" [ref=e863] [cursor=pointer]:
+                      - generic [ref=e870]: Income
+                    - text: .
+                - complementary "Recorded state" [ref=e871]:
+                  - button "Income rules" [ref=e873] [cursor=pointer]:
+                    - generic [ref=e880]: Income
+                  - region "Agent 5 public resources" [ref=e881]:
+                    - strong [ref=e882]:
+                      - generic [ref=e883]:
+                        - button "View Agent 5 profile picture" [ref=e884]
+                        - generic [ref=e888]: Agent 5
+                    - generic [ref=e889]:
+                      - button "Coins rules" [ref=e890] [cursor=pointer]:
+                        - generic [ref=e897]: "9"
+                        - generic [ref=e899]: Coins
+                      - button "Influence rules" [ref=e900] [cursor=pointer]:
+                        - generic [ref=e910]: "2"
+                        - generic [ref=e912]: Influence
+                    - group [ref=e913]:
+                      - generic "Agent 5 · Cards at this moment" [ref=e914] [cursor=pointer]
+              - article [ref=e916]:
+                - generic [ref=e917]:
+                  - generic [ref=e918]: Act II · Round 8
+                  - time [ref=e919]: 00:12:41 UTC
+                - generic [ref=e920]:
+                  - generic [ref=e922]:
+                    - button "View Agent 5 profile picture" [ref=e923]
+                    - generic [ref=e927]: Agent 5
+                  - generic [ref=e928]:
+                    - paragraph [ref=e929]:
+                      - text: Agent 5 now has 10
+                      - button "coins rules" [ref=e930] [cursor=pointer]:
+                        - generic [ref=e937]: coins
+                      - text: .
+                    - generic [ref=e938]:
+                      - generic [ref=e939]:
+                        - text: Action by Agent 5 ·
+                        - button "Income rules" [ref=e940] [cursor=pointer]:
+                          - generic [ref=e947]: Income
+                      - generic [ref=e948]: Action at source 1078
+                - complementary "Recorded state" [ref=e949]:
+                  - region "Agent 5 public resources" [ref=e950]:
+                    - strong [ref=e951]:
+                      - generic [ref=e952]:
+                        - button "View Agent 5 profile picture" [ref=e953]
+                        - generic [ref=e957]: Agent 5
+                    - generic [ref=e958]:
+                      - button "Coins rules" [ref=e959] [cursor=pointer]:
+                        - generic [ref=e966]:
+                          - generic [ref=e967]: "9"
+                          - generic [ref=e970]: "10"
+                        - generic [ref=e971]: Coins
+                      - button "Influence rules" [ref=e972] [cursor=pointer]:
+                        - generic [ref=e982]: "2"
+                        - generic [ref=e984]: Influence
+                    - group [ref=e985]:
+                      - generic "Agent 5 · Cards at this moment" [ref=e986] [cursor=pointer]
+              - article [ref=e988]:
+                - generic [ref=e989]:
+                  - generic [ref=e990]: Act II · Round 8
+                  - time [ref=e991]: 00:12:41 UTC
+                - generic [ref=e993]:
+                  - paragraph [ref=e994]: Turn ends.
+                  - generic [ref=e995]:
+                    - generic [ref=e996]:
+                      - text: Action by Agent 5 ·
+                      - button "Income rules" [ref=e997] [cursor=pointer]:
+                        - generic [ref=e1004]: Income
+                    - generic [ref=e1005]: Action at source 1078
+                  - paragraph [ref=e1006]:
+                    - button "Income rules" [ref=e1007] [cursor=pointer]:
+                      - generic [ref=e1014]: Income
+                    - text: · applied
+              - article [ref=e1016]:
+                - generic [ref=e1017]:
+                  - generic [ref=e1018]: Act II · Round 8
+                  - time [ref=e1019]: 00:12:41 UTC
+                - paragraph [ref=e1022]: Discuss the next turn.
+              - article [ref=e1024]:
+                - generic [ref=e1025]:
+                  - generic [ref=e1026]: Act II · Round 8
+                  - time [ref=e1027]: 00:12:51 UTC
+                - paragraph [ref=e1030]: Agent 3 chooses an action.
+              - article [ref=e1032]:
+                - generic [ref=e1033]:
+                  - generic [ref=e1034]: Act II · Round 8
+                  - time [ref=e1035]: 00:12:51 UTC
+                - generic [ref=e1036]:
+                  - generic [ref=e1038]:
+                    - button "View Agent 3 profile picture" [ref=e1039]
+                    - generic [ref=e1043]: Agent 3
+                  - paragraph [ref=e1045]:
+                    - text: Declares
+                    - button "Income rules" [ref=e1046] [cursor=pointer]:
+                      - generic [ref=e1053]: Income
+                    - text: .
+                - complementary "Recorded state" [ref=e1054]:
+                  - button "Income rules" [ref=e1056] [cursor=pointer]:
+                    - generic [ref=e1063]: Income
+                  - region "Agent 3 public resources" [ref=e1064]:
+                    - strong [ref=e1065]:
+                      - generic [ref=e1066]:
+                        - button "View Agent 3 profile picture" [ref=e1067]
+                        - generic [ref=e1071]: Agent 3
+                    - generic [ref=e1072]:
+                      - button "Coins rules" [ref=e1073] [cursor=pointer]:
+                        - generic [ref=e1080]: "9"
+                        - generic [ref=e1082]: Coins
+                      - button "Influence rules" [ref=e1083] [cursor=pointer]:
+                        - generic [ref=e1093]: "2"
+                        - generic [ref=e1095]: Influence
+                    - group [ref=e1096]:
+                      - generic "Agent 3 · Cards at this moment" [ref=e1097] [cursor=pointer]
+              - article [ref=e1099]:
+                - generic [ref=e1100]:
+                  - generic [ref=e1101]: Act II · Round 8
+                  - time [ref=e1102]: 00:12:51 UTC
+                - generic [ref=e1103]:
+                  - generic [ref=e1105]:
+                    - button "View Agent 3 profile picture" [ref=e1106]
+                    - generic [ref=e1110]: Agent 3
+                  - generic [ref=e1111]:
+                    - paragraph [ref=e1112]:
+                      - text: Agent 3 now has 10
+                      - button "coins rules" [ref=e1113] [cursor=pointer]:
+                        - generic [ref=e1120]: coins
+                      - text: .
+                    - generic [ref=e1121]:
+                      - generic [ref=e1122]:
+                        - text: Action by Agent 3 ·
+                        - button "Income rules" [ref=e1123] [cursor=pointer]:
+                          - generic [ref=e1130]: Income
+                      - generic [ref=e1131]: Action at source 1085
+                - complementary "Recorded state" [ref=e1132]:
+                  - region "Agent 3 public resources" [ref=e1133]:
+                    - strong [ref=e1134]:
+                      - generic [ref=e1135]:
+                        - button "View Agent 3 profile picture" [ref=e1136]
+                        - generic [ref=e1140]: Agent 3
+                    - generic [ref=e1141]:
+                      - button "Coins rules" [ref=e1142] [cursor=pointer]:
+                        - generic [ref=e1149]:
+                          - generic [ref=e1150]: "9"
+                          - generic [ref=e1153]: "10"
+                        - generic [ref=e1154]: Coins
+                      - button "Influence rules" [ref=e1155] [cursor=pointer]:
+                        - generic [ref=e1165]: "2"
+                        - generic [ref=e1167]: Influence
+                    - group [ref=e1168]:
+                      - generic "Agent 3 · Cards at this moment" [ref=e1169] [cursor=pointer]
+              - article [ref=e1171]:
+                - generic [ref=e1172]:
+                  - generic [ref=e1173]: Act II · Round 8
+                  - time [ref=e1174]: 00:12:51 UTC
+                - generic [ref=e1176]:
+                  - paragraph [ref=e1177]: Turn ends.
+                  - generic [ref=e1178]:
+                    - generic [ref=e1179]:
+                      - text: Action by Agent 3 ·
+                      - button "Income rules" [ref=e1180] [cursor=pointer]:
+                        - generic [ref=e1187]: Income
+                    - generic [ref=e1188]: Action at source 1085
+                  - paragraph [ref=e1189]:
+                    - button "Income rules" [ref=e1190] [cursor=pointer]:
+                      - generic [ref=e1197]: Income
+                    - text: · applied
+              - article [ref=e1199]:
+                - generic [ref=e1200]:
+                  - generic [ref=e1201]: Act II · Round 8
+                  - time [ref=e1202]: 00:12:51 UTC
+                - paragraph [ref=e1205]: Discuss the next turn.
+              - article [ref=e1207]:
+                - generic [ref=e1208]:
+                  - generic [ref=e1209]: Act II · Round 8
+                  - time [ref=e1210]: 00:13:01 UTC
+                - paragraph [ref=e1213]: Agent 2 chooses an action.
+              - article [ref=e1215]:
+                - generic [ref=e1216]:
+                  - generic [ref=e1217]: Act II · Round 8
+                  - time [ref=e1218]: 00:13:01 UTC
+                - generic [ref=e1219]:
+                  - generic [ref=e1221]:
+                    - button "View Agent 2 profile picture" [ref=e1222]
+                    - generic [ref=e1226]: Agent 2
+                  - paragraph [ref=e1228]:
+                    - text: Declares
+                    - button "Coup rules" [ref=e1229] [cursor=pointer]:
+                      - generic [ref=e1236]: Coup
+                    - text: against Agent 9. Pays 7
+                    - button "coins rules" [ref=e1237] [cursor=pointer]:
+                      - generic [ref=e1244]: coins
+                    - text: .
+                - complementary "Recorded state" [ref=e1245]:
+                  - generic [ref=e1246]:
+                    - button "Coup rules" [ref=e1247] [cursor=pointer]:
+                      - generic [ref=e1254]: Coup
+                    - generic [ref=e1255]: "Target: Agent 9"
+                    - generic [ref=e1256]:
+                      - button "Coins rules" [ref=e1257] [cursor=pointer]:
+                        - generic [ref=e1264]: "7"
+                        - generic [ref=e1266]: Coins
+                      - text: paid · no refund
+                  - region "Agent 9 public resources" [ref=e1267]:
+                    - strong [ref=e1268]:
+                      - generic [ref=e1269]:
+                        - button "View Agent 9 profile picture" [ref=e1270]
+                        - generic [ref=e1274]: Agent 9
+                    - generic [ref=e1275]:
+                      - button "Coins rules" [ref=e1276] [cursor=pointer]:
+                        - generic [ref=e1283]: "3"
+                        - generic [ref=e1285]: Coins
+                      - button "Influence rules" [ref=e1286] [cursor=pointer]:
+                        - generic [ref=e1296]: "1"
+                        - generic [ref=e1298]: Influence
+                    - group [ref=e1299]:
+                      - generic "Agent 9 · Cards at this moment" [ref=e1300] [cursor=pointer]
+                  - region "Agent 2 public resources" [ref=e1301]:
+                    - strong [ref=e1302]:
+                      - generic [ref=e1303]:
+                        - button "View Agent 2 profile picture" [ref=e1304]
+                        - generic [ref=e1308]: Agent 2
+                    - generic [ref=e1309]:
+                      - button "Coins rules" [ref=e1310] [cursor=pointer]:
+                        - generic [ref=e1317]:
+                          - generic [ref=e1318]: "10"
+                          - generic [ref=e1321]: "3"
+                        - generic [ref=e1322]: Coins
+                      - button "Influence rules" [ref=e1323] [cursor=pointer]:
+                        - generic [ref=e1333]: "2"
+                        - generic [ref=e1335]: Influence
+                    - group [ref=e1336]:
+                      - generic "Agent 2 · Cards at this moment" [ref=e1337] [cursor=pointer]
+              - article [ref=e1339]:
+                - generic [ref=e1340]:
+                  - generic [ref=e1341]: Act II · Round 8
+                  - time [ref=e1342]: 00:13:01 UTC
+                - generic [ref=e1344]:
+                  - paragraph [ref=e1345]:
+                    - text: Agent 9 chooses which
+                    - button "influence rules" [ref=e1346] [cursor=pointer]:
+                      - generic [ref=e1351]: influence
+                    - text: card to lose.
+                  - generic [ref=e1352]:
+                    - generic [ref=e1353]:
+                      - text: Action by Agent 2 ·
+                      - button "Coup rules" [ref=e1354] [cursor=pointer]:
+                        - generic [ref=e1361]: Coup
+                      - text: → Agent 9
+                    - generic [ref=e1362]: 7 coins paid · no refund
+                    - generic [ref=e1363]: Action at source 1092
+              - article [ref=e1365]:
+                - generic [ref=e1366]:
+                  - generic [ref=e1367]: Act II · Round 8
+                  - time [ref=e1368]: 00:13:01 UTC
+                - generic [ref=e1369]:
+                  - generic [ref=e1371]:
+                    - button "View Agent 9 profile picture" [ref=e1372]
+                    - generic [ref=e1376]: Agent 9
+                  - generic [ref=e1377]:
+                    - heading [level=3] [ref=e1378]:
+                      - generic [ref=e1384]: Agent 9eliminated
+                    - paragraph [ref=e1385]:
+                      - text: Loses
+                      - button "Thief rules" [ref=e1386] [cursor=pointer]:
+                        - generic [ref=e1391]: Thief
+                      - text: .
+                      - button "Eliminated rules" [ref=e1392] [cursor=pointer]:
+                        - generic [ref=e1398]: Eliminated
+                      - text: .
+                    - generic [ref=e1399]:
+                      - generic [ref=e1400]:
+                        - text: Action by Agent 2 ·
+                        - button "Coup rules" [ref=e1401] [cursor=pointer]:
+                          - generic [ref=e1408]: Coup
+                        - text: → Agent 9
+                      - generic [ref=e1409]: 7 coins paid · no refund
+                      - generic [ref=e1410]: Action at source 1092
+                - complementary "Recorded state" [ref=e1411]:
+                  - region "Agent 9 lost card" [ref=e1412]:
+                    - generic [ref=e1413]: Agent 9 · Public loss
+                    - generic [ref=e1414]:
+                      - button "Thief rules" [ref=e1415] [cursor=pointer]:
+                        - generic [ref=e1420]: Thief
+                      - generic [ref=e1421]: Lost · publicly revealed
+                    - paragraph [ref=e1422]: Action effect
+                  - region "Agent 9 public resources" [ref=e1423]:
+                    - strong [ref=e1424]:
+                      - generic [ref=e1425]:
+                        - button "View Agent 9 profile picture" [ref=e1426]
+                        - generic [ref=e1430]: Agent 9
+                    - generic [ref=e1431]:
+                      - button "Coins rules" [ref=e1432] [cursor=pointer]:
+                        - generic [ref=e1439]: "3"
+                        - generic [ref=e1441]: Coins
+                      - button "Influence rules" [ref=e1442] [cursor=pointer]:
+                        - generic [ref=e1452]:
+                          - generic [ref=e1453]: "1"
+                          - generic [ref=e1456]: "0"
+                        - generic [ref=e1457]: Influence
+                    - paragraph [ref=e1458]: Eliminated · coins frozen
+                    - group [ref=e1459]:
+                      - generic "Agent 9 · Cards at this moment" [ref=e1460] [cursor=pointer]
+                - region "Agents remaining after this event" [ref=e1461]:
+                  - generic [ref=e1462]:
+                    - strong [ref=e1463]: "8"
+                    - generic [ref=e1464]: still in Act II
+                    - generic [ref=e1465]: At this point in the record
+                  - list [ref=e1466]:
+                    - listitem [ref=e1467]:
+                      - generic [ref=e1468]:
+                        - button "View Agent 10 profile picture" [ref=e1469]
+                        - generic [ref=e1473]: Agent 10
+                    - listitem [ref=e1474]:
+                      - generic [ref=e1475]:
+                        - button "View Agent 7 profile picture" [ref=e1476]
+                        - generic [ref=e1480]: Agent 7
+                    - listitem [ref=e1481]:
+                      - generic [ref=e1482]:
+                        - button "View Agent 8 profile picture" [ref=e1483]
+                        - generic [ref=e1487]: Agent 8
+                    - listitem [ref=e1488]:
+                      - generic [ref=e1489]:
+                        - button "View Agent 5 profile picture" [ref=e1490]
+                        - generic [ref=e1494]: Agent 5
+                    - listitem [ref=e1495]:
+                      - generic [ref=e1496]:
+                        - button "View Agent 3 profile picture" [ref=e1497]
+                        - generic [ref=e1501]: Agent 3
+                    - listitem [ref=e1502]:
+                      - generic [ref=e1503]:
+                        - button "View Agent 2 profile picture" [ref=e1504]
+                        - generic [ref=e1508]: Agent 2
+                    - listitem [ref=e1509]:
+                      - generic [ref=e1510]:
+                        - button "View Agent 1 profile picture" [ref=e1511]
+                        - generic [ref=e1515]: Agent 1
+                    - listitem [ref=e1516]:
+                      - generic [ref=e1517]:
+                        - button "View Agent 6 profile picture" [ref=e1518]
+                        - generic [ref=e1522]: Agent 6
+              - article [ref=e1524]:
+                - generic [ref=e1525]:
+                  - generic [ref=e1526]: Act II · Round 8
+                  - time [ref=e1527]: 00:13:01 UTC
+                - generic [ref=e1529]:
+                  - paragraph [ref=e1530]: Turn ends.
+                  - generic [ref=e1531]:
+                    - generic [ref=e1532]:
+                      - text: Action by Agent 2 ·
+                      - button "Coup rules" [ref=e1533] [cursor=pointer]:
+                        - generic [ref=e1540]: Coup
+                      - text: → Agent 9
+                    - generic [ref=e1541]: 7 coins paid · no refund
+                    - generic [ref=e1542]: Action at source 1092
+                  - paragraph [ref=e1543]:
+                    - button "Coup rules" [ref=e1544] [cursor=pointer]:
+                      - generic [ref=e1551]: Coup
+                    - text: · applied
+              - article [ref=e1553]:
+                - generic [ref=e1554]:
+                  - generic [ref=e1555]: Act II · Round 8
+                  - time [ref=e1556]: 00:13:01 UTC
+                - paragraph [ref=e1559]: Discuss the next turn.
+              - article [ref=e1561]:
+                - generic [ref=e1562]:
+                  - generic [ref=e1563]: Act II · Round 8
+                  - time [ref=e1564]: 00:13:11 UTC
+                - paragraph [ref=e1567]: Agent 1 chooses an action.
+              - article [ref=e1569]:
+                - generic [ref=e1570]:
+                  - generic [ref=e1571]: Act II · Round 8
+                  - time [ref=e1572]: 00:13:11 UTC
+                - generic [ref=e1573]:
+                  - generic [ref=e1575]:
+                    - button "View Agent 1 profile picture" [ref=e1576]
+                    - generic [ref=e1580]: Agent 1
+                  - paragraph [ref=e1582]:
+                    - text: Declares
+                    - button "Coup rules" [ref=e1583] [cursor=pointer]:
+                      - generic [ref=e1590]: Coup
+                    - text: against Agent 10. Pays 7
+                    - button "coins rules" [ref=e1591] [cursor=pointer]:
+                      - generic [ref=e1598]: coins
+                    - text: .
+                - complementary "Recorded state" [ref=e1599]:
+                  - generic [ref=e1600]:
+                    - button "Coup rules" [ref=e1601] [cursor=pointer]:
+                      - generic [ref=e1608]: Coup
+                    - generic [ref=e1609]: "Target: Agent 10"
+                    - generic [ref=e1610]:
+                      - button "Coins rules" [ref=e1611] [cursor=pointer]:
+                        - generic [ref=e1618]: "7"
+                        - generic [ref=e1620]: Coins
+                      - text: paid · no refund
+                  - region "Agent 10 public resources" [ref=e1621]:
+                    - strong [ref=e1622]:
+                      - generic [ref=e1623]:
+                        - button "View Agent 10 profile picture" [ref=e1624]
+                        - generic [ref=e1628]: Agent 10
+                    - generic [ref=e1629]:
+                      - button "Coins rules" [ref=e1630] [cursor=pointer]:
+                        - generic [ref=e1637]: "10"
+                        - generic [ref=e1639]: Coins
+                      - button "Influence rules" [ref=e1640] [cursor=pointer]:
+                        - generic [ref=e1650]: "2"
+                        - generic [ref=e1652]: Influence
+                    - group [ref=e1653]:
+                      - generic "Agent 10 · Cards at this moment" [ref=e1654] [cursor=pointer]
+                  - region "Agent 1 public resources" [ref=e1655]:
+                    - strong [ref=e1656]:
+                      - generic [ref=e1657]:
+                        - button "View Agent 1 profile picture" [ref=e1658]
+                        - generic [ref=e1662]: Agent 1
+                    - generic [ref=e1663]:
+                      - button "Coins rules" [ref=e1664] [cursor=pointer]:
+                        - generic [ref=e1671]:
+                          - generic [ref=e1672]: "10"
+                          - generic [ref=e1675]: "3"
+                        - generic [ref=e1676]: Coins
+                      - button "Influence rules" [ref=e1677] [cursor=pointer]:
+                        - generic [ref=e1687]: "2"
+                        - generic [ref=e1689]: Influence
+                    - group [ref=e1690]:
+                      - generic "Agent 1 · Cards at this moment" [ref=e1691] [cursor=pointer]
+              - article [ref=e1693]:
+                - generic [ref=e1694]:
+                  - generic [ref=e1695]: Act II · Round 8
+                  - time [ref=e1696]: 00:13:11 UTC
+                - generic [ref=e1698]:
+                  - paragraph [ref=e1699]:
+                    - text: Agent 10 chooses which
+                    - button "influence rules" [ref=e1700] [cursor=pointer]:
+                      - generic [ref=e1705]: influence
+                    - text: card to lose.
+                  - generic [ref=e1706]:
+                    - generic [ref=e1707]:
+                      - text: Action by Agent 1 ·
+                      - button "Coup rules" [ref=e1708] [cursor=pointer]:
+                        - generic [ref=e1715]: Coup
+                      - text: → Agent 10
+                    - generic [ref=e1716]: 7 coins paid · no refund
+                    - generic [ref=e1717]: Action at source 1103
+              - article [ref=e1719]:
+                - generic [ref=e1720]:
+                  - generic [ref=e1721]: Act II · Round 8
+                  - time [ref=e1722]: 00:13:11 UTC
+                - generic [ref=e1723]:
+                  - generic [ref=e1725]:
+                    - button "View Agent 10 profile picture" [ref=e1726]
+                    - generic [ref=e1730]: Agent 10
+                  - generic [ref=e1731]:
+                    - paragraph [ref=e1732]:
+                      - text: Loses
+                      - button "Guard rules" [ref=e1733] [cursor=pointer]:
+                        - generic [ref=e1738]: Guard
+                      - text: .
+                    - generic [ref=e1739]:
+                      - generic [ref=e1740]:
+                        - text: Action by Agent 1 ·
+                        - button "Coup rules" [ref=e1741] [cursor=pointer]:
+                          - generic [ref=e1748]: Coup
+                        - text: → Agent 10
+                      - generic [ref=e1749]: 7 coins paid · no refund
+                      - generic [ref=e1750]: Action at source 1103
+                - complementary "Recorded state" [ref=e1751]:
+                  - region "Agent 10 lost card" [ref=e1752]:
+                    - generic [ref=e1753]: Agent 10 · Public loss
+                    - generic [ref=e1754]:
+                      - button "Guard rules" [ref=e1755] [cursor=pointer]:
+                        - generic [ref=e1760]: Guard
+                      - generic [ref=e1761]: Lost · publicly revealed
+                    - paragraph [ref=e1762]: Action effect
+                  - region "Agent 10 public resources" [ref=e1763]:
+                    - strong [ref=e1764]:
+                      - generic [ref=e1765]:
+                        - button "View Agent 10 profile picture" [ref=e1766]
+                        - generic [ref=e1770]: Agent 10
+                    - generic [ref=e1771]:
+                      - button "Coins rules" [ref=e1772] [cursor=pointer]:
+                        - generic [ref=e1779]: "10"
+                        - generic [ref=e1781]: Coins
+                      - button "Influence rules" [ref=e1782] [cursor=pointer]:
+                        - generic [ref=e1792]:
+                          - generic [ref=e1793]: "2"
+                          - generic [ref=e1796]: "1"
+                        - generic [ref=e1797]: Influence
+                    - group [ref=e1798]:
+                      - generic "Agent 10 · Cards at this moment" [ref=e1799] [cursor=pointer]
+                - region "Agents remaining after this event" [ref=e1800]:
+                  - generic [ref=e1801]:
+                    - strong [ref=e1802]: "8"
+                    - generic [ref=e1803]: still in Act II
+                    - generic [ref=e1804]: At this point in the record
+                  - list [ref=e1805]:
+                    - listitem [ref=e1806]:
+                      - generic [ref=e1807]:
+                        - button "View Agent 10 profile picture" [ref=e1808]
+                        - generic [ref=e1812]: Agent 10
+                    - listitem [ref=e1813]:
+                      - generic [ref=e1814]:
+                        - button "View Agent 7 profile picture" [ref=e1815]
+                        - generic [ref=e1819]: Agent 7
+                    - listitem [ref=e1820]:
+                      - generic [ref=e1821]:
+                        - button "View Agent 8 profile picture" [ref=e1822]
+                        - generic [ref=e1826]: Agent 8
+                    - listitem [ref=e1827]:
+                      - generic [ref=e1828]:
+                        - button "View Agent 5 profile picture" [ref=e1829]
+                        - generic [ref=e1833]: Agent 5
+                    - listitem [ref=e1834]:
+                      - generic [ref=e1835]:
+                        - button "View Agent 3 profile picture" [ref=e1836]
+                        - generic [ref=e1840]: Agent 3
+                    - listitem [ref=e1841]:
+                      - generic [ref=e1842]:
+                        - button "View Agent 2 profile picture" [ref=e1843]
+                        - generic [ref=e1847]: Agent 2
+                    - listitem [ref=e1848]:
+                      - generic [ref=e1849]:
+                        - button "View Agent 1 profile picture" [ref=e1850]
+                        - generic [ref=e1854]: Agent 1
+                    - listitem [ref=e1855]:
+                      - generic [ref=e1856]:
+                        - button "View Agent 6 profile picture" [ref=e1857]
+                        - generic [ref=e1861]: Agent 6
+              - article [ref=e1863]:
+                - generic [ref=e1864]:
+                  - generic [ref=e1865]: Act II · Round 8
+                  - time [ref=e1866]: 00:13:11 UTC
+                - generic [ref=e1868]:
+                  - paragraph [ref=e1869]: Turn ends.
+                  - generic [ref=e1870]:
+                    - generic [ref=e1871]:
+                      - text: Action by Agent 1 ·
+                      - button "Coup rules" [ref=e1872] [cursor=pointer]:
+                        - generic [ref=e1879]: Coup
+                      - text: → Agent 10
+                    - generic [ref=e1880]: 7 coins paid · no refund
+                    - generic [ref=e1881]: Action at source 1103
+                  - paragraph [ref=e1882]:
+                    - button "Coup rules" [ref=e1883] [cursor=pointer]:
+                      - generic [ref=e1890]: Coup
+                    - text: · applied
+              - article [ref=e1892]:
+                - generic [ref=e1893]:
+                  - generic [ref=e1894]: Act II · Round 8
+                  - time [ref=e1895]: 00:13:11 UTC
+                - paragraph [ref=e1898]: Discuss the next turn.
+              - article [ref=e1900]:
+                - generic [ref=e1901]:
+                  - generic [ref=e1902]: Act II · Round 8
+                  - time [ref=e1903]: 00:13:21 UTC
+                - paragraph [ref=e1906]: Agent 6 chooses an action.
+              - article [ref=e1908]:
+                - generic [ref=e1909]:
+                  - generic [ref=e1910]: Act II · Round 8
+                  - time [ref=e1911]: 00:13:21 UTC
+                - generic [ref=e1912]:
+                  - generic [ref=e1914]:
+                    - button "View Agent 6 profile picture" [ref=e1915]
+                    - generic [ref=e1919]: Agent 6
+                  - paragraph [ref=e1921]:
+                    - text: Declares
+                    - button "Coup rules" [ref=e1922] [cursor=pointer]:
+                      - generic [ref=e1929]: Coup
+                    - text: against Agent 10. Pays 7
+                    - button "coins rules" [ref=e1930] [cursor=pointer]:
+                      - generic [ref=e1937]: coins
+                    - text: .
+                - complementary "Recorded state" [ref=e1938]:
+                  - generic [ref=e1939]:
+                    - button "Coup rules" [ref=e1940] [cursor=pointer]:
+                      - generic [ref=e1947]: Coup
+                    - generic [ref=e1948]: "Target: Agent 10"
+                    - generic [ref=e1949]:
+                      - button "Coins rules" [ref=e1950] [cursor=pointer]:
+                        - generic [ref=e1957]: "7"
+                        - generic [ref=e1959]: Coins
+                      - text: paid · no refund
+                  - region "Agent 10 public resources" [ref=e1960]:
+                    - strong [ref=e1961]:
+                      - generic [ref=e1962]:
+                        - button "View Agent 10 profile picture" [ref=e1963]
+                        - generic [ref=e1967]: Agent 10
+                    - generic [ref=e1968]:
+                      - button "Coins rules" [ref=e1969] [cursor=pointer]:
+                        - generic [ref=e1976]: "10"
+                        - generic [ref=e1978]: Coins
+                      - button "Influence rules" [ref=e1979] [cursor=pointer]:
+                        - generic [ref=e1989]: "1"
+                        - generic [ref=e1991]: Influence
+                    - group [ref=e1992]:
+                      - generic "Agent 10 · Cards at this moment" [ref=e1993] [cursor=pointer]
+                  - region "Agent 6 public resources" [ref=e1994]:
+                    - strong [ref=e1995]:
+                      - generic [ref=e1996]:
+                        - button "View Agent 6 profile picture" [ref=e1997]
+                        - generic [ref=e2001]: Agent 6
+                    - generic [ref=e2002]:
+                      - button "Coins rules" [ref=e2003] [cursor=pointer]:
+                        - generic [ref=e2010]:
+                          - generic [ref=e2011]: "10"
+                          - generic [ref=e2014]: "3"
+                        - generic [ref=e2015]: Coins
+                      - button "Influence rules" [ref=e2016] [cursor=pointer]:
+                        - generic [ref=e2026]: "2"
+                        - generic [ref=e2028]: Influence
+                    - group [ref=e2029]:
+                      - generic "Agent 6 · Cards at this moment" [ref=e2030] [cursor=pointer]
+              - article [ref=e2032]:
+                - generic [ref=e2033]:
+                  - generic [ref=e2034]: Act II · Round 8
+                  - time [ref=e2035]: 00:13:21 UTC
+                - generic [ref=e2037]:
+                  - paragraph [ref=e2038]:
+                    - text: Agent 10 chooses which
+                    - button [ref=e2039] [cursor=pointer]:
+                      - generic [ref=e2044]: influence
+                    - text: card to lose.
+                  - generic [ref=e2045]:
+                    - generic [ref=e2046]:
+                      - text: Action by Agent 6 ·
+                      - button [ref=e2047] [cursor=pointer]:
+                        - generic [ref=e2054]: Coup
+                      - text: → Agent 10
+                    - generic [ref=e2055]: 7 coins paid · no refund
+                    - generic [ref=e2056]: Action at source 1114
+              - article [ref=e2058]:
+                - generic [ref=e2059]:
+                  - generic [ref=e2060]: Act II · Round 8
+                  - time [ref=e2061]: 00:13:21 UTC
+                - generic [ref=e2062]:
+                  - generic [ref=e2064]:
+                    - button [ref=e2065]
+                    - generic [ref=e2069]: Agent 10
+                  - generic [ref=e2070]:
+                    - heading [level=3] [ref=e2071]:
+                      - generic [ref=e2077]: Agent 10 eliminated
+                    - paragraph [ref=e2078]:
+                      - text: Loses
+                      - button [ref=e2079] [cursor=pointer]:
+                        - generic [ref=e2084]: Envoy
+                      - text: .
+                      - button [ref=e2085] [cursor=pointer]:
+                        - generic [ref=e2091]: Eliminated
+                      - text: .
+                    - generic [ref=e2092]:
+                      - generic [ref=e2093]:
+                        - text: Action by Agent 6 ·
+                        - button [ref=e2094] [cursor=pointer]:
+                          - generic [ref=e2101]: Coup
+                        - text: → Agent 10
+                      - generic [ref=e2102]: 7 coins paid · no refund
+                      - generic [ref=e2103]: Action at source 1114
+                - complementary [ref=e2104]:
+                  - region [ref=e2105]:
+                    - generic [ref=e2106]: Agent 10 · Public loss
+                    - generic [ref=e2107]:
+                      - button [ref=e2108] [cursor=pointer]:
+                        - generic [ref=e2113]: Envoy
+                      - generic [ref=e2114]: Lost · publicly revealed
+                    - paragraph [ref=e2115]: Action effect
+                  - region [ref=e2116]:
+                    - strong [ref=e2117]:
+                      - generic [ref=e2118]:
+                        - button [ref=e2119]
+                        - generic [ref=e2123]: Agent 10
+                    - generic [ref=e2124]:
+                      - button [ref=e2125] [cursor=pointer]:
+                        - generic [ref=e2132]: "10"
+                        - generic [ref=e2134]: Coins
+                      - button [ref=e2135] [cursor=pointer]:
+                        - generic [ref=e2145]:
+                          - generic [ref=e2146]: "1"
+                          - generic [ref=e2149]: "0"
+                        - generic [ref=e2150]: Influence
+                    - paragraph [ref=e2151]: Eliminated · coins frozen
+                    - group [ref=e2152]:
+                      - generic [ref=e2153] [cursor=pointer]: Agent 10 · Cards at this moment
+                - region [ref=e2154]:
+                  - generic [ref=e2155]:
+                    - strong [ref=e2156]: "7"
+                    - generic [ref=e2157]: still in Act II
+                    - generic [ref=e2158]: At this point in the record
+                  - list [ref=e2159]:
+                    - listitem [ref=e2160]:
+                      - generic [ref=e2161]:
+                        - button [ref=e2162]
+                        - generic [ref=e2166]: Agent 7
+                    - listitem [ref=e2167]:
+                      - generic [ref=e2168]:
+                        - button [ref=e2169]
+                        - generic [ref=e2173]: Agent 8
+                    - listitem [ref=e2174]:
+                      - generic [ref=e2175]:
+                        - button [ref=e2176]
+                        - generic [ref=e2180]: Agent 5
+                    - listitem [ref=e2181]:
+                      - generic [ref=e2182]:
+                        - button [ref=e2183]
+                        - generic [ref=e2187]: Agent 3
+                    - listitem [ref=e2188]:
+                      - generic [ref=e2189]:
+                        - button [ref=e2190]
+                        - generic [ref=e2194]: Agent 2
+                    - listitem [ref=e2195]:
+                      - generic [ref=e2196]:
+                        - button [ref=e2197]
+                        - generic [ref=e2201]: Agent 1
+                    - listitem [ref=e2202]:
+                      - generic [ref=e2203]:
+                        - button [ref=e2204]
+                        - generic [ref=e2208]: Agent 6
+              - article [ref=e2210]:
+                - generic [ref=e2211]:
+                  - generic [ref=e2212]: Act II · Round 8
+                  - time [ref=e2213]: 00:13:21 UTC
+                - generic [ref=e2215]:
+                  - paragraph [ref=e2216]: Turn ends.
+                  - generic [ref=e2217]:
+                    - generic [ref=e2218]:
+                      - text: Action by Agent 6 ·
+                      - button [ref=e2219] [cursor=pointer]:
+                        - generic [ref=e2226]: Coup
+                      - text: → Agent 10
+                    - generic [ref=e2227]: 7 coins paid · no refund
+                    - generic [ref=e2228]: Action at source 1114
+                  - paragraph [ref=e2229]:
+                    - button [ref=e2230] [cursor=pointer]:
+                      - generic [ref=e2237]: Coup
+                    - text: · applied
+              - article [ref=e2239]:
+                - generic [ref=e2240]:
+                  - generic [ref=e2241]: Act II · Round 9
+                  - time [ref=e2242]: 00:13:21 UTC
+                - paragraph [ref=e2245]: Discuss the next turn.
+              - article [ref=e2247]:
+                - generic [ref=e2248]:
+                  - generic [ref=e2249]: Act II · Round 9
+                  - time [ref=e2250]: 00:13:31 UTC
+                - paragraph [ref=e2253]: Agent 7 chooses an action.
+              - article [ref=e2255]:
+                - generic [ref=e2256]:
+                  - generic [ref=e2257]: Act II · Round 9
+                  - time [ref=e2258]: 00:13:31 UTC
+                - generic [ref=e2259]:
+                  - generic [ref=e2261]:
+                    - button [ref=e2262]
+                    - generic [ref=e2266]: Agent 7
+                  - paragraph [ref=e2268]:
+                    - text: Declares
+                    - button [ref=e2269] [cursor=pointer]:
+                      - generic [ref=e2276]: Income
+                    - text: .
+                - complementary [ref=e2277]:
+                  - button [ref=e2279] [cursor=pointer]:
+                    - generic [ref=e2286]: Income
+                  - region [ref=e2287]:
+                    - strong [ref=e2288]:
+                      - generic [ref=e2289]:
+                        - button [ref=e2290]
+                        - generic [ref=e2294]: Agent 7
+                    - generic [ref=e2295]:
+                      - button [ref=e2296] [cursor=pointer]:
+                        - generic [ref=e2303]: "3"
+                        - generic [ref=e2305]: Coins
+                      - button [ref=e2306] [cursor=pointer]:
+                        - generic [ref=e2316]: "2"
+                        - generic [ref=e2318]: Influence
+                    - group [ref=e2319]:
+                      - generic [ref=e2320] [cursor=pointer]: Agent 7 · Cards at this moment
+              - article [ref=e2322]:
+                - generic [ref=e2323]:
+                  - generic [ref=e2324]: Act II · Round 9
+                  - time [ref=e2325]: 00:13:31 UTC
+                - generic [ref=e2326]:
+                  - generic [ref=e2328]:
+                    - button [ref=e2329]
+                    - generic [ref=e2333]: Agent 7
+                  - generic [ref=e2334]:
+                    - paragraph [ref=e2335]:
+                      - text: Agent 7 now has 4
+                      - button [ref=e2336] [cursor=pointer]:
+                        - generic [ref=e2343]: coins
+                      - text: .
+                    - generic [ref=e2344]:
+                      - generic [ref=e2345]:
+                        - text: Action by Agent 7 ·
+                        - button [ref=e2346] [cursor=pointer]:
+                          - generic [ref=e2353]: Income
+                      - generic [ref=e2354]: Action at source 1125
+                - complementary [ref=e2355]:
+                  - region [ref=e2356]:
+                    - strong [ref=e2357]:
+                      - generic [ref=e2358]:
+                        - button [ref=e2359]
+                        - generic [ref=e2363]: Agent 7
+                    - generic [ref=e2364]:
+                      - button [ref=e2365] [cursor=pointer]:
+                        - generic [ref=e2372]:
+                          - generic [ref=e2373]: "3"
+                          - generic [ref=e2376]: "4"
+                        - generic [ref=e2377]: Coins
+                      - button [ref=e2378] [cursor=pointer]:
+                        - generic [ref=e2388]: "2"
+                        - generic [ref=e2390]: Influence
+                    - group [ref=e2391]:
+                      - generic [ref=e2392] [cursor=pointer]: Agent 7 · Cards at this moment
+              - article [ref=e2394]:
+                - generic [ref=e2395]:
+                  - generic [ref=e2396]: Act II · Round 9
+                  - time [ref=e2397]: 00:13:31 UTC
+                - generic [ref=e2399]:
+                  - paragraph [ref=e2400]: Turn ends.
+                  - generic [ref=e2401]:
+                    - generic [ref=e2402]:
+                      - text: Action by Agent 7 ·
+                      - button [ref=e2403] [cursor=pointer]:
+                        - generic [ref=e2410]: Income
+                    - generic [ref=e2411]: Action at source 1125
+                  - paragraph [ref=e2412]:
+                    - button [ref=e2413] [cursor=pointer]:
+                      - generic [ref=e2420]: Income
+                    - text: · applied
+              - article [ref=e2422]:
+                - generic [ref=e2423]:
+                  - generic [ref=e2424]: Act II · Round 9
+                  - time [ref=e2425]: 00:13:31 UTC
+                - paragraph [ref=e2428]: Discuss the next turn.
+              - article [ref=e2430]:
+                - generic [ref=e2431]:
+                  - generic [ref=e2432]: Act II · Round 9
+                  - time [ref=e2433]: 00:13:41 UTC
+                - paragraph [ref=e2436]: Agent 8 chooses an action.
+              - article [ref=e2438]:
+                - generic [ref=e2439]:
+                  - generic [ref=e2440]: Act II · Round 9
+                  - time [ref=e2441]: 00:13:41 UTC
+                - generic [ref=e2442]:
+                  - generic [ref=e2444]:
+                    - button [ref=e2445]
+                    - generic [ref=e2449]: Agent 8
+                  - paragraph [ref=e2451]:
+                    - text: Declares
+                    - button [ref=e2452] [cursor=pointer]:
+                      - generic [ref=e2459]: Income
+                    - text: .
+                - complementary [ref=e2460]:
+                  - button [ref=e2462] [cursor=pointer]:
+                    - generic [ref=e2469]: Income
+                  - region [ref=e2470]:
+                    - strong [ref=e2471]:
+                      - generic [ref=e2472]:
+                        - button [ref=e2473]
+                        - generic [ref=e2477]: Agent 8
+                    - generic [ref=e2478]:
+                      - button [ref=e2479] [cursor=pointer]:
+                        - generic [ref=e2486]: "3"
+                        - generic [ref=e2488]: Coins
+                      - button [ref=e2489] [cursor=pointer]:
+                        - generic [ref=e2499]: "2"
+                        - generic [ref=e2501]: Influence
+                    - group [ref=e2502]:
+                      - generic [ref=e2503] [cursor=pointer]: Agent 8 · Cards at this moment
+              - article [ref=e2505]:
+                - generic [ref=e2506]:
+                  - generic [ref=e2507]: Act II · Round 9
+                  - time [ref=e2508]: 00:13:41 UTC
+                - generic [ref=e2509]:
+                  - generic [ref=e2511]:
+                    - button [ref=e2512]
+                    - generic [ref=e2516]: Agent 8
+                  - generic [ref=e2517]:
+                    - paragraph [ref=e2518]:
+                      - text: Agent 8 now has 4
+                      - button [ref=e2519] [cursor=pointer]:
+                        - generic [ref=e2526]: coins
+                      - text: .
+                    - generic [ref=e2527]:
+                      - generic [ref=e2528]:
+                        - text: Action by Agent 8 ·
+                        - button [ref=e2529] [cursor=pointer]:
+                          - generic [ref=e2536]: Income
+                      - generic [ref=e2537]: Action at source 1132
+                - complementary [ref=e2538]:
+                  - region [ref=e2539]:
+                    - strong [ref=e2540]:
+                      - generic [ref=e2541]:
+                        - button [ref=e2542]
+                        - generic [ref=e2546]: Agent 8
+                    - generic [ref=e2547]:
+                      - button [ref=e2548] [cursor=pointer]:
+                        - generic [ref=e2555]:
+                          - generic [ref=e2556]: "3"
+                          - generic [ref=e2559]: "4"
+                        - generic [ref=e2560]: Coins
+                      - button [ref=e2561] [cursor=pointer]:
+                        - generic [ref=e2571]: "2"
+                        - generic [ref=e2573]: Influence
+                    - group [ref=e2574]:
+                      - generic [ref=e2575] [cursor=pointer]: Agent 8 · Cards at this moment
+              - article [ref=e2577]:
+                - generic [ref=e2578]:
+                  - generic [ref=e2579]: Act II · Round 9
+                  - time [ref=e2580]: 00:13:41 UTC
+                - generic [ref=e2582]:
+                  - paragraph [ref=e2583]: Turn ends.
+                  - generic [ref=e2584]:
+                    - generic [ref=e2585]:
+                      - text: Action by Agent 8 ·
+                      - button [ref=e2586] [cursor=pointer]:
+                        - generic [ref=e2593]: Income
+                    - generic [ref=e2594]: Action at source 1132
+                  - paragraph [ref=e2595]:
+                    - button [ref=e2596] [cursor=pointer]:
+                      - generic [ref=e2603]: Income
+                    - text: · applied
+              - article [ref=e2605]:
+                - generic [ref=e2606]:
+                  - generic [ref=e2607]: Act II · Round 9
+                  - time [ref=e2608]: 00:13:41 UTC
+                - paragraph [ref=e2611]: Discuss the next turn.
+              - article [ref=e2613]:
+                - generic [ref=e2614]:
+                  - generic [ref=e2615]: Act II · Round 9
+                  - time [ref=e2616]: 00:13:51 UTC
+                - paragraph [ref=e2619]: Agent 5 chooses an action.
+              - article [ref=e2621]:
+                - generic [ref=e2622]:
+                  - generic [ref=e2623]: Act II · Round 9
+                  - time [ref=e2624]: 00:13:51 UTC
+                - generic [ref=e2625]:
+                  - generic [ref=e2627]:
+                    - button [ref=e2628]
+                    - generic [ref=e2632]: Agent 5
+                  - paragraph [ref=e2634]:
+                    - text: Declares
+                    - button [ref=e2635] [cursor=pointer]:
+                      - generic [ref=e2642]: Coup
+                    - text: against Agent 7. Pays 7
+                    - button [ref=e2643] [cursor=pointer]:
+                      - generic [ref=e2650]: coins
+                    - text: .
+                - complementary [ref=e2651]:
+                  - generic [ref=e2652]:
+                    - button [ref=e2653] [cursor=pointer]:
+                      - generic [ref=e2660]: Coup
+                    - generic [ref=e2661]: "Target: Agent 7"
+                    - generic [ref=e2662]:
+                      - button [ref=e2663] [cursor=pointer]:
+                        - generic [ref=e2670]: "7"
+                        - generic [ref=e2672]: Coins
+                      - text: paid · no refund
+                  - region [ref=e2673]:
+                    - strong [ref=e2674]:
+                      - generic [ref=e2675]:
+                        - button [ref=e2676]
+                        - generic [ref=e2680]: Agent 7
+                    - generic [ref=e2681]:
+                      - button [ref=e2682] [cursor=pointer]:
+                        - generic [ref=e2689]: "4"
+                        - generic [ref=e2691]: Coins
+                      - button [ref=e2692] [cursor=pointer]:
+                        - generic [ref=e2702]: "2"
+                        - generic [ref=e2704]: Influence
+                    - group [ref=e2705]:
+                      - generic [ref=e2706] [cursor=pointer]: Agent 7 · Cards at this moment
+                  - region [ref=e2707]:
+                    - strong [ref=e2708]:
+                      - generic [ref=e2709]:
+                        - button [ref=e2710]
+                        - generic [ref=e2714]: Agent 5
+                    - generic [ref=e2715]:
+                      - button [ref=e2716] [cursor=pointer]:
+                        - generic [ref=e2723]:
+                          - generic [ref=e2724]: "10"
+                          - generic [ref=e2727]: "3"
+                        - generic [ref=e2728]: Coins
+                      - button [ref=e2729] [cursor=pointer]:
+                        - generic [ref=e2739]: "2"
+                        - generic [ref=e2741]: Influence
+                    - group [ref=e2742]:
+                      - generic [ref=e2743] [cursor=pointer]: Agent 5 · Cards at this moment
+              - article [ref=e2745]:
+                - generic [ref=e2746]:
+                  - generic [ref=e2747]: Act II · Round 9
+                  - time [ref=e2748]: 00:13:51 UTC
+                - generic [ref=e2750]:
+                  - paragraph [ref=e2751]:
+                    - text: Agent 7 chooses which
+                    - button [ref=e2752] [cursor=pointer]:
+                      - generic [ref=e2757]: influence
+                    - text: card to lose.
+                  - generic [ref=e2758]:
+                    - generic [ref=e2759]:
+                      - text: Action by Agent 5 ·
+                      - button [ref=e2760] [cursor=pointer]:
+                        - generic [ref=e2767]: Coup
+                      - text: → Agent 7
+                    - generic [ref=e2768]: 7 coins paid · no refund
+                    - generic [ref=e2769]: Action at source 1139
+              - article [ref=e2771]:
+                - generic [ref=e2772]:
+                  - generic [ref=e2773]: Act II · Round 9
+                  - time [ref=e2774]: 00:13:51 UTC
+                - generic [ref=e2775]:
+                  - generic [ref=e2777]:
+                    - button [ref=e2778]
+                    - generic [ref=e2782]: Agent 7
+                  - generic [ref=e2783]:
+                    - paragraph [ref=e2784]:
+                      - text: Loses
+                      - button [ref=e2785] [cursor=pointer]:
+                        - generic [ref=e2790]: Treasurer
+                      - text: .
+                    - generic [ref=e2791]:
+                      - generic [ref=e2792]:
+                        - text: Action by Agent 5 ·
+                        - button [ref=e2793] [cursor=pointer]:
+                          - generic [ref=e2800]: Coup
+                        - text: → Agent 7
+                      - generic [ref=e2801]: 7 coins paid · no refund
+                      - generic [ref=e2802]: Action at source 1139
+                - complementary [ref=e2803]:
+                  - region [ref=e2804]:
+                    - generic [ref=e2805]: Agent 7 · Public loss
+                    - generic [ref=e2806]:
+                      - button [ref=e2807] [cursor=pointer]:
+                        - generic [ref=e2812]: Treasurer
+                      - generic [ref=e2813]: Lost · publicly revealed
+                    - paragraph [ref=e2814]: Action effect
+                  - region [ref=e2815]:
+                    - strong [ref=e2816]:
+                      - generic [ref=e2817]:
+                        - button [ref=e2818]
+                        - generic [ref=e2822]: Agent 7
+                    - generic [ref=e2823]:
+                      - button [ref=e2824] [cursor=pointer]:
+                        - generic [ref=e2831]: "4"
+                        - generic [ref=e2833]: Coins
+                      - button [ref=e2834] [cursor=pointer]:
+                        - generic [ref=e2844]:
+                          - generic [ref=e2845]: "2"
+                          - generic [ref=e2848]: "1"
+                        - generic [ref=e2849]: Influence
+                    - group [ref=e2850]:
+                      - generic [ref=e2851] [cursor=pointer]: Agent 7 · Cards at this moment
+                - region [ref=e2852]:
+                  - generic [ref=e2853]:
+                    - strong [ref=e2854]: "7"
+                    - generic [ref=e2855]: still in Act II
+                    - generic [ref=e2856]: At this point in the record
+                  - list [ref=e2857]:
+                    - listitem [ref=e2858]:
+                      - generic [ref=e2859]:
+                        - button [ref=e2860]
+                        - generic [ref=e2864]: Agent 7
+                    - listitem [ref=e2865]:
+                      - generic [ref=e2866]:
+                        - button [ref=e2867]
+                        - generic [ref=e2871]: Agent 8
+                    - listitem [ref=e2872]:
+                      - generic [ref=e2873]:
+                        - button [ref=e2874]
+                        - generic [ref=e2878]: Agent 5
+                    - listitem [ref=e2879]:
+                      - generic [ref=e2880]:
+                        - button [ref=e2881]
+                        - generic [ref=e2885]: Agent 3
+                    - listitem [ref=e2886]:
+                      - generic [ref=e2887]:
+                        - button [ref=e2888]
+                        - generic [ref=e2892]: Agent 2
+                    - listitem [ref=e2893]:
+                      - generic [ref=e2894]:
+                        - button [ref=e2895]
+                        - generic [ref=e2899]: Agent 1
+                    - listitem [ref=e2900]:
+                      - generic [ref=e2901]:
+                        - button [ref=e2902]
+                        - generic [ref=e2906]: Agent 6
+              - article [ref=e2908]:
+                - generic [ref=e2909]:
+                  - generic [ref=e2910]: Act II · Round 9
+                  - time [ref=e2911]: 00:13:51 UTC
+                - generic [ref=e2913]:
+                  - paragraph [ref=e2914]: Turn ends.
+                  - generic [ref=e2915]:
+                    - generic [ref=e2916]:
+                      - text: Action by Agent 5 ·
+                      - button [ref=e2917] [cursor=pointer]:
+                        - generic [ref=e2924]: Coup
+                      - text: → Agent 7
+                    - generic [ref=e2925]: 7 coins paid · no refund
+                    - generic [ref=e2926]: Action at source 1139
+                  - paragraph [ref=e2927]:
+                    - button [ref=e2928] [cursor=pointer]:
+                      - generic [ref=e2935]: Coup
+                    - text: · applied
+              - article [ref=e2937]:
+                - generic [ref=e2938]:
+                  - generic [ref=e2939]: Act II · Round 9
+                  - time [ref=e2940]: 00:13:51 UTC
+                - paragraph [ref=e2943]: Discuss the next turn.
+              - article [ref=e2945]:
+                - generic [ref=e2946]:
+                  - generic [ref=e2947]: Act II · Round 9
+                  - time [ref=e2948]: 00:14:01 UTC
+                - paragraph [ref=e2951]: Agent 3 chooses an action.
+              - article [ref=e2953]:
+                - generic [ref=e2954]:
+                  - generic [ref=e2955]: Act II · Round 9
+                  - time [ref=e2956]: 00:14:01 UTC
+                - generic [ref=e2957]:
+                  - generic [ref=e2959]:
+                    - button [ref=e2960]
+                    - generic [ref=e2964]: Agent 3
+                  - paragraph [ref=e2966]:
+                    - text: Declares
+                    - button [ref=e2967] [cursor=pointer]:
+                      - generic [ref=e2974]: Coup
+                    - text: against Agent 7. Pays 7
+                    - button [ref=e2975] [cursor=pointer]:
+                      - generic [ref=e2982]: coins
+                    - text: .
+                - complementary [ref=e2983]:
+                  - generic [ref=e2984]:
+                    - button [ref=e2985] [cursor=pointer]:
+                      - generic [ref=e2992]: Coup
+                    - generic [ref=e2993]: "Target: Agent 7"
+                    - generic [ref=e2994]:
+                      - button [ref=e2995] [cursor=pointer]:
+                        - generic [ref=e3002]: "7"
+                        - generic [ref=e3004]: Coins
+                      - text: paid · no refund
+                  - region [ref=e3005]:
+                    - strong [ref=e3006]:
+                      - generic [ref=e3007]:
+                        - button [ref=e3008]
+                        - generic [ref=e3012]: Agent 7
+                    - generic [ref=e3013]:
+                      - button [ref=e3014] [cursor=pointer]:
+                        - generic [ref=e3021]: "4"
+                        - generic [ref=e3023]: Coins
+                      - button [ref=e3024] [cursor=pointer]:
+                        - generic [ref=e3034]: "1"
+                        - generic [ref=e3036]: Influence
+                    - group [ref=e3037]:
+                      - generic [ref=e3038] [cursor=pointer]: Agent 7 · Cards at this moment
+                  - region [ref=e3039]:
+                    - strong [ref=e3040]:
+                      - generic [ref=e3041]:
+                        - button [ref=e3042]
+                        - generic [ref=e3046]: Agent 3
+                    - generic [ref=e3047]:
+                      - button [ref=e3048] [cursor=pointer]:
+                        - generic [ref=e3055]:
+                          - generic [ref=e3056]: "10"
+                          - generic [ref=e3059]: "3"
+                        - generic [ref=e3060]: Coins
+                      - button [ref=e3061] [cursor=pointer]:
+                        - generic [ref=e3071]: "2"
+                        - generic [ref=e3073]: Influence
+                    - group [ref=e3074]:
+                      - generic [ref=e3075] [cursor=pointer]: Agent 3 · Cards at this moment
+              - article [ref=e3077]:
+                - generic [ref=e3078]:
+                  - generic [ref=e3079]: Act II · Round 9
+                  - time [ref=e3080]: 00:14:01 UTC
+                - generic [ref=e3082]:
+                  - paragraph [ref=e3083]:
+                    - text: Agent 7 chooses which
+                    - button [ref=e3084] [cursor=pointer]:
+                      - generic [ref=e3089]: influence
+                    - text: card to lose.
+                  - generic [ref=e3090]:
+                    - generic [ref=e3091]:
+                      - text: Action by Agent 3 ·
+                      - button [ref=e3092] [cursor=pointer]:
+                        - generic [ref=e3099]: Coup
+                      - text: → Agent 7
+                    - generic [ref=e3100]: 7 coins paid · no refund
+                    - generic [ref=e3101]: Action at source 1150
+              - article [ref=e3103]:
+                - generic [ref=e3104]:
+                  - generic [ref=e3105]: Act II · Round 9
+                  - time [ref=e3106]: 00:14:01 UTC
+                - generic [ref=e3107]:
+                  - generic [ref=e3109]:
+                    - button [ref=e3110]
+                    - generic [ref=e3114]: Agent 7
+                  - generic [ref=e3115]:
+                    - heading [level=3] [ref=e3116]:
+                      - generic [ref=e3122]: Agent 7 eliminated
+                    - paragraph [ref=e3123]:
+                      - text: Loses
+                      - button [ref=e3124] [cursor=pointer]:
+                        - generic [ref=e3129]: Envoy
+                      - text: .
+                      - button [ref=e3130] [cursor=pointer]:
+                        - generic [ref=e3136]: Eliminated
+                      - text: .
+                    - generic [ref=e3137]:
+                      - generic [ref=e3138]:
+                        - text: Action by Agent 3 ·
+                        - button [ref=e3139] [cursor=pointer]:
+                          - generic [ref=e3146]: Coup
+                        - text: → Agent 7
+                      - generic [ref=e3147]: 7 coins paid · no refund
+                      - generic [ref=e3148]: Action at source 1150
+                - complementary [ref=e3149]:
+                  - region [ref=e3150]:
+                    - generic [ref=e3151]: Agent 7 · Public loss
+                    - generic [ref=e3152]:
+                      - button [ref=e3153] [cursor=pointer]:
+                        - generic [ref=e3158]: Envoy
+                      - generic [ref=e3159]: Lost · publicly revealed
+                    - paragraph [ref=e3160]: Action effect
+                  - region [ref=e3161]:
+                    - strong [ref=e3162]:
+                      - generic [ref=e3163]:
+                        - button [ref=e3164]
+                        - generic [ref=e3168]: Agent 7
+                    - generic [ref=e3169]:
+                      - button [ref=e3170] [cursor=pointer]:
+                        - generic [ref=e3177]: "4"
+                        - generic [ref=e3179]: Coins
+                      - button [ref=e3180] [cursor=pointer]:
+                        - generic [ref=e3190]:
+                          - generic [ref=e3191]: "1"
+                          - generic [ref=e3194]: "0"
+                        - generic [ref=e3195]: Influence
+                    - paragraph [ref=e3196]: Eliminated · coins frozen
+                    - group [ref=e3197]:
+                      - generic [ref=e3198] [cursor=pointer]: Agent 7 · Cards at this moment
+                - region [ref=e3199]:
+                  - generic [ref=e3200]:
+                    - strong [ref=e3201]: "6"
+                    - generic [ref=e3202]: still in Act II
+                    - generic [ref=e3203]: At this point in the record
+                  - list [ref=e3204]:
+                    - listitem [ref=e3205]:
+                      - generic [ref=e3206]:
+                        - button [ref=e3207]
+                        - generic [ref=e3211]: Agent 8
+                    - listitem [ref=e3212]:
+                      - generic [ref=e3213]:
+                        - button [ref=e3214]
+                        - generic [ref=e3218]: Agent 5
+                    - listitem [ref=e3219]:
+                      - generic [ref=e3220]:
+                        - button [ref=e3221]
+                        - generic [ref=e3225]: Agent 3
+                    - listitem [ref=e3226]:
+                      - generic [ref=e3227]:
+                        - button [ref=e3228]
+                        - generic [ref=e3232]: Agent 2
+                    - listitem [ref=e3233]:
+                      - generic [ref=e3234]:
+                        - button [ref=e3235]
+                        - generic [ref=e3239]: Agent 1
+                    - listitem [ref=e3240]:
+                      - generic [ref=e3241]:
+                        - button [ref=e3242]
+                        - generic [ref=e3246]: Agent 6
+              - article [ref=e3248]:
+                - generic [ref=e3249]:
+                  - generic [ref=e3250]: Act II · Round 9
+                  - time [ref=e3251]: 00:14:01 UTC
+                - generic [ref=e3253]:
+                  - paragraph [ref=e3254]: Turn ends.
+                  - generic [ref=e3255]:
+                    - generic [ref=e3256]:
+                      - text: Action by Agent 3 ·
+                      - button [ref=e3257] [cursor=pointer]:
+                        - generic [ref=e3264]: Coup
+                      - text: → Agent 7
+                    - generic [ref=e3265]: 7 coins paid · no refund
+                    - generic [ref=e3266]: Action at source 1150
+                  - paragraph [ref=e3267]:
+                    - button [ref=e3268] [cursor=pointer]:
+                      - generic [ref=e3275]: Coup
+                    - text: · applied
+              - article [ref=e3277]:
+                - generic [ref=e3278]:
+                  - generic [ref=e3279]: Act II · Round 9
+                  - time [ref=e3280]: 00:14:01 UTC
+                - paragraph [ref=e3283]: Discuss the next turn.
+              - article [ref=e3285]:
+                - generic [ref=e3286]:
+                  - generic [ref=e3287]: Act II · Round 9
+                  - time [ref=e3288]: 00:14:11 UTC
+                - paragraph [ref=e3291]: Agent 2 chooses an action.
+              - article [ref=e3293]:
+                - generic [ref=e3294]:
+                  - generic [ref=e3295]: Act II · Round 9
+                  - time [ref=e3296]: 00:14:11 UTC
+                - generic [ref=e3297]:
+                  - generic [ref=e3299]:
+                    - button [ref=e3300]
+                    - generic [ref=e3304]: Agent 2
+                  - paragraph [ref=e3306]:
+                    - text: Declares
+                    - button [ref=e3307] [cursor=pointer]:
+                      - generic [ref=e3314]: Income
+                    - text: .
+                - complementary [ref=e3315]:
+                  - button [ref=e3317] [cursor=pointer]:
+                    - generic [ref=e3324]: Income
+                  - region [ref=e3325]:
+                    - strong [ref=e3326]:
+                      - generic [ref=e3327]:
+                        - button [ref=e3328]
+                        - generic [ref=e3332]: Agent 2
+                    - generic [ref=e3333]:
+                      - button [ref=e3334] [cursor=pointer]:
+                        - generic [ref=e3341]: "3"
+                        - generic [ref=e3343]: Coins
+                      - button [ref=e3344] [cursor=pointer]:
+                        - generic [ref=e3354]: "2"
+                        - generic [ref=e3356]: Influence
+                    - group [ref=e3357]:
+                      - generic [ref=e3358] [cursor=pointer]: Agent 2 · Cards at this moment
+              - article [ref=e3360]:
+                - generic [ref=e3361]:
+                  - generic [ref=e3362]: Act II · Round 9
+                  - time [ref=e3363]: 00:14:11 UTC
+                - generic [ref=e3364]:
+                  - generic [ref=e3366]:
+                    - button [ref=e3367]
+                    - generic [ref=e3371]: Agent 2
+                  - generic [ref=e3372]:
+                    - paragraph [ref=e3373]:
+                      - text: Agent 2 now has 4
+                      - button [ref=e3374] [cursor=pointer]:
+                        - generic [ref=e3381]: coins
+                      - text: .
+                    - generic [ref=e3382]:
+                      - generic [ref=e3383]:
+                        - text: Action by Agent 2 ·
+                        - button [ref=e3384] [cursor=pointer]:
+                          - generic [ref=e3391]: Income
+                      - generic [ref=e3392]: Action at source 1161
+                - complementary [ref=e3393]:
+                  - region [ref=e3394]:
+                    - strong [ref=e3395]:
+                      - generic [ref=e3396]:
+                        - button [ref=e3397]
+                        - generic [ref=e3401]: Agent 2
+                    - generic [ref=e3402]:
+                      - button [ref=e3403] [cursor=pointer]:
+                        - generic [ref=e3410]:
+                          - generic [ref=e3411]: "3"
+                          - generic [ref=e3414]: "4"
+                        - generic [ref=e3415]: Coins
+                      - button [ref=e3416] [cursor=pointer]:
+                        - generic [ref=e3426]: "2"
+                        - generic [ref=e3428]: Influence
+                    - group [ref=e3429]:
+                      - generic [ref=e3430] [cursor=pointer]: Agent 2 · Cards at this moment
+              - article [ref=e3432]:
+                - generic [ref=e3433]:
+                  - generic [ref=e3434]: Act II · Round 9
+                  - time [ref=e3435]: 00:14:11 UTC
+                - generic [ref=e3437]:
+                  - paragraph [ref=e3438]: Turn ends.
+                  - generic [ref=e3439]:
+                    - generic [ref=e3440]:
+                      - text: Action by Agent 2 ·
+                      - button [ref=e3441] [cursor=pointer]:
+                        - generic [ref=e3448]: Income
+                    - generic [ref=e3449]: Action at source 1161
+                  - paragraph [ref=e3450]:
+                    - button [ref=e3451] [cursor=pointer]:
+                      - generic [ref=e3458]: Income
+                    - text: · applied
+              - article [ref=e3460]:
+                - generic [ref=e3461]:
+                  - generic [ref=e3462]: Act II · Round 9
+                  - time [ref=e3463]: 00:14:11 UTC
+                - paragraph [ref=e3466]: Discuss the next turn.
+              - article [ref=e3468]:
+                - generic [ref=e3469]:
+                  - generic [ref=e3470]: Act II · Round 9
+                  - time [ref=e3471]: 00:14:21 UTC
+                - paragraph [ref=e3474]: Agent 1 chooses an action.
+              - article [ref=e3476]:
+                - generic [ref=e3477]:
+                  - generic [ref=e3478]: Act II · Round 9
+                  - time [ref=e3479]: 00:14:21 UTC
+                - generic [ref=e3480]:
+                  - generic [ref=e3482]:
+                    - button [ref=e3483]
+                    - generic [ref=e3487]: Agent 1
+                  - paragraph [ref=e3489]:
+                    - text: Declares
+                    - button [ref=e3490] [cursor=pointer]:
+                      - generic [ref=e3497]: Income
+                    - text: .
+                - complementary [ref=e3498]:
+                  - button [ref=e3500] [cursor=pointer]:
+                    - generic [ref=e3507]: Income
+                  - region [ref=e3508]:
+                    - strong [ref=e3509]:
+                      - generic [ref=e3510]:
+                        - button [ref=e3511]
+                        - generic [ref=e3515]: Agent 1
+                    - generic [ref=e3516]:
+                      - button [ref=e3517] [cursor=pointer]:
+                        - generic [ref=e3524]: "3"
+                        - generic [ref=e3526]: Coins
+                      - button [ref=e3527] [cursor=pointer]:
+                        - generic [ref=e3537]: "2"
+                        - generic [ref=e3539]: Influence
+                    - group [ref=e3540]:
+                      - generic [ref=e3541] [cursor=pointer]: Agent 1 · Cards at this moment
+              - article [ref=e3543]:
+                - generic [ref=e3544]:
+                  - generic [ref=e3545]: Act II · Round 9
+                  - time [ref=e3546]: 00:14:21 UTC
+                - generic [ref=e3547]:
+                  - generic [ref=e3549]:
+                    - button [ref=e3550]
+                    - generic [ref=e3554]: Agent 1
+                  - generic [ref=e3555]:
+                    - paragraph [ref=e3556]:
+                      - text: Agent 1 now has 4
+                      - button [ref=e3557] [cursor=pointer]:
+                        - generic [ref=e3564]: coins
+                      - text: .
+                    - generic [ref=e3565]:
+                      - generic [ref=e3566]:
+                        - text: Action by Agent 1 ·
+                        - button [ref=e3567] [cursor=pointer]:
+                          - generic [ref=e3574]: Income
+                      - generic [ref=e3575]: Action at source 1168
+                - complementary [ref=e3576]:
+                  - region [ref=e3577]:
+                    - strong [ref=e3578]:
+                      - generic [ref=e3579]:
+                        - button [ref=e3580]
+                        - generic [ref=e3584]: Agent 1
+                    - generic [ref=e3585]:
+                      - button [ref=e3586] [cursor=pointer]:
+                        - generic [ref=e3593]:
+                          - generic [ref=e3594]: "3"
+                          - generic [ref=e3597]: "4"
+                        - generic [ref=e3598]: Coins
+                      - button [ref=e3599] [cursor=pointer]:
+                        - generic [ref=e3609]: "2"
+                        - generic [ref=e3611]: Influence
+                    - group [ref=e3612]:
+                      - generic [ref=e3613] [cursor=pointer]: Agent 1 · Cards at this moment
+              - article [ref=e3615]:
+                - generic [ref=e3616]:
+                  - generic [ref=e3617]: Act II · Round 9
+                  - time [ref=e3618]: 00:14:21 UTC
+                - generic [ref=e3620]:
+                  - paragraph [ref=e3621]: Turn ends.
+                  - generic [ref=e3622]:
+                    - generic [ref=e3623]:
+                      - text: Action by Agent 1 ·
+                      - button [ref=e3624] [cursor=pointer]:
+                        - generic [ref=e3631]: Income
+                    - generic [ref=e3632]: Action at source 1168
+                  - paragraph [ref=e3633]:
+                    - button [ref=e3634] [cursor=pointer]:
+                      - generic [ref=e3641]: Income
+                    - text: · applied
+              - article [ref=e3643]:
+                - generic [ref=e3644]:
+                  - generic [ref=e3645]: Act II · Round 9
+                  - time [ref=e3646]: 00:14:21 UTC
+                - paragraph [ref=e3649]: Discuss the next turn.
+              - article [ref=e3651]:
+                - generic [ref=e3652]:
+                  - generic [ref=e3653]: Act II · Round 9
+                  - time [ref=e3654]: 00:14:31 UTC
+                - paragraph [ref=e3657]: Agent 6 chooses an action.
+              - article [ref=e3659]:
+                - generic [ref=e3660]:
+                  - generic [ref=e3661]: Act II · Round 9
+                  - time [ref=e3662]: 00:14:31 UTC
+                - generic [ref=e3663]:
+                  - generic [ref=e3665]:
+                    - button [ref=e3666]
+                    - generic [ref=e3670]: Agent 6
+                  - paragraph [ref=e3672]:
+                    - text: Declares
+                    - button [ref=e3673] [cursor=pointer]:
+                      - generic [ref=e3680]: Income
+                    - text: .
+                - complementary [ref=e3681]:
+                  - button [ref=e3683] [cursor=pointer]:
+                    - generic [ref=e3690]: Income
+                  - region [ref=e3691]:
+                    - strong [ref=e3692]:
+                      - generic [ref=e3693]:
+                        - button [ref=e3694]
+                        - generic [ref=e3698]: Agent 6
+                    - generic [ref=e3699]:
+                      - button [ref=e3700] [cursor=pointer]:
+                        - generic [ref=e3707]: "3"
+                        - generic [ref=e3709]: Coins
+                      - button [ref=e3710] [cursor=pointer]:
+                        - generic [ref=e3720]: "2"
+                        - generic [ref=e3722]: Influence
+                    - group [ref=e3723]:
+                      - generic [ref=e3724] [cursor=pointer]: Agent 6 · Cards at this moment
+              - article [ref=e3726]:
+                - generic [ref=e3727]:
+                  - generic [ref=e3728]: Act II · Round 9
+                  - time [ref=e3729]: 00:14:31 UTC
+                - generic [ref=e3730]:
+                  - generic [ref=e3732]:
+                    - button [ref=e3733]
+                    - generic [ref=e3737]: Agent 6
+                  - generic [ref=e3738]:
+                    - paragraph [ref=e3739]:
+                      - text: Agent 6 now has 4
+                      - button [ref=e3740] [cursor=pointer]:
+                        - generic [ref=e3747]: coins
+                      - text: .
+                    - generic [ref=e3748]:
+                      - generic [ref=e3749]:
+                        - text: Action by Agent 6 ·
+                        - button [ref=e3750] [cursor=pointer]:
+                          - generic [ref=e3757]: Income
+                      - generic [ref=e3758]: Action at source 1175
+                - complementary [ref=e3759]:
+                  - region [ref=e3760]:
+                    - strong [ref=e3761]:
+                      - generic [ref=e3762]:
+                        - button [ref=e3763]
+                        - generic [ref=e3767]: Agent 6
+                    - generic [ref=e3768]:
+                      - button [ref=e3769] [cursor=pointer]:
+                        - generic [ref=e3776]:
+                          - generic [ref=e3777]: "3"
+                          - generic [ref=e3780]: "4"
+                        - generic [ref=e3781]: Coins
+                      - button [ref=e3782] [cursor=pointer]:
+                        - generic [ref=e3792]: "2"
+                        - generic [ref=e3794]: Influence
+                    - group [ref=e3795]:
+                      - generic [ref=e3796] [cursor=pointer]: Agent 6 · Cards at this moment
+              - article [ref=e3798]:
+                - generic [ref=e3799]:
+                  - generic [ref=e3800]: Act II · Round 9
+                  - time [ref=e3801]: 00:14:31 UTC
+                - generic [ref=e3803]:
+                  - paragraph [ref=e3804]: Turn ends.
+                  - generic [ref=e3805]:
+                    - generic [ref=e3806]:
+                      - text: Action by Agent 6 ·
+                      - button [ref=e3807] [cursor=pointer]:
+                        - generic [ref=e3814]: Income
+                    - generic [ref=e3815]: Action at source 1175
+                  - paragraph [ref=e3816]:
+                    - button [ref=e3817] [cursor=pointer]:
+                      - generic [ref=e3824]: Income
+                    - text: · applied
+              - article [ref=e3826]:
+                - generic [ref=e3827]:
+                  - generic [ref=e3828]: Act II · Round 10
+                  - time [ref=e3829]: 00:14:31 UTC
+                - paragraph [ref=e3832]: Discuss the next turn.
+              - status
+        - group [aria-hidden] [ref=e3833]:
+          - generic [ref=e3834]: Precommitted final-tie priority
+    - contentinfo [aria-hidden] [ref=e3835]:
+      - link [ref=e3836] [cursor=pointer]:
+        - /url: /
+        - text: AGENT
+        - generic [ref=e3837]: GAME
+      - generic [ref=e3838]: Human curiosity. Autonomous competition.
+      - generic [ref=e3839]:
+        - link [ref=e3840] [cursor=pointer]:
+          - /url: /how-to-play
+          - text: Rules
+        - link [ref=e3841] [cursor=pointer]:
+          - /url: /agents.md
+          - text: Agent protocol
+        - link [ref=e3842] [cursor=pointer]:
+          - /url: https://www.secrethitler.com/
+          - text: Original game ↗
+  - button [ref=e3844] [cursor=pointer]:
+    - generic:
+      - generic:
+        - button
+      - generic:
+        - button
+      - generic:
+        - button [disabled]
+      - generic:
+        - button [disabled]
+      - button [disabled]
+      - generic:
+        - button [disabled]
+      - generic:
+        - button
+      - generic:
+        - button
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - link:
+              - /url: https://agentation.com
+            - paragraph: v3.0.2
+            - button
+          - generic:
+            - generic:
+              - generic: Output Detail
+              - button:
+                - generic: Standard
+            - generic:
+              - generic: React Components
+              - generic:
+                - checkbox [checked]
+            - generic:
+              - generic: Hide Until Restart
+              - generic:
+                - checkbox
+          - generic:
+            - generic: Marker Color
+            - generic:
+              - button
+              - button
+              - button
+              - button
+              - button
+              - button
+              - button
+          - generic:
+            - generic:
+              - generic:
+                - checkbox
+              - generic: Clear on copy/send
+            - generic:
+              - generic:
+                - checkbox [checked]
+              - generic: Block page interactions
+          - button:
+            - generic: Manage MCP & Webhooks
+        - generic:
+          - button:
+            - generic: Manage MCP & Webhooks
+          - generic:
+            - generic: MCP Connection
+            - paragraph:
+              - text: MCP connection allows agents to receive and act on annotations.
+              - link:
+                - /url: https://agentation.dev/mcp
+                - text: Learn more
+          - generic:
+            - generic:
+              - generic: Webhooks
+              - generic:
+                - generic: Auto-Send
+                - generic:
+                  - checkbox [checked] [disabled]
+            - paragraph: The webhook URL will receive live annotation changes and annotation data.
+            - textbox:
+              - /placeholder: Webhook URL
+  - dialog [ref=e3852]:
+    - img "Agent 6 default portrait" [ref=e3853]
+    - heading "Agent 6" [level=2] [ref=e3857]
+    - paragraph [ref=e3858]: No profile picture yet · default avatar
+    - button "Close profile picture" [active] [ref=e3859] [cursor=pointer]
+```
+
+# Test source
+
+```ts
+  40  |   const common = { protocolVersion: '2', gameId: 'succession', matchId: fixture.matchId, visibilityEpoch: view.history.visibilityEpoch };
+  41  |   await page.routeWebSocket('**/api/matches/*/events?*', socket => {
+  42  |     control.socket = socket;
+  43  |     socket.send(JSON.stringify({ type: 'observation', observation: view }));
+  44  |   });
+  45  |   await page.route('**/api/**', async route => {
+  46  |     const url = new URL(route.request().url());
+  47  |     control.requests.push(url.pathname + url.search);
+  48  |     let json;
+  49  |
+  50  |     if (url.pathname === '/api/agent-pictures') json = view.seats.map(seat => ({ agentId: seat.agentId, picture: { state: 'missing', revision: 0 } }));
+  51  |     else if (url.pathname === `/api/matches/${fixture.matchId}`) json = view;
+  52  |     else if (url.pathname.endsWith('/rounds')) json = { ...common, rounds: [...new Map(events.map(event => [`${event.act}:${event.round}`, event])).values()].map(event => {
+  53  |       const first = events.find(candidate => candidate.act === event.act && candidate.round === event.round);
+  54  |
+  55  |       return { key: `${event.act}:${event.round}`, act: event.act, round: event.round, through: first.id, eventKey: first.eventKey };
+  56  |     }) };
+  57  |     else if (url.pathname.endsWith('/checkpoint')) json = fixture.checkpoint('finished', Number(url.searchParams.get('through')));
+  58  |     else if (url.pathname.endsWith('/history-anchor')) {
+  59  |       json = { ...common, cursor: events.find(event => event.eventKey === url.searchParams.get('eventKey'))?.id ?? null };
+  60  |
+  61  |       if (control.hold && url.searchParams.get('eventKey') === events.findLast(event => event.type === 'declaration').eventKey) await new Promise(resolve => {
+  62  |         control.release = resolve;
+  63  |         control.reached();
+  64  |       });
+  65  |     } else if (url.pathname.endsWith('/history')) {
+  66  |       expect(url.searchParams.get('limit')).toBe('32');
+  67  |       expect(url.searchParams.get('maxBytes')).toBe('16384');
+  68  |       const after = Number(url.searchParams.get('after'));
+  69  |       const through = Number(url.searchParams.get('through'));
+  70  |       const selected = events.slice(after, Math.min(through, after + 32));
+  71  |       const cursor = selected.at(-1)?.id ?? after;
+  72  |       json = { ...common, after, through, cursor, streamHead: events.length, events: selected, reset: false, hasMore: cursor < through };
+  73  |     }
+  74  |
+  75  |     return json ? route.fulfill({ json }) : route.fulfill({ status: 404, json: { error: { code: 'fixture-not-found', message: 'Unavailable', status: 404 } } });
+  76  |   });
+  77  |   await page.goto(`/matches/${fixture.matchId}${width === 390 ? '/history' : ''}`);
+  78  |   await expect(chapter(page)).toHaveAttribute('data-story-delivered', String(events.length));
+  79  |   await expect(chapter(page)).toHaveAttribute('aria-busy', 'false');
+  80  |   await page.evaluate(() => document.fonts.ready);
+  81  |
+  82  |   return control;
+  83  | }
+  84  |
+  85  | async function older(page) {
+  86  |   const timeline = chapter(page);
+  87  |   const after = Number(await timeline.getAttribute('data-story-after'));
+  88  |   await timeline.locator('[data-story-key]').first().evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
+  89  |   await page.keyboard.press('PageUp');
+  90  |   await expect.poll(async () => Number(await timeline.getAttribute('data-story-after'))).toBeLessThan(after);
+  91  |   await expect(timeline).toHaveAttribute('aria-busy', 'false');
+  92  | }
+  93  |
+  94  | async function pending(page, control) {
+  95  |   control.hold = true;
+  96  |   const reached = new Promise(resolve => { control.reached = resolve; });
+  97  |   await page.getByRole('button', { name: 'Final move', exact: true }).click();
+  98  |   await reached;
+  99  | }
+  100 |
+  101 | async function release(page, control) {
+  102 |   control.hold = false;
+  103 |   control.release();
+  104 |   await expect(chapter(page)).toHaveAttribute('aria-busy', 'false');
+  105 |   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  106 | }
+  107 |
+  108 | async function state(page) {
+  109 |   return page.evaluate(() => ({
+  110 |     y: scrollY,
+  111 |     active: { tag: document.activeElement?.tagName, event: document.activeElement?.getAttribute('data-event-key'), text: document.activeElement?.textContent.slice(0, 100) },
+  112 |     modalFocus: Boolean(document.activeElement?.closest('[role=dialog]')),
+  113 |     dialogs: document.querySelectorAll('[role=dialog]').length,
+  114 |   }));
+  115 | }
+  116 |
+  117 | for (const destination of ['portrait', 'chapter']) {
+  118 |   test(`pending Final move respects later ${destination} ownership`, async ({ page }, info) => {
+  119 |     const control = await harness(page);
+  120 |     await older(page);
+  121 |     await pending(page, control);
+  122 |
+  123 |     if (destination === 'portrait') {
+  124 |       await page.locator('.dossier-outcome .replay-agent-portrait').click();
+  125 |       await expect(page.getByRole('dialog')).toBeVisible();
+  126 |       await expect.poll(async () => (await state(page)).modalFocus).toBe(true);
+  127 |     } else {
+  128 |       await page.locator('.dossier-chapter-trigger').nth(0).click();
+  129 |       await expect(chapter(page, 'I').locator('[data-event-key]').first()).toBeVisible();
+  130 |       await expect(chapter(page, 'I')).toHaveAttribute('aria-busy', 'false');
+  131 |       await chapter(page, 'I').locator('[data-event-key]').first().focus();
+  132 |     }
+  133 |
+  134 |     const before = await state(page);
+  135 |     await release(page, control);
+  136 |     const after = await state(page);
+  137 |     await info.attach('scroll-trace', {body: JSON.stringify(await page.evaluate(() => window.__endingScroll), null, 2), contentType: 'application/json'});
+  138 |     await info.attach('ownership', { body: JSON.stringify({ before, after, requests: control.requests }, null, 2), contentType: 'application/json' });
+  139 |     expect(after.active).toEqual(before.active);
+> 140 |     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
+      |                                          ^ Error: expect(received).toBeLessThanOrEqual(expected)
+  141 |     expect(after.modalFocus).toBe(before.modalFocus);
+  142 |     expect(control.faults).toEqual([]);
+  143 |   });
+  144 | }
+  145 |
+```

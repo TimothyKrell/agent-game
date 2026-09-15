@@ -1,0 +1,19 @@
+89 actual-route assertions passed; 128 max visible records; 22.8125px retained-row drift
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: See retained shared-interaction failures
+
+1 !== 0
+
+    at file:///tmp/opencode/agent-game-dossier/.dossier/route.mjs:643:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
