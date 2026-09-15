@@ -1,11 +1,11 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { Schema } from 'effect';
 import { version } from '../package.json';
-import { pictureFixture, png } from '../.tim30/picture-fixture';
+import { pictureFixture, picturePort, png } from '../.tim30/picture-fixture';
 import { AgentPictureSchema } from '../src/shared/agent-picture';
 import { validatePicture } from '../cli/picture.mjs';
 import { advance, createMatch } from '../src/game/engine';
@@ -186,6 +186,117 @@ it('an existing picture, malformed response, and failed choice storage never pro
     await f.close();
   }
 });
+
+it.each(['connection-expired', 'connection-revoked'])(
+  'propagates authoritative queue recheck %s after optional picture metadata',
+  async (code) => {
+    const f = await fixture();
+
+    try {
+      f.state.endAuthorityDuringRead = code;
+      await expect(f.approve()).rejects.toMatchObject({
+        code: 1,
+        stdout: `${JSON.stringify({ error: { code, message: 'Connection authority ended.', status: 401 } })}\n`,
+      });
+      expect(f.state.reads).toBe(1);
+      expect(f.state.queueReads).toBe(2);
+      expect(f.state.joins).toBe(0);
+      expect(await readdir(`${f.home}/.agent-game`)).not.toContain('picture-choices');
+    } finally {
+      await f.close();
+    }
+  },
+);
+
+it.each(['picture-upload', 'picture-retry'])(
+  'repairs an orphaned pending journal before %s and preserves default cold retry after a lost receipt',
+  async (command) => {
+    const f = await fixture();
+
+    try {
+      await f.approve();
+      const file = `${f.home}/original.png`;
+      const id = 'orphaned-file-0001';
+      const pointer = `${f.config}.pictures/pending.json`;
+      await writeFile(file, png);
+      // The CLI has already read an absent pointer. Fail its later atomic pointer publication,
+      // after the real journal write, by occupying that destination with a directory.
+      f.state.beforePictureRead = () => mkdir(pointer, { recursive: true }).then(() => {});
+      expect(await f.connected('picture-upload', '--file', file, '--request-id', id)).toMatchObject({
+        status: 'unavailable',
+        code: 'picture-local-unavailable',
+      });
+      const original = JSON.parse(await readFile(`${f.config}.pictures/${id}.json`, 'utf8'));
+      expect(original).toMatchObject({
+        status: 'pending',
+        revision: 0,
+        requestId: id,
+        payload: png.toString('base64'),
+      });
+      expect(f.state.requests).toHaveLength(0);
+      await rm(pointer, { recursive: true });
+      f.state.loseReceipt = true;
+      const retryArgs = command === 'picture-upload' ? ['--file', file] : [];
+      expect(await f.connected(command, '--request-id', id, ...retryArgs)).toMatchObject({
+        status: 'uncertain',
+        requestId: id,
+      });
+
+      const repaired = await readFile(pointer, 'utf8')
+        .then(JSON.parse)
+        .catch(() => null);
+
+      expect.soft(repaired).toEqual({ requestId: id });
+      expect
+        .soft(await f.connected('picture-upload', '--file', file))
+        .toMatchObject({ code: 'picture-pending' });
+      expect
+        .soft(await f.connected('picture-retry'))
+        .toMatchObject({ status: 'received', requestId: id, picture: { revision: 1 } });
+      expect.soft(f.state.requests.map((request) => [request.id, request.revision])).toEqual([
+        [id, '"0"'],
+        [id, '"0"'],
+      ]);
+      expect.soft(f.state.writes).toBe(1);
+    } finally {
+      await f.close();
+    }
+  },
+);
+
+it.each(['picture-upload', 'picture-retry'])(
+  'fences orphaned saved-pending %s behind another unresolved operation',
+  async (command) => {
+    const f = await fixture();
+
+    try {
+      await f.approve();
+      const file = `${f.home}/original.png`;
+      const pointer = `${f.config}.pictures/pending.json`;
+      await writeFile(file, png);
+      f.state.beforePictureRead = () => mkdir(pointer, { recursive: true }).then(() => {});
+      await f.connected('picture-upload', '--file', file, '--request-id', 'orphaned-file-0001');
+      expect(f.state.requests).toHaveLength(0);
+      await rm(pointer, { recursive: true });
+      f.state.loseReceipt = true;
+      expect(
+        await f.connected('picture-upload', '--file', file, '--request-id', 'other-file-0002'),
+      ).toMatchObject({ status: 'uncertain' });
+      const retryArgs = command === 'picture-upload' ? ['--file', file] : [];
+      expect(await f.connected(command, '--request-id', 'orphaned-file-0001', ...retryArgs)).toMatchObject({
+        code: 'picture-pending',
+      });
+      expect(f.state.requests).toHaveLength(1);
+      expect(JSON.parse(await readFile(pointer, 'utf8'))).toEqual({ requestId: 'other-file-0002' });
+      expect(await f.connected('picture-retry')).toMatchObject({
+        status: 'received',
+        requestId: 'other-file-0002',
+      });
+    } finally {
+      await f.close();
+    }
+  },
+);
 
 it('uses one raw authenticated path for owner files and externally-created files, and retries exact bytes across cold restarts', async () => {
   const f = await fixture();
@@ -399,7 +510,7 @@ it('refuses corrupt or cross-connection journal proof before any retry network r
 
 it('reuses explicit source lineage across preview/harness configs while isolating upload authority and returning to source', async () => {
   const f = await fixture();
-  const preview = await pictureFixture(6302);
+  const preview = await pictureFixture(picturePort + 1);
 
   try {
     await f.approve();

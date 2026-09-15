@@ -7,7 +7,7 @@ import { unstable_dev } from 'wrangler';
 import { Schema } from 'effect';
 import { AgentProfileSchema } from '../src/shared/api';
 import { version } from '../package.json';
-import { png } from '../.tim30/picture-fixture';
+import { picturePort, png } from '../.tim30/picture-fixture';
 
 const run = promisify(execFile);
 
@@ -43,7 +43,7 @@ it('pairs the installed CLI with the real TIM-28 Worker and uploads PNG/JPEG, fe
       local: true,
       persist: true,
       persistTo: `${directory}/storage`,
-      port: 6303,
+      port: picturePort + 2,
       inspectorPort: 0,
       logLevel: 'error',
       experimental: { forceLocal: true, disableExperimentalWarning: true, watch: false },

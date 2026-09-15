@@ -1,10 +1,11 @@
 import { constants } from 'node:fs';
-import { open, mkdir, readFile, rename } from 'node:fs/promises';
+import { open, mkdir, readFile } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import { homedir } from 'node:os';
-import { dirname, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { connectionIdentity } from './current.mjs';
 import { lockLedger } from './ledger.mjs';
+import { writeJsonDurably } from './durable-json.mjs';
 
 const maxBytes = 2 * 1024 * 1024;
 
@@ -181,29 +182,6 @@ async function readJson(path) {
   }
 }
 
-// Sync before sending: a successful request must always have a durable, token-free local retry proof.
-async function durableSave(path, value) {
-  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-  const temp = `${path}.${randomUUID()}.tmp`;
-  const file = await open(temp, 'wx', 0o600);
-
-  try {
-    await file.writeFile(JSON.stringify(value));
-    await file.sync();
-  } finally {
-    await file.close();
-  }
-
-  await rename(temp, path);
-  const directory = await open(dirname(path), 'r');
-
-  try {
-    await directory.sync();
-  } finally {
-    await directory.close();
-  }
-}
-
 async function rememberChoice(state, choice, claim = false) {
   const path = choicePath(state);
   const unlock = await lockLedger(path);
@@ -219,7 +197,7 @@ async function rememberChoice(state, choice, claim = false) {
       throw failure('picture-choice', 'Optional picture choice storage is unavailable.');
 
     if (claim && previous) return { askOwner: false, choice: previous.choice };
-    await durableSave(path, { version: 1, choice });
+    await writeJsonDurably(path, { version: 1, choice });
 
     return { askOwner: claim, choice };
   } finally {
@@ -230,9 +208,11 @@ async function rememberChoice(state, choice, claim = false) {
 export async function pictureOnboarding(client, state, stillIdle) {
   const picture = await pictureStatus(client, state);
 
+  // This is an authoritative connection check, not optional picture or local-choice I/O.
+  if (process.env.AGENT_GAME_CHILD_DEADLINE !== undefined || !(await stillIdle()))
+    return { ...picture, optional: true, askOwner: false };
+
   try {
-    if (process.env.AGENT_GAME_CHILD_DEADLINE !== undefined || !(await stillIdle()))
-      return { ...picture, optional: true, askOwner: false };
     let offer = { askOwner: false };
 
     if (picture.state === 'missing') offer = await rememberChoice(state, 'offered', true);
@@ -330,6 +310,7 @@ async function writePicture(client, state, configPath, command, flags) {
   const unlock = await lockLedger(directory);
 
   try {
+    await mkdir(directory, { recursive: true, mode: 0o700 });
     const activePath = `${directory}/pending.json`;
     const pending = await readJson(activePath);
     const id = flags['request-id'] ?? (command === 'picture-retry' ? pending?.requestId : randomUUID());
@@ -342,7 +323,7 @@ async function writePicture(client, state, configPath, command, flags) {
     const journalPath = `${directory}/${id}.json`;
 
     const clearPending = async () => {
-      if ((await readJson(activePath))?.requestId === id) await durableSave(activePath, {});
+      if ((await readJson(activePath))?.requestId === id) await writeJsonDurably(activePath, {});
     };
 
     const saved = await readJson(journalPath);
@@ -350,6 +331,17 @@ async function writePicture(client, state, configPath, command, flags) {
 
     if (saved) {
       operation = validateOperation(saved, state, id);
+
+      if (operation.status === 'pending') {
+        if (pending?.requestId && pending.requestId !== id)
+          throw failure(
+            'picture-pending',
+            'Another uncertain picture operation exists. Run picture-retry for that operation first.',
+          );
+        // Journal publication can survive a crash before its pointer. Restore the retry fence
+        // before reading another source file or sending any saved-pending operation.
+        await writeJsonDurably(activePath, { requestId: id });
+      }
 
       if (command !== 'picture-retry') {
         const image = command === 'picture-upload' ? await localImage(flags.file) : null;
@@ -391,8 +383,8 @@ async function writePicture(client, state, configPath, command, flags) {
         ...image,
         status: 'pending',
       };
-      await durableSave(journalPath, operation);
-      await durableSave(activePath, { requestId: id });
+      await writeJsonDurably(journalPath, operation);
+      await writeJsonDurably(activePath, { requestId: id });
     }
 
     let receipt;
@@ -402,7 +394,7 @@ async function writePicture(client, state, configPath, command, flags) {
     } catch (error) {
       if (error.status >= 400 && error.status < 500) {
         operation.status = 'rejected';
-        await durableSave(journalPath, operation);
+        await writeJsonDurably(journalPath, operation);
 
         await clearPending();
         throw error;
@@ -418,7 +410,7 @@ async function writePicture(client, state, configPath, command, flags) {
     }
 
     operation.status = 'received';
-    await durableSave(journalPath, operation);
+    await writeJsonDurably(journalPath, operation);
 
     await clearPending();
     const picture = await pictureStatus(client, state);

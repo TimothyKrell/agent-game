@@ -1,6 +1,7 @@
-import { mkdir, open, readFile, rename, rm, link } from 'node:fs/promises';
+import { mkdir, open, readFile, rm, link } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { dirname } from 'node:path';
+import { writeJsonDurably } from './durable-json.mjs';
 
 /** Exclusive installation lock. Ambiguous ownership fails closed. */
 export async function lockLedger(path) {
@@ -129,24 +130,7 @@ export async function loadLedger(path) {
 
 export async function saveLedger(path, ledger) {
   ledger.revision++;
-  const temporary = `${path}.${randomUUID()}.tmp`;
-  const file = await open(temporary, 'wx', 0o600);
-
-  try {
-    await file.writeFile(JSON.stringify(ledger));
-    await file.sync();
-  } finally {
-    await file.close();
-  }
-
-  await rename(temporary, path);
-  const directory = await open(dirname(path), 'r');
-
-  try {
-    await directory.sync();
-  } finally {
-    await directory.close();
-  }
+  await writeJsonDurably(path, ledger);
 }
 
 export function remainingBudget(ledger) {
