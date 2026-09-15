@@ -108,10 +108,10 @@ Reports: `/tmp/opencode/TIM-integrated-final-unit-results.json` and `/tmp/openco
 
 Test-only source **3694b15**, integrated at **5da447c**, passes independent **Standards0 /Spec0** and the parent's complete **5/5** journey run. The actual installed source CLI, native OpenCode/Claude adapters, source broker, target queue/Match/HouseSeat, authenticated observations and source provider accounting operate together. Both games finish after actual30-second queue admission with one invocation, no restarts and no original-entrant forfeiture.
 
-| Parent native journey | Actual queue | Provider calls / source usage rows | Synthetic accounted cost |
-| --- | ---: | ---: | ---: |
-| OpenCode / Secret Overlord | 30,036ms | 215 /215 | $0.015480 |
-| Claude / Succession | 30,086ms | 762 /762 | $0.054864 |
+| Parent native journey      | Actual queue | Provider calls / source usage rows | Synthetic accounted cost |
+| -------------------------- | -----------: | ---------------------------------: | -----------------------: |
+| OpenCode / Secret Overlord |     30,036ms |                           215 /215 |                $0.015480 |
+| Claude / Succession        |     30,086ms |                           762 /762 |                $0.054864 |
 
 The parent run also covers lost acknowledgements, target restart, retained branch-A participation pins, hot revocation, fresh-incarnation authorization, shared required-work priority and conservative unknown-charge retention. Each completed Succession audience contains1,114 unique events in28 bounded pages and19 round-index entries. The source run has different generated histories, with229/229 and764/764 accounting; both independently reconcile their own provider observations and ledgers.
 
@@ -126,6 +126,16 @@ The parent directly verified numeric/null parameter handling, ordered results/me
 See `TIM-27-hosted-d1-contract.md` and the21-file verified recovery archive `TIM-27-D1-REST-2026-09-15`. The independent reviewer verified all20 final-manifest entries. This closes the REST-specific evidence gap; it does not activate a preview or attest a released executable.
 
 Trusted lifecycle work still owns durable0008 generation fencing and the independent P2 where a successful deployment flag can authorize retirement after a transient publication failure. Both corrections remain required before lifecycle acceptance. The historical missing-protocol-header rejection has a separate diagnostic lane on508bbef, with no production changes authorized without a concrete finding.
+
+### Durable lifecycle integration checkpoint
+
+Source **87dda38** is integrated locally at **018ceec**. Parent passed **189 lifecycle/broker cases plus two complete scripted Worker games**, with typecheck/lint/build and whitespace checks green. Merge conflicts came from older duplicate broker commits: the accepted coordinator, matchmaking, ownership/ledger code and all broker regressions were retained byte-for-byte. Only the lifecycle's minimal database type is added to broker configuration. Migrations0003–0007 are byte-identical;0008 is additive.
+
+Final Standards review reports0 outstanding across635894b…87dda38. Independent Spec probes close generation ABA, desired-tuple replay, stale retirement/recreation and destroy-plan ownership checks. GitHub/comment outage retirement paths are fixed. One residual **P2** remains: an HTTP200 health body with missing fields can become an `AssertionError` and incorrectly authorize retirement. The owner is validating response shapes and restricting authoritative smoke-failure classification. Passing the189-case suite does not close that independent finding.
+
+The header diagnostic atda59be3 identifies unsolicited root requests reaching a blanket synthetic-fixture assertion. The particular historical packet remains unattributed; all64 examined ordinary CLI API requests carry the expected header. A test-only routing/awaited-handler correction is underway. No production header omission is inferred from the old log.
+
+The parent-owned packaging correction **8a23791** is separately accepted on both review axes and recovery-archived. `TIM-27-hosted-readiness.md` records the actual default-off GitHub configuration and remaining one-time protected credential/source-release cutover.
 
 ### Actual API and restart regression
 
