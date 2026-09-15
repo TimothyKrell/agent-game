@@ -129,30 +129,66 @@ test('timeline preserves reading position on live updates and names archived vot
   await expect(list).toBeVisible();
   await expect(page.getByText('Connected', { exact: true })).toBeVisible();
   await expect
-    .poll(() => list.evaluate((element) => element.scrollHeight - element.scrollTop - element.clientHeight))
-    .toBeLessThan(2);
+    .poll(() => page.evaluate(() => document.documentElement.scrollHeight - scrollY - innerHeight))
+    .toBeLessThan(48);
+  await page.getByRole('button', { name: 'Start of record' }).click();
+  await expect(page.getByRole('heading', { name: 'Match timeline', exact: true })).toBeInViewport();
+  await expect(page.getByRole('button', { name: 'Latest', exact: true })).toHaveAttribute(
+    'aria-current',
+    'false',
+  );
+  await page.getByRole('button', { name: 'Latest', exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollHeight - scrollY - innerHeight))
+    .toBeLessThan(48);
 
   // Reproduce a late font reflow followed by the initial jump's queued scroll event.
   // Change font metrics locally so this regression needs no external font server.
   const growth = await list.evaluate((element) => {
-    const before = element.scrollHeight;
+    const before = document.documentElement.scrollHeight;
 
     for (const paragraph of element.querySelectorAll<HTMLElement>('.game-event p'))
       paragraph.style.lineHeight = '2';
-    element.dispatchEvent(new Event('scroll'));
 
-    return element.scrollHeight - before;
+    return document.documentElement.scrollHeight - before;
   });
 
   expect(growth).toBeGreaterThan(48);
   await expect
-    .poll(() => list.evaluate((element) => element.scrollHeight - element.scrollTop - element.clientHeight))
-    .toBeLessThan(2);
-  await list.evaluate((element) => {
-    element.scrollTop = 350;
-    element.dispatchEvent(new Event('scroll'));
+    .poll(() => page.evaluate(() => document.documentElement.scrollHeight - scrollY - innerHeight))
+    .toBeLessThan(48);
+  await page.evaluate(() => window.scrollBy(0, -700));
+  const position = await page.evaluate(() => scrollY);
+
+  const anchorBeforePrepend = await list.locator('.game-event').evaluateAll((rows) => {
+    const row = rows.find((entry) => entry.getBoundingClientRect().bottom > 0)!;
+
+    return { text: row.querySelector('p')!.textContent!, top: row.getBoundingClientRect().top };
   });
-  const position = await list.evaluate((element) => element.scrollTop);
+
+  send({
+    ...observation,
+    reset: true,
+    events: [
+      {
+        id: -1,
+        at: state.createdAt - 1000,
+        round: 1,
+        type: 'started',
+        text: 'Earlier bounded history page.',
+      },
+      ...observation.events,
+    ],
+  });
+
+  const prependedAnchor = list
+    .locator('.game-event')
+    .filter({ has: page.getByText(anchorBeforePrepend.text, { exact: true }) });
+
+  await expect
+    .poll(() => prependedAnchor.evaluate((row) => Math.abs(row.getBoundingClientRect().top)))
+    .toBeCloseTo(Math.abs(anchorBeforePrepend.top), 0);
+  const positionAfterPrepend = await page.evaluate(() => scrollY);
 
   const event = {
     id: state.events.length + 1,
@@ -167,22 +203,19 @@ test('timeline preserves reading position on live updates and names archived vot
   state.events.push(event);
   send(observe(state, null, observation.cursor));
   await expect(page.getByRole('button', { name: '1 new event · Jump to latest' })).toBeVisible();
-  expect(await list.evaluate((element) => element.scrollTop)).toBeCloseTo(position, 0);
+  expect(positionAfterPrepend).toBeGreaterThan(position);
+  expect(await page.evaluate(() => scrollY)).toBeCloseTo(positionAfterPrepend, 0);
   await page.getByRole('button', { name: '1 new event · Jump to latest' }).click();
   await expect
-    .poll(() => list.evaluate((element) => element.scrollHeight - element.scrollTop - element.clientHeight))
-    .toBeLessThan(2);
+    .poll(() => page.evaluate(() => document.documentElement.scrollHeight - scrollY - innerHeight))
+    .toBeLessThan(48);
   await expect(list.getByText('Safeguard enacted', { exact: true })).toBeVisible();
-  await list.evaluate((element) => {
-    element.scrollTop = 350;
-    element.dispatchEvent(new Event('scroll'));
-  });
+  await page.evaluate(() => window.scrollBy(0, -700));
 
   const anchor = await list.locator('.game-event').evaluateAll((rows) => {
-    const top = rows[0].closest('.event-list')!.getBoundingClientRect().top;
-    const row = rows.find((entry) => entry.getBoundingClientRect().bottom > top)!;
+    const row = rows.find((entry) => entry.getBoundingClientRect().bottom > 0)!;
 
-    return { text: row.querySelector('p')!.textContent!, top: row.getBoundingClientRect().top - top };
+    return { text: row.querySelector('p')!.textContent!, top: row.getBoundingClientRect().top };
   });
 
   const anchoredRow = list
@@ -197,13 +230,7 @@ test('timeline preserves reading position on live updates and names archived vot
   });
   await expect
     .poll(() =>
-      anchoredRow.evaluate(
-        (row, top) =>
-          Math.abs(
-            row.getBoundingClientRect().top - row.closest('.event-list')!.getBoundingClientRect().top - top,
-          ),
-        anchor.top,
-      ),
+      anchoredRow.evaluate((row, top) => Math.abs(row.getBoundingClientRect().top - top), anchor.top),
     )
     .toBeLessThanOrEqual(1); // scrollTop can round fractional font metrics to a CSS pixel.
 
@@ -241,19 +268,15 @@ test('timeline preserves reading position on live updates and names archived vot
 
   await expect
     .poll(() =>
-      anchoredRow.evaluate(
-        (row, top) =>
-          Math.abs(
-            row.getBoundingClientRect().top - row.closest('.event-list')!.getBoundingClientRect().top - top,
-          ),
-        anchor.top,
-      ),
+      anchoredRow.evaluate((row, top) => Math.abs(row.getBoundingClientRect().top - top), anchor.top),
     )
     .toBeLessThanOrEqual(1);
   await expect(page.getByRole('button', { name: /new events? · Jump to latest/ })).toHaveCount(0);
   await expect(list.getByText(`${observation.seats[2].name} voted reject.`, { exact: true })).toBeVisible();
   await expect(list.getByText('You voted reject.', { exact: true })).toHaveCount(0);
+  await list.getByText('Ballot breakdown · 3', { exact: true }).click();
   await expect(list.getByLabel('Revealed ballots').locator('> span')).toHaveCount(3);
+  await expect(list.getByLabel('Ballot result: 1 approve, 2 reject')).toBeVisible();
   await page.screenshot({ path: '/tmp/opencode/feed-desktop.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -291,6 +314,7 @@ test('timeline attributes public actions and archived investigation recipients',
       text: 'Agent 7 belongs to the cooperative team.',
       data: { target: 7, team: 'cooperative' },
     },
+    { type: 'election-tracker', text: 'Election tracker: 2 of 3.', data: { tracker: 2 } },
   ];
 
   state.events.push(
@@ -316,6 +340,8 @@ test('timeline attributes public actions and archived investigation recipients',
   await page.goto('/matches/match_actors');
   await expect(page.getByText('Connected', { exact: true })).toBeVisible();
   const list = page.getByLabel('Match timeline');
+
+  await expect(list.getByLabel('Election tracker 2 of 3')).toBeVisible();
 
   for (const [index, action] of actions.slice(0, 4).entries()) {
     const row = list.locator('.game-event').filter({ has: page.getByText(action.text, { exact: true }) });
