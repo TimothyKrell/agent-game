@@ -1,5 +1,13 @@
 # TIM-27: playable CI investigation
 
+## Parent integration and open correctness finding
+
+Source00b3ad2 is integrated at48d692d. The parent independently passed10/10 on two CPUs using the actual maintained npm package/install bootstrap, a fresh home, offline npm and ports6521–6524. Static checks also pass. Evidence: `/tmp/opencode/TIM-27-lead-playable-ci/`. Parent16a8201 includes the three positive-control files in normal CI.
+
+**Acceptance remains open: independent correctness review reports one P2.** A historical `admission_reason` survives a later admitted/pending response. The fixture can therefore report future deferral and completion after the HouseSeat alarm returns even while source inference is dispatched and its HTTP request remains held. The reviewer reproduced nine such requests and observed `discussion()` advance the phase. The current-attempt admission/dispatch barrier needs correction and a denied → admitted → held-HTTP regression. Budgets, deadlines and original assertions remain required.
+
+The exact red capture and559 checksum-verified review files are preserved under `/tmp/opencode/TIM27-playable-ci-correction-review/`. Historical CI attribution remains limited by the original missing native journals. Standards0 and the source/parent green runs do not close this independently reproduced finding.
+
 Source base: `debd8a4a071bc43483b6af8be463e1904d169efc`, branch `fix/tim-27-playable-ci`.
 
 ## Final local result

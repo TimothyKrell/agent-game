@@ -35,3 +35,21 @@ The latest completed170-test source report supplies measurements for its14 files
 The heaviest files on shard3 are `preview-playable.test.ts` at462.426s, `preview-smoke.test.ts` at342.607s, `preview-finalizer.test.ts` at60.916s and `history.test.ts` at59.039s. The25-minute unit limit remains appropriate for the first hosted verification, with6m36s projected margin. That shard now tolerates approximately1.403× aggregate slowdown after overhead; a1.5× sensitivity scenario reaches26m36s. The earlier66-file slowdown cushion therefore no longer describes the final inventory.
 
 This remains an observed-runtime projection rather than a CI pass. Actual hosted results will determine whether the limit is adequate. Fresh supplement, exact allocations and per-file provenance: `/tmp/opencode/TIM-CI-shard-budget-747b2c9-1l_6jw0v/`. Earlier evidence remains unchanged.
+
+## First-hosted observations and 70-file correction inventory
+
+At **16a8201**, the default inventory includes five positive playable clock/isolation controls across three additional files. The installed Vitest4.1.11 sequencer assigns **24 /23 /23 files**. The same procedure reproduces the first hosted run's three67-file allocations exactly.
+
+| Shard | Hosted test portions | Corrected local whole files | Planned job | Margin within25m |
+| ----- | -------------------: | --------------------------: | ----------: | ---------------: |
+| 1/3   |             770.236s |                           — |      16m21s |            8m39s |
+| 2/3   |             668.313s |                     12.867s |      14m37s |           10m23s |
+| 3/3   |             758.509s |                    448.579s |      22m17s |            2m43s |
+
+Hosted JSON spans are test portions, not whole-file durations. Conservative historical hook allowances are95.951/81.498/15.709s. Each shard also receives114.70s:64s maximum observed outside-unit time,21.02s Vitest non-file time,0.68s shell difference and29s Chromium installation measured in the first hosted browser job.
+
+Timing provenance:65 files use successful hosted observations; identity uses a hosted run that failed at browser launch; four files use the corrected local10-case,464.56s no-install run. No file lacks a timing input, but successful hosted identity continuation and corrected hosted playable execution remain unmeasured. The projection does not account for additional real packaging/install cost across ten initializations. The limiting shard's162.5s margin could absorb18.1s per initialization across its nine initializations if that were the only extra cost.
+
+The parent's separate actual package/install two-CPU run subsequently passed10/10. Independent correctness review nevertheless found a stale-admission-reason race in the fixture's deferral barrier, so those green runs are not acceptance. A denied → admitted → held-HTTP correction and regression are pending; their final inventory and timing must be incorporated before treating this projection as current release evidence.
+
+Retain the25-minute limit. Evidence, exact allocation and per-file provenance: `/tmp/opencode/TIM-CI-shard-budget-16a8201-zyueoiiy/`. All earlier projections remain unchanged.
