@@ -2,6 +2,12 @@
 
 Repository: **https://github.com/TimothyKrell/agent-game** (private).
 
+## Current release gates — production first
+
+Production requires Verify, three release-unit shards, API/recovery, browser and provider verification, followed by the deployed-arena smoke check. The extended playable-preview and preview-smoke suites run in a separate **Preview activation tests** job; production does not depend on that job. Trusted preview deployment explicitly requires it in addition to the seven existing checks, with activation still default-off.
+
+`vitest.release.config.ts` selects65 files and `vitest.preview-activation.config.ts` selects the remaining six. The default local configuration still runs all71 files. The partition has no omissions or overlap. See [the production-first release decision](evidence/TIM-27-production-first-release.md). Older complete-shard timing projections below predate this separation.
+
 ## Verified lifecycle — 2026-09-11
 
 - [PR #1](https://github.com/TimothyKrell/agent-game/pull/1) passed the complete Verify job: 33 rules/storage/CLI/supervisor/Worker tests, six API/recovery tests, five browser tests, lint, formatting, typechecking, build, and Worker dry run.

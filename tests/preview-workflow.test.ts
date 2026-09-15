@@ -6,7 +6,7 @@ import { parse } from 'yaml';
 import { expect, it } from 'vitest';
 import { canonical } from '../scripts/preview-artifact.ts';
 import { deliveryProof } from '../scripts/preview-controller.ts';
-import { verifyRecords } from '../scripts/preview-github.ts';
+import { requiredJobs, verifyRecords } from '../scripts/preview-github.ts';
 import { records, expected, base, head, merge } from './fixtures/preview-github';
 
 const Step = Schema.Struct({
@@ -22,6 +22,7 @@ const Step = Schema.Struct({
 const Job = Schema.Struct({
   if: Schema.optional(Schema.String),
   steps: Schema.Array(Step),
+  needs: Schema.optional(Schema.Union([Schema.String, Schema.Array(Schema.String)])),
   'timeout-minutes': Schema.Number,
   concurrency: Schema.optional(
     Schema.Struct({
@@ -44,7 +45,17 @@ it('validates YAML credential boundaries, pinned default checkout, complete CI j
   );
 
   expect(ci.jobs.preview).toBeUndefined();
-  expect(Object.keys(ci.jobs).sort()).toEqual(['api', 'browser', 'production', 'provider', 'unit', 'verify']);
+  expect(Object.keys(ci.jobs).sort()).toEqual([
+    'api',
+    'browser',
+    'preview-activation',
+    'production',
+    'provider',
+    'unit',
+    'verify',
+  ]);
+  expect(ci.jobs.production.needs).toEqual(['verify', 'unit', 'api', 'browser', 'provider']);
+  expect(requiredJobs).toContain('Preview activation tests');
   expect(ciText).toContain('shard: [1, 2, 3]');
   expect(deployText).toContain('workflow_run:');
   expect(deployText).toContain('types: [completed]');
@@ -102,6 +113,18 @@ it('validates YAML credential boundaries, pinned default checkout, complete CI j
   );
   expect(stack).toContain('forceDestroy: preview ? true : undefined');
   expect(stack).toContain('bundle: artifact ? false : undefined');
+});
+
+it('rejects preview delivery when release checks pass but activation verification is missing or failed', () => {
+  const missing = records();
+  missing.jobs = missing.jobs.filter((job) => job.name !== 'Preview activation tests');
+  expect(() => verifyRecords(missing, expected)).toThrow();
+
+  const failed = records();
+  failed.jobs = failed.jobs.map((job) =>
+    job.name === 'Preview activation tests' ? { ...job, conclusion: 'failure' } : job,
+  );
+  expect(() => verifyRecords(failed, expected)).toThrow();
 });
 
 it('executes the trusted command wrapper with hostile PR scripts present without selecting their config or command', async () => {

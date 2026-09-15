@@ -4,7 +4,23 @@ Follow-up to correctness review of `00b3ad2429326f8a73c8be10915eff7beae6f61d`. T
 
 ## Corrected two-CPU result
 
-**11/11 passed in 489.77 seconds**, including all five original journeys, all five earlier controls and the new admission regression. All observed descendants, including workerd and native CLI processes, were pinned to CPUs 0 and 1. Complete run: `.tim27-playable/runs/p2-green-two-cpu-1/`.
+**11/11 passed**, including all five original journeys, all five earlier controls and the new admission regression. The JSON result span is489.77 seconds; the full Vitest log reports491.82 seconds elapsed. Runtime projections must distinguish these measurements. All observed descendants, including workerd and native CLI processes, were pinned to CPUs 0 and 1. Complete run: `.tim27-playable/runs/p2-green-two-cpu-1/`.
+
+Independent Standards review of00b3ad2…aa38826 reports **0 findings**. It verified4 code entries,39 committed artifacts,136 retained files and3 original review inputs, with no missing files or hash mismatches. Correctness closure and parent packaged-CLI verification remain separate gates.
+
+### Independent correctness closure
+
+The final correctness review reports **0 outstanding findings**, closing the stale-admission P2 ataa38826. The byte-identical original counterprobe passes in16.80s; the completion regression passes in16.50s. Nine held dispatched attempts block advancement; the same nine attempt IDs subsequently complete with nine usage rows totaling$0.000648 before the phase advances. Eight component-check groups cover identity isolation, response changes, attempt switching, billed-row precedence and missing/failed/malformed observations.
+
+The reviewer verified all559 earlier review files unchanged,36 copied artifacts,136 retained raw run files,22 cleanup comparisons preserving31 completed unknown rows, and all90 original assertion blocks. Six full-run/final-source behavioral files transpile to identical JavaScript. The full11-case suite was audited rather than repeated.
+
+Final review evidence comprises1,113 checksum-verified files at `/tmp/opencode/TIM27-playable-ci-P2-review/`, a symlink to `/home/timothykrell/.cache/opencode-review-evidence/TIM27-playable-ci-P2-review/`. Disk-full and path-identity setup failures are preserved. Original-counterprobe green report SHA-256: `93ffc405eda3b020256c35e1c5458c63bc843ace1debe72340f7ef92f35dd57b`; checksum manifest: `c9c4ca9fda143cb62ea493b1e0769b8f93c1c74a420bc3314ba88e6500107c03`.
+
+Parent integration9b9cac1 passes static checks. Its actual package/install two-CPU run at `/tmp/opencode/TIM-27-lead-playable-p2/` stopped during Succession after the Secret Overlord case passed, without a final JSON report. That interruption remains under diagnosis; it is not a completed verification run. Parent package/install completion and hosted CI remain open gates.
+
+The interruption diagnosis subsequently established tmpfs exhaustion: native `observe` recorded `ENOSPC` at12:38:33.572 UTC, followed by Wrangler `SQLITE_FULL` at12:38:33.665–.666. The log ended at8,192 bytes mid-header. The47GiB `/tmp` filesystem was full; inode exhaustion and inspected OOM counters do not explain it. The exact final launcher exit mechanism remains unrecorded. Both npm package/install steps completed successfully. Fifteen diagnostic copies and nine original artifacts were verified; runtime databases and WALs remain preserved.
+
+A fresh retry uses disk-backed runtime/evidence, HOME/config and temporary directories at `/home/timothykrell/.cache/opencode-review-evidence/TIM-27-lead-playable-p2-disk/`. It retains the actual package/install bootstrap, two CPUs, ports6521–6524 and unchanged limits/assertions. Capacity was checked before launch. Diagnosis records remain at `/tmp/opencode/TIM-27-parent-p2-interruption/`.
 
 | Original journey                              | Test time |                          Actual queue | Source accounting                                              |
 | --------------------------------------------- | --------: | ------------------------------------: | -------------------------------------------------------------- |

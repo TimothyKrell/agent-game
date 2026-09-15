@@ -84,6 +84,7 @@ export const requiredJobs = [
   'API and recovery tests',
   'Browser and motion tests',
   'Verify production provider transport',
+  'Preview activation tests',
 ];
 
 export const producerPaths = [

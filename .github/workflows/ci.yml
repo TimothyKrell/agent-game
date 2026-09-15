@@ -83,7 +83,7 @@ jobs:
       - run: npm run build
       - name: Install browser used by native identity tests
         run: npx playwright install --with-deps chromium
-      - name: Exercise complete unit inventory shard
+      - name: Exercise production release inventory shard
         shell: bash
         env:
           SUCCESSION_BOUNDS_RESULTS_PATH: succession-worker-bounds-results.json
@@ -92,7 +92,7 @@ jobs:
           TIM27_PLAYABLE_EVIDENCE_DIR: .agent-game/ci-evidence/playable
         run: |
           node -e 'const os = require("node:os"); console.log(JSON.stringify({ node: process.version, cpus: os.availableParallelism(), memoryBytes: os.totalmem(), workers: 1 }))' | tee unit.log
-          npm test -- --shard=${{ matrix.shard }}/3 --maxWorkers=1 --reporter=verbose --reporter=json --outputFile.json=unit-results.json 2>&1 | tee -a unit.log
+          npm test -- --config vitest.release.config.ts --shard=${{ matrix.shard }}/3 --maxWorkers=1 --reporter=verbose --reporter=json --outputFile.json=unit-results.json 2>&1 | tee -a unit.log
       - name: Save unit and actual-host evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -105,6 +105,33 @@ jobs:
             /tmp/opencode/succession-worker-small-baseline-*.json
             .agent-game/ci-evidence
             /tmp/opencode/tim27-playable-*
+          include-hidden-files: true
+          retention-days: 7
+
+  preview-activation:
+    name: Preview activation tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npm run build
+      - name: Exercise extended preview journeys and retirement smoke
+        shell: bash
+        env:
+          TIM27_PLAYABLE_EVIDENCE_DIR: .agent-game/ci-evidence/playable
+        run: npm test -- --config vitest.preview-activation.config.ts --maxWorkers=1 --reporter=verbose --reporter=json --outputFile.json=preview-activation-results.json 2>&1 | tee preview-activation.log
+      - name: Save preview activation evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: preview-activation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            preview-activation.log
+            preview-activation-results.json
+            .agent-game/ci-evidence
           include-hidden-files: true
           retention-days: 7
 
