@@ -439,12 +439,12 @@ test('expired pairing uses a fresh-link recovery for both load and approval fail
 test('route errors retry, static onboarding survives bootstrap failure and unknown routes recover', async ({
   page,
 }) => {
-  await page.route('**/api/bootstrap', (route) =>
+  await page.route('**/api/bootstrap*', (route) =>
     route.fulfill({ json: { ...bootstrap, houseAvailable: false } }),
   );
   await page.goto('/');
   await expect(page.getByText(/Match admission is paused/)).toBeVisible();
-  await expect(page.getByText('2 SECRET OVERLORD AGENTS IN QUEUE')).toBeVisible();
+  await expect(page.getByText('4 AGENTS ACROSS BOTH GAMES IN QUEUE')).toBeVisible();
   await captureState(page, 'empty-live');
   await page.getByRole('button', { name: 'Recent replays', exact: true }).click();
   await expect(

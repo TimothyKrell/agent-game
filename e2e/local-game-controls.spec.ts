@@ -378,6 +378,10 @@ test('Arena browser, contenders and mixed archive are independent; partial failu
   );
   await page.goto('/');
   await expect.poll(() => archiveRequests.length).toBe(1);
+  await page.getByRole('button', { name: 'Recent replays', exact: true }).click();
+  await expect(page.locator('.match-option')).toHaveCount(1);
+  await expect(page.locator('.match-option')).toContainText('Secret Overlord');
+  await expect(page.locator('.selected-match')).toContainText('Five safeguards');
   await expect(page.locator('.archive-card')).toContainText('Secret Overlord');
   await expect(page.getByText('Loading Succession archive…')).toBeVisible();
   await archiveRequests[0].fulfill({
@@ -385,14 +389,12 @@ test('Arena browser, contenders and mixed archive are independent; partial failu
     json: { error: { code: 'temporary', message: 'Archive temporarily unavailable' } },
   });
   await expect(page.getByText(/Succession archive unavailable:/)).toBeVisible();
+  await expect(page.getByText(/Succession matches unavailable:/)).toBeVisible();
+  await expect(page.locator('.match-option')).toHaveCount(1);
   await page.getByRole('combobox', { name: 'Standings', exact: true }).selectOption('succession');
   await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,777');
   await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCount(0);
-  await expect(page.locator('#live')).toContainText('7 SECRET OVERLORD AGENTS IN QUEUE');
-  await page.evaluate(() => {
-    history.pushState({}, '', '/?gameId=succession&standingsGame=succession');
-    dispatchEvent(new PopStateEvent('popstate'));
-  });
+  await page.locator('#live').getByRole('button', { name: 'Try again', exact: true }).click();
   await expect.poll(() => archiveRequests.length).toBe(2);
   await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,777');
   await expect(page.locator('.archive-card')).toContainText('Secret Overlord');
@@ -401,17 +403,6 @@ test('Arena browser, contenders and mixed archive are independent; partial failu
     'href',
     '/leaderboard?gameId=succession',
   );
-  await archiveRequests[1].fulfill({
-    status: 503,
-    json: { error: { code: 'temporary', message: 'Browser temporarily unavailable' } },
-  });
-
-  const archive = page
-    .locator('.site-section')
-    .filter({ has: page.getByRole('heading', { name: 'From the archive', exact: true }) });
-
-  await archive.getByRole('button', { name: 'Try again', exact: true }).click();
-  await expect.poll(() => archiveRequests.length).toBe(3);
 
   const record = {
     gameId: 'succession',
@@ -430,7 +421,7 @@ test('Arena browser, contenders and mixed archive are independent; partial failu
     winReason: 'Interrupted record',
   };
 
-  await archiveRequests[2].fulfill({
+  await archiveRequests[1].fulfill({
     json: {
       gameId: 'succession',
       games: Object.values(GAME_DESCRIPTORS),
@@ -451,6 +442,32 @@ test('Arena browser, contenders and mixed archive are independent; partial failu
       ],
     },
   });
+  const options = page.locator('.match-option');
+  await expect(options).toHaveCount(4);
+  await expect(options.locator('h2')).toHaveText([
+    'Succession',
+    'Secret Overlord',
+    'Succession',
+    'Succession',
+  ]);
+  await expect(page.locator('.selected-match')).toContainText('ACT 1');
+  await expect(page.locator('.selected-match').getByRole('link', { name: 'Open replay' })).toHaveAttribute(
+    'href',
+    '/matches/archive-succession',
+  );
+
+  await page.evaluate(() => {
+    history.pushState({}, '', '/?gameId=succession&standingsGame=succession');
+    dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await expect(page.getByText('Showing Succession only.')).toBeVisible();
+  await expect(options).toHaveCount(3);
+  await expect(options.locator('h2')).toHaveText(['Succession', 'Succession', 'Succession']);
+
+  const archive = page
+    .locator('.site-section')
+    .filter({ has: page.getByRole('heading', { name: 'From the archive', exact: true }) });
+
   await expect(archive.locator('.archive-card')).toHaveCount(3);
   await expect(archive.locator('.archive-card').nth(0)).toHaveAttribute(
     'href',

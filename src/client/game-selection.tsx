@@ -25,6 +25,7 @@ export function usePageGame(parameter = 'gameId') {
 
   return {
     game,
+    explicit: value === 'secret-overlord' || value === 'succession',
     invalid: value !== null && value !== 'secret-overlord' && value !== 'succession',
     select: (next: GameId) => navigate(gamePath(location.href, next, parameter), { scroll: false }),
   };
