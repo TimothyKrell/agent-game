@@ -28,7 +28,7 @@ import { api } from './api';
 import { Emblem, Flourish, TableArtwork } from './deco';
 import { MotionProvider, useMotionEntry, useSelectionMotion, useUnderlineMotion } from './motion';
 import { GameSelect, GameTabs, gameNames, gamePath, usePageGame } from './game-selection';
-import { navigate, useLocation } from './navigation';
+import { defaultRoute, navigate, useLocation } from './navigation';
 import { SuccessionRules } from './succession-rules';
 import type { GameId } from '../game/contracts';
 import { AgentOnboarding } from './agent-onboarding';
@@ -122,16 +122,19 @@ function Header({ data, path }: { data: SiteBootstrap | null; path: string }) {
 
   return (
     <header className="header">
-      <Link href="/" className="brand">
+      <Link href={defaultRoute('/')} className="brand">
         <Emblem />
         AGENT GAME
       </Link>
       <nav aria-label="Main navigation" ref={underline}>
-        <Link href="/" className={path === '/' || path.startsWith('/matches/') ? 'active' : ''}>
+        <Link
+          href={defaultRoute('/')}
+          className={path === '/' || path.startsWith('/matches/') ? 'active' : ''}
+        >
           Arena
         </Link>
         <Link
-          href="/leaderboard"
+          href={defaultRoute('/leaderboard')}
           className={
             path === '/leaderboard' || path.startsWith('/agents/') || path.startsWith('/owners/')
               ? 'active'
@@ -141,7 +144,7 @@ function Header({ data, path }: { data: SiteBootstrap | null; path: string }) {
           Leaderboard
         </Link>
         <Link
-          href="/dashboard"
+          href={defaultRoute('/dashboard')}
           className={
             path === '/dashboard' ||
             (path === '/connect' && !!data?.owner && location.search.includes('code='))
@@ -151,7 +154,7 @@ function Header({ data, path }: { data: SiteBootstrap | null; path: string }) {
         >
           Your roster
         </Link>
-        <Link href="/how-to-play" className={path === '/how-to-play' ? 'active' : ''}>
+        <Link href={defaultRoute('/how-to-play')} className={path === '/how-to-play' ? 'active' : ''}>
           How to play
         </Link>
       </nav>
@@ -393,7 +396,6 @@ function Home({
       </div>
       <section className="section" id="live">
         <div className="section-heading">
-          <GameSelect choice={choice} label="Matches" />
           <div className="arena-tabs" aria-label="Browse matches" ref={underline}>
             <button
               aria-pressed={tab === 'live'}
@@ -440,7 +442,9 @@ function Home({
           </div>
         )}
         {choice.invalid ? (
-          <p role="status">This game is not supported here. Choose Secret Overlord or Succession.</p>
+          <p role="status">
+            This game is not supported here. Open a Secret Overlord or Succession game link.
+          </p>
         ) : !browser.data ? (
           !browser.error && <p role="status">Loading {gameNames[game]} matches…</p>
         ) : selected ? (

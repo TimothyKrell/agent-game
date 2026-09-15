@@ -31,7 +31,7 @@ test('real Worker exhibition plays both acts and opens the bounded archive in th
 
   const { cancelled: cancelledHistory, errors: captureErrors } = capture;
   await page.goto('/?gameId=succession');
-  await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveValue('succession');
+  await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Start local exhibition', exact: true }).click();
   await expect(page).toHaveURL(/\/matches\//);
   await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · ACT I');
