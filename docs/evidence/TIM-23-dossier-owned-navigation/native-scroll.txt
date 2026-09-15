@@ -1,0 +1,5 @@
+[
+  { frames: 0, drift: 0, settledDrift: 0 },
+  { frames: 1, drift: 945, settledDrift: 0 },
+  { frames: 2, drift: 866, settledDrift: 0 }
+]

@@ -1,0 +1,414 @@
+{
+  "root": "/tmp/opencode/Dossier-terminal-review/pinned-ab8706c",
+  "results": [
+    {
+      "case": "native wheel gutter vs column",
+      "width": 1440,
+      "target": {
+        "tag": "DIV",
+        "cls": "",
+        "chapter": null
+      },
+      "before": {
+        "y": 577,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1178",
+            "delivered": "1306",
+            "rows": 91
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1449",
+            "y": 100.375,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 165.375,
+            "height": 244.578125
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 409.953125,
+            "height": 205.578125
+          },
+          {
+            "key": "story-226372697-1453",
+            "y": 615.53125,
+            "height": 126.875
+          },
+          {
+            "key": "story-226372697-1455",
+            "y": 742.40625,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1458",
+            "y": 807.40625,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1460",
+            "y": 872.40625,
+            "height": 244.578125
+          }
+        ]
+      },
+      "afterGutter": {
+        "y": 7515,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1443",
+            "y": -197.234375,
+            "height": 205.578125
+          },
+          {
+            "key": "story-226372697-1444",
+            "y": 8.34375,
+            "height": 126.875
+          },
+          {
+            "key": "story-226372697-1446",
+            "y": 135.21875,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1449",
+            "y": 200.21875,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 265.21875,
+            "height": 244.578125
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 509.796875,
+            "height": 205.578125
+          },
+          {
+            "key": "story-226372697-1453",
+            "y": 715.375,
+            "height": 126.875
+          },
+          {
+            "key": "story-226372697-1455",
+            "y": 842.25,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1458",
+            "y": 907.25,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1460",
+            "y": 972.25,
+            "height": 244.578125
+          }
+        ]
+      },
+      "afterColumn": {
+        "y": 7465,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1443",
+            "y": -147.234375,
+            "height": 205.578125
+          },
+          {
+            "key": "story-226372697-1444",
+            "y": 58.34375,
+            "height": 126.875
+          },
+          {
+            "key": "story-226372697-1446",
+            "y": 185.21875,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1449",
+            "y": 250.21875,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 315.21875,
+            "height": 244.578125
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 559.796875,
+            "height": 205.578125
+          },
+          {
+            "key": "story-226372697-1453",
+            "y": 765.375,
+            "height": 126.875
+          },
+          {
+            "key": "story-226372697-1455",
+            "y": 892.25,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1458",
+            "y": 957.25,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1460",
+            "y": 1022.25,
+            "height": 244.578125
+          }
+        ]
+      },
+      "gutterRequests": [
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ],
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ]
+    },
+    {
+      "case": "native wheel gutter vs column",
+      "width": 390,
+      "target": {
+        "tag": "DIV",
+        "cls": "",
+        "chapter": null
+      },
+      "before": {
+        "y": 864,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1178",
+            "delivered": "1306",
+            "rows": 91
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1449",
+            "y": 99.5625,
+            "height": 60.625
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 160.1875,
+            "height": 359.265625
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 519.453125,
+            "height": 322.015625
+          },
+          {
+            "key": "story-226372697-1453",
+            "y": 841.46875,
+            "height": 148.0625
+          }
+        ]
+      },
+      "afterGutter": {
+        "y": 10245,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1444",
+            "y": -9.1875,
+            "height": 148.0625
+          },
+          {
+            "key": "story-226372697-1446",
+            "y": 138.875,
+            "height": 60.625
+          },
+          {
+            "key": "story-226372697-1449",
+            "y": 199.5,
+            "height": 60.625
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 260.125,
+            "height": 359.265625
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 619.390625,
+            "height": 322.015625
+          }
+        ]
+      },
+      "afterColumn": {
+        "y": 10195,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1443",
+            "y": -281.203125,
+            "height": 322.015625
+          },
+          {
+            "key": "story-226372697-1444",
+            "y": 40.8125,
+            "height": 148.0625
+          },
+          {
+            "key": "story-226372697-1446",
+            "y": 188.875,
+            "height": 60.625
+          },
+          {
+            "key": "story-226372697-1449",
+            "y": 249.5,
+            "height": 60.625
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 310.125,
+            "height": 359.265625
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 669.390625,
+            "height": 322.015625
+          }
+        ]
+      },
+      "gutterRequests": [
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ],
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ]
+    }
+  ],
+  "faults": []
+}

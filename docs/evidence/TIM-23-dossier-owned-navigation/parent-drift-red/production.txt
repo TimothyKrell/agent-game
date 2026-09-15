@@ -1,0 +1,52 @@
+
+Running 27 tests using 1 worker
+
+WebSocket server error: Port 24678 is already in use
+  ✓   1 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later portrait ownership (1.6s)
+  ✓   2 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later portrait-closed ownership (1.2s)
+  ✓   3 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later rule ownership (1.4s)
+  ✓   4 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later chapter ownership (1.3s)
+  ✓   5 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later keyboard ownership (636ms)
+  ✓   6 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later wheel ownership (1.3s)
+  ✓   7 .dossier/ending.spec.mjs:260:3 › 1440: held navigation completes without new intent; fresh cached navigation still works (1.4s)
+  ✓   8 .dossier/ending.spec.mjs:287:3 › 1440: a new visibility scope retires the old held navigation (1.5s)
+  ✓   9 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later portrait ownership (1.2s)
+  ✓  10 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later portrait-closed ownership (1.1s)
+  ✓  11 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later rule ownership (1.3s)
+  ✓  12 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later chapter ownership (1.2s)
+  ✓  13 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later keyboard ownership (648ms)
+  ✓  14 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later wheel ownership (1.2s)
+  ✓  15 .dossier/ending.spec.mjs:260:3 › 390: held navigation completes without new intent; fresh cached navigation still works (1.3s)
+  ✓  16 .dossier/ending.spec.mjs:287:3 › 390: a new visibility scope retires the old held navigation (1.3s)
+  ✓  17 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later portrait ownership (1.1s)
+  ✓  18 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later portrait-closed ownership (1.0s)
+  ✓  19 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later rule ownership (1.3s)
+  ✓  20 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later chapter ownership (1.2s)
+  ✓  21 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later keyboard ownership (569ms)
+  ✓  22 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later wheel ownership (1.1s)
+  ✓  23 .dossier/ending.spec.mjs:260:3 › 320: held navigation completes without new intent; fresh cached navigation still works (1.3s)
+  ✓  24 .dossier/ending.spec.mjs:287:3 › 320: a new visibility scope retires the old held navigation (1.2s)
+  ✓  25 .dossier/ending.spec.mjs:316:1 › unmount retires a held request; a fresh route visit can navigate (1.1s)
+  ✓  26 .dossier/ending.spec.mjs:342:1 › intervention also cancels a held history page after anchor resolution (1.1s)
+  ✓  27 .dossier/ending.spec.mjs:362:1 › a fresh request supersedes a held one without retaining its old completion (1.3s)
+
+  27 passed (34.1s)
+89 actual-route assertions passed; 128 max visible records; 1.8125px retained-row drift
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: See retained shared-interaction failures
+
+1 !== 0
+
+    at file:///tmp/opencode/Dossier-lead-ending/route.mjs:650:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

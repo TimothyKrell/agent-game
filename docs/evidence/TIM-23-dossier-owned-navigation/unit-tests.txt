@@ -1,0 +1,21 @@
+
+> agent-game@0.2.0 test
+> vitest run tests/dossier-components.test.ts tests/succession-story.test.ts tests/continuous-succession-history.test.ts tests/succession-history-loading.test.ts tests/agent-picture-data.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/tmp/opencode/agent-game-dossier[39m
+
+ [32m✓[39m tests/agent-picture-data.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 155[2mms[22m[39m
+ [32m✓[39m tests/succession-history-loading.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 95[2mms[22m[39m
+ [32m✓[39m tests/continuous-succession-history.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 2043[2mms[22m[39m
+ [32m✓[39m tests/dossier-components.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 1494[2mms[22m[39m
+     [33m[2m✓[22m[39m renders all twenty retained groups, including exact engine-generated outcomes and connected paid cancellation [33m 910[2mms[22m[39m
+ [32m✓[39m tests/succession-story.test.ts [2m([22m[2m27 tests[22m[2m)[22m[33m 3058[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves the final Tax reaction through the canonical 120-turn cap after 119 legal Exchange turns [33m 1132[2mms[22m[39m
+     [33m[2m✓[22m[39m matches actual event checkpoints through a complete two-act trajectory (seed 11) [33m 824[2mms[22m[39m
+     [33m[2m✓[22m[39m matches actual event checkpoints through a complete two-act trajectory (seed 29) [33m 606[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m79 passed[39m[22m[90m (79)[39m
+[2m   Start at [22m 01:27:19
+[2m   Duration [22m 4.79s[2m (transform 3.18s, setup 0ms, import 6.52s, tests 6.85s, environment 0ms)[22m

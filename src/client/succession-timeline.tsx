@@ -1,12 +1,18 @@
-import { Component, useEffect, useLayoutEffect, useRef } from 'react';
-import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
+import { Component, useEffect, useImperativeHandle, useLayoutEffect, useRef } from 'react';
+import type { CSSProperties, HTMLAttributes, ReactNode, Ref } from 'react';
 import type { StoryRow } from './succession-story';
 import type { SuccessionStoryReader } from './use-succession-story';
 
 export interface SuccessionTimelineProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  ref?: Ref<SuccessionTimelineHandle>;
   reader: SuccessionStoryReader;
   renderRow: (row: StoryRow) => ReactNode;
   scrollRoot?: 'document' | 'self';
+}
+
+/** Readonly viewport ownership, using the same selection as precommit window restoration. */
+export interface SuccessionTimelineHandle {
+  ownsViewport: () => boolean;
 }
 
 interface WindowPosition {
@@ -54,6 +60,7 @@ class WindowCommit extends Component<WindowCommitProps, Record<string, never>, W
 
 /** Reading mechanics only. The caller owns rows, chapters, disclosure and visual composition. */
 export function SuccessionTimeline({
+  ref,
   reader,
   renderRow,
   scrollRoot = 'document',
@@ -109,6 +116,8 @@ export function SuccessionTimeline({
   };
 
   const ownsViewport = () => viewportOwner() === root.current;
+
+  useImperativeHandle(ref, () => ({ ownsViewport }));
 
   const readingRow = (owner: HTMLElement) => {
     const elements = Array.from(owner.querySelectorAll<HTMLElement>('[data-story-key]'));

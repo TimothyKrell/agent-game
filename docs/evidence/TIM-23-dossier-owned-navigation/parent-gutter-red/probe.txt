@@ -1,0 +1,107 @@
+import assert from 'node:assert/strict';
+import {writeFile} from 'node:fs/promises';
+import {createServer} from 'vite';
+import {chromium} from '@playwright/test';
+const root=process.env.BASE_ROOT??'/tmp/opencode/Dossier-ending-correction-review/pinned-2df3c5a';
+const server=await createServer({root,cacheDir:'/tmp/opencode/Dossier-ending-correction-review/dev-cache',server:{host:'127.0.0.1',port:6451,strictPort:true},optimizeDeps:{entries:['index.html']},logLevel:'error'});
+const loader=await createServer({root,configFile:false,cacheDir:'/tmp/opencode/Dossier-ending-correction-review/fixture-cache',server:{middlewareMode:true},logLevel:'error'});
+const fixture=await (await loader.ssrLoadModule('/.dossier/route-fixture.ts')).routeFixture();
+const finalKey=fixture.eventsFor('finished').findLast(e=>e.type==='declaration').eventKey;
+await server.listen();
+const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+const results=[];
+const faults=[];
+const timeline=(p,act='II')=>p.getByRole('region',{name:`Act ${act} record`,exact:true});
+const heading=(p,act=2)=>p.locator('.dossier-chapter-trigger').nth(act-1);
+async function settle(page){
+ await page.waitForFunction(()=>[...document.querySelectorAll('[data-story-window]')].every(e=>e.getAttribute('aria-busy')==='false'));
+ await page.evaluate(()=>new Promise(resolve=>{let stable=0,y=scrollY;function tick(){if(y===scrollY)stable++;else stable=0;y=scrollY;if(stable>=8)resolve();else requestAnimationFrame(tick)}requestAnimationFrame(tick)}));
+}
+async function state(p){return p.evaluate(()=>({y:scrollY,active:{tag:document.activeElement?.tagName,id:document.activeElement?.id,key:document.activeElement?.getAttribute('data-event-key'),text:document.activeElement?.textContent.slice(0,100)},modalFocus:!!document.activeElement?.closest('[role=dialog]'),dialogs:document.querySelectorAll('[role=dialog]').length,readers:[...document.querySelectorAll('[data-story-window]')].map(e=>({name:e.getAttribute('aria-label'),after:e.getAttribute('data-story-after'),delivered:e.getAttribute('data-story-delivered'),rows:e.querySelectorAll('[data-story-key]').length})),visible:[...document.querySelectorAll('[data-story-key]')].filter(e=>e.getBoundingClientRect().bottom>0&&e.getBoundingClientRect().top<innerHeight).map(e=>({key:e.dataset.storyKey,y:e.getBoundingClientRect().top,height:e.getBoundingClientRect().height}))}));}
+async function harness(width){
+ const page=await browser.newPage({viewport:{width,height:width===1440?1080:844},reducedMotion:'reduce',hasTouch:width!==1440});
+ page.on('pageerror',e=>faults.push(e.message));
+ const control={hold:false,held:null,done:null,requests:[],replies:0};
+ const view=fixture.observation('finished'),events=fixture.eventsFor('finished');
+ const common={protocolVersion:'2',gameId:'succession',matchId:fixture.matchId,visibilityEpoch:view.history.visibilityEpoch};
+ await page.routeWebSocket('**/api/matches/*/events?*',socket=>socket.send(JSON.stringify({type:'observation',observation:view})));
+ await page.route('**/api/**',async route=>{
+  const url=new URL(route.request().url());control.requests.push(url.pathname+url.search);let json,held=false;
+  if(url.pathname==='/api/agent-pictures')json=view.seats.map(s=>({agentId:s.agentId,picture:{state:'missing',revision:0}}));
+  else if(url.pathname===`/api/matches/${fixture.matchId}`)json=view;
+  else if(url.pathname.endsWith('/rounds'))json={...common,rounds:[...new Map(events.map(e=>[`${e.act}:${e.round}`,e])).values()].map(e=>{const first=events.find(x=>x.act===e.act&&x.round===e.round);return{key:`${e.act}:${e.round}`,act:e.act,round:e.round,through:first.id,eventKey:first.eventKey}})};
+  else if(url.pathname.endsWith('/checkpoint'))json=fixture.checkpoint('finished',Number(url.searchParams.get('through')));
+  else if(url.pathname.endsWith('/history-anchor')){
+   json={...common,cursor:events.find(e=>e.eventKey===url.searchParams.get('eventKey'))?.id??null};
+   if(control.hold&&url.searchParams.get('eventKey')===finalKey){held=true;await new Promise(resolve=>{control.held=resolve;control.reached()});}
+  }else if(url.pathname.endsWith('/history')){
+   const after=Number(url.searchParams.get('after')),through=Number(url.searchParams.get('through'));assert.equal(url.searchParams.get('limit'),'32');assert.equal(url.searchParams.get('maxBytes'),'16384');
+   const selected=events.slice(after,Math.min(through,after+32)),cursor=selected.at(-1)?.id??after;json={...common,after,through,cursor,streamHead:events.length,events:selected,reset:false,hasMore:cursor<through};
+  }
+  await (json?route.fulfill({json}):route.fulfill({status:404,json:{error:{code:'fixture-not-found',message:'Unavailable',status:404}}}));
+  if(held){control.replies++;control.done();}
+ });
+ await page.goto(`http://127.0.0.1:6451/matches/${fixture.matchId}${width===390?'/history':''}`);
+ await page.locator('.dossier-outcome').waitFor();await settle(page);await page.evaluate(()=>document.fonts.ready);
+ return {page,control};
+}
+async function older(page){const t=timeline(page),before=Number(await t.getAttribute('data-story-after'));await t.locator('[data-story-key]').first().evaluate(e=>e.scrollIntoView({block:'start',behavior:'instant'}));await page.keyboard.press('PageUp');await page.waitForFunction(({e,before})=>Number(e.getAttribute('data-story-after'))<before&&e.getAttribute('aria-busy')==='false',{e:await t.elementHandle(),before});await settle(page);}
+async function pending(page,control){control.hold=true;const reached=new Promise(resolve=>control.reached=resolve);control.reply=new Promise(resolve=>control.done=resolve);await page.getByRole('button',{name:'Final move',exact:true}).focus();await page.keyboard.press('Enter');await reached;}
+async function release(page,control){control.hold=false;control.held();await control.reply;await settle(page);assert.equal(control.replies,1);}
+try{
+ for(const width of process.env.TRAVERSE_ONLY||process.env.GUTTER_ONLY ? [] : [1440,390])for(const destination of ['portrait','portrait-closed','chapter']){
+  const {page,control}=await harness(width);await older(page);await pending(page,control);
+  if(destination.startsWith('portrait')){
+   await page.locator('.dossier-outcome .replay-agent-portrait').focus();await page.keyboard.press('Enter');await page.getByRole('dialog').waitFor();await page.waitForFunction(()=>!!document.activeElement?.closest('[role=dialog]'));
+   if(destination==='portrait-closed'){await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});}
+  }else{
+   await heading(page,1).focus();await page.keyboard.press('Enter');await timeline(page,'I').locator('[data-event-key]').first().waitFor();await settle(page);await page.keyboard.press('Tab');
+  }
+  await settle(page);const before=await state(page);await release(page,control);const after=await state(page);
+  assert.deepEqual(after.active,before.active);assert.equal(after.modalFocus,before.modalFocus);assert.ok(Math.abs(after.y-before.y)<=1);assert.ok(after.readers.every(r=>r.rows<=128));
+  if(destination==='portrait'){await page.keyboard.press('Tab');await page.waitForFunction(()=>!!document.activeElement?.closest('[role=dialog]'));}
+  results.push({case:'original pending navigation',width,destination,before,after,repliesCompleted:control.replies,requests:control.requests});await page.close();
+ }
+ for(const width of process.env.TRAVERSE_ONLY ? [] : [1440,390]){
+  const {page,control}=await harness(width);const t=timeline(page);
+  // Ordinary native wheel scrolling from the page gutter, not over a specific row.
+  await t.locator('[data-story-key]').first().evaluate(e=>e.scrollIntoView({block:'start',behavior:'instant'}));await settle(page);
+  const target=await page.evaluate(()=>{const e=document.elementFromPoint(6,400);return{tag:e?.tagName,cls:e?.className,chapter:e?.closest('.dossier-chapter')?.getAttribute('aria-label')??null}});
+  const before=await state(page);const requestsBefore=control.requests.length;
+  await page.mouse.move(6,400);await page.mouse.wheel(0,-100);await settle(page);
+  const afterGutter=await state(page);const gutterRequests=control.requests.slice(requestsBefore);
+  // Same direction, now over the reading column.
+  await page.mouse.move(width/2,400);await page.mouse.wheel(0,-50);await settle(page);
+  const afterColumn=await state(page);
+  results.push({case:'native wheel gutter vs column',width,target,before,afterGutter,afterColumn,gutterRequests,requests:control.requests});await page.close();
+ }
+ if(process.env.TRAVERSE_ONLY){
+  const {page,control}=await harness(1440);const t=timeline(page);
+  for(let i=0;i<24&&Number(await t.getAttribute('data-story-after'))>2;i++)await older(page);
+  assert.equal(await t.getAttribute('data-story-after'),'2');
+  const walk=[];const keys=new Set();let maxRows=0,maxDrift=0,maxHeight=0;
+  for(let i=0;i<30;i++){
+   const capture=await t.evaluate(root=>{
+    const rows=[...root.querySelectorAll('[data-story-key]')];const tail=rows.at(-1);
+    tail.scrollIntoView({block:'end',behavior:'instant'});
+    return{delivered:Number(root.dataset.storyDelivered),key:tail.dataset.storyKey,y:tail.getBoundingClientRect().top,height:tail.getBoundingClientRect().height,keys:rows.map(row=>row.dataset.storyKey),heights:rows.map(row=>row.getBoundingClientRect().height),count:rows.length};
+   });
+   capture.keys.forEach(k=>keys.add(k));maxRows=Math.max(maxRows,capture.count);maxHeight=Math.max(maxHeight,...capture.heights);
+   if(capture.delivered===1306)break;
+   await page.waitForFunction(({element,before})=>Number(element.getAttribute('data-story-delivered'))>before&&element.getAttribute('aria-busy')==='false',{element:await t.elementHandle(),before:capture.delivered});await settle(page);
+   const after=await t.locator(`[data-story-key="${capture.key}"]`).evaluate(e=>({y:e.getBoundingClientRect().top,height:e.getBoundingClientRect().height}));
+   const drift=Math.abs(after.y-capture.y);maxDrift=Math.max(maxDrift,drift);walk.push({before:capture.delivered,after:await t.getAttribute('data-story-delivered'),key:capture.key,oldY:capture.y,newY:after.y,height:after.height,drift});
+  }
+  await writeFile('/tmp/opencode/Dossier-ending-correction-review/traversal-first.json',JSON.stringify({maxRows,maxDrift,maxHeight,distinctKeys:keys.size,walk,delivered:await t.getAttribute('data-story-delivered'),requests:control.requests},null,2));
+  assert.equal(await t.getAttribute('data-story-delivered'),'1306');assert.ok(keys.size>512);assert.ok(maxRows<=128);assert.ok(maxDrift<=1);
+  // Closed Act I heading remains the focus owner while a native document key operates Act II.
+  await older(page);await heading(page,1).evaluate(e=>e.focus({preventScroll:true}));
+  const before=Number(await t.getAttribute('data-story-delivered'));
+  await t.locator('[data-story-key]').last().evaluate(e=>e.scrollIntoView({block:'end',behavior:'instant'}));
+  await page.keyboard.press('PageDown');
+  await page.waitForFunction(({e,before})=>Number(e.getAttribute('data-story-delivered'))>before,{e:await t.elementHandle(),before});await settle(page);
+  results.push({case:'full-height atomic traversal and closed-heading native PageDown',maxRows,maxDrift,maxHeight,distinctKeys:keys.size,walk,headingExpanded:await heading(page,1).getAttribute('aria-expanded'),requests:control.requests});await page.close();
+ }
+ await writeFile(`/tmp/opencode/Dossier-ending-correction-review/${process.env.BASE_ROOT?'baseline-gutter':process.env.TRAVERSE_ONLY?'traversal':'results'}.json`,JSON.stringify({root,results,faults},null,2));
+ console.log(JSON.stringify({cases:results.length,faults,wheel:results.filter(r=>r.case==='native wheel gutter vs column').map(r=>({width:r.width,target:r.target,before:r.before.readers,afterGutter:r.afterGutter.readers,afterColumn:r.afterColumn.readers,y:[r.before.y,r.afterGutter.y,r.afterColumn.y],gutterRequests:r.gutterRequests}))},null,2));
+}finally{await browser.close();await loader.close();await server.close();}

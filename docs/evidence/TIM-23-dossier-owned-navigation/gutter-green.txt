@@ -1,0 +1,11 @@
+
+Running 6 tests using 1 worker
+
+  ✓  1 .dossier/ending.spec.mjs:402:5 › 1440: native wheel in the page gutter continues the visible record (1.9s)
+  ✓  2 .dossier/ending.spec.mjs:402:5 › 1440: native touch in the page gutter continues the visible record (1.6s)
+  ✓  3 .dossier/ending.spec.mjs:446:3 › 1440: native gutter input cannot page behind a pending portrait reference (2.1s)
+  ✓  4 .dossier/ending.spec.mjs:402:5 › 390: native wheel in the page gutter continues the visible record (1.4s)
+  ✓  5 .dossier/ending.spec.mjs:402:5 › 390: native touch in the page gutter continues the visible record (1.6s)
+  ✓  6 .dossier/ending.spec.mjs:446:3 › 390: native gutter input cannot page behind a pending portrait reference (1.9s)
+
+  6 passed (12.5s)

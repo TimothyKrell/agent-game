@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { createServer } from 'vite';
 import { chromium } from '@playwright/test';
+import { driftTrace, settleDocumentScroll } from './drift-trace.mjs';
 
 const origin = process.env.DOSSIER_ORIGIN ?? 'http://127.0.0.1:6291';
 
@@ -39,6 +40,8 @@ let maxDOM = 0;
 
 let maxDrift = 0;
 
+const driftSamples = [];
+
 function check(name, condition) {
   assert.ok(condition, name);
   checks.push(name);
@@ -51,6 +54,8 @@ async function harness(width, mode, suffix = '', recoverPictures = false) {
   });
 
   page.on('pageerror', (error) => faults.push(error.message));
+
+  if (process.env.DOSSIER_DRIFT_TRACE) await driftTrace(page);
 
   const control = {
     mode,
@@ -454,6 +459,14 @@ try {
       // the original forward/eviction checks; do not replace them with a short tail read.
       await beginning(page, two);
 
+      // The final native PageUp can outlive data delivery. A subsequent instant
+      // scrollIntoView does not cancel Chromium's keyboard animation. Establish
+      // the measurement baseline after that viewer motion, not during it.
+      await writeFile(
+        `${directory}/traversal-settle.json`,
+        JSON.stringify(await settleDocumentScroll(page), null, 2),
+      );
+
       for (let step = 0; step < 23; step++) {
         await ready(two);
         const rows = two.locator('[data-story-key]');
@@ -467,12 +480,25 @@ try {
         const tail = rows.last();
         const key = await tail.getAttribute('data-story-key');
 
+        if (process.env.DOSSIER_DRIFT_TRACE)
+          await page.evaluate((key) => {
+            window.__dossierDrift = { key, events: [] };
+          }, key);
+
         // Capture the pre-replacement position in the same browser task as the scroll.
         // A separate boundingBox round trip can arrive after a fast production read.
-        const offset = await tail.evaluate((element) => {
+        const beforeGeometry = await tail.evaluate((element) => {
           element.scrollIntoView({ block: 'end', behavior: 'instant' });
 
-          return element.getBoundingClientRect().top;
+          const box = element.getBoundingClientRect();
+
+          return {
+            top: box.top,
+            height: box.height,
+            width: box.width,
+            scrollY,
+            fonts: document.fonts.status,
+          };
         });
 
         await page.waitForFunction(
@@ -483,8 +509,36 @@ try {
         );
         const retained = two.locator(`[data-story-key="${key}"]`);
 
-        if (await retained.count())
-          maxDrift = Math.max(maxDrift, Math.abs((await retained.boundingBox()).y - offset));
+        if (await retained.count()) {
+          const afterGeometry = await retained.evaluate((element) => {
+            const box = element.getBoundingClientRect();
+
+            return {
+              top: box.top,
+              height: box.height,
+              width: box.width,
+              scrollY,
+              fonts: document.fonts.status,
+            };
+          });
+
+          const drift = afterGeometry.top - beforeGeometry.top;
+          maxDrift = Math.max(maxDrift, Math.abs(drift));
+          driftSamples.push({
+            width,
+            step,
+            key,
+            deliveredBefore: before,
+            deliveredAfter: Number(await two.getAttribute('data-story-delivered')),
+            before: beforeGeometry,
+            after: afterGeometry,
+            drift,
+            trace: process.env.DOSSIER_DRIFT_TRACE
+              ? await page.evaluate(() => window.__dossierDrift.events)
+              : undefined,
+          });
+          await writeFile(`${directory}/traversal.json`, JSON.stringify(driftSamples, null, 2));
+        }
       }
 
       check(

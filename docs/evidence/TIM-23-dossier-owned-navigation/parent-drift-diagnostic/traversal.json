@@ -1,0 +1,2605 @@
+[
+  {
+    "width": 1440,
+    "step": 0,
+    "key": "story-226372697-217",
+    "deliveredBefore": 130,
+    "deliveredAfter": 194,
+    "before": {
+      "top": 951.96875,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 13051,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 951.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 7771,
+      "fonts": "loaded"
+    },
+    "drift": -0.1875,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 17495.600000023842,
+        "scrollY": 13051,
+        "rowTop": 951.96875,
+        "rowHeight": 127.59375,
+        "after": "2",
+        "delivered": "130"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17518,
+        "scrollY": 13051,
+        "rowTop": 951.96875,
+        "rowHeight": 127.59375,
+        "after": "2",
+        "delivered": "130",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17518.399999976158,
+        "scrollY": 13051,
+        "rowTop": 951.96875,
+        "rowHeight": 127.59375,
+        "after": "2",
+        "delivered": "130"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -5280.1875,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17591.700000047684,
+        "scrollY": 13051,
+        "rowTop": -4328.21875,
+        "rowHeight": 127.59375,
+        "after": "66",
+        "delivered": "194",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -5280.1875,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17592,
+        "scrollY": 7771,
+        "rowTop": 951.78125,
+        "rowHeight": 127.59375,
+        "after": "66",
+        "delivered": "194"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 17598.799999952316,
+        "scrollY": 7771,
+        "rowTop": 951.78125,
+        "rowHeight": 127.59375,
+        "after": "66",
+        "delivered": "194"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17599.299999952316,
+        "scrollY": 7771,
+        "rowTop": 951.78125,
+        "rowHeight": 127.59375,
+        "after": "66",
+        "delivered": "194",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17599.399999976158,
+        "scrollY": 7771,
+        "rowTop": 951.78125,
+        "rowHeight": 127.59375,
+        "after": "66",
+        "delivered": "194"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 1,
+    "key": "story-226372697-281",
+    "deliveredBefore": 194,
+    "deliveredAfter": 258,
+    "before": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 15936,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 7770,
+      "fonts": "loaded"
+    },
+    "drift": 0,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 17657.5,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "66",
+        "delivered": "194"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17673.700000047684,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "66",
+        "delivered": "194",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17673.899999976158,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "66",
+        "delivered": "194"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17761.200000047684,
+        "scrollY": 15936,
+        "rowTop": -7213.21875,
+        "rowHeight": 127.59375,
+        "after": "130",
+        "delivered": "258",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17761.600000023842,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "130",
+        "delivered": "258"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 17767.399999976158,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "130",
+        "delivered": "258"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17767.899999976158,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "130",
+        "delivered": "258",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17768,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "130",
+        "delivered": "258"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 2,
+    "key": "story-226372697-345",
+    "deliveredBefore": 258,
+    "deliveredAfter": 322,
+    "before": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 15936,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 7770,
+      "fonts": "loaded"
+    },
+    "drift": 0,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 17841.799999952316,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "130",
+        "delivered": "258"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17853.5,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "130",
+        "delivered": "258",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17853.600000023842,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "130",
+        "delivered": "258"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17906.100000023842,
+        "scrollY": 15936,
+        "rowTop": -7213.21875,
+        "rowHeight": 127.59375,
+        "after": "194",
+        "delivered": "322",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17906.200000047684,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "194",
+        "delivered": "322"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 17911,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "194",
+        "delivered": "322"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17911.5,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "194",
+        "delivered": "322",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17911.600000023842,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "194",
+        "delivered": "322"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 3,
+    "key": "story-226372697-409",
+    "deliveredBefore": 322,
+    "deliveredAfter": 386,
+    "before": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 15936,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 7770,
+      "fonts": "loaded"
+    },
+    "drift": 0,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 17978.700000047684,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "194",
+        "delivered": "322"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17993.399999976158,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "194",
+        "delivered": "322",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 17993.5,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "194",
+        "delivered": "322"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18066.700000047684,
+        "scrollY": 15936,
+        "rowTop": -7213.21875,
+        "rowHeight": 127.59375,
+        "after": "258",
+        "delivered": "386",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18067,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "258",
+        "delivered": "386"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18074.5,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "258",
+        "delivered": "386"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18075.100000023842,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "258",
+        "delivered": "386",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18075.200000047684,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "258",
+        "delivered": "386"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 4,
+    "key": "story-226372697-473",
+    "deliveredBefore": 386,
+    "deliveredAfter": 450,
+    "before": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 15936,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 7770,
+      "fonts": "loaded"
+    },
+    "drift": 0,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18150.799999952316,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "258",
+        "delivered": "386"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18162.700000047684,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "258",
+        "delivered": "386",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18162.799999952316,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "258",
+        "delivered": "386"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18229.600000023842,
+        "scrollY": 15936,
+        "rowTop": -7213.21875,
+        "rowHeight": 127.59375,
+        "after": "322",
+        "delivered": "450",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18229.700000047684,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "322",
+        "delivered": "450"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18235.5,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "322",
+        "delivered": "450"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18236.399999976158,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "322",
+        "delivered": "450",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18236.399999976158,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "322",
+        "delivered": "450"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 5,
+    "key": "story-226372697-537",
+    "deliveredBefore": 450,
+    "deliveredAfter": 514,
+    "before": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 15936,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 7770,
+      "fonts": "loaded"
+    },
+    "drift": 0,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18298.5,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "322",
+        "delivered": "450"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18307.799999952316,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "322",
+        "delivered": "450",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18307.799999952316,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "322",
+        "delivered": "450"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18367.299999952316,
+        "scrollY": 15936,
+        "rowTop": -7213.21875,
+        "rowHeight": 127.59375,
+        "after": "386",
+        "delivered": "514",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -8166,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18367.600000023842,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "386",
+        "delivered": "514"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18373,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "386",
+        "delivered": "514"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18373.399999976158,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "386",
+        "delivered": "514",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18373.399999976158,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "386",
+        "delivered": "514"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 6,
+    "key": "story-226372697-601",
+    "deliveredBefore": 514,
+    "deliveredAfter": 578,
+    "before": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 15936,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 952.78125,
+      "height": 127.59375,
+      "width": 1344,
+      "scrollY": 7770,
+      "fonts": "loaded"
+    },
+    "drift": 0,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18431.399999976158,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "386",
+        "delivered": "514"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18442.200000047684,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "386",
+        "delivered": "514",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18442.200000047684,
+        "scrollY": 15936,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "386",
+        "delivered": "514"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -7665,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18516.200000047684,
+        "scrollY": 15435,
+        "rowTop": -6712.21875,
+        "rowHeight": 127.59375,
+        "after": "450",
+        "delivered": "578",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -7665,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18516.399999976158,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "450",
+        "delivered": "578"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18522.700000047684,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "450",
+        "delivered": "578"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18523.399999976158,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "450",
+        "delivered": "578",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18523.399999976158,
+        "scrollY": 7770,
+        "rowTop": 952.78125,
+        "rowHeight": 127.59375,
+        "after": "450",
+        "delivered": "578"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 7,
+    "key": "story-226372697-675",
+    "deliveredBefore": 578,
+    "deliveredAfter": 642,
+    "before": {
+      "top": 953.125,
+      "height": 126.875,
+      "width": 1344,
+      "scrollY": 15200,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 953.125,
+      "height": 126.875,
+      "width": 1344,
+      "scrollY": 7034,
+      "fonts": "loaded"
+    },
+    "drift": 0,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18599.600000023842,
+        "scrollY": 15200,
+        "rowTop": 953.125,
+        "rowHeight": 126.875,
+        "after": "450",
+        "delivered": "578"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18615.600000023842,
+        "scrollY": 15200,
+        "rowTop": 953.125,
+        "rowHeight": 126.875,
+        "after": "450",
+        "delivered": "578",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18615.600000023842,
+        "scrollY": 15200,
+        "rowTop": 953.125,
+        "rowHeight": 126.875,
+        "after": "450",
+        "delivered": "578"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6663,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18681.100000023842,
+        "scrollY": 13697,
+        "rowTop": -5709.875,
+        "rowHeight": 126.875,
+        "after": "514",
+        "delivered": "642",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6663,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18681.200000047684,
+        "scrollY": 7034,
+        "rowTop": 953.125,
+        "rowHeight": 126.875,
+        "after": "514",
+        "delivered": "642"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18687.5,
+        "scrollY": 7034,
+        "rowTop": 953.125,
+        "rowHeight": 126.875,
+        "after": "514",
+        "delivered": "642"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18687.899999976158,
+        "scrollY": 7034,
+        "rowTop": 953.125,
+        "rowHeight": 126.875,
+        "after": "514",
+        "delivered": "642",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18687.899999976158,
+        "scrollY": 7034,
+        "rowTop": 953.125,
+        "rowHeight": 126.875,
+        "after": "514",
+        "delivered": "642"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 8,
+    "key": "story-226372697-758",
+    "deliveredBefore": 642,
+    "deliveredAfter": 706,
+    "before": {
+      "top": 1015.28125,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 13462,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 1015.53125,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 6052,
+      "fonts": "loaded"
+    },
+    "drift": 0.25,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18761.100000023842,
+        "scrollY": 13462,
+        "rowTop": 1015.28125,
+        "rowHeight": 65,
+        "after": "514",
+        "delivered": "642"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18778.899999976158,
+        "scrollY": 13462,
+        "rowTop": 1015.28125,
+        "rowHeight": 65,
+        "after": "514",
+        "delivered": "642",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18779,
+        "scrollY": 13462,
+        "rowTop": 1015.28125,
+        "rowHeight": 65,
+        "after": "514",
+        "delivered": "642"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6598.75,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18850,
+        "scrollY": 12651,
+        "rowTop": -5583.46875,
+        "rowHeight": 65,
+        "after": "578",
+        "delivered": "706",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6598.75,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18850.299999952316,
+        "scrollY": 6052,
+        "rowTop": 1015.53125,
+        "rowHeight": 65,
+        "after": "578",
+        "delivered": "706"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18858.899999976158,
+        "scrollY": 6052,
+        "rowTop": 1015.53125,
+        "rowHeight": 65,
+        "after": "578",
+        "delivered": "706"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18859.600000023842,
+        "scrollY": 6052,
+        "rowTop": 1015.53125,
+        "rowHeight": 65,
+        "after": "578",
+        "delivered": "706",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18859.700000047684,
+        "scrollY": 6052,
+        "rowTop": 1015.53125,
+        "rowHeight": 65,
+        "after": "578",
+        "delivered": "706"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 9,
+    "key": "story-226372697-839",
+    "deliveredBefore": 706,
+    "deliveredAfter": 770,
+    "before": {
+      "top": 1014.8125,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 12416,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 1014.65625,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 5961,
+      "fonts": "loaded"
+    },
+    "drift": -0.15625,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 18975.100000023842,
+        "scrollY": 12416,
+        "rowTop": 1014.8125,
+        "rowHeight": 65,
+        "after": "578",
+        "delivered": "706"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18997.5,
+        "scrollY": 12416,
+        "rowTop": 1014.8125,
+        "rowHeight": 65,
+        "after": "578",
+        "delivered": "706",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 18997.600000023842,
+        "scrollY": 12416,
+        "rowTop": 1014.8125,
+        "rowHeight": 65,
+        "after": "578",
+        "delivered": "706"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6455.15625,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19080.100000023842,
+        "scrollY": 12416,
+        "rowTop": -5440.34375,
+        "rowHeight": 65,
+        "after": "642",
+        "delivered": "770",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6455.15625,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19080.399999976158,
+        "scrollY": 5961,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "642",
+        "delivered": "770"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 19089.5,
+        "scrollY": 5961,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "642",
+        "delivered": "770"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19090.200000047684,
+        "scrollY": 5961,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "642",
+        "delivered": "770",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19090.299999952316,
+        "scrollY": 5961,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "642",
+        "delivered": "770"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 10,
+    "key": "story-226372697-923",
+    "deliveredBefore": 770,
+    "deliveredAfter": 834,
+    "before": {
+      "top": 1014.9375,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 12389,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 1014.65625,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 6026,
+      "fonts": "loaded"
+    },
+    "drift": -0.28125,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 19214.200000047684,
+        "scrollY": 12389,
+        "rowTop": 1014.9375,
+        "rowHeight": 65,
+        "after": "642",
+        "delivered": "770"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19235.299999952316,
+        "scrollY": 12389,
+        "rowTop": 1014.9375,
+        "rowHeight": 65,
+        "after": "642",
+        "delivered": "770",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19235.399999976158,
+        "scrollY": 12389,
+        "rowTop": 1014.9375,
+        "rowHeight": 65,
+        "after": "642",
+        "delivered": "770"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6363.28125,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19319.399999976158,
+        "scrollY": 12389,
+        "rowTop": -5348.34375,
+        "rowHeight": 65,
+        "after": "706",
+        "delivered": "834",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6363.28125,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19319.600000023842,
+        "scrollY": 6026,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "706",
+        "delivered": "834"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 19328.700000047684,
+        "scrollY": 6026,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "706",
+        "delivered": "834"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19329.399999976158,
+        "scrollY": 6026,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "706",
+        "delivered": "834",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19329.5,
+        "scrollY": 6026,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "706",
+        "delivered": "834"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 11,
+    "key": "story-226372697-1004",
+    "deliveredBefore": 834,
+    "deliveredAfter": 898,
+    "before": {
+      "top": 1014.9375,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 12389,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 1014.65625,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 5961,
+      "fonts": "loaded"
+    },
+    "drift": -0.28125,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 19460.700000047684,
+        "scrollY": 12389,
+        "rowTop": 1014.9375,
+        "rowHeight": 65,
+        "after": "706",
+        "delivered": "834"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19493.299999952316,
+        "scrollY": 12389,
+        "rowTop": 1014.9375,
+        "rowHeight": 65,
+        "after": "706",
+        "delivered": "834",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19493.5,
+        "scrollY": 12389,
+        "rowTop": 1014.9375,
+        "rowHeight": 65,
+        "after": "706",
+        "delivered": "834"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6428.28125,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19634.200000047684,
+        "scrollY": 12389,
+        "rowTop": -5413.34375,
+        "rowHeight": 65,
+        "after": "770",
+        "delivered": "898",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6428.28125,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19634.399999976158,
+        "scrollY": 5961,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "770",
+        "delivered": "898"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 19646.299999952316,
+        "scrollY": 5961,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "770",
+        "delivered": "898"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19647,
+        "scrollY": 5961,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "770",
+        "delivered": "898",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19647.100000023842,
+        "scrollY": 5961,
+        "rowTop": 1014.65625,
+        "rowHeight": 65,
+        "after": "770",
+        "delivered": "898"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 12,
+    "key": "story-226372697-1087",
+    "deliveredBefore": 898,
+    "deliveredAfter": 962,
+    "before": {
+      "top": 834.9375,
+      "height": 244.578125,
+      "width": 1344,
+      "scrollY": 12569,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 834.65625,
+      "height": 244.578125,
+      "width": 1344,
+      "scrollY": 6206,
+      "fonts": "loaded"
+    },
+    "drift": -0.28125,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 19752.399999976158,
+        "scrollY": 12569,
+        "rowTop": 834.9375,
+        "rowHeight": 244.578125,
+        "after": "770",
+        "delivered": "898"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19770.299999952316,
+        "scrollY": 12569,
+        "rowTop": 834.9375,
+        "rowHeight": 244.578125,
+        "after": "770",
+        "delivered": "898",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19770.299999952316,
+        "scrollY": 12569,
+        "rowTop": 834.9375,
+        "rowHeight": 244.578125,
+        "after": "770",
+        "delivered": "898"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6363.28125,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19867.100000023842,
+        "scrollY": 12569,
+        "rowTop": -5528.34375,
+        "rowHeight": 244.578125,
+        "after": "834",
+        "delivered": "962",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6363.28125,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19867.200000047684,
+        "scrollY": 6206,
+        "rowTop": 834.65625,
+        "rowHeight": 244.578125,
+        "after": "834",
+        "delivered": "962"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 19875.700000047684,
+        "scrollY": 6206,
+        "rowTop": 834.65625,
+        "rowHeight": 244.578125,
+        "after": "834",
+        "delivered": "962"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19876.5,
+        "scrollY": 6206,
+        "rowTop": 834.65625,
+        "rowHeight": 244.578125,
+        "after": "834",
+        "delivered": "962",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 19876.600000023842,
+        "scrollY": 6206,
+        "rowTop": 834.65625,
+        "rowHeight": 244.578125,
+        "after": "834",
+        "delivered": "962"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 13,
+    "key": "story-226372697-1169",
+    "deliveredBefore": 962,
+    "deliveredAfter": 1026,
+    "before": {
+      "top": 874.515625,
+      "height": 205.578125,
+      "width": 1344,
+      "scrollY": 12774,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 874.65625,
+      "height": 205.578125,
+      "width": 1344,
+      "scrollY": 6151,
+      "fonts": "loaded"
+    },
+    "drift": 0.140625,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 20001.799999952316,
+        "scrollY": 12774,
+        "rowTop": 874.515625,
+        "rowHeight": 205.578125,
+        "after": "834",
+        "delivered": "962"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20020.600000023842,
+        "scrollY": 12774,
+        "rowTop": 874.515625,
+        "rowHeight": 205.578125,
+        "after": "834",
+        "delivered": "962",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20020.700000047684,
+        "scrollY": 12774,
+        "rowTop": 874.515625,
+        "rowHeight": 205.578125,
+        "after": "834",
+        "delivered": "962"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6622.859375,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20114.600000023842,
+        "scrollY": 12774,
+        "rowTop": -5748.34375,
+        "rowHeight": 205.578125,
+        "after": "898",
+        "delivered": "1026",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6622.859375,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20114.799999952316,
+        "scrollY": 6151,
+        "rowTop": 874.65625,
+        "rowHeight": 205.578125,
+        "after": "898",
+        "delivered": "1026"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 20124.899999976158,
+        "scrollY": 6151,
+        "rowTop": 874.65625,
+        "rowHeight": 205.578125,
+        "after": "898",
+        "delivered": "1026"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20125.5,
+        "scrollY": 6151,
+        "rowTop": 874.65625,
+        "rowHeight": 205.578125,
+        "after": "898",
+        "delivered": "1026",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20125.600000023842,
+        "scrollY": 6151,
+        "rowTop": 874.65625,
+        "rowHeight": 205.578125,
+        "after": "898",
+        "delivered": "1026"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 14,
+    "key": "story-226372697-1251",
+    "deliveredBefore": 1026,
+    "deliveredAfter": 1090,
+    "before": {
+      "top": 953.515625,
+      "height": 126.875,
+      "width": 1344,
+      "scrollY": 12641,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 953.21875,
+      "height": 126.875,
+      "width": 1344,
+      "scrollY": 6039,
+      "fonts": "loaded"
+    },
+    "drift": -0.296875,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 20291.299999952316,
+        "scrollY": 12641,
+        "rowTop": 953.515625,
+        "rowHeight": 126.875,
+        "after": "898",
+        "delivered": "1026"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20311.899999976158,
+        "scrollY": 12641,
+        "rowTop": 953.515625,
+        "rowHeight": 126.875,
+        "after": "898",
+        "delivered": "1026",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20312,
+        "scrollY": 12641,
+        "rowTop": 953.515625,
+        "rowHeight": 126.875,
+        "after": "898",
+        "delivered": "1026"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6602.296875,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20390,
+        "scrollY": 12641,
+        "rowTop": -5648.78125,
+        "rowHeight": 126.875,
+        "after": "962",
+        "delivered": "1090",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6602.296875,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20390.100000023842,
+        "scrollY": 6039,
+        "rowTop": 953.21875,
+        "rowHeight": 126.875,
+        "after": "962",
+        "delivered": "1090"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 20397.799999952316,
+        "scrollY": 6039,
+        "rowTop": 953.21875,
+        "rowHeight": 126.875,
+        "after": "962",
+        "delivered": "1090"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20398.299999952316,
+        "scrollY": 6039,
+        "rowTop": 953.21875,
+        "rowHeight": 126.875,
+        "after": "962",
+        "delivered": "1090",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20398.299999952316,
+        "scrollY": 6039,
+        "rowTop": 953.21875,
+        "rowHeight": 126.875,
+        "after": "962",
+        "delivered": "1090"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 15,
+    "key": "story-226372697-1334",
+    "deliveredBefore": 1090,
+    "deliveredAfter": 1154,
+    "before": {
+      "top": 1015.453125,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 12951,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 1015.609375,
+      "height": 65,
+      "width": 1344,
+      "scrollY": 6536,
+      "fonts": "loaded"
+    },
+    "drift": 0.15625,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 20479.299999952316,
+        "scrollY": 12951,
+        "rowTop": 1015.453125,
+        "rowHeight": 65,
+        "after": "962",
+        "delivered": "1090"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20500.799999952316,
+        "scrollY": 12951,
+        "rowTop": 1015.453125,
+        "rowHeight": 65,
+        "after": "962",
+        "delivered": "1090",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20500.799999952316,
+        "scrollY": 12951,
+        "rowTop": 1015.453125,
+        "rowHeight": 65,
+        "after": "962",
+        "delivered": "1090"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6414.84375,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20622.100000023842,
+        "scrollY": 12951,
+        "rowTop": -5399.390625,
+        "rowHeight": 65,
+        "after": "1026",
+        "delivered": "1154",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6414.84375,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20622.600000023842,
+        "scrollY": 6536,
+        "rowTop": 1015.609375,
+        "rowHeight": 65,
+        "after": "1026",
+        "delivered": "1154"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 20639.200000047684,
+        "scrollY": 6536,
+        "rowTop": 1015.609375,
+        "rowHeight": 65,
+        "after": "1026",
+        "delivered": "1154"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20639.899999976158,
+        "scrollY": 6536,
+        "rowTop": 1015.609375,
+        "rowHeight": 65,
+        "after": "1026",
+        "delivered": "1154",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20640,
+        "scrollY": 6536,
+        "rowTop": 1015.609375,
+        "rowHeight": 65,
+        "after": "1026",
+        "delivered": "1154"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 16,
+    "key": "story-226372697-1415",
+    "deliveredBefore": 1154,
+    "deliveredAfter": 1218,
+    "before": {
+      "top": 935.1875,
+      "height": 144.875,
+      "width": 1344,
+      "scrollY": 14515,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 934.953125,
+      "height": 144.875,
+      "width": 1344,
+      "scrollY": 7576,
+      "fonts": "loaded"
+    },
+    "drift": -0.234375,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 20773.899999976158,
+        "scrollY": 14515,
+        "rowTop": 935.1875,
+        "rowHeight": 144.875,
+        "after": "1026",
+        "delivered": "1154"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20825.200000047684,
+        "scrollY": 14515,
+        "rowTop": 935.1875,
+        "rowHeight": 144.875,
+        "after": "1026",
+        "delivered": "1154",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20825.299999952316,
+        "scrollY": 14515,
+        "rowTop": 935.1875,
+        "rowHeight": 144.875,
+        "after": "1026",
+        "delivered": "1154"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6471.234375,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20937.700000047684,
+        "scrollY": 14047,
+        "rowTop": -5536.046875,
+        "rowHeight": 144.875,
+        "after": "1090",
+        "delivered": "1218",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6471.234375,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20937.899999976158,
+        "scrollY": 7576,
+        "rowTop": 934.953125,
+        "rowHeight": 144.875,
+        "after": "1090",
+        "delivered": "1218"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 20948.200000047684,
+        "scrollY": 7576,
+        "rowTop": 934.953125,
+        "rowHeight": 144.875,
+        "after": "1090",
+        "delivered": "1218"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20948.899999976158,
+        "scrollY": 7576,
+        "rowTop": 934.953125,
+        "rowHeight": 144.875,
+        "after": "1090",
+        "delivered": "1218",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 20949,
+        "scrollY": 7576,
+        "rowTop": 934.953125,
+        "rowHeight": 144.875,
+        "after": "1090",
+        "delivered": "1218"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 17,
+    "key": "story-226372697-1497",
+    "deliveredBefore": 1218,
+    "deliveredAfter": 1282,
+    "before": {
+      "top": 874.65625,
+      "height": 205.578125,
+      "width": 1344,
+      "scrollY": 13812,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 875.078125,
+      "height": 205.578125,
+      "width": 1344,
+      "scrollY": 5896,
+      "fonts": "loaded"
+    },
+    "drift": 0.421875,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 21056.5,
+        "scrollY": 13812,
+        "rowTop": 874.65625,
+        "rowHeight": 205.578125,
+        "after": "1090",
+        "delivered": "1218"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21083,
+        "scrollY": 13812,
+        "rowTop": 874.65625,
+        "rowHeight": 205.578125,
+        "after": "1090",
+        "delivered": "1218",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21083.100000023842,
+        "scrollY": 13812,
+        "rowTop": 874.65625,
+        "rowHeight": 205.578125,
+        "after": "1090",
+        "delivered": "1218"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -6725.578125,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21168.299999952316,
+        "scrollY": 12622,
+        "rowTop": -5850.921875,
+        "rowHeight": 205.578125,
+        "after": "1154",
+        "delivered": "1282",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -6725.578125,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21168.5,
+        "scrollY": 5896,
+        "rowTop": 875.078125,
+        "rowHeight": 205.578125,
+        "after": "1154",
+        "delivered": "1282"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 21184.100000023842,
+        "scrollY": 5896,
+        "rowTop": 875.078125,
+        "rowHeight": 205.578125,
+        "after": "1154",
+        "delivered": "1282"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21184.899999976158,
+        "scrollY": 5896,
+        "rowTop": 875.078125,
+        "rowHeight": 205.578125,
+        "after": "1154",
+        "delivered": "1282",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21185,
+        "scrollY": 5896,
+        "rowTop": 875.078125,
+        "rowHeight": 205.578125,
+        "after": "1154",
+        "delivered": "1282"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "step": 18,
+    "key": "story-226372697-1579",
+    "deliveredBefore": 1282,
+    "deliveredAfter": 1306,
+    "before": {
+      "top": 952.9375,
+      "height": 126.875,
+      "width": 1344,
+      "scrollY": 12387,
+      "fonts": "loaded"
+    },
+    "after": {
+      "top": 952.96875,
+      "height": 126.875,
+      "width": 1344,
+      "scrollY": 10138,
+      "fonts": "loaded"
+    },
+    "drift": 0.03125,
+    "trace": [
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 21286.399999976158,
+        "scrollY": 12387,
+        "rowTop": 952.9375,
+        "rowHeight": 126.875,
+        "after": "1154",
+        "delivered": "1282"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21308.5,
+        "scrollY": 12387,
+        "rowTop": 952.9375,
+        "rowHeight": 126.875,
+        "after": "1154",
+        "delivered": "1282",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21308.700000047684,
+        "scrollY": 12387,
+        "rowTop": 952.9375,
+        "rowHeight": 126.875,
+        "after": "1154",
+        "delivered": "1282"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": -2248.96875,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21377,
+        "scrollY": 12387,
+        "rowTop": -1296.03125,
+        "rowHeight": 126.875,
+        "after": "1178",
+        "delivered": "1306",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at Object.C [as restore] (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219299)\n    at KD.componentDidUpdate (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:217410)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96596)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96406)\n    at _l (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:105189)\n    at ul (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:8:96980)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": -2248.96875,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21377.100000023842,
+        "scrollY": 10138,
+        "rowTop": 952.96875,
+        "rowHeight": 126.875,
+        "after": "1178",
+        "delivered": "1306"
+      },
+      {
+        "operation": "scroll",
+        "args": [],
+        "time": 21382.600000023842,
+        "scrollY": 10138,
+        "rowTop": 952.96875,
+        "rowHeight": 126.875,
+        "after": "1178",
+        "delivered": "1306"
+      },
+      {
+        "operation": "scrollBy:before",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21383.100000023842,
+        "scrollY": 10138,
+        "rowTop": 952.96875,
+        "rowHeight": 126.875,
+        "after": "1178",
+        "delivered": "1306",
+        "stack": "Error\n    at capture (<anonymous>:18:48)\n    at window.<computed> (<anonymous>:25:9)\n    at v (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:218025)\n    at T (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:219947)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:6292/assets/index-mubIDrLZ.js:17:221835)"
+      },
+      {
+        "operation": "scrollBy:after",
+        "args": [
+          {
+            "top": 0,
+            "behavior": "instant"
+          }
+        ],
+        "time": 21383.100000023842,
+        "scrollY": 10138,
+        "rowTop": 952.96875,
+        "rowHeight": 126.875,
+        "after": "1178",
+        "delivered": "1306"
+      }
+    ]
+  }
+]

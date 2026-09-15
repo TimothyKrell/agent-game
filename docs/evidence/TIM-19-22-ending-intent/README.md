@@ -1,5 +1,7 @@
 # Dossier · Pending ending navigation owns a cancellable intent
 
+Follow-up: [reader-owned cancellation, shared viewport ownership and gutter-input correction](../TIM-23-dossier-owned-navigation/README.md) addresses review findings against `2df3c5a`. The evidence below records that earlier delivery.
+
 Baseline: **`ab8706c`**. This addresses the new terminal-review P2 after the original completed-entry/Final move finding was closed. The accepted RuleHelp correction `54a3abd`, canonical-facts correction `a59fbbc`, and TIM-23 reader through `0fb03f8` remain intact.
 
 ## Exact red reproduction

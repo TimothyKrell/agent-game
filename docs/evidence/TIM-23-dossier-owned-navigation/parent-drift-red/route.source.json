@@ -1,0 +1,5 @@
+{
+  "sourceSha256": "a00151904663d344ab709a21eedda76743e8c2c4f9db44df48ad65424f982209",
+  "adaptedSha256": "88546a5605cb9322c4c9bd1335889cad534e257e915b6912bcbbb6835d0ef544",
+  "changes": "Dependency import paths, isolated fixture/component cache and ports only. Evidence supplied through supported environment variables."
+}
