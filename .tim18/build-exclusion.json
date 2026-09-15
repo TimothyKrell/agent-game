@@ -1,0 +1,24 @@
+{
+  "assets": [
+    "index-BHdpEHgZ.css",
+    "index-CbiQLy3n.js"
+  ],
+  "checks": [
+    {
+      "needle": "match_e65fb846-c804-4d8b-ba78-e303119e1847",
+      "found": false
+    },
+    {
+      "needle": "dp-rule-index",
+      "found": false
+    },
+    {
+      "needle": "tim-6-replay-prototype",
+      "found": false
+    },
+    {
+      "needle": "source-probe.json",
+      "found": false
+    }
+  ]
+}
