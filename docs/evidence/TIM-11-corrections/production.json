@@ -1,0 +1,16 @@
+{
+  "scanned": 9,
+  "layers": [
+    "theme",
+    "legacy",
+    "base",
+    "components",
+    "utilities"
+  ],
+  "oneHoistedFontImport": true,
+  "prefixedUtility": true,
+  "noPreflight": true,
+  "guideRouteExcluded": true,
+  "fixtureRouteExcluded": true,
+  "noDevtoolRequests": true
+}

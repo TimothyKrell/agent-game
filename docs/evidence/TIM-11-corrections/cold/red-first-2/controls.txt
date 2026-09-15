@@ -1,0 +1,67 @@
+
+Running 1 test using 1 worker
+
+[DEBUG-tim11-cold] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+[DEBUG-tim11-cold] Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+[DEBUG-tim11-cold] TypeError: Cannot read properties of null (reading 'useRef')
+    at exports.useRef (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react.js?v=9ed2a51d:745:30)
+    at useRefWithInit (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d:26:27)
+    at useStableCallback (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d:45:17)
+    at CollapsibleRoot (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/@base-ui_react_collapsible.js?v=cf0485df:155:23)
+    at Object.react_stack_bottom_frame (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:12904:12)
+    at renderWithHooks (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:4235:19)
+    at updateForwardRef (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:5434:16)
+    at beginWork (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:6242:21)
+    at runWithFiberInDEV (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:852:66)
+    at performUnitOfWork (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:8467:92)
+[DEBUG-tim11-cold] Failed to load resource: the server responded with a status of 404 (Not Found)
+  ✘  1 .tim11/cold-start/runs/red-first-2/foundations.spec.ts:4:3 › native controls, chapter and modal at 1440 (2.5s)
+
+
+  1) .tim11/cold-start/runs/red-first-2/foundations.spec.ts:4:3 › native controls, chapter and modal at 1440
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 13
+
+    - Array []
+    + Array [
+    +   "TypeError: Cannot read properties of null (reading 'useRef')
+    +     at exports.useRef (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react.js?v=9ed2a51d:745:30)
+    +     at useRefWithInit (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d:26:27)
+    +     at useStableCallback (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d:45:17)
+    +     at CollapsibleRoot (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/@base-ui_react_collapsible.js?v=cf0485df:155:23)
+    +     at Object.react_stack_bottom_frame (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:12904:12)
+    +     at renderWithHooks (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:4235:19)
+    +     at updateForwardRef (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:5434:16)
+    +     at beginWork (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:6242:21)
+    +     at runWithFiberInDEV (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:852:66)
+    +     at performUnitOfWork (http://127.0.0.1:6191/.tim11/cold-start/runs/red-first-2/vite-cache/deps/react-dom_client.js?v=6e45f3d7:8467:92)",
+    + ]
+
+      88 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      89 |     await test.info().attach('cold-start-modules', { body: JSON.stringify({ errors, modules, navigations }, null, 2), contentType: 'application/json' });
+    > 90 |     expect(errors).toEqual([]);
+         |                    ^
+      91 |     await page.close();
+      92 |   });
+      93 | }
+        at /tmp/opencode/agent-game-TIM-11/.tim11/cold-start/runs/red-first-2/foundations.spec.ts:90:20
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .tim11/cold-start/runs/red-first-2/interactions/foundations-native-controls-chapter-and-modal-at-1440/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .tim11/cold-start/runs/red-first-2/interactions/foundations-native-controls-chapter-and-modal-at-1440/error-context.md
+
+  1 failed
+    .tim11/cold-start/runs/red-first-2/foundations.spec.ts:4:3 › native controls, chapter and modal at 1440

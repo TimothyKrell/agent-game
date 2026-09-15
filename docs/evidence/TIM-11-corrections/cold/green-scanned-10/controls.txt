@@ -1,0 +1,7 @@
+
+Running 1 test using 1 worker
+
+[DEBUG-tim11-cold] Failed to load resource: the server responded with a status of 404 (Not Found)
+  ✓  1 .tim11/cold-start/runs/green-scanned-10/foundations.spec.ts:5:3 › native controls, chapter and modal at 1440 (587ms)
+
+  1 passed (1.1s)

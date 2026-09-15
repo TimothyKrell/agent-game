@@ -1,0 +1,100 @@
+{
+  "hash": "a865a083",
+  "configHash": "a1a0c82c",
+  "lockfileHash": "c744ca5c",
+  "browserHash": "a1e93c2d",
+  "optimized": {
+    "@base-ui/react/collapsible": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/@base-ui/react/collapsible/index.mjs",
+      "file": "@base-ui_react_collapsible.js",
+      "fileHash": "9f77be65",
+      "needsInterop": false
+    },
+    "@base-ui/react/dialog": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/@base-ui/react/dialog/index.mjs",
+      "file": "@base-ui_react_dialog.js",
+      "fileHash": "2ab3bf88",
+      "needsInterop": false
+    },
+    "@base-ui/react/popover": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/@base-ui/react/popover/index.mjs",
+      "file": "@base-ui_react_popover.js",
+      "fileHash": "9fb4200d",
+      "needsInterop": false
+    },
+    "@tanstack/react-query": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/@tanstack/react-query/build/modern/index.js",
+      "file": "@tanstack_react-query.js",
+      "fileHash": "325e0798",
+      "needsInterop": false
+    },
+    "agentation": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/agentation/dist/index.mjs",
+      "file": "agentation.js",
+      "fileHash": "2fe1bda6",
+      "needsInterop": false
+    },
+    "better-auth/react": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/better-auth/dist/client/react/index.mjs",
+      "file": "better-auth_react.js",
+      "fileHash": "6470ac06",
+      "needsInterop": false
+    },
+    "effect": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/effect/dist/index.js",
+      "file": "effect.js",
+      "fileHash": "e4da4f85",
+      "needsInterop": false
+    },
+    "lucide-react": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/lucide-react/dist/esm/lucide-react.mjs",
+      "file": "lucide-react.js",
+      "fileHash": "a01712d8",
+      "needsInterop": false
+    },
+    "react-dom": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/react-dom/index.js",
+      "file": "react-dom.js",
+      "fileHash": "370ec32d",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "3624947a",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "b1e29e48",
+      "needsInterop": true
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "17c57546",
+      "needsInterop": true
+    },
+    "react/jsx-runtime": {
+      "src": "../../../../../../../../../home/timothykrell/Code/agent-games/node_modules/react/jsx-runtime.js",
+      "file": "react_jsx-runtime.js",
+      "fileHash": "2dea33ed",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "rolldown-runtime-DC62tzP2": {
+      "file": "rolldown-runtime-DC62tzP2.js",
+      "isDynamicEntry": false
+    },
+    "useOpenChangeComplete-DkrlQdAW": {
+      "file": "useOpenChangeComplete-DkrlQdAW.js",
+      "isDynamicEntry": false
+    },
+    "useOpenInteractionType-D2wbWC_s": {
+      "file": "useOpenInteractionType-D2wbWC_s.js",
+      "isDynamicEntry": false
+    }
+  }
+}
