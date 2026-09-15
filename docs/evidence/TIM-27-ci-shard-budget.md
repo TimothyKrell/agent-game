@@ -19,3 +19,19 @@ Historical hosted run34766041939 records39–44s setup,1–2s build and49–52s 
 The playable file alone permits390s,390s,90s,120s and60s across its five existing cases, totaling1,050s before hooks. The former900-second job could terminate individually in-budget tests. The scoped25-minute CI limit accommodates that integration workload; it adds no inference allowance and changes no game clocks.
 
 Evidence and reproducible allocation/calculation scripts: `/tmp/opencode/TIM-CI-shard-budget-57dx55yw/`. This is a runtime-budget projection, not a CI pass. Current hosted performance and the pending smoke-classification correction remain to be measured by actual CI.
+
+## Final smoke-correction inventory
+
+At **747b2c9**, the shape-first smoke correction adds `tests/preview-smoke.test.ts`. The installed sequencer assigns **67 files: 23 /22 /22**, each exactly once. The new file joins the installed playable journeys on shard3. `supervisor-http.test.ts` moves from shard2 to1, and `succession-legacy.test.ts` moves from shard3 to2.
+
+| Shard | Measured files | Latest measured portions | Including conservative hooks and120s overhead | Margin within25m |
+| ----- | -------------: | -----------------------: | --------------------------------------------: | ---------------: |
+| 1/3   |          23/23 |                 499.176s |                                        10m21s |           14m39s |
+| 2/3   |          22/22 |                 371.322s |                                         8m13s |           16m47s |
+| 3/3   |          22/22 |                 981.774s |                                        18m24s |            6m36s |
+
+The latest completed170-test source report supplies measurements for its14 files. The parent's actual package/install CLI run supplies6.050s for its15 cases. All remaining files retain their previous accepted observations; none is unmeasured. The verbose source report leaves2.142s of aggregate hook time unassigned to individual files, conservatively charged in full to each shard in this projection.
+
+The heaviest files on shard3 are `preview-playable.test.ts` at462.426s, `preview-smoke.test.ts` at342.607s, `preview-finalizer.test.ts` at60.916s and `history.test.ts` at59.039s. The25-minute unit limit remains appropriate for the first hosted verification, with6m36s projected margin. That shard now tolerates approximately1.403× aggregate slowdown after overhead; a1.5× sensitivity scenario reaches26m36s. The earlier66-file slowdown cushion therefore no longer describes the final inventory.
+
+This remains an observed-runtime projection rather than a CI pass. Actual hosted results will determine whether the limit is adequate. Fresh supplement, exact allocations and per-file provenance: `/tmp/opencode/TIM-CI-shard-budget-747b2c9-1l_6jw0v/`. Earlier evidence remains unchanged.

@@ -137,6 +137,16 @@ The header diagnostic atda59be3 identifies unsolicited root requests reaching a 
 
 The parent-owned packaging correction **8a23791** is separately accepted on both review axes and recovery-archived. `TIM-27-hosted-readiness.md` records the actual default-off GitHub configuration and remaining one-time protected credential/source-release cutover.
 
+### Final corrections — parent verification
+
+The smoke classification correction from **f036787/8399265** is integrated at **7daf15f/747b2c9**. Parent passed **32/32** smoke, finalizer, workflow and publication cases, including the actual Node two-game smoke journey, with typecheck, lint, build, formatting and whitespace checks green. The run used a fresh home and explicitly filtered environment; evidence is in `/tmp/opencode/TIM-27-lead-smoke-schema/`.
+
+Protocol fixture correction **0829c70**, integrated at **3182c23**, passes **15/15** parent cases through the maintained package/install bootstrap. Known API requests retain strict protocol-header assertions; unrelated routes cannot mutate fixture state, and asynchronous handler errors reach awaited teardown. Evidence and completed TCP controls are in `/tmp/opencode/TIM-27-lead-protocol-correction/`. Parent typecheck, lint and formatting pass.
+
+Both corrections have independent Standards0. Their final correctness reviews were interrupted by a usage limit and resumed after the owner confirmed the reset; acceptance awaits those completed reviews. The earlier historical packet remains unattributed.
+
+The final67-file CI inventory places both playable and smoke journeys on unit shard3. Its observed projection is18m24s including conservative hook and setup allowances, leaving6m36s within the scoped25-minute unit-job limit. This is a planning estimate; actual hosted CI remains the next delivery check.
+
 ### Actual API and restart regression
 
 The unchanged API inventory also passes **six tests** against a clean1c43b1b checkout and real local Worker/D1/DO processes. It covers full externally controlled completion, retry receipts, reconnect/private isolation, actual CLI pairing/queue/revocation, same-owner matchmaking and a real Worker restart during a required decision without downtime forfeiture.
