@@ -48,6 +48,7 @@ async function harness(
   commands = false,
   sparse = false,
   offline = false,
+  omitted: '' | 'head' | 'tail' = '',
 ) {
   const pending: (() => Promise<void>)[] = [];
 
@@ -147,7 +148,7 @@ async function harness(
     return route.fulfill({ status: 404 });
   });
   await page.goto(
-    `http://127.0.0.1:6283/${commands ? '?commands' : documentRoot ? '?document' : sparse ? '?sparse' : offline ? '?offline' : ''}`,
+    `http://127.0.0.1:6283/${commands ? '?commands' : documentRoot ? '?document' : sparse ? '?sparse' : offline ? '?offline' : ''}${omitted ? `&omit-${omitted}` : ''}`,
   );
 
   return { control, faults };
@@ -448,6 +449,239 @@ test('keeps two open document chapters independently reachable through scrolling
   await expect(timeline(page).locator('[data-story-key]')).toHaveCount(128);
   await expect(timeline(page, 'secondary').locator('[data-story-key]')).toHaveCount(128);
   expect(control.requests).toBeLessThan(48);
+  expect(faults).toEqual([]);
+});
+
+for (const direction of ['forward', 'backward'] as const) {
+  for (const rendering of ['short', 'omitted'] as const) {
+    test(`retains the pre-replacement document anchor across ${direction} tall-to-${rendering} windows`, async ({
+      page,
+    }) => {
+      const { control, faults } = await harness(
+        page,
+        900,
+        true,
+        false,
+        false,
+        false,
+        rendering === 'short' ? '' : direction === 'forward' ? 'tail' : 'head',
+      );
+
+      await ready(page);
+      await page.getByRole('button', { name: 'Toggle second reader', exact: true }).click();
+      await ready(page, 'secondary');
+
+      if (direction === 'forward' && rendering === 'short') {
+        // Match the immutable rereview probe's prior chapter navigation and head-only update.
+        const target = await timeline(page, 'secondary').evaluate(
+          (root) => window.scrollY + root.getBoundingClientRect().top + 400,
+        );
+
+        await page.evaluate((y) => window.scrollTo(0, y), target);
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+            ),
+        );
+        const anchor = await documentAnchor(page, 'secondary');
+        control.head = 906;
+        await page.getByRole('button', { name: 'Refresh A', exact: true }).evaluate((button) => {
+          if (!(button instanceof HTMLButtonElement)) throw new Error('Expected fixture refresh button');
+          button.click();
+        });
+        await expect(metrics(page, 'secondary')).toContainText('"head":906');
+
+        const offset = await timeline(page, 'secondary')
+          .locator(`[data-story-key="${anchor.key}"]`)
+          .evaluate((row) => row.getBoundingClientRect().top);
+
+        expect(Math.abs(offset - anchor.offset)).toBeLessThanOrEqual(1);
+      }
+
+      await page.addStyleTag({
+        content:
+          Array.from(
+            { length: 64 },
+            (_, index) =>
+              `[aria-label="primary timeline"] [data-story-cursor="${index + (direction === 'forward' ? 1 : 129)}"]`,
+          ).join(',') + '{min-height:300px}',
+      });
+      await page.evaluate(() => window.scrollTo(0, 0));
+
+      if (direction === 'backward') {
+        await timeline(page).evaluate((root) =>
+          window.scrollTo(0, window.scrollY + root.getBoundingClientRect().bottom - window.innerHeight + 80),
+        );
+        await expect(timeline(page)).toHaveAttribute('data-story-after', '64');
+        await ready(page);
+      }
+
+      await timeline(page).focus();
+      control.hold = true;
+      await timeline(page).evaluate(
+        (root, direction) =>
+          window.scrollTo(
+            0,
+            window.scrollY +
+              (direction === 'forward'
+                ? root.getBoundingClientRect().bottom - window.innerHeight + 80
+                : root.getBoundingClientRect().top + 80),
+          ),
+        direction,
+      );
+      await expect.poll(() => control.pending.length).toBe(1);
+
+      const focused =
+        rendering === 'omitted' && direction === 'forward'
+          ? timeline(page)
+              .locator(`[data-story-key="${(await documentAnchor(page)).key}"]`)
+              .getByRole('button')
+          : null;
+
+      if (focused) await focused.focus();
+      const before = await documentAnchor(page);
+      control.hold = false;
+
+      for (const deliver of control.pending.splice(0)) await deliver();
+      await expect(timeline(page)).toHaveAttribute('data-story-after', direction === 'forward' ? '64' : '0');
+      await ready(page);
+
+      if (focused) await expect(focused).toBeFocused();
+
+      const after = await timeline(page)
+        .locator(`[data-story-key="${before.key}"]`)
+        .evaluate((row) => ({ offset: row.getBoundingClientRect().top, scrollY: window.scrollY }));
+
+      await test.info().attach('window-anchor-geometry', {
+        body: JSON.stringify({ direction, rendering, before, after, drift: after.offset - before.offset }),
+        contentType: 'application/json',
+      });
+      expect(Math.abs(after.offset - before.offset)).toBeLessThanOrEqual(1);
+      expect(faults).toEqual([]);
+    });
+  }
+}
+
+async function documentAnchor(page: Page, name = 'primary') {
+  return timeline(page, name).evaluate((root) => {
+    const row = Array.from(root.querySelectorAll<HTMLElement>('[data-story-key]')).find(
+      (element) => element.getBoundingClientRect().bottom > 0,
+    )!;
+
+    return {
+      key: row.dataset.storyKey!,
+      cursor: Number(row.dataset.storyCursor),
+      offset: row.getBoundingClientRect().top,
+      scrollY: window.scrollY,
+    };
+  });
+}
+
+test('fences a held document replacement against actual navigation and focus into the other chapter', async ({
+  page,
+}) => {
+  const { control, faults } = await harness(page, 900, true);
+  await ready(page);
+  await page.getByRole('button', { name: 'Toggle second reader', exact: true }).click();
+  await ready(page, 'secondary');
+  await page.addStyleTag({
+    content:
+      Array.from(
+        { length: 64 },
+        (_, index) => `[aria-label="primary timeline"] [data-story-cursor="${index + 1}"]`,
+      ).join(',') + '{min-height:300px}',
+  });
+  await timeline(page).focus();
+  control.hold = true;
+  await timeline(page).evaluate((root) =>
+    window.scrollTo(0, window.scrollY + root.getBoundingClientRect().bottom - window.innerHeight + 80),
+  );
+  await expect.poll(() => control.pending.length).toBe(1);
+  const old = await documentAnchor(page);
+  const focus = timeline(page, 'secondary').locator('[data-story-key]').nth(10).getByRole('button');
+  await focus.focus();
+  await page.keyboard.press('ArrowDown');
+
+  const before = await focus.evaluate((row) => ({
+    top: row.getBoundingClientRect().top,
+    scrollY: window.scrollY,
+  }));
+
+  control.hold = false;
+
+  for (const deliver of control.pending.splice(0)) await deliver();
+  await expect(timeline(page)).toHaveAttribute('data-story-after', '64');
+  await ready(page);
+  await expect(focus).toBeFocused();
+
+  const after = await focus.evaluate((row) => ({
+    top: row.getBoundingClientRect().top,
+    scrollY: window.scrollY,
+  }));
+
+  const primaryBottom = await timeline(page).evaluate((root) => root.getBoundingClientRect().bottom);
+  await test.info().attach('navigation-fence', {
+    body: JSON.stringify({ old, before, after, primaryBottom, drift: after.top - before.top }),
+    contentType: 'application/json',
+  });
+  expect(Math.abs(after.top - before.top)).toBeLessThanOrEqual(1);
+  expect(primaryBottom).toBeLessThan(0);
+  expect(faults).toEqual([]);
+});
+
+test('keeps live follow at the visible document edge through tall-row eviction', async ({ page }) => {
+  const { control, faults } = await harness(page, 128, true);
+  await ready(page);
+  await page.getByRole('button', { name: 'Toggle second reader', exact: true }).click();
+  await ready(page, 'secondary');
+  await page.addStyleTag({
+    content:
+      Array.from(
+        { length: 64 },
+        (_, index) => `[aria-label="primary timeline"] [data-story-cursor="${index + 1}"]`,
+      ).join(',') + '{min-height:300px}',
+  });
+  await timeline(page).focus();
+  await timeline(page).evaluate((root) =>
+    window.scrollTo(
+      0,
+      window.scrollY +
+        root.querySelectorAll('[data-story-key]')[127].getBoundingClientRect().bottom -
+        window.innerHeight,
+    ),
+  );
+  await expect(metrics(page)).toContainText('"following":true');
+
+  const before = await timeline(page)
+    .locator('[data-story-key]')
+    .last()
+    .evaluate((row) => row.getBoundingClientRect().bottom - window.innerHeight);
+
+  control.hold = true;
+  control.head = 192;
+  await page.getByRole('button', { name: 'Refresh A', exact: true }).evaluate((button) => {
+    if (!(button instanceof HTMLButtonElement)) throw new Error('Expected fixture refresh button');
+    button.click();
+  });
+  await expect.poll(() => control.pending.length).toBe(1);
+  control.hold = false;
+
+  for (const deliver of control.pending.splice(0)) await deliver();
+  await expect(timeline(page)).toHaveAttribute('data-story-delivered', '192');
+  await ready(page);
+  await expect(metrics(page)).toContainText('"following":true');
+
+  const after = await timeline(page)
+    .locator('[data-story-key]')
+    .last()
+    .evaluate((row) => row.getBoundingClientRect().bottom - window.innerHeight);
+
+  await test.info().attach('live-follow-edge', {
+    body: JSON.stringify({ before, after, drift: after - before }),
+    contentType: 'application/json',
+  });
+  expect(Math.abs(after)).toBeLessThanOrEqual(1);
   expect(faults).toEqual([]);
 });
 

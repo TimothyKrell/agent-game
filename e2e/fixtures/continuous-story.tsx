@@ -47,9 +47,13 @@ function Reading({ current, enabled, name }: { current: Observation2; enabled: b
               : { height: 420, border: '1px solid black' }
           }
           renderRow={(row) =>
-            new URLSearchParams(location.search).has('sparse') &&
-            row.source.cursor >= 100 &&
-            row.source.cursor <= 700 ? null : (
+            (new URLSearchParams(location.search).has('omit-tail') &&
+              row.source.cursor >= 129 &&
+              row.source.cursor <= 176) ||
+            (new URLSearchParams(location.search).has('omit-head') && row.source.cursor <= 64) ||
+            (new URLSearchParams(location.search).has('sparse') &&
+              row.source.cursor >= 100 &&
+              row.source.cursor <= 700) ? null : (
               <article
                 style={{ padding: 8, minHeight: 40, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
               >

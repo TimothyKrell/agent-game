@@ -1,0 +1,5 @@
+
+Running 6 tests using 1 worker
+
+  ✓  1 e2e/continuous-story.spec.ts:371:1 › keeps two open document chapters independently reachable through scrolling, focus and window replacement (1.8s)
+  ✓  2 e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across forward tall-to-short windows (603ms)
