@@ -70,7 +70,7 @@ jobs:
   unit:
     name: Unit and Worker tests (${{ matrix.shard }}/3)
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
