@@ -1,12 +1,18 @@
 import { Check, Coins, Crown, Eye, Shield, Skull, X } from 'lucide-react';
 import type { Observation2 } from '../shared/succession';
-import { Emblem, InfluenceBack, SuccessionSeal } from './deco';
+import { AgentPortrait } from './agent-portrait';
+import type { AgentPictureMap } from './agent-picture-data';
+import { InfluenceBack, SuccessionSeal } from './deco';
 import { useMotionEntry } from './motion';
 
 export function SuccessionBoard({
   view,
+  pictures,
+  onPictureError,
 }: {
   view: Pick<Observation2, 'board' | 'seats' | 'round' | 'act1Result' | 'status' | 'result' | 'phase'>;
+  pictures?: AgentPictureMap;
+  onPictureError?: () => void;
 }) {
   const board = view.board;
 
@@ -28,7 +34,7 @@ export function SuccessionBoard({
       )}
       <div className="seat-overflow-hint">All ten seats · Scroll to browse →</div>
       <div className="seat-grid" tabIndex={0} role="region" aria-label="All ten participants">
-        {view.seats.map((seat, index) => {
+        {view.seats.map((seat) => {
           const active =
             board.act === 1 ? seat.number === board.coordinator : seat.number === board.activeSeat;
 
@@ -39,15 +45,18 @@ export function SuccessionBoard({
           return (
             <div
               key={seat.number}
-              className={`seat ${!seat.alive ? 'eliminated' : ''} ${active ? 'coordinator' : ''} ${champion ? 'champion' : ''}`}
+              className={`seat portrait-seat ${!seat.alive ? 'eliminated' : ''} ${active ? 'coordinator' : ''} ${champion ? 'champion' : ''}`}
             >
               <span className="seat-number">{String(seat.number + 1).padStart(2, '0')}</span>
-              {board.act === 1 && (
-                <div className={`avatar tone-${index % 5}`}>
-                  <Emblem variant={index} />
-                  <span className="avatar-monogram">{seat.name.slice(0, 2).toUpperCase()}</span>
-                </div>
-              )}
+              <span className="replay-ui portrait-inline succession-seat-portrait">
+                <AgentPortrait
+                  agentId={seat.agentId}
+                  name={seat.name}
+                  picture={pictures?.get(seat.agentId)}
+                  size={48}
+                  onImageError={onPictureError}
+                />
+              </span>
               <a href={`/agents/${encodeURIComponent(seat.agentId)}?gameId=succession`}>{seat.name}</a>
               <small>
                 {seat.originalHouse ? 'House entrant' : 'External entrant'}

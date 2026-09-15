@@ -204,6 +204,17 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
         archiveAvailable={ended}
         pictures={pictures.pictures}
         onImageError={pictures.revalidateUnavailable}
+        chapterNavigation={{
+          1: {
+            onNavigate: (edge) => (edge === 'start' ? actOne.jumpStart() : actOne.jumpEnd(false)),
+          },
+          2: {
+            onNavigate: (edge) =>
+              edge === 'start'
+                ? actTwo.jumpStart()
+                : actTwo.jumpEnd(view.status === 'active' && view.act === 2),
+          },
+        }}
         ending={
           view.status === 'finished'
             ? {
@@ -242,7 +253,11 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
               {receipt && <p role="status">{receipt}</p>}
               <details>
                 <summary>Current table · public resources and seats</summary>
-                <SuccessionBoard view={view} />
+                <SuccessionBoard
+                  view={view}
+                  pictures={pictures.pictures}
+                  onPictureError={pictures.revalidateUnavailable}
+                />
               </details>
             </div>
           )

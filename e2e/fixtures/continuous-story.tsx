@@ -35,6 +35,8 @@ function Reading({ current, enabled, name }: { current: Observation2; enabled: b
         })}
       </output>
       <button onClick={() => void reader.follow()}>Follow {name}</button>
+      <button onClick={() => reader.jumpStart().catch(() => {})}>Start {name}</button>
+      <button onClick={() => reader.jumpEnd().catch(() => {})}>End {name}</button>
       <button onClick={() => void reader.seek('missing')}>Missing anchor {name}</button>
       <div hidden={!enabled}>
         <SuccessionTimeline

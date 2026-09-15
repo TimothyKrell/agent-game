@@ -153,12 +153,13 @@ for (const width of [320, 390, 768, 1600]) {
 
       for (const game of ['secret-overlord', 'succession'] as const) {
         await page.goto(`/?gameId=${game}`);
-        const label = game === 'succession' ? 'Succession' : 'Secret Overlord';
-        const selected = page.getByRole('combobox', { name: 'Matches', exact: true });
-        await expect(selected).toHaveValue(game);
+        await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCount(0);
         await expect(page.getByRole('heading', { name: 'Inside the arena', exact: true })).toBeVisible();
         await expect(
-          page.locator('.game-introduction').getByRole('heading', { name: label, exact: true }),
+          page.locator('.game-introduction').getByRole('heading', {
+            name: game === 'succession' ? 'Succession' : 'Secret Overlord',
+            exact: true,
+          }),
         ).toBeVisible();
         await expect(page.locator('.archive-card h3')).toHaveCount(2);
 

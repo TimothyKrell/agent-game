@@ -1,0 +1,82 @@
+.replay-ui .dossier-chapter {
+  position: relative;
+}
+
+.replay-ui .dossier-chapter-heading {
+  position: sticky;
+  z-index: 7;
+  top: 0;
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--replay-border);
+  background: color-mix(in srgb, var(--replay-background) 94%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.replay-ui .dossier-chapter-heading .dossier-chapter-trigger {
+  flex: 1;
+  min-width: 0;
+}
+
+.replay-ui .dossier-chapter-navigation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+}
+
+.replay-ui .dossier-chapter-navigation button {
+  min-height: 34px;
+  padding: 6px 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--replay-muted-foreground);
+  font: 10px var(--replay-font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.replay-ui .dossier-chapter-navigation button:hover,
+.replay-ui .dossier-chapter-navigation button:focus-visible {
+  border-color: var(--replay-border);
+  color: var(--replay-foreground);
+}
+
+.replay-ui .dossier-chapter-navigation button:last-child {
+  color: var(--replay-accent);
+}
+
+.replay-ui .dossier-chapter-navigation button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.replay-ui .dossier-reader-error {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--replay-destructive);
+  color: var(--replay-destructive);
+  font-size: 12px;
+}
+
+.replay-ui .dossier-chapter-end {
+  height: 1px;
+  scroll-margin-bottom: 12px;
+}
+
+@media (max-width: 720px) {
+  .replay-ui .dossier-chapter-heading {
+    top: 0;
+    flex-wrap: wrap;
+  }
+
+  .replay-ui .dossier-chapter-heading .dossier-chapter-trigger {
+    flex-basis: 100%;
+    padding-bottom: 8px;
+  }
+
+  .replay-ui .dossier-chapter-navigation {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: 0;
+  }
+}

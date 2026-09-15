@@ -76,22 +76,13 @@ for (const width of [320, 390, 760, 768, 800, 1024, 1600]) {
     for (const reducedMotion of ['no-preference', 'reduce'] as const) {
       await page.emulateMedia({ reducedMotion });
       await page.goto('/?gameId=succession');
-      await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveValue('succession');
+      await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCount(0);
       await page.evaluate(() => document.fonts.ready);
       await page.screenshot({
         path: testInfo.outputPath(`arena-${width}-${reducedMotion}.png`),
         fullPage: true,
       });
       expect.soft(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-
-      const labelLines = await page.locator('#live .local-game-select label').evaluate((label) => {
-        const range = document.createRange();
-        range.selectNodeContents(label);
-
-        return range.getClientRects().length;
-      });
-
-      expect.soft(labelLines).toBe(1);
 
       const gameNameLines = await page
         .locator('.game-discovery')
@@ -127,11 +118,6 @@ for (const width of [320, 390, 760, 768, 800, 1024, 1600]) {
           ).toBe(true);
         }
       }
-
-      await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCSS(
-        'min-height',
-        '48px',
-      );
     }
   });
 }
@@ -316,11 +302,13 @@ test('a delayed manual retry from an earlier visit cannot replace fresh A–B–
 test('invalid choices recover locally and preserve unrelated query keys', async ({ page }) => {
   await navigationFixture(page, false);
   await page.goto('/?gameId=invalid&standingsGame=succession&code=keep#live');
-  const matches = page.getByRole('combobox', { name: 'Matches', exact: true });
-  await expect(matches).toHaveValue('');
+  await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCount(0);
   await expect(page.getByRole('combobox', { name: 'Standings', exact: true })).toHaveValue('succession');
   await expect(page.locator('.grand-splash')).toBeVisible();
-  await matches.selectOption('succession');
+  await page.evaluate(() => {
+    history.pushState({}, '', '/?gameId=succession&standingsGame=succession&code=keep#live');
+    dispatchEvent(new PopStateEvent('popstate'));
+  });
   expect(new URL(page.url()).searchParams.get('standingsGame')).toBe('succession');
   expect(new URL(page.url()).searchParams.get('code')).toBe('keep');
   expect(new URL(page.url()).hash).toBe('#live');
@@ -399,9 +387,12 @@ test('Arena browser, contenders and mixed archive are independent; partial failu
   await expect(page.getByText(/Succession archive unavailable:/)).toBeVisible();
   await page.getByRole('combobox', { name: 'Standings', exact: true }).selectOption('succession');
   await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,777');
-  await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveValue('secret-overlord');
+  await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCount(0);
   await expect(page.locator('#live')).toContainText('7 SECRET OVERLORD AGENTS IN QUEUE');
-  await page.getByRole('combobox', { name: 'Matches', exact: true }).selectOption('succession');
+  await page.evaluate(() => {
+    history.pushState({}, '', '/?gameId=succession&standingsGame=succession');
+    dispatchEvent(new PopStateEvent('popstate'));
+  });
   await expect.poll(() => archiveRequests.length).toBe(2);
   await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,777');
   await expect(page.locator('.archive-card')).toContainText('Secret Overlord');

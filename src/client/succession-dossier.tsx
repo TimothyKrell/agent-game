@@ -11,6 +11,9 @@ import { dossierVisible } from './dossier-cards';
 import { DossierRuleFocusProvider } from './dossier-rules';
 import { DossierOutcome, dossierOutcomeTitle } from './dossier-summary';
 import type { DossierStatus } from './dossier-summary';
+import { useSuccessionDossierReader } from './use-succession-dossier-reader';
+import type { DossierActNavigation } from './use-succession-dossier-reader';
+import './succession-dossier-reader.css';
 
 export interface DossierChapterSlot {
   act: 1 | 2;
@@ -35,6 +38,8 @@ export interface SuccessionDossierProps {
   ending?: { label: string; onRead?: () => void };
   /** TIM-23 owns retrieval, source-act filtering, bounded DOM and continuous loading. */
   renderChapter?: (chapter: DossierChapterSlot) => ReactNode;
+  /** Optional bridge for bounded readers that need to seek before a document-edge jump. */
+  chapterNavigation?: Partial<Record<1 | 2, DossierActNavigation>>;
 }
 
 const noPictures: DossierPictures = new Map();
@@ -50,7 +55,9 @@ export function useDossierChapters(status: DossierStatus, act: 1 | 2): DossierCh
   const current = status === 'finished' ? 2 : act;
 
   return {
-    open: { 1: choices[1] ?? current === 1, 2: choices[2] ?? current === 2 },
+    // Act I remains part of the central document after the return; Act II then
+    // naturally takes over the sticky reading header as its section arrives.
+    open: { 1: choices[1] ?? true, 2: choices[2] ?? current === 2 },
     setOpen: (chapter, open) => setChoices((previous) => ({ ...previous, [chapter]: open })),
   };
 }
@@ -64,6 +71,7 @@ function DossierContent({
   currentState,
   ending,
   renderChapter,
+  chapterNavigation,
 }: SuccessionDossierProps) {
   const localChapters = useDossierChapters(status, act);
   const chapters = controlledChapters ?? localChapters;
@@ -71,6 +79,13 @@ function DossierContent({
   const act1Heading = useRef<HTMLButtonElement>(null);
   const act2Heading = useRef<HTMLButtonElement>(null);
   const headings = { 1: act1Heading, 2: act2Heading };
+
+  const reader = useSuccessionDossierReader({
+    open: chapters.open,
+    setOpen: chapters.setOpen,
+    navigation: chapterNavigation,
+  });
+
   const showArchive = archiveAvailable && archive;
   const entrants = new Map(model.end.map((seat) => [seat.seat, seat.entrant]));
   const faction = dossierValue(model.chapters.act1);
@@ -140,14 +155,15 @@ function DossierContent({
                 : 'Individual victory';
 
         return (
-          <Collapsible key={chapter} open={open} onOpenChange={(next) => chapters.setOpen(chapter, next)}>
+          <Collapsible key={chapter} open={open} onOpenChange={(next) => reader.toggle(chapter, next)}>
             <DossierRuleFocusProvider fallbackFocus={headings[chapter]}>
               <section
+                ref={reader.sectionRef(chapter)}
                 className="dossier-chapter"
                 data-dossier-act={chapter}
                 aria-label={`Act ${chapter === 1 ? 'I' : 'II'}`}
               >
-                <h2>
+                <h2 className="dossier-chapter-heading" ref={reader.headingRef(chapter)}>
                   <CollapsibleTrigger className="dossier-chapter-trigger" ref={headings[chapter]}>
                     <span className="dossier-act-numeral">{chapter === 1 ? 'I' : 'II'}</span>
                     <span className="dossier-chapter-copy">
@@ -157,7 +173,31 @@ function DossierContent({
                     </span>
                     <ChevronDown aria-hidden="true" />
                   </CollapsibleTrigger>
+                  <span
+                    className="dossier-chapter-navigation"
+                    aria-label={`Act ${chapter === 1 ? 'I' : 'II'} navigation`}
+                  >
+                    <button
+                      type="button"
+                      disabled={reader.pendingJump?.act === chapter}
+                      onClick={() => reader.jump(chapter, 'start')}
+                    >
+                      Start
+                    </button>
+                    <button
+                      type="button"
+                      disabled={reader.pendingJump?.act === chapter}
+                      onClick={() => reader.jump(chapter, 'end')}
+                    >
+                      {status === 'active' && act === chapter ? 'Latest' : 'End'}
+                    </button>
+                  </span>
                 </h2>
+                {reader.navigationError && (
+                  <div className="dossier-reader-error" role="alert">
+                    {reader.navigationError}
+                  </div>
+                )}
                 <CollapsibleContent>
                   {open &&
                     (renderChapter ? (
@@ -171,6 +211,12 @@ function DossierContent({
                         })}
                       </ol>
                     ))}
+                  <div
+                    ref={reader.endingRef(chapter)}
+                    className="dossier-chapter-end"
+                    data-dossier-act-end={chapter}
+                    aria-hidden="true"
+                  />
                 </CollapsibleContent>
               </section>
             </DossierRuleFocusProvider>

@@ -5,6 +5,7 @@ import type { StoryChapters, StoryEntrant, StoryReturn, StoryValue } from './suc
 import { dossierName, dossierValue, DossierIdentity } from './dossier-identity';
 import { DossierRule, DossierText } from './dossier-rules';
 import { InfluenceBack } from './deco';
+import './dossier-panels.css';
 
 export type DossierEntrants = ReadonlyMap<number, StoryValue<StoryEntrant>>;
 
@@ -42,12 +43,17 @@ export function DossierCap({ evidence, entrants }: { evidence: CapEvidence2; ent
 }
 
 export function DossierReturn({ seats }: { seats: readonly StoryReturn[] }) {
+  const startingTotals = [...new Set(seats.map((seat) => seat.coins))]
+    .sort((left, right) => right - left)
+    .map((coins) => ({ coins, agents: seats.filter((seat) => seat.coins === coins).length }));
+
   return (
     <section className="dossier-return" aria-label="Act II starting states">
-      <p>
-        {seats.length === 10 ? 'All ten agents return' : `${seats.length} recorded starting seats`} · 2 fresh
-        secret capability cards each.
-      </p>
+      <header className="dossier-return-heading">
+        <small>ACT II · OPENING STATE</small>
+        <h3>{seats.length === 10 ? 'All ten agents return' : `${seats.length} starting seats recorded`}</h3>
+        <p>Each agent receives two fresh secret capability cards.</p>
+      </header>
       <div
         className="dossier-ten-cards"
         aria-label={`${seats.length} agents receive two fresh influence cards`}
@@ -64,12 +70,11 @@ export function DossierReturn({ seats }: { seats: readonly StoryReturn[] }) {
       </div>
       <div className="dossier-starting-totals">
         <DossierRule rule="coins" />
-        <span>
-          {seats.filter((seat) => seat.coins === 3).length} agents × <b>3</b>
-        </span>
-        <span>
-          {seats.filter((seat) => seat.coins === 2).length} agents × <b>2</b>
-        </span>
+        {startingTotals.map(({ coins, agents }) => (
+          <span key={coins}>
+            {agents} {agents === 1 ? 'agent' : 'agents'} × <b>{coins}</b>
+          </span>
+        ))}
       </div>
       <details>
         <summary>All {seats.length} starting states</summary>
@@ -104,6 +109,8 @@ export function DossierAward({
   reason: string;
   seats?: readonly StoryReturn[];
 }) {
+  const beneficiaries = seats?.filter((seat) => seat.bonus > 0);
+
   return (
     <section className="dossier-award" aria-label="Act I winning faction bonus">
       <header>
@@ -117,25 +124,21 @@ export function DossierAward({
           </p>
         </div>
       </header>
-      {seats ? (
+      {beneficiaries ? (
         <div className="dossier-bonus-agents">
-          {seats.flatMap((seat) =>
-            seat.bonus === 1
-              ? [
-                  <article key={seat.seat}>
-                    <DossierIdentity entrant={seat.entrant} seat={seat.seat} />
-                    <span>+1 bonus · Act II</span>
-                    <DossierRule rule="coins" before={2} value={3} />
-                  </article>,
-                ]
-              : [],
-          )}
+          {beneficiaries.map((seat) => (
+            <article key={seat.seat}>
+              <DossierIdentity entrant={seat.entrant} seat={seat.seat} />
+              <span>+{seat.bonus} bonus · Act II</span>
+              <DossierRule rule="coins" before={seat.coins - seat.bonus} value={seat.coins} />
+            </article>
+          ))}
         </div>
       ) : (
         <p>Bonus recipients not recorded in this window.</p>
       )}
       <p className="dossier-award-footer">
-        Starting advantage · The match continues. All ten agents return for Act II, including executed agents.
+        All ten agents return for Act II, including executed agents. The match continues.
       </p>
     </section>
   );

@@ -296,7 +296,7 @@
 }
 .replay-ui .dossier-story {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 24px;
   min-width: 0;
 }
@@ -307,9 +307,15 @@
   flex: 0 0 var(--replay-portrait-size);
   width: var(--replay-portrait-size);
 }
+.replay-ui .dossier-actor .dossier-identity {
+  align-items: center;
+  width: 100%;
+  text-align: center;
+}
 .replay-ui .dossier-copy {
   flex: 1;
   min-width: 0;
+  align-self: center;
 }
 .replay-ui .dossier-copy > p {
   font-size: 16px;

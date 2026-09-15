@@ -41,6 +41,47 @@
   grid-column: 3;
   grid-row: 1;
 }
+.succession-board .portrait-seat {
+  display: grid;
+  min-height: 0;
+  align-items: center;
+  padding-block: 10px;
+}
+.succession-board .portrait-seat > .succession-seat-portrait {
+  grid-column: 1;
+  grid-row: 1 / 4;
+}
+.succession-board .portrait-seat > :is(.seat-resources, .influence-backs, .returned-marker, .bonus-marker) {
+  grid-column: 2 / 4;
+  justify-content: flex-start;
+  margin: 2px 0;
+}
+.succession-board .portrait-seat > .seat-resources {
+  gap: 8px;
+  font-size: 11px;
+}
+.succession-board .portrait-seat > .seat-resources > span {
+  min-height: 27px;
+  padding: 2px 6px;
+  border: 1px solid var(--dossier-term-border, #47716b);
+  border-radius: 5px;
+  background: var(--dossier-term-background, #15312e);
+  color: var(--dossier-term-foreground, #c6f1e5);
+  line-height: 1.35;
+}
+.succession-board .portrait-seat > :is(.revealed-influence, .champion-marker) {
+  grid-column: 2 / 4;
+}
+.succession-board.act-2 .portrait-seat {
+  padding: 12px 8px;
+}
+.succession-board.act-2 .portrait-seat > a {
+  font-size: 13px;
+}
+.succession-board.act-2 .portrait-seat > small {
+  margin: 0;
+  font-size: 9px;
+}
 .game-event .portrait-event-marker {
   width: 32px;
   height: 32px;
@@ -58,6 +99,14 @@
   .portrait-seat > .seat-number {
     grid-column: 1;
     grid-row: 1;
+  }
+  .succession-board .portrait-seat > .succession-seat-portrait {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .succession-board .portrait-seat > :is(.seat-resources, .influence-backs, .returned-marker, .bonus-marker),
+  .succession-board .portrait-seat > :is(.revealed-influence, .champion-marker) {
+    grid-column: 1;
   }
   .portrait-seat > .seat-number {
     justify-self: end;

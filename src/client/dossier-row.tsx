@@ -6,6 +6,7 @@ import { DossierRule, DossierText } from './dossier-rules';
 import { dossierFactText } from './dossier-facts';
 import type { DossierEntrants } from './dossier-summary';
 import { DossierAward, DossierCap, DossierReturn, unavailableEntrant } from './dossier-summary';
+import { DossierEventPanel, hasDossierEventPanel } from './dossier-event-panels';
 import { storyActionRules } from './succession-story-rules';
 
 const powerRules = {
@@ -34,7 +35,6 @@ function DossierRemaining({ row }: { row: StoryRow }) {
       <header>
         <strong>{remaining?.length ?? '?'}</strong>
         <span>still in Act {row.position.act === 1 ? 'I' : 'II'}</span>
-        <small>At this point in the record</small>
       </header>
       {remaining ? (
         <ul>
@@ -318,6 +318,8 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
   const victim: StorySeat | undefined =
     portraitSeat == null ? undefined : row.affected.find((change) => change.seat === portraitSeat)?.after;
 
+  const eventPanel = hasDossierEventPanel(row);
+
   return (
     <article
       id={dossierRowId(row)}
@@ -395,10 +397,21 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
       </div>
       {evidence && (
         <aside className="dossier-evidence" aria-label="Recorded state">
-          <FactEvidence row={row} entrants={entrants} />
-          {row.affected.map((change) => (
-            <DossierResources key={change.seat} change={change} act={row.position.act} archive={archive} />
-          ))}
+          {eventPanel ? (
+            <DossierEventPanel row={row} entrants={entrants} />
+          ) : (
+            <>
+              <FactEvidence row={row} entrants={entrants} />
+              {row.affected.map((change) => (
+                <DossierResources
+                  key={change.seat}
+                  change={change}
+                  act={row.position.act}
+                  archive={archive}
+                />
+              ))}
+            </>
+          )}
           {departure && !victim && <p>Historical resources unavailable.</p>}
         </aside>
       )}

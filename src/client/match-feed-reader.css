@@ -1,0 +1,162 @@
+.record-reader.event-panel {
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+}
+
+.result-page .record-reader.event-panel {
+  height: auto;
+  max-height: none;
+}
+
+.record-reader .event-list {
+  flex: none;
+  overflow: visible;
+  padding-right: 0;
+}
+
+.record-reader-nav {
+  position: sticky;
+  z-index: 8;
+  top: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.record-reader-nav button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.record-reader-nav button:last-child {
+  color: var(--green);
+}
+
+.record-reader-nav button[aria-current='true'] {
+  border-color: var(--teal);
+  background: #123236;
+}
+
+.ballot-summary {
+  flex: 0 1 270px;
+  min-width: 210px;
+  padding-left: 20px;
+  border-left: 1px solid var(--event-color);
+}
+
+.ballot-totals {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--green);
+  font-size: 11px;
+}
+
+.ballot-totals span:last-child {
+  color: var(--red);
+}
+
+.ballot-totals strong {
+  font-size: 18px;
+}
+
+.ballot-bar {
+  display: flex;
+  height: 8px;
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.ballot-bar .approved {
+  background: var(--green);
+}
+
+.ballot-bar .rejected {
+  background: var(--red);
+}
+
+.ballot-breakdown {
+  margin-top: 10px;
+}
+
+.ballot-breakdown > summary {
+  color: var(--muted);
+}
+
+.ballot-breakdown .event-votes {
+  margin-top: 6px;
+}
+
+.event-progress {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.event-progress > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 10px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.event-progress meter {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 5px;
+  accent-color: var(--green);
+}
+
+.event-progress .override-progress meter {
+  accent-color: var(--red);
+}
+
+.election-tracker-metric {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.election-tracker-metric span {
+  width: 20px;
+  height: 6px;
+  border: 1px solid var(--line);
+}
+
+.election-tracker-metric span.filled {
+  border-color: var(--red);
+  background: var(--red);
+}
+
+@media (max-width: 720px) {
+  .record-reader-nav {
+    top: 6px;
+  }
+
+  .ballot-summary {
+    flex-basis: 100%;
+    min-width: 0;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--event-color);
+    border-left: 0;
+  }
+}

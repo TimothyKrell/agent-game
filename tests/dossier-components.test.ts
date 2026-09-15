@@ -9,6 +9,7 @@ import { buildSuccessionStory } from '../src/client/succession-story';
 import type { StoryModel, StoryRow } from '../src/client/succession-story';
 import { dossierFactText } from '../src/client/dossier-facts';
 import { dossierEnding } from '../src/client/dossier-ending';
+import { DossierEventPanel } from '../src/client/dossier-event-panels';
 import { readStoryFact } from '../src/client/succession-story-events';
 import { capturedEvents, capturedStory, dossierRecordedExamples } from './fixtures/dossier-recorded';
 import { dossierEngineExamples, dossierProof } from './fixtures/dossier-engine';
@@ -26,6 +27,19 @@ function renderRow(row: StoryRow, model: StoryModel, archive: boolean) {
           archive,
           returns: dossierValue(model.chapters.returns),
         }),
+      }),
+    }),
+  );
+}
+
+function renderEventPanel(row: StoryRow, model: StoryModel) {
+  const entrants = new Map(model.end.map((seat) => [seat.seat, seat.entrant]));
+
+  return renderToStaticMarkup(
+    createElement(DossierPictureProvider, {
+      pictures: new Map(),
+      children: createElement(RuleHelpProvider, {
+        children: createElement(DossierEventPanel, { row, entrants }),
       }),
     }),
   );
@@ -103,7 +117,8 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
       const html = renderRow(row, model, false);
       expect(html).toContain('dossier-departure');
       expect(html).toContain(`<strong>${expectedCounts[index]}</strong>`);
-      expect(html).toContain('At this point in the record');
+      expect(html).not.toContain('At this point in the record');
+      expect(html).not.toContain('Cards at this moment');
     }
 
     const quotes = capturedEvents.filter((event) => event.type === 'chat');
@@ -152,6 +167,65 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
     const takeover = examples.find((example) => example.id === 'takeover')!.models;
     expect(dossierValue(takeover[0].chapters.outcome)?.credit).toMatchObject({ value: 'forfeit-loss' });
     expect(takeover[1].chapters.outcome.status).toBe('unavailable');
+  });
+
+  it('renders Act transitions from actual state and combines public proof/loss evidence in display order', async () => {
+    const examples = await dossierEngineExamples();
+    const execution = examples.find((example) => example.id === 'execution-return')!.models[1];
+    const ended = execution.rows.find((row) => row.fact.kind === 'act-ended')!;
+    const started = execution.rows.find((row) => row.fact.kind === 'act-started')!;
+    const award = renderRow(ended, execution, false);
+    const opening = renderRow(started, execution, false);
+    const returns = dossierValue(execution.chapters.returns)!;
+
+    expect(award).toContain('dossier-award');
+    expect(award).toContain(
+      'All ten agents return for Act II, including executed agents. The match continues.',
+    );
+    expect(
+      returns
+        .filter((seat) => seat.bonus === 1)
+        .every((seat) =>
+          award.includes(
+            seat.entrant.status === 'unavailable' ? `Seat ${seat.seat + 1}` : seat.entrant.value.name,
+          ),
+        ),
+    ).toBe(true);
+    expect(opening).toContain('ACT II · OPENING STATE');
+    expect(opening).toContain('All ten agents return');
+    expect(opening).toContain('All 10 starting states');
+
+    const proof = await dossierProof();
+    const proved = proof.rows.find((row) => row.fact.kind === 'proof')!;
+    const proofPanel = renderEventPanel(proved, proof);
+
+    expect(proofPanel).toContain('dossier-event-panel');
+    expect(proofPanel.indexOf('dossier-event-changes')).toBeLessThan(
+      proofPanel.indexOf('dossier-event-card-detail'),
+    );
+    expect(proofPanel).toContain('Proved · replaced, not lost');
+    expect(proofPanel).not.toContain('dossier-card-known');
+    const proofRow = renderRow(proved, proof, false);
+
+    expect(proofRow).toContain('dossier-event-panel');
+    expect(proofRow.match(/dossier-card-revealed/g)).toHaveLength(1);
+    expect(proofRow).not.toContain('dossier-delta');
+
+    const double = examples.find((example) => example.id === 'double-loss')!.models[0];
+    const eliminated = double.rows.find((row) => row.fact.kind === 'influence-lost' && row.fact.eliminated)!;
+    const lossPanel = renderEventPanel(eliminated, double);
+
+    expect(lossPanel).toContain('dossier-event-panel-eliminated');
+    expect(lossPanel.indexOf('dossier-event-changes')).toBeLessThan(
+      lossPanel.indexOf('dossier-event-card-detail'),
+    );
+    expect(lossPanel).toContain('Eliminated · coins frozen');
+    expect(lossPanel).toContain('Lost · publicly revealed');
+    const lossRow = renderRow(eliminated, double, false);
+
+    expect(lossRow).toContain('dossier-event-panel-eliminated');
+    expect(lossRow.match(/dossier-card-lost/g)).toHaveLength(1);
+    expect(lossRow).not.toContain('dossier-delta');
   });
 
   it('uses the terminal canonical action source, with an honest terminal-record fallback', async () => {

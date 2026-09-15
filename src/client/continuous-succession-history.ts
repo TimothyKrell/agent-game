@@ -198,6 +198,31 @@ export class ContinuousSuccessionHistory {
 
     return this.read('follow');
   };
+  jumpStart = () => this.jumpToEdge('start', false);
+  jumpEnd = (following = false) => this.jumpToEdge('end', following);
+
+  private async jumpToEdge(intent: 'start' | 'end', following: boolean) {
+    if (!this.active) throw new Error('Open this act before navigating its record.');
+    this.releaseNavigation();
+    this.anchor = null;
+    this.intent = intent;
+    this.interrupted = !this.active;
+
+    if (this.running) {
+      const ownedKey = [...this.key, this.ticket];
+      this.ticket++;
+      this.running = false;
+      await this.client.cancelQueries({ queryKey: ownedKey });
+      this.client.removeQueries({ queryKey: ownedKey });
+    }
+
+    this.publish({ following });
+    await this.read(intent);
+
+    if (this.snapshot.status === 'error' || this.snapshot.status === 'reset')
+      throw new Error(this.snapshot.error || 'The record edge could not be loaded.');
+  }
+
   /** Cancellation belongs to this seek, including a queued/paused seek, never a later read. */
   seek = (eventKey: string, signal?: AbortSignal) => {
     if (signal?.aborted) return Promise.resolve();
@@ -378,7 +403,9 @@ export class ContinuousSuccessionHistory {
         after = result.cursor - STORY_WINDOW_SHIFT;
         selectedAnchor = { eventKey: intent.slice(4), cursor: result.cursor, offset: 0 };
         this.client.removeQueries({ queryKey: [...ownedKey, 'anchor'] });
-      } else if (!this.initialized)
+      } else if (intent === 'start') after = this.lower;
+      else if (intent === 'end') after = upper - STORY_WINDOW_EVENTS;
+      else if (!this.initialized)
         after = this.options.initial === 'latest' ? upper - STORY_WINDOW_EVENTS : this.lower;
       else if (intent === 'follow') after = upper - STORY_WINDOW_EVENTS;
       else if (intent === 'earlier') after -= STORY_WINDOW_SHIFT;

@@ -27,18 +27,23 @@ interface WindowCommitProps {
   reader: SuccessionStoryReader;
   scrollRoot: 'document' | 'self';
   capture: () => WindowPosition | null;
-  restore: (position: WindowPosition) => void;
+  restore: (position: WindowPosition) => boolean;
   children: ReactNode;
 }
 
 /** React's pre-mutation snapshot fences real navigation without depending on post-eviction geometry. */
 class WindowCommit extends Component<WindowCommitProps, Record<string, never>, WindowPosition | null> {
+  private pending: WindowPosition | null = null;
+
+  cancel = () => {
+    this.pending = null;
+  };
+
   getSnapshotBeforeUpdate(previous: WindowCommitProps) {
     const { reader, scrollRoot, capture } = this.props;
 
-    return reader.enabled &&
-      previous.reader.enabled &&
-      reader.getAnchor === previous.reader.getAnchor &&
+    return previous.reader.enabled &&
+      reader.model.scope.matchId === previous.reader.model.scope.matchId &&
       scrollRoot === previous.scrollRoot &&
       reader.rows !== previous.reader.rows
       ? capture()
@@ -50,7 +55,12 @@ class WindowCommit extends Component<WindowCommitProps, Record<string, never>, W
     _state: Record<string, never>,
     position: WindowPosition | null,
   ) {
-    if (position) this.props.restore(position);
+    // Keep the pre-replacement anchor until its opaque event is available in
+    // the new authorized window. Empty intermediary commits must not replace it
+    // with whichever sibling becomes visible after browser scroll clamping.
+    if (position && !this.pending) this.pending = position;
+
+    if (this.pending && this.props.restore(this.pending)) this.pending = null;
   }
 
   render() {
@@ -76,6 +86,7 @@ export function SuccessionTimeline({
   const previousScroll = useRef(0);
   const direction = useRef<'earlier' | 'later'>('later');
   const boundaryCheck = useRef(() => {});
+  const commit = useRef<WindowCommit>(null);
   const ownsPosition = useRef(false);
   const wasEnabled = useRef(false);
 
@@ -153,11 +164,14 @@ export function SuccessionTimeline({
   };
 
   const restoreWindow = (snapshot: WindowPosition) => {
-    if (!snapshot.owner.isConnected || snapshot.owner.getBoundingClientRect().height === 0) return;
+    if (!snapshot.owner.isConnected) return true;
+
+    if (snapshot.owner.getBoundingClientRect().height === 0) return false;
 
     // A simultaneously replaced visible reader restores its own window (including
     // live follow); a sibling must not override that reader's commit snapshot.
-    if (snapshot.owner !== root.current && snapshot.owner.dataset.storyVersion !== snapshot.version) return;
+    if (snapshot.owner !== root.current && snapshot.owner.dataset.storyVersion !== snapshot.version)
+      return true;
 
     const row = Array.from(snapshot.owner.querySelectorAll<HTMLElement>('[data-story-key]')).find(
       (element) => element.dataset.storyKey === snapshot.eventKey,
@@ -169,6 +183,8 @@ export function SuccessionTimeline({
         ? row.getBoundingClientRect().top - top() - snapshot.offset
         : 0;
 
+    if (!snapshot.following && !row) return false;
+
     // This snapshot belongs only to the synchronous commit that captured it. If a
     // held read finishes after navigation, captureWindow selects the newly visible
     // chapter instead, preserving that chapter through changes above it.
@@ -179,6 +195,8 @@ export function SuccessionTimeline({
     ownsPosition.current = snapshot.owner === root.current;
 
     if (ownsPosition.current) remember();
+
+    return true;
   };
 
   const remember = () => {
@@ -280,6 +298,7 @@ export function SuccessionTimeline({
 
     const intent = (delta: number) => {
       if (!delta) return;
+      commit.current?.cancel();
       ownsPosition.current = ownsViewport();
 
       if (!ownsPosition.current) return;
@@ -347,6 +366,8 @@ export function SuccessionTimeline({
 
       if (!ownsPosition.current) return;
 
+      commit.current?.cancel();
+
       if (event.target instanceof HTMLElement) {
         const row = event.target.closest<HTMLElement>('[data-story-cursor]');
         const previous = latest.current.getAnchor();
@@ -397,7 +418,13 @@ export function SuccessionTimeline({
   if (scrollRoot === 'self') readingStyle.overflowY = 'auto';
 
   return (
-    <WindowCommit reader={reader} scrollRoot={scrollRoot} capture={captureWindow} restore={restoreWindow}>
+    <WindowCommit
+      ref={commit}
+      reader={reader}
+      scrollRoot={scrollRoot}
+      capture={captureWindow}
+      restore={restoreWindow}
+    >
       <div
         {...props}
         ref={root}
@@ -423,6 +450,7 @@ export function SuccessionTimeline({
 
           if (distance === undefined) return;
           event.preventDefault();
+          commit.current?.cancel();
           ownsPosition.current = ownsViewport();
           direction.current = distance < 0 ? 'earlier' : 'later';
           latest.current.detach();

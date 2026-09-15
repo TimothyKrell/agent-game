@@ -1,4 +1,4 @@
-import { Fragment, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { Option, Schema } from 'effect';
 import {
   Activity,
@@ -26,6 +26,9 @@ import type { AuthorizedEvent2 } from '../shared/succession';
 import { useUnderlineMotion } from './motion';
 import { AgentPortrait } from './agent-portrait';
 import type { AgentPictureMap } from './agent-picture-data';
+import { useRecordReader } from './use-record-reader';
+import type { RecordReaderAnchor } from './use-record-reader';
+import './match-feed-reader.css';
 
 type GameEvent = Observation['events'][number] | AuthorizedEvent2;
 
@@ -34,7 +37,7 @@ export interface FeedReadingMemory {
   folds: Record<string, number>;
   roundSelection: string;
   following: boolean;
-  anchor: { identity: string; top: number; discussion?: boolean } | null;
+  anchor: RecordReaderAnchor | null;
 }
 
 function eventRound(event: GameEvent) {
@@ -67,6 +70,7 @@ const FeedDetailsSchema = Schema.Struct({
   votes: Schema.optional(Ballots),
   safeguards: Schema.optional(Schema.Number),
   overrides: Schema.optional(Schema.Number),
+  tracker: Schema.optional(Schema.Number),
 });
 
 function feedDetails(event: GameEvent) {
@@ -103,18 +107,33 @@ function presentation(event: GameEvent, actor: string) {
         tone: data?.approve ? 'positive' : 'danger',
         text: `${actor} voted ${data?.approve ? 'approve' : 'reject'}.`,
       };
-    case 'policy':
+    case 'policy': {
+      if (data?.policy === 'safeguard')
+        return { icon: Shield, label: 'Safeguard enacted', tone: 'positive', text: event.text };
+
+      if (data?.policy === 'override')
+        return { icon: Skull, label: 'Override enacted', tone: 'danger', text: event.text };
+
       return {
-        icon: data?.policy === 'safeguard' ? Shield : Skull,
-        label: `${data?.policy === 'safeguard' ? 'Safeguard' : 'Override'} enacted`,
-        tone: data?.policy === 'safeguard' ? 'positive' : 'danger',
+        icon: Layers,
+        label: 'Policy enacted',
+        tone: 'neutral',
         text: event.text,
       };
+    }
+
     case 'election':
       return {
         icon: Vote,
         label: data?.approved ? 'Government approved' : 'Government rejected',
         tone: data?.approved ? 'positive' : 'danger',
+        text: event.text,
+      };
+    case 'election-tracker':
+      return {
+        icon: Vote,
+        label: 'Election tracker advanced',
+        tone: 'danger',
         text: event.text,
       };
     case 'nomination':
@@ -207,8 +226,14 @@ function FeedEvent({
   const { icon: Icon, label, tone, text } = presentation(event, actor);
   const votes = event.type === 'election' ? data?.votes : null;
   const ballots = Schema.is(Ballots)(votes) ? Object.values(votes) : null;
-  const policy = data?.policy === 'safeguard' ? 'safeguards' : 'overrides';
-  const count = event.type === 'policy' ? Number(data?.[policy] ?? 0) : 0;
+  const approvals = ballots?.filter(Boolean).length ?? 0;
+  const rejections = ballots?.filter((vote) => !vote).length ?? 0;
+  let policy: 'safeguards' | 'overrides' | null = null;
+
+  if (data?.policy === 'safeguard') policy = 'safeguards';
+  else if (data?.policy === 'override') policy = 'overrides';
+
+  const count = event.type === 'policy' && policy ? data?.[policy] : undefined;
 
   const kind =
     event.type === 'chat'
@@ -222,7 +247,11 @@ function FeedEvent({
             : 'action';
 
   return (
-    <article className={`game-event event-${tone} entry-${kind}`} data-event-id={event.id}>
+    <article
+      className={`game-event event-${tone} entry-${kind}`}
+      data-event-id={event.id}
+      data-reader-identity={eventIdentity(event)}
+    >
       <div
         className={`event-marker ${event.type === 'chat' && entrant && pictures ? 'portrait-event-marker' : ''}`}
       >
@@ -267,7 +296,7 @@ function FeedEvent({
         )}
         <div className="event-body">
           <p>{text}</p>
-          {event.type === 'policy' && (
+          {event.type === 'policy' && policy && count !== undefined && (
             <div className="outcome-metric" aria-label={`${policy}: ${Math.max(0, count - 1)} to ${count}`}>
               <div>
                 <span>{Math.max(0, count - 1)}</span>
@@ -280,37 +309,69 @@ function FeedEvent({
             </div>
           )}
           {ballots && (
-            <div className="election-metric">
-              <div>
-                <strong>{ballots.filter(Boolean).length}</strong>
-                <small>Approve</small>
+            <div
+              className="ballot-summary"
+              aria-label={`Ballot result: ${approvals} approve, ${rejections} reject`}
+            >
+              <div className="ballot-totals" aria-hidden="true">
+                <span>
+                  <strong>{approvals}</strong> approve
+                </span>
+                <span>
+                  <strong>{rejections}</strong> reject
+                </span>
               </div>
-              <div className="red-text">
-                <strong>{ballots.filter((vote) => !vote).length}</strong>
-                <small>Reject</small>
+              <div className="ballot-bar" aria-hidden="true">
+                <span className="approved" style={{ flex: approvals }} />
+                <span className="rejected" style={{ flex: rejections }} />
               </div>
             </div>
           )}
         </div>
         {Schema.is(Ballots)(votes) && (
-          <div className="event-votes" aria-label="Revealed ballots">
-            {Object.entries(votes).map(([seat, approve]) => (
-              <span
-                key={seat}
-                className={approve ? 'vote-approve' : 'vote-reject'}
-                title={approve ? 'Approved' : 'Rejected'}
-                aria-label={`${seats.find((entry) => entry.number === Number(seat))?.name ?? `Seat ${Number(seat) + 1}`} ${approve ? 'approved' : 'rejected'}`}
-              >
-                {approve ? <Check size={11} /> : <X size={11} />}
-                {seats.find((entry) => entry.number === Number(seat))?.name ?? `Seat ${Number(seat) + 1}`}
-              </span>
-            ))}
+          <details className="ballot-breakdown">
+            <summary>Ballot breakdown · {Object.keys(votes).length}</summary>
+            <div className="event-votes" aria-label="Revealed ballots">
+              {Object.entries(votes).map(([seat, approve]) => (
+                <span
+                  key={seat}
+                  className={approve ? 'vote-approve' : 'vote-reject'}
+                  title={approve ? 'Approved' : 'Rejected'}
+                  aria-label={`${seats.find((entry) => entry.number === Number(seat))?.name ?? `Seat ${Number(seat) + 1}`} ${approve ? 'approved' : 'rejected'}`}
+                >
+                  {approve ? <Check size={11} /> : <X size={11} />}
+                  {seats.find((entry) => entry.number === Number(seat))?.name ?? `Seat ${Number(seat) + 1}`}
+                </span>
+              ))}
+            </div>
+          </details>
+        )}
+        {event.type === 'policy' && data?.safeguards !== undefined && data.overrides !== undefined && (
+          <div className="event-progress" aria-label="Policy tracks after this event">
+            <div>
+              <span>Safeguards</span>
+              <strong>{data.safeguards} / 5</strong>
+              <meter
+                min={0}
+                max={5}
+                value={data.safeguards}
+                aria-label={`${data.safeguards} of 5 safeguards`}
+              />
+            </div>
+            <div className="override-progress">
+              <span>Overrides</span>
+              <strong>{data.overrides} / 6</strong>
+              <meter min={0} max={6} value={data.overrides} aria-label={`${data.overrides} of 6 overrides`} />
+            </div>
           </div>
         )}
-        {event.type === 'policy' && (
-          <div className="event-score">
-            <Shield size={12} /> {String(data?.safeguards ?? 0)} / 5 <span>·</span>
-            <Skull size={12} /> {String(data?.overrides ?? 0)} / 6
+        {event.type === 'election-tracker' && data?.tracker !== undefined && (
+          <div className="election-tracker-metric" aria-label={`Election tracker ${data.tracker} of 3`}>
+            <strong>Election tracker</strong>
+            {Array.from({ length: 3 }, (_, index) => (
+              <span key={index} className={index < data.tracker! ? 'filled' : ''} aria-hidden="true" />
+            ))}
+            <b>{data.tracker} / 3</b>
           </div>
         )}
         {ended && event.data && (
@@ -359,35 +420,29 @@ export function MatchFeed({
 }) {
   const [filter, setFilter] = useState(memory?.current?.filter ?? 'all');
   const underline = useUnderlineMotion(filter);
-  const [unread, setUnread] = useState(0);
-  const [atLatest, setAtLatest] = useState(memory?.current?.following ?? true);
   const [folds, setFolds] = useState<Record<string, number>>(memory?.current?.folds ?? {});
   const [roundSelection, setRoundSelection] = useState(memory?.current?.roundSelection ?? '');
-  const pendingRound = useRef<string | null>(null);
-  const list = useRef<HTMLDivElement>(null);
-  const content = useRef<HTMLDivElement>(null);
-  const scrollTop = useRef(0);
-  const following = useRef(memory?.current?.following ?? true);
-  const anchor = useRef<FeedReadingMemory['anchor']>(memory?.current?.anchor ?? null);
-  const previous = useRef({ id: 0, filter, ended });
-
-  function remember() {
-    if (memory)
-      memory.current = {
-        filter,
-        folds,
-        roundSelection,
-        following: following.current,
-        anchor: anchor.current,
-      };
-  }
 
   const visible = events.filter(
     (event) => filter === 'all' || (filter === 'chat' ? event.type === 'chat' : event.type !== 'chat'),
   );
 
-  const latest = visible.at(-1)?.id ?? 0;
+  const rememberReader = useCallback(
+    ({ following, anchor }: { following: boolean; anchor: RecordReaderAnchor | null }) => {
+      if (memory) memory.current = { filter, folds, roundSelection, following, anchor };
+    },
+    [filter, folds, memory, roundSelection],
+  );
+
+  const reader = useRecordReader({
+    identities: visible.map(eventIdentity),
+    initialFollowing: memory?.current?.following ?? true,
+    initialAnchor: memory?.current?.anchor ?? null,
+    announceAdditions: !ended,
+    onChange: rememberReader,
+  });
   // Build runs before filtering: an action always separates two discussions.
+
   const runs = new Map<number, GameEvent[]>();
   let run: GameEvent[] = [];
 
@@ -406,18 +461,10 @@ export function MatchFeed({
   function foldDiscussion(entries: GameEvent[]) {
     const first = entries[0];
     const identity = eventIdentity(first);
-    const element = list.current;
+    const element = reader.record.current;
     const row = element?.querySelector(`[data-discussion-id="${first.id}"]`);
 
-    if (element && row) {
-      following.current = false;
-      setAtLatest(false);
-      anchor.current = {
-        identity,
-        top: row.getBoundingClientRect().top - element.getBoundingClientRect().top,
-        discussion: true,
-      };
-    }
+    if (row) reader.stopAt(row, identity, true);
 
     setFolds((old) => {
       const next = { ...old };
@@ -429,88 +476,8 @@ export function MatchFeed({
     });
   }
 
-  useLayoutEffect(() => {
-    const element = list.current;
-
-    if (!element) return;
-    const archived = ended && !previous.current.ended;
-
-    const reset =
-      previous.current.filter !== filter || (latest < previous.current.id && !archived && events.length > 0);
-
-    const restorePosition = () => {
-      if (pendingRound.current !== null) {
-        const round = pendingRound.current;
-        const heading = element.querySelector(`[data-round="${round}"]`);
-
-        if (heading) {
-          following.current = false;
-          setAtLatest(false);
-          element.scrollTop += heading.getBoundingClientRect().top - element.getBoundingClientRect().top;
-          // An explicit round seek also reveals the heading in the outer page viewport.
-          heading.scrollIntoView({ block: 'nearest' });
-          const event = visible.find((entry) => eventRound(entry) === round);
-          const row = event && element.querySelector(`[data-event-id="${event.id}"]`);
-          anchor.current =
-            row && event
-              ? {
-                  identity: eventIdentity(event),
-                  top: row.getBoundingClientRect().top - element.getBoundingClientRect().top,
-                }
-              : null;
-          pendingRound.current = null;
-          scrollTop.current = element.scrollTop;
-
-          return;
-        }
-      }
-
-      if (following.current) element.scrollTop = element.scrollHeight;
-      else {
-        const saved = anchor.current;
-        const event = saved && visible.find((entry) => eventIdentity(entry) === saved.identity);
-
-        const row =
-          event &&
-          element.querySelector(
-            saved.discussion ? `[data-discussion-id="${event.id}"]` : `[data-event-id="${event.id}"]`,
-          );
-
-        if (row)
-          element.scrollTop +=
-            row.getBoundingClientRect().top - element.getBoundingClientRect().top - saved.top;
-      }
-
-      scrollTop.current = element.scrollTop;
-    };
-
-    if (following.current || reset) {
-      following.current = true;
-      setAtLatest(true);
-      setUnread(0);
-    } else {
-      const added = visible.filter((event) => event.id > previous.current.id).length;
-
-      // Revealed observations are historical, not new live events.
-      if (archived) setUnread(0);
-      else if (added) setUnread((count) => count + added);
-    }
-
-    restorePosition();
-    remember();
-    previous.current = { id: latest, filter, ended };
-
-    // Fonts, expanded records and viewport changes can reflow without new events.
-    const resize = new ResizeObserver(restorePosition);
-    resize.observe(element);
-
-    if (content.current) resize.observe(content.current);
-
-    return () => resize.disconnect();
-  }, [events, filter, latest, ended, folds, roundSelection]);
-
   return (
-    <aside className="event-panel" aria-label="Table feed">
+    <aside className="event-panel record-reader" aria-label="Table feed" ref={reader.record}>
       {selectedState}
       <div className="event-header">
         <h3>
@@ -521,7 +488,7 @@ export function MatchFeed({
           className="quiet-button"
           disabled={!runs.size}
           onClick={() => {
-            const saved = anchor.current;
+            const saved = reader.anchor.current;
 
             const entries =
               saved &&
@@ -529,8 +496,12 @@ export function MatchFeed({
                 group.some((event) => eventIdentity(event) === saved.identity),
               );
 
-            if (entries && !following.current)
-              anchor.current = { identity: eventIdentity(entries[0]), top: 0, discussion: true };
+            if (entries && !reader.following.current) {
+              const row = reader.record.current?.querySelector(`[data-discussion-id="${entries[0].id}"]`);
+
+              if (row) reader.stopAt(row, eventIdentity(entries[0]), true);
+            }
+
             setFolds(
               allFolded
                 ? {}
@@ -556,6 +527,14 @@ export function MatchFeed({
           </button>
         ))}
       </div>
+      <nav className="record-reader-nav" aria-label="Timeline reading navigation">
+        <button type="button" onClick={reader.jumpToStart}>
+          Start of record
+        </button>
+        <button type="button" aria-current={reader.atLatest} onClick={reader.jumpToLatest}>
+          Latest{reader.unread > 0 ? ` · ${reader.unread} new` : ''}
+        </button>
+      </nav>
       <div className="feed-direction">
         <label>
           Round{' '}
@@ -564,7 +543,6 @@ export function MatchFeed({
             value={roundSelection}
             onChange={(event) => {
               const value = event.target.value;
-              pendingRound.current = value;
               setRoundSelection(event.target.value);
 
               if (actRounds) {
@@ -572,6 +550,13 @@ export function MatchFeed({
 
                 if (round) onActRoundSelect?.(round.cursor);
               } else onRoundSelect?.(Number(value));
+
+              requestAnimationFrame(() => {
+                const heading = reader.record.current?.querySelector(`[data-round="${value}"]`);
+                const selected = visible.find((entry) => eventRound(entry) === value);
+
+                if (heading) reader.jumpTo(heading, selected && eventIdentity(selected));
+              });
             }}
           >
             <option value="" disabled>
@@ -594,38 +579,8 @@ export function MatchFeed({
           Oldest first <ArrowDown size={11} />
         </span>
       </div>
-      <div
-        className="event-list"
-        ref={list}
-        tabIndex={0}
-        aria-label="Match timeline"
-        onScroll={() => {
-          const element = list.current;
-
-          // A queued notification from our own jump may arrive after a reflow.
-          // Only a changed scroll position should update the reader's intent.
-          if (!element || element.scrollTop === scrollTop.current) return;
-          scrollTop.current = element.scrollTop;
-          following.current = element.scrollHeight - element.scrollTop - element.clientHeight < 48;
-          setAtLatest(following.current);
-
-          if (following.current) setUnread(0);
-          const top = element.getBoundingClientRect().top;
-
-          const row = Array.from(element.querySelectorAll<HTMLElement>('[data-event-id]')).find(
-            (entry) => entry.getBoundingClientRect().bottom > top,
-          );
-
-          const event = row && visible.find((entry) => entry.id === Number(row.dataset.eventId));
-
-          anchor.current =
-            row && event
-              ? { identity: eventIdentity(event), top: row.getBoundingClientRect().top - top }
-              : null;
-          remember();
-        }}
-      >
-        <div ref={content}>
+      <div className="event-list" tabIndex={0} aria-label="Match timeline">
+        <div ref={reader.content}>
           {!visible.length && (
             <div className="feed-empty">
               <MessageCircle size={24} />
@@ -667,6 +622,8 @@ export function MatchFeed({
                     <section
                       className={`discussion-run ${collapsed ? 'is-collapsed' : ''}`}
                       data-discussion-id={event.id}
+                      data-reader-identity={eventIdentity(event)}
+                      data-reader-discussion="true"
                     >
                       <button
                         className="discussion-toggle"
@@ -715,22 +672,10 @@ export function MatchFeed({
         </div>
       </div>
       <div className="feed-footer">
-        {unread > 0 || !atLatest ? (
-          <button
-            className="feed-catchup"
-            onClick={() => {
-              if (list.current) {
-                list.current.scrollTop = list.current.scrollHeight;
-                scrollTop.current = list.current.scrollTop;
-              }
-
-              following.current = true;
-              setAtLatest(true);
-              setUnread(0);
-            }}
-          >
+        {reader.unread > 0 || !reader.atLatest ? (
+          <button className="feed-catchup" onClick={reader.jumpToLatest}>
             <ArrowDown size={14} />
-            {unread > 0 && `${unread} new ${unread === 1 ? 'event' : 'events'} · `}
+            {reader.unread > 0 && `${reader.unread} new ${reader.unread === 1 ? 'event' : 'events'} · `}
             {undelivered > 0 ? 'Jump to latest loaded event' : 'Jump to latest'}
           </button>
         ) : (
