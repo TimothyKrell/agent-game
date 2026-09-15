@@ -1,0 +1,80 @@
+{
+  "sourceCommit": "dc600600202d2994ee105ddcddd5ab9e5ab4c125",
+  "localOnly": true,
+  "manifestSha256": "bb30f360938233ab97e8104c5a1f63337c019fccd1ba1f639d1b6a030b71a039",
+  "publication": {
+    "version": 1,
+    "sourceOrigin": "https://source.example.test",
+    "targetOrigin": "https://agent-game-pr-27.tk-d86.workers.dev",
+    "incarnation": "local_content_incarnation",
+    "commit": "f07b4bfd345b3cf1c54ebd151136e2c6550ef427",
+    "executable": {
+      "url": "https://source.example.test/downloads/agent-game-cli-0.3.0.tgz",
+      "sha256": "d0ff9b7c39e36e1f5b331ba1d2dcd856ac495a96ed5acb2dda368c6f83a7fb99",
+      "bytes": 44567,
+      "version": "0.3.0",
+      "protocols": [
+        1,
+        2
+      ]
+    },
+    "games": [
+      {
+        "gameId": "secret-overlord",
+        "protocol": 1,
+        "rulesVersion": "secret-overlord-1",
+        "rules": {
+          "path": "package/public/rules.md",
+          "bytes": 4870,
+          "sha256": "27bcb315bf3927b2924970eb17459197696789de22fa77972549161729e2ccc3"
+        },
+        "skill": {
+          "path": "package/skills/agent-game/SKILL.md",
+          "bytes": 9304,
+          "sha256": "82dbf78372e4d476ee566d4aba139325f508010c00e9a7930c0ef71b6dc6d03a"
+        },
+        "protocolFile": {
+          "path": "package/public/protocol.md",
+          "bytes": 6449,
+          "sha256": "29dfa6d7ce2bdd82ca802c629acd17edf6aeece42be7d9916621d1953680b6f2"
+        },
+        "archive": {
+          "url": "https://agent-game-pr-27.tk-d86.workers.dev/downloads/previews/f07b4bfd345b3cf1c54ebd151136e2c6550ef427/d899d22d659e63badfa13b52cf6dc1c74100767e4d39539918f100b458514dea.tgz",
+          "sha256": "d899d22d659e63badfa13b52cf6dc1c74100767e4d39539918f100b458514dea",
+          "bytes": 17689
+        }
+      },
+      {
+        "gameId": "succession",
+        "protocol": 2,
+        "rulesVersion": "succession-1",
+        "rules": {
+          "path": "package/public/games/succession/rules.md",
+          "bytes": 12473,
+          "sha256": "51af9c20be2b7d3f34de52240baa2d3802f92dfda6075098c185fbff0c03a63a"
+        },
+        "skill": {
+          "path": "package/skills/agent-game/SKILL.md",
+          "bytes": 9304,
+          "sha256": "82dbf78372e4d476ee566d4aba139325f508010c00e9a7930c0ef71b6dc6d03a"
+        },
+        "protocolFile": {
+          "path": "package/public/games/succession/protocol.md",
+          "bytes": 8996,
+          "sha256": "67b383a7f4e7b6704bb845cd829b97f41db016b288c9c257fda8fdd4b2db8af3"
+        },
+        "archive": {
+          "url": "https://agent-game-pr-27.tk-d86.workers.dev/downloads/previews/f07b4bfd345b3cf1c54ebd151136e2c6550ef427/d899d22d659e63badfa13b52cf6dc1c74100767e4d39539918f100b458514dea.tgz",
+          "sha256": "d899d22d659e63badfa13b52cf6dc1c74100767e4d39539918f100b458514dea",
+          "bytes": 17689
+        }
+      }
+    ]
+  },
+  "results": [
+    "real source asset download matches independently supplied source executable pin",
+    "actual full source Worker GET transitions 503/no-store pending -> exact numeric-protocol manifest after D1 publication",
+    "equal retry succeeds, changed executable pin conflicts, no public HTTP write",
+    "actual source GET stops returning stale and closed tuples"
+  ]
+}
