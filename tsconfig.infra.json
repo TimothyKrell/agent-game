@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "types": ["node"], "lib": ["ES2022", "DOM"] },
-  "include": ["alchemy.run.ts"]
+  "compilerOptions": { "types": ["node"], "lib": ["ES2023", "DOM"] },
+  "include": ["alchemy.run.ts", "worker-configuration.d.ts", "src/server/secrets.d.ts"]
 }

@@ -1,0 +1,950 @@
+{
+  "base": "00b3ad2429326f8a73c8be10915eff7beae6f61d",
+  "fullRun": "p2-green-two-cpu-1",
+  "finalFormattedSourceRun": "p2-green-final-source",
+  "copiedArtifactsVerified": 36,
+  "reviewInputsUnchanged": [
+    {
+      "path": "/tmp/opencode/TIM27-playable-ci-correction-review/README.md",
+      "bytes": 8355,
+      "sha256": "a93eb0e0346b83bce0c3c27b2dad6e736af1ffc2764d840bdfd6bfa5e4cabf6f"
+    },
+    {
+      "path": "/tmp/opencode/TIM27-playable-ci-correction-review/counterprobe.test.ts",
+      "bytes": 3526,
+      "sha256": "f52ed9f668759643942000a65ee8a442aab47fe71adc8dbc73c3ca8d8d4c6df4"
+    },
+    {
+      "path": "/tmp/opencode/TIM27-playable-ci-correction-review/counterprobe-run/evidence/case-trojk5/denied-then-admitted-control.json",
+      "bytes": 66751,
+      "sha256": "9accf4d442a55c5dc870423deca57acb907b26e2b0100a5bec377914a0475fc9"
+    }
+  ],
+  "code": [
+    {
+      "path": ".tim27-playable/worker.ts",
+      "bytes": 16670,
+      "sha256": "a247ad6d11ef94123222b2da51c0ffee12479a34976068cb4c6eeb07708c40a2"
+    },
+    {
+      "path": ".tim27-playable/admission-ordering.test.ts",
+      "bytes": 5476,
+      "sha256": "1a936447da2bf6b428ea365d38e20909c0fee60f28003a7a16ec20a78de794e8"
+    },
+    {
+      "path": "docs/evidence/TIM-27-playable-ci-P2.md",
+      "bytes": 8282,
+      "sha256": "0cc355ed3769a7b1898061a14dbeb3abc6ed449121db61a86a0dbd6ed7bb2823"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/.gitattributes",
+      "bytes": 63,
+      "sha256": "3d5fad8108a54c0fe2a8db37e97918ce7654c4d18749408109a8e1e70a8b9115"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": ".tim27-playable/p2-evidence/.gitattributes",
+      "bytes": 63,
+      "sha256": "3d5fad8108a54c0fe2a8db37e97918ce7654c4d18749408109a8e1e70a8b9115"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/accounting-projection.json",
+      "bytes": 400125,
+      "sha256": "74a0e5cb59e6b0d83553cc5511a193691ad185e32e436e334a77eeae584b9ca1"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/assertions.json",
+      "bytes": 6654,
+      "sha256": "36e45dd30c469716927a74282e3c2efa057277a1757b5e3a4931847e2de54964"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/final-format.log",
+      "bytes": 66,
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/final-lint.log",
+      "bytes": 93,
+      "sha256": "24789ad0211488319ab69a9344a26573a05bcd2dbd26dec940bd619cfdfd0f80"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/fixture-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/format.log",
+      "bytes": 140,
+      "sha256": "b8a4a0675a32f2b672a5397e9c5a184a3f7f8518ff8063a86276b7adabfce92b"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/lint.log",
+      "bytes": 93,
+      "sha256": "104430fd6b41c72c0feb8e1965fcc3a609c17d6213a793112530b6001dfe78a7"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/prefix-evidence.diff",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/production.diff",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/review-preservation.json",
+      "bytes": 697,
+      "sha256": "a4fce6c10e58febe7dfb2c2cf31754acaec10612fa097a181e86d963887fa814"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/tested-source-validation.json",
+      "bytes": 1786,
+      "sha256": "850d57b7fe9423dd26c5ab7d01655bf2cf6d55340b31150425ba3fbfa7fbb709"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/validation-notes.md",
+      "bytes": 772,
+      "sha256": "509b1f5a91b1621fee9409adee7c5ba689aca9d4e8cdb403ff941b01f1a51a19"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/whitespace.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/worker-exclusion.json",
+      "bytes": 52,
+      "sha256": "bc813fabe4ec4cf265827a0363bdfa16f1298bf21a57ba61b54d965d39858550"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/checks/worker.formatted.ts.txt",
+      "bytes": 16670,
+      "sha256": "a247ad6d11ef94123222b2da51c0ffee12479a34976068cb4c6eeb07708c40a2"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/copies.json",
+      "bytes": 5675,
+      "sha256": "3e882d30526992f5e2cec3f38c6d527d8b6829e279457ecf8873a62e52c00110"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/final-source/denied-then-admitted-control.json",
+      "bytes": 71632,
+      "sha256": "0ccdec51f7225457dd7b096089c157943913d243984129180f4d50aa73656905"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/final-source/denied-then-completed-control.json",
+      "bytes": 18576,
+      "sha256": "2184ed199d3b882d9c25e6ec2182a294aacd0d3ffe250c74c4a4119bfff7f5ad"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/final-source/vitest.json",
+      "bytes": 957,
+      "sha256": "19ba08029fe0691cb75f2c99225f143a7bae27d87cff86dac02817d56da2a1ac"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/final-source/vitest.log",
+      "bytes": 740,
+      "sha256": "5ce11a903d9146b72d9ec92992d40e37be22b55182d04db2f065c7097c93ac1d"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/focused/denied-then-admitted-control.json",
+      "bytes": 71261,
+      "sha256": "66417e28adbf851bb4228c11c51617456d64826e8370b31ebe4b31ffca3213a1"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/focused/denied-then-completed-control.json",
+      "bytes": 18355,
+      "sha256": "f1e48177a500d6413bde37bbe43a58091605a3e553549e380a1b962b5a07b557"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/focused/vitest.json",
+      "bytes": 964,
+      "sha256": "f31e1c88d6b48cd2bea6a6412134a3007af8a7a3e526cf7996bdacbceabb5e59"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/focused/vitest.log",
+      "bytes": 3789,
+      "sha256": "11e950f32a535fa71a655a6fa43c9ff3f6f3ad8d1cfe47b50c7bb123dcfb9923"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/full/cpu-affinity.json",
+      "bytes": 1497,
+      "sha256": "ced9b1c5c7a0ff35ff4fd48c04b0a7bd183a0767f4652040f3fe2d7b8a8371b5"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/full/denied-then-admitted-control.json",
+      "bytes": 71290,
+      "sha256": "7fa5aa9a326f96898ef1bd85c2931265b3d0dce24b17d827eab70ec6a0bfab98"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/full/denied-then-completed-control.json",
+      "bytes": 18384,
+      "sha256": "679666007684023b69560c960df7273f271589c37be824cd7f40df0661a6c9a6"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/full/summary.json",
+      "bytes": 8096,
+      "sha256": "f38118436236f37dc22e1fe19ccc2f8b80eb6f04efd65eb68a7650292fc78e98"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/full/tested-source.json",
+      "bytes": 966,
+      "sha256": "126cada8cba4041942b2baae6e560eb4091fdae20d6a4547dd0a20ea69461e01"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/full/vitest.json",
+      "bytes": 5063,
+      "sha256": "b1848503d758af6926a37089c3529380bb67ab4c03208c708f772659f9654510"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/full/vitest.log",
+      "bytes": 29091,
+      "sha256": "8da563b69d7c778a98cb491fb461bb8aae770024aabceab9f4c41d0c47f69105"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/red/denied-then-admitted-control.json",
+      "bytes": 66591,
+      "sha256": "028add45a1ee8313e7cf1eaa0786bdd5ef52390b337b32d8aa675a2547474edd"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/red/provenance.json",
+      "bytes": 1068,
+      "sha256": "00e1989115642e8b832881d52e1cf6603797a15208aa2d6e60ef86554cd7e45a"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/red/tested-source.ts.txt",
+      "bytes": 3249,
+      "sha256": "6c4add1068814b854309d79e84e5acfc64c32a6a542346b50879207d6fbe26ff"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/red/vitest.json",
+      "bytes": 1305,
+      "sha256": "3cc62ae0bc0cbb34b4fdffaaf177192a3c1c1ce31124776cfca8d165ae5ae604"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/red/vitest.log",
+      "bytes": 8199,
+      "sha256": "46d605b39e5c903d31626130a46ee5b4245eebd82f8fb8f88c99749df441df57"
+    },
+    {
+      "path": ".tim27-playable/p2-evidence/red/worker.ts.txt",
+      "bytes": 13344,
+      "sha256": "3c779e0e347b501b118dfade9358d15f78605714d2a04cfabe434e0c6a5e542e"
+    }
+  ],
+  "retained": [
+    {
+      "run": "p2-green-final-source",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/after-cleanup.json",
+          "bytes": 68578,
+          "sha256": "4b19571d47bbc0e2fd6f0836f91538798ccd53d23a74a3ea64a05403b0f3526d"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/before-cleanup.json",
+          "bytes": 53930,
+          "sha256": "90f4709c73d70ac87419f30c744f4bd62fce8c2b368966104909a2cacea9dcab"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/denied-then-admitted-control.json",
+          "bytes": 71632,
+          "sha256": "0ccdec51f7225457dd7b096089c157943913d243984129180f4d50aa73656905"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/denied-then-completed-control.json",
+          "bytes": 18576,
+          "sha256": "2184ed199d3b882d9c25e6ec2182a294aacd0d3ffe250c74c4a4119bfff7f5ad"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/results.json",
+          "bytes": 11863,
+          "sha256": "5fcf2a9ea58bd32481035966ddaa6db1ab33e17c2c12020506574820862467f7"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/retry-after-denial.jsonl",
+          "bytes": 47610,
+          "sha256": "b3b5ed32d451a006da20a5d09af323c8b8f158517c6672cd5e4323a49f692a2c"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/retry-after-denial.jsonl.result.json",
+          "bytes": 1085,
+          "sha256": "b8b80ce57965774cac8818859bc2b53aca092dfa17bdd8bb78bd3fb1823e5f52"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/retry-after-denial.jsonl.stderr.txt",
+          "bytes": 410,
+          "sha256": "2539406d4a3521b84704026fe8af14b3685143d5d2122e09ecedb174ba867d13"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/vitest.json",
+          "bytes": 957,
+          "sha256": "19ba08029fe0691cb75f2c99225f143a7bae27d87cff86dac02817d56da2a1ac"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-final-source/vitest.log",
+          "bytes": 740,
+          "sha256": "5ce11a903d9146b72d9ec92992d40e37be22b55182d04db2f065c7097c93ac1d"
+        }
+      ]
+    },
+    {
+      "run": "p2-green-focused-1",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/evidence/case-XDQtA3/after-cleanup.json",
+          "bytes": 65492,
+          "sha256": "78a49dcebdd9713ce44af2a49035c8c226f9824c97bb7c45e2d8c095bee2420b"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/evidence/case-XDQtA3/before-cleanup.json",
+          "bytes": 52648,
+          "sha256": "d04ebbcfd87d1f070219c64f348cfc5f304100708baac2b78e52ed578f387038"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/evidence/case-XDQtA3/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/evidence/case-XDQtA3/denied-then-admitted-control.json",
+          "bytes": 71261,
+          "sha256": "66417e28adbf851bb4228c11c51617456d64826e8370b31ebe4b31ffca3213a1"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/evidence/case-XDQtA3/denied-then-completed-control.json",
+          "bytes": 18355,
+          "sha256": "f1e48177a500d6413bde37bbe43a58091605a3e553549e380a1b962b5a07b557"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/evidence/case-XDQtA3/results.json",
+          "bytes": 11664,
+          "sha256": "9bf1487faea991e00fff0dc881cb22aaec926a17f542cc9d0893521db1bdb5d8"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/evidence/case-XDQtA3/retry-after-denial.jsonl",
+          "bytes": 47496,
+          "sha256": "66f8070197c2518a2ca987b19586c730b45adfa143ac3365e5dc874c474c5c95"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/evidence/case-XDQtA3/retry-after-denial.jsonl.result.json",
+          "bytes": 1085,
+          "sha256": "3ca28cdb5f0eb15b02dbe1fa6817da47617bd1bfb05e486120c0cdfd861b49c3"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/evidence/case-XDQtA3/retry-after-denial.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "d6fff6a3d011f699d98070b845e20bb2628f2870b18b81ac40736c4c86e20b0b"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/vitest.json",
+          "bytes": 964,
+          "sha256": "f31e1c88d6b48cd2bea6a6412134a3007af8a7a3e526cf7996bdacbceabb5e59"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-focused-1/vitest.log",
+          "bytes": 3789,
+          "sha256": "11e950f32a535fa71a655a6fa43c9ff3f6f3ad8d1cfe47b50c7bb123dcfb9923"
+        }
+      ]
+    },
+    {
+      "run": "p2-green-two-cpu-1",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/cpu-affinity.json",
+          "bytes": 1497,
+          "sha256": "ced9b1c5c7a0ff35ff4fd48c04b0a7bd183a0767f4652040f3fe2d7b8a8371b5"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-1CAbQu/after-cleanup.json",
+          "bytes": 14095,
+          "sha256": "f2df638d7be3cfd6317c345e34602a9bfe7e03f8afc3bbc81c92a4f84fa1e1bf"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-1CAbQu/before-cleanup.json",
+          "bytes": 14095,
+          "sha256": "f2df638d7be3cfd6317c345e34602a9bfe7e03f8afc3bbc81c92a4f84fa1e1bf"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-1CAbQu/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-1CAbQu/results.json",
+          "bytes": 2436,
+          "sha256": "504ab6a1fed75313619d6de48aa3e66ea168a0b70caacb8e9d0b390cb50c1c89"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-40zOVr/after-cleanup.json",
+          "bytes": 43489,
+          "sha256": "78e8001aacbb554eec787d6c5f62f4000ca25f3b32ed142630636574637283e1"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-40zOVr/before-cleanup.json",
+          "bytes": 28838,
+          "sha256": "ecda5fda71da56cac8fdf7fce207b8927f28a06110e0c6c068c97a45cf8cf780"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-40zOVr/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-40zOVr/held-house-control.json",
+          "bytes": 14246,
+          "sha256": "0d840082602805a77e5c5ee3b0c974520f5c53b795d394432c841e350e41639a"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-40zOVr/held-house.jsonl",
+          "bytes": 45776,
+          "sha256": "32e0c385b0c2dc1afc05badefe0af0634802dbd65fdec22d7c4c31944ff7ae35"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-40zOVr/held-house.jsonl.result.json",
+          "bytes": 1083,
+          "sha256": "faa34e20e79697053a83d7e9c229e726170b1f248b2040f41060fcd6893c2ee8"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-40zOVr/held-house.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "f3959fa12a467e65d3702b38edc778e9259034283eeedc9064f9f96b7ed6d0d0"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-40zOVr/results.json",
+          "bytes": 11725,
+          "sha256": "9f2a3a10a9c86f0d42a82af7d4e74442366e538c72f2631b3bd69a9be9d8b2e5"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-DtYHYz/after-cleanup.json",
+          "bytes": 85680,
+          "sha256": "707570d7e9c6c942a23049fddd9a24b0232a8e51aee93156679acc790e20e101"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-DtYHYz/before-cleanup.json",
+          "bytes": 67855,
+          "sha256": "6105b87ad8eabfd05b40f1a0dfd4321ed8d6d0bcfbed6d39cd9c40ee795512bb"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-DtYHYz/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-DtYHYz/held-required-control.json",
+          "bytes": 3535,
+          "sha256": "72020fb6c1dacf9887ad30a3744c699226be14aec2f09cf0de59c1f68b1fa14a"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-DtYHYz/held-required.jsonl",
+          "bytes": 47961,
+          "sha256": "9e673e16efbbd4487cd8a4bbbc9db024785fdac2c780f6c29afaf561acd23979"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-DtYHYz/held-required.jsonl.result.json",
+          "bytes": 1084,
+          "sha256": "52d99d7cf8f54a70655b3d5705330d192c68235a64ba2fb237265b80c66918e9"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-DtYHYz/held-required.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "a05f3c7b54d1c3f4bc3765726befff5260e615afd1cb5c6dab813df95a6b8d02"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-DtYHYz/results.json",
+          "bytes": 23109,
+          "sha256": "79d84e461fe51b6f26f1250fd06ae00c51c750c88c4bfb0e6b6610b92353f5af"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-TKhXgn/after-cleanup.json",
+          "bytes": 65537,
+          "sha256": "295cb5086be01183168050cf0ccc86cc333b74fb5330acf881c6832d2250ebd5"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-TKhXgn/before-cleanup.json",
+          "bytes": 52677,
+          "sha256": "23e89836fd9556d746739f554deee86478f5265878f39637137fc6ca2470e642"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-TKhXgn/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-TKhXgn/denied-then-admitted-control.json",
+          "bytes": 71290,
+          "sha256": "7fa5aa9a326f96898ef1bd85c2931265b3d0dce24b17d827eab70ec6a0bfab98"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-TKhXgn/denied-then-completed-control.json",
+          "bytes": 18384,
+          "sha256": "679666007684023b69560c960df7273f271589c37be824cd7f40df0661a6c9a6"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-TKhXgn/results.json",
+          "bytes": 11664,
+          "sha256": "a539eeeffbabd8a38993640cb82057e989074122cb652631993c01083eb32532"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-TKhXgn/retry-after-denial.jsonl",
+          "bytes": 47496,
+          "sha256": "f994f24cd71a21cb6a741d23c7f072fb34ac3f8e6e2b2288aa6088dea58a7e27"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-TKhXgn/retry-after-denial.jsonl.result.json",
+          "bytes": 1084,
+          "sha256": "6556d3089a1a08323f116a6f6564d79b17bf7005f0395f535670e40bc3972c02"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-TKhXgn/retry-after-denial.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "a055bd5e26daa546ef740db9ac26e8220179828592b66f3589d2dac5d8e12d62"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-XS8TtO/after-cleanup.json",
+          "bytes": 23303,
+          "sha256": "ed5a9a74e19ca3fd503dbb82f003043ffcea411211a7729193926fff09f08065"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-XS8TtO/before-cleanup.json",
+          "bytes": 18907,
+          "sha256": "68141dfd0656455eaa02a3d71d41e06898ccba11a5de28fcd5c17def8e547a55"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-XS8TtO/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-XS8TtO/held-chat-control.json",
+          "bytes": 942,
+          "sha256": "feeead7d1bf363b5a2eb22b1eb2f71dc7cc5f707668803ac3288f02e57da98ce"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-XS8TtO/held-chat.jsonl",
+          "bytes": 44871,
+          "sha256": "41ef786f9876190e6bf12dcff2e0a969aaea9d2e768497e363ee2604f0f3b30f"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-XS8TtO/held-chat.jsonl.result.json",
+          "bytes": 1084,
+          "sha256": "8d8b0bbaa4ef42d9c36bb6f0c889a57395cb518614fb6e1963b53217ed4e01f0"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-XS8TtO/held-chat.jsonl.stderr.txt",
+          "bytes": 407,
+          "sha256": "31e05040645bdc0e143f3eb2ed37dc51051dd72f7be1e663b4d92c7dc0a04f96"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-XS8TtO/results.json",
+          "bytes": 2268,
+          "sha256": "06968770027c6ea6a7a6495afd72e01e31852016c1670f8feda265970b815dfb"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-bGBUkG/after-cleanup.json",
+          "bytes": 28594,
+          "sha256": "0222069436adf86e8c0e2e201bdaf1cd2f62573168b702d04730b6868b35ede5"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-bGBUkG/before-cleanup.json",
+          "bytes": 28669,
+          "sha256": "d9345270dedebe99defd9508d4abf2df6cc52ef1630f05e8a473456e78504fe2"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-bGBUkG/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-bGBUkG/cascade-control.json",
+          "bytes": 389,
+          "sha256": "872d0079eaf878f274372e592abedf08fdcd708fa9d0953ed39b20f0810a350d"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-bGBUkG/results.json",
+          "bytes": 2268,
+          "sha256": "c41adf03a9d12d130c7b06c2411243f45ed6bc13b91bdea4aa3103e6eac7aad1"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-gvBcmk/after-cleanup.json",
+          "bytes": 2452771,
+          "sha256": "8d272ea2ff08ae5d04959982e15fe15ef5355667041c55dfc0dcd43b0086bde8"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-gvBcmk/before-cleanup.json",
+          "bytes": 2452771,
+          "sha256": "8d272ea2ff08ae5d04959982e15fe15ef5355667041c55dfc0dcd43b0086bde8"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-gvBcmk/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-gvBcmk/results.json",
+          "bytes": 1251236,
+          "sha256": "58d1002a6f946f9e88c96f4aa7f5657c05669f8d7cec25e9468303ee66a85ad6"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-gvBcmk/succession.jsonl",
+          "bytes": 189280,
+          "sha256": "3caaa41a4e5831c7a72f7629ba65ea26366cf1cd5b4544d967c2d4bf0b1058cb"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-gvBcmk/succession.jsonl.result.json",
+          "bytes": 2124,
+          "sha256": "c233346bab33c17f1fc82037661d8343ecbb5e172f447e151ee1bfedfa537d54"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-gvBcmk/succession.jsonl.stderr.txt",
+          "bytes": 140,
+          "sha256": "4162625b23e2ee724e8b7e87f4537670366d35aea64d8ebd3f9827b21ea4180e"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-j8GLae/after-cleanup.json",
+          "bytes": 241423,
+          "sha256": "17dc358c7df8ccd140ed2ad49c9e1f67b75c8ace8e3b56f2d1ce63d67c7f7e9c"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-j8GLae/before-cleanup.json",
+          "bytes": 241423,
+          "sha256": "17dc358c7df8ccd140ed2ad49c9e1f67b75c8ace8e3b56f2d1ce63d67c7f7e9c"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-j8GLae/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-j8GLae/claude-timeout.jsonl",
+          "bytes": 67313,
+          "sha256": "2985e6f6a70fab9ce70921424de426bf3846e0a2b5d5c7ddb6c8c1323b51c2f3"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-j8GLae/claude-timeout.jsonl.result.json",
+          "bytes": 1055,
+          "sha256": "dd76e2ef4afbdeb9b1a9a0d54007f7c49638efef131e19ddac0908ab2cdcdfc4"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-j8GLae/claude-timeout.jsonl.stderr.txt",
+          "bytes": 140,
+          "sha256": "4162625b23e2ee724e8b7e87f4537670366d35aea64d8ebd3f9827b21ea4180e"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-j8GLae/results.json",
+          "bytes": 51008,
+          "sha256": "4964bdfe61021d86df96b45ab505ffcd77494f8d42e675c5cc10c0391f226fd8"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-uBqjgw/after-cleanup.json",
+          "bytes": 36623,
+          "sha256": "3c4fafce53c1292d5c9fc025dec53693511a0c169f7dc6db32e109ba48da1028"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-uBqjgw/before-cleanup.json",
+          "bytes": 36623,
+          "sha256": "3c4fafce53c1292d5c9fc025dec53693511a0c169f7dc6db32e109ba48da1028"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-uBqjgw/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-uBqjgw/recovered-branch-A.jsonl",
+          "bytes": 52288,
+          "sha256": "c3dc92f21426a40ce0c4d6ae6d5fee162e06779a8683021a058be82c86abdd38"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-uBqjgw/recovered-branch-A.jsonl.result.json",
+          "bytes": 1493,
+          "sha256": "816ccd421514d63e91bc9dd71fca48375d9b0a2633ab8024ae0ba3baf7da00b3"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-uBqjgw/recovered-branch-A.jsonl.stderr.txt",
+          "bytes": 398,
+          "sha256": "ac8105f561b3bae99ce2c197e34f6e6de1a572ca3ddbacbae43135dae967ad1c"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-uBqjgw/results.json",
+          "bytes": 12910,
+          "sha256": "ade26d0be05d50d5877b36469750afd62915f6cdf639ee2847a34ad8cd304822"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-ucwBwo/after-cleanup.json",
+          "bytes": 721168,
+          "sha256": "a5c027b815977845f6c5c72d35a3e2d537bf68e2b1e37f9757d535b42e947446"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-ucwBwo/before-cleanup.json",
+          "bytes": 721168,
+          "sha256": "a5c027b815977845f6c5c72d35a3e2d537bf68e2b1e37f9757d535b42e947446"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-ucwBwo/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-ucwBwo/results.json",
+          "bytes": 355507,
+          "sha256": "6eb8006d684727772a30f14644a04ff07fef7d580fadec720e8ee114eeaecb74"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-ucwBwo/secret-overlord.jsonl",
+          "bytes": 95236,
+          "sha256": "76e36b8439977f204febe1d46ab3f9ac36a96fea5c9b025e0d8d93b74abe72cd"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-ucwBwo/secret-overlord.jsonl.result.json",
+          "bytes": 1075,
+          "sha256": "186f95072e27a1b5889b20c906e915a7873bbfe4e5d2bf06cbd8e06add969155"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-ucwBwo/secret-overlord.jsonl.stderr.txt",
+          "bytes": 142,
+          "sha256": "cd9143472f3a7937ad61ad349e02f5fa98326c2ea2dd3fdc0c2d4649ed37d1d4"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-wpzvQI/after-cleanup.json",
+          "bytes": 7644,
+          "sha256": "ee62b29e113e55caf60fcf8404f5840bbf2d5fd585e8042a4cdf0b34e842a8ec"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-wpzvQI/before-cleanup.json",
+          "bytes": 7644,
+          "sha256": "ee62b29e113e55caf60fcf8404f5840bbf2d5fd585e8042a4cdf0b34e842a8ec"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-wpzvQI/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/evidence/case-wpzvQI/results.json",
+          "bytes": 412,
+          "sha256": "8faad51849fcf22989026d31f28deab090eaafc3928091195b82467ae5b44fd1"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/summary.json",
+          "bytes": 8096,
+          "sha256": "f38118436236f37dc22e1fe19ccc2f8b80eb6f04efd65eb68a7650292fc78e98"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/tested-source/admission-ordering.test.ts",
+          "bytes": 5476,
+          "sha256": "1a936447da2bf6b428ea365d38e20909c0fee60f28003a7a16ec20a78de794e8"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/tested-source/ci.config.mjs",
+          "bytes": 1945,
+          "sha256": "81a76e2f68eef4909cbb9e70c67c5900f7c219f152bcfd8f361a099a8da178c7"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/tested-source/harness.ts",
+          "bytes": 17426,
+          "sha256": "d4b92b7aaf6226778c099c9eefd1f738aca0f353508828ca9f14068c56fbbe6e"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/tested-source/native.cjs",
+          "bytes": 3861,
+          "sha256": "c8a88c2c4f355710ed798fce2b9b4e0146af78deb50b66f77fee2c611342e7b0"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/tested-source/preview-playable.test.ts",
+          "bytes": 21881,
+          "sha256": "5cc2cb8f087f757900fc38b2f0cd87a14b06e5271341fe02132adb8fab53badb"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/tested-source/worker.ts",
+          "bytes": 16679,
+          "sha256": "b9dadf9059d95bdb2fd1ba8ad8a0edcb89426fb724417e74eeb4e10970283811"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/tested-source.json",
+          "bytes": 966,
+          "sha256": "126cada8cba4041942b2baae6e560eb4091fdae20d6a4547dd0a20ea69461e01"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/verification.json",
+          "bytes": 1137655,
+          "sha256": "9c023d2e3579e3d593d9e3276d87993ce7e7a7f2cfcc3e79ed383f6e029a381d"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/vitest.json",
+          "bytes": 5063,
+          "sha256": "b1848503d758af6926a37089c3529380bb67ab4c03208c708f772659f9654510"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-green-two-cpu-1/vitest.log",
+          "bytes": 29091,
+          "sha256": "8da563b69d7c778a98cb491fb461bb8aae770024aabceab9f4c41d0c47f69105"
+        }
+      ]
+    },
+    {
+      "run": "p2-red-1",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/p2-red-1/evidence/case-QMWkP7/after-cleanup.json",
+          "bytes": 61277,
+          "sha256": "a067233b9c4986c424a4be9bacd01fb2a8bb714ac6527ba46285f84f389dfc71"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/evidence/case-QMWkP7/before-cleanup.json",
+          "bytes": 44724,
+          "sha256": "b97e627c54236e1bfa8172cb9bcd70b3d9638b551f9420a4bbda0f8a866b3bed"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/evidence/case-QMWkP7/bootstrap.json",
+          "bytes": 205,
+          "sha256": "c627162313e5a0d8ecac5d8a90de3dbd7988bd45f3328d0cd9134bf3ada0a937"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/evidence/case-QMWkP7/denied-then-admitted-control.json",
+          "bytes": 66591,
+          "sha256": "028add45a1ee8313e7cf1eaa0786bdd5ef52390b337b32d8aa675a2547474edd"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/evidence/case-QMWkP7/results.json",
+          "bytes": 7395,
+          "sha256": "22c89bea45f5eed5ce1a1f7b607a9331783d521f0b957c01f9fbb640cb8b5521"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/evidence/case-QMWkP7/retry-after-denial.jsonl",
+          "bytes": 47116,
+          "sha256": "5459ca2d1b90b9c75f737d4672a18169bbef0d105fe3f21686e7302fa53dc772"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/evidence/case-QMWkP7/retry-after-denial.jsonl.result.json",
+          "bytes": 1079,
+          "sha256": "6bf0297d1750f722b2d7a0beb8bccc0037b09df607551bafd8fe86e4bffe8987"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/evidence/case-QMWkP7/retry-after-denial.jsonl.stderr.txt",
+          "bytes": 397,
+          "sha256": "4e44fd3a266893e84aa4a6f1c0fe51c06b0c7b3080a9f1abb2a6acd421646f90"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/provenance.json",
+          "bytes": 1068,
+          "sha256": "00e1989115642e8b832881d52e1cf6603797a15208aa2d6e60ef86554cd7e45a"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/tested-source.ts",
+          "bytes": 3249,
+          "sha256": "6c4add1068814b854309d79e84e5acfc64c32a6a542346b50879207d6fbe26ff"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/vitest.json",
+          "bytes": 1305,
+          "sha256": "3cc62ae0bc0cbb34b4fdffaaf177192a3c1c1ce31124776cfca8d165ae5ae604"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/vitest.log",
+          "bytes": 8199,
+          "sha256": "46d605b39e5c903d31626130a46ee5b4245eebd82f8fb8f88c99749df441df57"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-red-1/worker.ts",
+          "bytes": 13344,
+          "sha256": "3c779e0e347b501b118dfade9358d15f78605714d2a04cfabe434e0c6a5e542e"
+        }
+      ]
+    },
+    {
+      "run": "p2-validation-1",
+      "files": [
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/assertions.json",
+          "bytes": 6654,
+          "sha256": "36e45dd30c469716927a74282e3c2efa057277a1757b5e3a4931847e2de54964"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/final-format.log",
+          "bytes": 66,
+          "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/final-lint.log",
+          "bytes": 93,
+          "sha256": "24789ad0211488319ab69a9344a26573a05bcd2dbd26dec940bd619cfdfd0f80"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/fixture-typecheck.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/format.log",
+          "bytes": 140,
+          "sha256": "b8a4a0675a32f2b672a5397e9c5a184a3f7f8518ff8063a86276b7adabfce92b"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/lint.log",
+          "bytes": 93,
+          "sha256": "104430fd6b41c72c0feb8e1965fcc3a609c17d6213a793112530b6001dfe78a7"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/prefix-evidence.diff",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/production.diff",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/review-preservation.json",
+          "bytes": 697,
+          "sha256": "a4fce6c10e58febe7dfb2c2cf31754acaec10612fa097a181e86d963887fa814"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/tested-source-validation.json",
+          "bytes": 1786,
+          "sha256": "850d57b7fe9423dd26c5ab7d01655bf2cf6d55340b31150425ba3fbfa7fbb709"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/typecheck.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/validation-notes.md",
+          "bytes": 772,
+          "sha256": "509b1f5a91b1621fee9409adee7c5ba689aca9d4e8cdb403ff941b01f1a51a19"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/whitespace.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/worker-exclusion.json",
+          "bytes": 52,
+          "sha256": "bc813fabe4ec4cf265827a0363bdfa16f1298bf21a57ba61b54d965d39858550"
+        },
+        {
+          "path": ".tim27-playable/runs/p2-validation-1/worker.formatted.ts",
+          "bytes": 16670,
+          "sha256": "a247ad6d11ef94123222b2da51c0ffee12479a34976068cb4c6eeb07708c40a2"
+        }
+      ]
+    }
+  ],
+  "runtimeNote": "Full SQLite/R2/native runtime paths remain in each retained case results.json. This lightweight manifest excludes runtime/home content; parent owns full archival. Prior source and parent ten-pass runs remain pre-fix evidence, not acceptance. Full-run source and final formatting equivalence are attested in checks/tested-source-validation.json."
+}

@@ -108,3 +108,54 @@ it('kills a native child and its foreground descendant tools at the absolute dea
     vi.unstubAllEnvs();
   }
 });
+
+it.each(['claude', 'opencode'])(
+  'runs the native %s API with a fractional absolute deadline without argument-validation retries',
+  async (harness) => {
+    const f = await nativeFixture(
+      harness,
+      `const fs=require('node:fs'); const args=process.argv.slice(2); fs.appendFileSync('native-calls.jsonl',JSON.stringify(args)+'\\n'); if(args[0]==='api'){ const data=args[1]==='post'?{id:'ses_fractional',location:{directory:process.cwd()}}:{id:'ses_fractional',cost:0.125,time:{idle:Date.now()}};console.log(JSON.stringify({data})); }else{fs.writeFileSync('native-deadline',process.env.AGENT_GAME_CHILD_DEADLINE);console.log(JSON.stringify({type:'result',subtype:'success',session_id:'ses_fractional',total_cost_usd:0.125}));}`,
+    );
+
+    f.input.sessionId = undefined;
+    f.input.deadline = Date.now() + 5000.875;
+    f.input.remainingRuntimeMs = 10000;
+
+    try {
+      expect(await invokeHarness(f.input)).toMatchObject({ exitCode: 0, sessionId: 'ses_fractional' });
+      expect(f.usage).toEqual([0.125]);
+      expect(Number(await readFile(`${f.directory}/native-deadline`, 'utf8'))).toBe(f.input.deadline);
+
+      const calls = (await readFile(`${f.directory}/native-calls.jsonl`, 'utf8'))
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line));
+
+      expect(calls).toHaveLength(harness === 'opencode' ? 3 : 1);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  },
+);
+
+for (const remaining of [-1, 0.75]) {
+  it.each(['claude', 'opencode'])(
+    `expires a native %s invocation with ${remaining}ms left before spawning`,
+    async (harness) => {
+      const f = await nativeFixture(harness, `require('node:fs').writeFileSync('unexpected-spawn','yes');`);
+      const now = Date.now();
+      const clock = vi.spyOn(Date, 'now').mockReturnValue(now);
+      f.input.sessionId = undefined;
+      f.input.deadline = now + remaining;
+
+      try {
+        expect(await invokeHarness(f.input)).toMatchObject({ outcome: 'runtime-exhausted' });
+        await expect(readFile(`${f.directory}/unexpected-spawn`)).rejects.toMatchObject({ code: 'ENOENT' });
+        expect(f.usage).toEqual([]);
+      } finally {
+        clock.mockRestore();
+        vi.unstubAllEnvs();
+      }
+    },
+  );
+}

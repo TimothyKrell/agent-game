@@ -11,6 +11,17 @@ import type { AuthorizedEvent2, Observation2 } from '../src/shared/succession';
 import { motionMark, traceSuccessionMotion } from './succession-motion-observer';
 import { visibility } from './motion-observer';
 import { writeFile } from 'node:fs/promises';
+import { dossierCheckpoint } from './fixtures/dossier-checkpoint';
+import {
+  chapter,
+  record,
+  openChapter,
+  readToSource,
+  expectBoundedRecord,
+  expectReadingControls,
+  observeDossierBounds,
+  expectObservedDossierBounds,
+} from './fixtures/dossier-browser';
 
 test.use({ video: 'on' });
 
@@ -122,6 +133,7 @@ test.beforeAll(async () => {
 });
 
 async function routes(page: Page, initial: Observation2) {
+  await observeDossierBounds(page);
   let current = initial;
 
   let send = (_view: Observation2): void => {
@@ -133,6 +145,8 @@ async function routes(page: Page, initial: Observation2) {
   };
 
   const pageRequests: URL[] = [];
+  const checkpointRequests: URL[] = [];
+  const pageSizes: number[] = [];
   await page.route('**/api/matches/succession-ui', (route) =>
     route.fulfill({ json: Schema.decodeUnknownSync(Observation2Schema)(current) }),
   );
@@ -162,20 +176,36 @@ async function routes(page: Page, initial: Observation2) {
 
     const cursor = events.at(-1)?.id ?? after;
 
+    const body = Schema.decodeUnknownSync(HistoryPage2Schema)({
+      protocolVersion: '2',
+      gameId: 'succession',
+      matchId: 'succession-ui',
+      visibilityEpoch: epoch,
+      streamHead: current.history.streamHead,
+      after,
+      through,
+      cursor,
+      events,
+      hasMore: cursor < through,
+      reset: false,
+    });
+
+    pageSizes.push(Buffer.byteLength(JSON.stringify(body)));
+
+    return route.fulfill({ json: body });
+  });
+  await page.route('**/api/matches/succession-ui/checkpoint?*', (route) => {
+    const url = new URL(route.request().url());
+    checkpointRequests.push(url);
+    const through = Number(url.searchParams.get('through'));
+
+    const event = fixture
+      .events(current.status !== 'active')
+      .slice(0, through)
+      .findLast((entry) => fixture.frames.has(entry.eventKey));
+
     return route.fulfill({
-      json: Schema.decodeUnknownSync(HistoryPage2Schema)({
-        protocolVersion: '2',
-        gameId: 'succession',
-        matchId: 'succession-ui',
-        visibilityEpoch: epoch,
-        streamHead: current.history.streamHead,
-        after,
-        through,
-        cursor,
-        events,
-        hasMore: cursor < through,
-        reset: false,
-      }),
+      json: dossierCheckpoint(event ? fixture.frames.get(event.eventKey) : undefined, current, through),
     });
   });
   await page.route('**/api/matches/succession-ui/replay?*', (route) => {
@@ -196,7 +226,7 @@ async function routes(page: Page, initial: Observation2) {
       { key: string; act: 1 | 2; round: number; through: number; eventKey: string }
     >();
 
-    for (const event of fixture.events(true)) {
+    for (const event of fixture.events(current.status !== 'active').slice(0, current.history.streamHead)) {
       const key = `act-${event.act}:${event.act === 1 ? 'election' : 'table'}-${event.round}`;
 
       if (!rounds.has(key))
@@ -214,7 +244,7 @@ async function routes(page: Page, initial: Observation2) {
         protocolVersion: '2',
         gameId: 'succession',
         matchId: 'succession-ui',
-        visibilityEpoch: 'archive',
+        visibilityEpoch: current.history.visibilityEpoch,
         rounds: [...rounds.values()],
       },
     });
@@ -236,6 +266,19 @@ async function routes(page: Page, initial: Observation2) {
 
   return {
     pageRequests,
+    checkpointRequests,
+    assertBounded: async () => {
+      expect(pageRequests.length).toBeLessThanOrEqual(checkpointRequests.length * 4);
+      expect(
+        pageRequests.every(
+          (url) => url.searchParams.get('limit') === '32' && url.searchParams.get('maxBytes') === '16384',
+        ),
+      ).toBe(true);
+      expect(pageSizes.every((bytes) => bytes <= 16_384)).toBe(true);
+      await expectObservedDossierBounds(page);
+
+      for (const reader of await page.locator('[data-story-window]').all()) await expectBoundedRecord(reader);
+    },
     publish: (view: Observation2) => {
       current = view;
       send(view);
@@ -264,15 +307,21 @@ test('actual engine boards preserve all ten identities, transition, public stage
   const transport = await routes(page, viewOf(fixture.act1));
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto('/matches/succession-ui?gameId=secret-overlord');
-  await expect(page.getByRole('heading', { name: 'Succession', exact: false }).first()).toBeVisible();
+  await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · ACT I');
+  await page.getByText('Current table · public resources and seats', { exact: true }).click();
   await expect(page.getByRole('region', { name: 'Act 1 board' })).toBeVisible();
   transport.publish(viewOf(fixture.act2));
-  await expect(page.getByRole('heading', { name: 'Act 2 begins.' })).toBeVisible();
+  await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · ACT II');
+  await expect(chapter(page, 2).locator('.dossier-chapter-trigger')).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('region', { name: 'Act II starting states' })).toContainText(
+    'All ten agents return',
+  );
   await expect(page.getByRole('region', { name: 'Act 2 board' })).toBeVisible();
   await expect(page.locator('.seat')).toHaveCount(10);
   await expect(page.locator('.returned-marker')).toHaveCount(10);
   await expect(page.getByRole('region', { name: 'Your private controller state' })).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'One champion.' })).toHaveCount(0);
+  await expect(page.locator('.dossier-outcome h1')).toHaveText('Match in progress');
+  await expect(page.getByRole('checkbox', { name: /Show private archive/ })).toHaveCount(0);
 
   const stages = [...fixture.stages.values()]
     .filter((state) => state.stage.act === 2)
@@ -289,30 +338,63 @@ test('actual engine boards preserve all ten identities, transition, public stage
   await page.locator('.seat a').last().focus();
   await expect(page.locator('.seat a').last()).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: '/tmp/opencode/succession-ui/act2-320.png', fullPage: true });
-  expect(transport.pageRequests.length).toBeLessThan(10);
+  await page.screenshot({ path: test.info().outputPath('act2-320.png'), fullPage: true });
+  await transport.assertBounded();
 });
 
-test('one terminal champion remains fixed during two-act replay with bounded page reads', async ({
+test('one terminal champion remains fixed during two-act reading with exact historical resources and bounded reads', async ({
   page,
 }) => {
   const transport = await routes(page, viewOf(fixture.terminal, true));
   await page.setViewportSize({ width: 1600, height: 1120 });
   await page.goto('/matches/succession-ui');
-  await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Archive disclosure at selected event' })).toBeVisible();
-  const slider = page.getByRole('slider', { name: 'Replay event' });
-  await slider.fill('0');
-  await expect(page.getByRole('region', { name: 'Act 1 board' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Your legal choices' })).toHaveCount(0);
-  await page.getByLabel('Browse by round').focus();
-  await page.getByLabel('Browse by round').selectOption('2:1');
-  await expect(page.getByRole('region', { name: 'Act 2 board' })).toBeVisible();
-  await expect(page.getByLabel('Browse by round')).toBeFocused();
-  await page.screenshot({ path: '/tmp/opencode/succession-ui/replay-1600.png', fullPage: true });
-  expect(transport.pageRequests.every((url) => Number(url.searchParams.get('limit')) <= 32)).toBe(true);
-  expect(transport.pageRequests.length).toBeLessThan(10);
+  await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · COMPLETED');
+  await expect(record(page, 2)).toHaveAttribute('data-story-delivered', String(fixture.events(true).length));
+  const ending = page.getByRole('button', { name: 'Final move', exact: true });
+  await expect(ending).toBeEnabled();
+  const outcome = await page.locator('.dossier-outcome').innerText();
+  const winner = fixture.terminal.result!.winnerSeat;
+  await expect(page.locator('.dossier-outcome h1')).toHaveText(
+    `${fixture.terminal.seats[winner].entrant.name} wins the match`,
+  );
+  await expectReadingControls(page);
+  await expect(page.getByRole('checkbox', { name: /Show private archive/ })).not.toBeChecked();
+  const first = fixture.events(true).find((event) => event.type === 'nomination')!;
+  await readToSource(page, 1, first.id);
+  await expect(record(page, 1).locator('[data-source-act="2"]')).toHaveCount(0);
+  await expect(page.locator('.legal-actions')).toHaveCount(0);
+  const coin = fixture.events(true).find((event) => event.type === 'coins')!;
+
+  const facts = Schema.decodeUnknownSync(Schema.Struct({ seat: Schema.Number, coins: Schema.Number }))(
+    coin.data,
+  );
+
+  const coinRow = await readToSource(page, 2, coin.id);
+  await expect(coinRow.getByRole('button', { name: 'Coins rules', exact: true })).toHaveAttribute(
+    'aria-description',
+    new RegExp(`${facts.coins} Coins$`),
+  );
+  const saved = fixture.frames.get(coin.eventKey)!;
+
+  if (saved.stage.act !== 2) throw new Error('Expected exact Act II coin checkpoint');
+  await coinRow.getByText(/Cards at this moment/).click();
+  await expect(coinRow.locator('.dossier-card-known')).toHaveCount(0);
+  await expect(coinRow.locator('.dossier-card-hidden')).toHaveCount(
+    saved.stage.board.resources[facts.seat].hand.length,
+  );
+  await page.getByRole('checkbox', { name: /Show private archive/ }).check();
+  await expect(coinRow.locator('.dossier-card-known')).toHaveCount(
+    saved.stage.board.resources[facts.seat].hand.length,
+  );
+  expect(await page.locator('.dossier-outcome').innerText()).toBe(outcome);
+  await ending.click();
+  const lastDeclaration = fixture.events(true).findLast((event) => event.type === 'declaration')!;
+  const finalMove = record(page, 2).locator(`[data-event-key="${lastDeclaration.eventKey}"]`);
+  await expect(finalMove).toBeFocused();
+  await expect(finalMove).toBeInViewport();
+  expect(await page.locator('.dossier-outcome').innerText()).toBe(outcome);
+  await page.screenshot({ path: test.info().outputPath('reading-1600.png'), fullPage: true });
+  await transport.assertBounded();
 });
 
 test('rules scope restores on back while shared navigation stays neutral', async ({ page }) => {
@@ -327,34 +409,40 @@ test('rules scope restores on back while shared navigation stays neutral', async
   await expect(picker).toHaveAttribute('aria-selected', 'true');
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: '/tmp/opencode/succession-ui/rules-390.png', fullPage: true });
+  await page.screenshot({ path: test.info().outputPath('rules-390.png'), fullPage: true });
 });
 
 test('archive expansion preserves the opaque reading anchor and rejects delayed live snapshots', async ({
   page,
 }) => {
-  const live = viewOf(fixture.act2);
+  const source = fixture.stages.get('act-2:challenge');
+
+  if (!source) throw new Error('Missing long live Act II source');
+  const live = viewOf(source);
   const transport = await routes(page, live);
   await page.setViewportSize({ width: 1600, height: 1120 });
   await page.goto('/matches/succession-ui');
-  const timeline = page.getByLabel('Match timeline', { exact: true });
-  await expect(timeline.locator('[data-event-id]').first()).toBeVisible();
-  await timeline.evaluate((element) => {
-    element.scrollTop = 300;
+  const timeline = await openChapter(page, 2);
+  const sourceKey = await timeline.locator('.dossier-row').nth(10).getAttribute('data-event-key');
+  const reading = timeline.locator(`[data-event-key="${sourceKey}"]`);
+  await expect(reading).toBeVisible();
+  await reading.evaluate((node) => {
+    node.scrollIntoView({ block: 'start', behavior: 'instant' });
   });
-  await expect(page.getByRole('button', { name: /Jump to latest/ })).toBeVisible();
+  await reading.getByRole('button').first().focus();
+  await expect(reading.getByRole('button').first()).toBeFocused();
+  await page.evaluate(
+    () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))),
+  );
+  await expect(reading).toBeInViewport();
+  expect(await page.evaluate(() => scrollY)).toBeGreaterThan(300);
 
-  const before = await timeline.evaluate((element) => {
-    const top = element.getBoundingClientRect().top;
-
-    const row = [...element.querySelectorAll<HTMLElement>('[data-event-id]')].find(
-      (entry) => entry.getBoundingClientRect().bottom > top,
-    );
-
-    if (!row) throw new Error('No visible reading anchor');
-
-    return { id: Number(row.dataset.eventId), offset: row.getBoundingClientRect().top - top };
-  });
+  const before = await reading.evaluate((row) => ({
+    id: Number(row.dataset.sourceId),
+    offset: row.getBoundingClientRect().top,
+    scrollY,
+    documentHeight: document.documentElement.scrollHeight,
+  }));
 
   const key = fixture.events(false).find((event) => event.id === before.id)?.eventKey;
 
@@ -363,21 +451,48 @@ test('archive expansion preserves the opaque reading anchor and rejects delayed 
 
   if (!archived) throw new Error('Missing archived event key');
   transport.publish(viewOf(fixture.terminal, true));
-  await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
-  const restored = timeline.locator(`[data-event-id="${archived.id}"]`).first();
+  await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · COMPLETED');
+  const restored = timeline.locator(`[data-source-id="${archived.id}"]`).first();
   await expect(restored).toBeVisible();
-  await expect
-    .poll(async () =>
-      restored.evaluate(
-        (row) => row.getBoundingClientRect().top - row.closest('.event-list')!.getBoundingClientRect().top,
-      ),
-    )
-    .toBeCloseTo(before.offset, 0);
   transport.deliver(live);
-  await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
+  await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · COMPLETED');
   await expect(page.locator('.phase-banner').filter({ hasText: 'CURRENT PHASE' })).toHaveCount(0);
-  expect(transport.pageRequests.length).toBeLessThan(8);
-  await page.screenshot({ path: '/tmp/opencode/succession-ui/archive-anchor-1600.png', fullPage: true });
+  await transport.assertBounded();
+
+  try {
+    await expect
+      .poll(async () => restored.evaluate((row) => row.getBoundingClientRect().top))
+      .toBeCloseTo(before.offset, 0);
+  } finally {
+    const after = await restored.evaluate((row) => ({
+      offset: row.getBoundingClientRect().top,
+      scrollY,
+      documentHeight: document.documentElement.scrollHeight,
+      focused: document.activeElement?.tagName,
+      window: row.closest('[data-story-window]')?.outerHTML.slice(0, 350),
+    }));
+
+    await test.info().attach('canonical-anchor.json', {
+      body: JSON.stringify(
+        {
+          key,
+          liveCursor: before.id,
+          archiveCursor: archived.id,
+          before,
+          after,
+          liveEpoch: live.history.visibilityEpoch,
+          archiveEpoch: 'archive',
+          checkpoints: transport.checkpointRequests.map(String),
+          history: transport.pageRequests.map(String),
+        },
+        null,
+        2,
+      ),
+      contentType: 'application/json',
+    });
+  }
+
+  await page.screenshot({ path: test.info().outputPath('archive-anchor-1600.png'), fullPage: true });
 });
 
 async function outcomeSnapshot(page: Page, state: SuccessionState) {
@@ -394,6 +509,9 @@ async function outcomeSnapshot(page: Page, state: SuccessionState) {
     text: state.result
       ? `Table-round cap reached. Winning seat ${state.result.winnerSeat + 1}.`
       : (state.interruptionReason ?? 'Partial record.'),
+    data: state.result
+      ? { type: 'finished', winner: state.result.winnerSeat, capEvidence: state.result.tieBreak }
+      : undefined,
   };
 
   await page.route('**/api/matches/succession-ui/history?*', (route) =>
@@ -435,6 +553,11 @@ async function outcomeSnapshot(page: Page, state: SuccessionState) {
   await page.route('**/api/matches/succession-ui/replay?*', (route) =>
     route.fulfill({ json: replayFrameSuccession(state, 1, 'archive') }),
   );
+  await page.route('**/api/matches/succession-ui/checkpoint?*', (route) => {
+    const through = Number(new URL(route.request().url()).searchParams.get('through'));
+
+    return route.fulfill({ json: dossierCheckpoint(through === 1 ? state : undefined, view, through) });
+  });
   await page.goto('/matches/succession-ui');
 }
 
@@ -498,22 +621,39 @@ test('cap criteria, forfeited champion and interrupted acts retain their separat
   for (const [index, criterion] of (['influence', 'coins', 'priority'] as const).entries()) {
     await page.setViewportSize({ width: [320, 390, 1600][index], height: 1120 });
     await outcomeSnapshot(page, capSnapshot(criterion, criterion === 'priority'));
-    await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: `Cap tiebreak · Decided by ${criterion}` })).toBeVisible();
-    await expect(page.locator('.cap-evidence tbody tr')).toHaveCount(10);
-    await expect(page.getByRole('region', { name: 'Historical match state' })).toBeVisible();
-    await expect(page.getByText('Updating historical frame…')).toHaveCount(0);
-    expect(await page.locator('.cap-evidence').evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(
-      true,
+    const outcome = page.locator('.dossier-outcome');
+    await expect(outcome).toContainText('SUCCESSION · COMPLETED');
+    await outcome.getByText('Round cap comparison', { exact: true }).click();
+    const comparison = outcome.getByRole('region', { name: 'Round cap comparison' });
+    await expect(comparison).toContainText(
+      `Decided by ${criterion === 'priority' ? 'precommitted priority' : criterion}`,
     );
+    await expect(comparison.locator('tbody tr')).toHaveCount(10);
+    await expect(page.getByRole('region', { name: 'Current match state' })).toHaveCount(0);
+    await expectReadingControls(page);
+    expect(await comparison.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
 
     for (const label of ['Influence', 'Coins', 'Priority']) {
-      await expect(page.locator(`.cap-evidence td[data-label="${label}"]`)).toHaveCount(10);
+      await expect(comparison.getByRole('columnheader', { name: label, exact: true })).toBeVisible();
     }
 
-    if (criterion === 'priority') await expect(page.locator('.forfeit-result')).toContainText('forfeit loss');
+    const scores = capSnapshot(criterion, criterion === 'priority').result!.tieBreak!.scores;
+
+    for (const [row, score] of scores.entries()) {
+      await expect(comparison.locator('tbody tr').nth(row).locator('td')).toHaveText([
+        String(score.influence),
+        String(score.coins),
+        String(score.priority),
+      ]);
+    }
+
+    if (criterion === 'priority') {
+      await expect(outcome).toContainText('forfeit loss');
+      await expect(outcome.getByRole('heading')).toHaveText('House-controlled champion');
+    }
+
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: `/tmp/opencode/succession-ui/cap-${criterion}.png`, fullPage: true });
+    await page.screenshot({ path: test.info().outputPath(`cap-${criterion}.png`), fullPage: true });
   }
 
   for (const source of [fixture.act1, fixture.act2]) {
@@ -529,12 +669,18 @@ test('cap criteria, forfeited champion and interrupted acts retain their separat
 
     await page.setViewportSize({ width: source.stage.act === 1 ? 320 : 768, height: 1120 });
     await outcomeSnapshot(page, state);
-    await expect(page.getByRole('heading', { name: 'Match interrupted.' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'One champion.' })).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: 'Act 2 begins.' })).toHaveCount(0);
-    await expect(page.getByRole('region', { name: `Act ${source.stage.act} board` })).toBeVisible();
+    await expect(page.locator('.dossier-outcome h1')).toHaveText('Match interrupted');
+    await expect(page.locator('.dossier-outcome')).toContainText('no overall champion recorded');
+    await expect(page.locator('.dossier-outcome')).toContainText(
+      'Synthetic platform interruption for presentation coverage.',
+    );
+    await openChapter(page, source.stage.act);
+    await expect(record(page, source.stage.act).locator('.dossier-row')).toHaveAttribute(
+      'data-source-act',
+      String(source.stage.act),
+    );
     await page.screenshot({
-      path: `/tmp/opencode/succession-ui/interrupted-act${source.stage.act}.png`,
+      path: test.info().outputPath(`interrupted-act${source.stage.act}.png`),
       fullPage: true,
     });
   }
@@ -553,7 +699,8 @@ test('a replaced controller loses private cards and controls and delayed private
   await page.goto('/matches/succession-ui');
   await expect(page.getByRole('heading', { name: 'Your capability cards' })).toBeVisible();
   await expect(page.locator('.legal-actions button').first()).toBeVisible();
-  await page.screenshot({ path: '/tmp/opencode/succession-ui/entitled-controller-768.png', fullPage: true });
+  await expect(record(page, 2)).toHaveAttribute('aria-busy', 'false');
+  await page.screenshot({ path: test.info().outputPath('entitled-controller-768.png'), fullPage: true });
 
   if (!initial.you) throw new Error('Missing controller');
 
@@ -575,7 +722,7 @@ test('a replaced controller loses private cards and controls and delayed private
   transport.deliver(initial);
   await expect(page.locator('.legal-actions')).toHaveCount(0);
   await expect(page.locator('.capability-hand')).toHaveCount(0);
-  await page.screenshot({ path: '/tmp/opencode/succession-ui/forfeit-cutoff-768.png', fullPage: true });
+  await page.screenshot({ path: test.info().outputPath('forfeit-cutoff-768.png'), fullPage: true });
 });
 
 for (const width of [320, 390, 768, 1600]) {
@@ -604,9 +751,13 @@ for (const width of [320, 390, 768, 1600]) {
           await routes(page, viewOf(state));
           await page.goto('/matches/succession-ui');
           await expect(
-            page.getByText('Challenges sealed · Choices reveal together at resolution.'),
+            page
+              .getByRole('region', { name: 'Current match state', exact: true })
+              .getByText('Challenges sealed · Choices reveal together at resolution.', { exact: true }),
           ).toBeVisible();
           await expect(page.locator('.seat')).toHaveCount(10);
+          await page.getByText('Current table · public resources and seats', { exact: true }).click();
+          await expect(page.getByRole('region', { name: 'Act 2 board' })).toBeVisible();
           await expect(page.locator('.legal-actions')).toHaveCount(0);
           await expect(page.locator('html')).toHaveAttribute(
             'data-motion',
@@ -614,7 +765,7 @@ for (const width of [320, 390, 768, 1600]) {
           );
           expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
           await page.screenshot({
-            path: `/tmp/opencode/succession-ui/live-${width}-${reducedMotion}.png`,
+            path: testInfo.outputPath(`live-${width}-${reducedMotion}.png`),
             fullPage: true,
           });
           // Deliberate native-speed recording dwell after the settled live phase.
@@ -654,15 +805,25 @@ for (const width of [320, 390]) {
     await expect(page.getByRole('heading', { name: 'Challenge the block' })).toBeVisible();
     const phase = page.getByRole('region', { name: 'Current match state' });
     expect(await phase.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
-    await page.screenshot({ path: `/tmp/opencode/succession-ui/long-phase-${width}.png`, fullPage: true });
+    await page.screenshot({ path: test.info().outputPath(`long-phase-${width}.png`), fullPage: true });
     await routes(page, viewOf(fixture.terminal, true));
     await page.goto('/matches/succession-ui');
-    await page.getByLabel('Replay event', { exact: true }).fill('0');
-    const historical = page.getByRole('region', { name: 'Historical match state' });
-    await expect(historical).toContainText('Coordinator:');
+    const election = fixture.events(true).find((event) => event.type === 'election')!;
+    const historical = await readToSource(page, 1, election.id);
+
+    const government = Schema.decodeUnknownSync(
+      Schema.Struct({ coordinator: Schema.Number, executor: Schema.Number }),
+    )(election.data);
+
+    await expect(historical).toContainText(
+      `Coordinator: ${fixture.act1.seats[government.coordinator].entrant.name}`,
+    );
+    await expect(historical).toContainText(
+      `Executor: ${fixture.act1.seats[government.executor].entrant.name}`,
+    );
     expect(await historical.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
     await page.screenshot({
-      path: `/tmp/opencode/succession-ui/historical-phase-${width}.png`,
+      path: test.info().outputPath(`historical-phase-${width}.png`),
       fullPage: true,
     });
   });
@@ -759,38 +920,35 @@ for (const width of [1600, 768, 390, 320]) {
         await motionMark(page, 'SM02 fresh completed record navigation');
         const resultCueStart = trace.length;
         await page.goto('/matches/succession-ui');
-        const result = page.locator('.succession-result');
-        await expect(page.getByRole('heading', { name: 'One champion.' })).toBeVisible();
-        await expect(result).toHaveAttribute('data-motion-settled', 'true');
+        const result = page.locator('.dossier-outcome');
+        await expect(result).toContainText('SUCCESSION · COMPLETED');
         await page.waitForTimeout(2000);
         await motionMark(page, 'SM02 completed result settled; scroll away and back');
         const resultCues = trace.slice(resultCueStart).filter((entry) => entry.kind === 'animate');
-        expect(resultCues).toHaveLength(reducedMotion === 'reduce' ? 0 : 2);
-
-        if (reducedMotion === 'no-preference') {
-          expect(
-            resultCues.some(
-              (entry) =>
-                entry.detail.includes('"duration":240') &&
-                entry.detail.includes(`translateY(${width < 768 ? 2 : 4}px)`),
-            ),
-          ).toBe(true);
-          expect(
-            resultCues.some(
-              (entry) => entry.detail.includes('"duration":420') && entry.detail.includes('"delay":40'),
-            ),
-          ).toBe(true);
-        }
+        // The approved Dossier outcome is a static reading header, including under normal motion.
+        expect(resultCues).toHaveLength(0);
+        expect(await result.evaluate((node) => node.getAnimations({ subtree: true }).length)).toBe(0);
 
         const resultText = await result.innerText();
         const beforeReplay = trace.filter((entry) => entry.kind === 'animate').length;
         await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
         await page.waitForTimeout(400);
         await page.evaluate(() => scrollTo(0, 0));
-        await page.getByLabel('Replay event', { exact: true }).fill('0');
-        await expect(page.getByRole('region', { name: 'Historical match state' })).toContainText('ACT 1');
-        await page.getByLabel('Browse by round').selectOption('2:1');
-        await expect(page.getByRole('region', { name: 'Historical match state' })).toContainText('ACT 2');
+        const firstChapter = chapter(page, 1).locator('.dossier-chapter-trigger');
+        await firstChapter.focus();
+        await page.keyboard.press('Enter');
+        await expect(firstChapter).toHaveAttribute('aria-expanded', 'true');
+        await expect(firstChapter).toBeFocused();
+        await expect(record(page, 1)).toHaveAttribute('aria-busy', 'false');
+        const secondChapter = chapter(page, 2).locator('.dossier-chapter-trigger');
+        await secondChapter.focus();
+        await page.keyboard.press('Enter');
+        await expect(secondChapter).toHaveAttribute('aria-expanded', 'false');
+        await page.keyboard.press('Enter');
+        await expect(secondChapter).toHaveAttribute('aria-expanded', 'true');
+        await expect(secondChapter).toBeFocused();
+        await expect(record(page, 2)).toHaveAttribute('aria-busy', 'false');
+        await expectReadingControls(page);
         await page.evaluate(() => {
           history.replaceState(null, '', `${location.pathname}#replay`);
           dispatchEvent(new HashChangeEvent('hashchange'));
@@ -799,7 +957,7 @@ for (const width of [1600, 768, 390, 320]) {
         await page.waitForTimeout(2000);
         expect(await result.innerText()).toBe(resultText);
         expect(trace.filter((entry) => entry.kind === 'animate').length).toBe(beforeReplay);
-        await motionMark(page, 'SM02 replay Act1/Act2/hash and scroll restoration add no result cue');
+        await motionMark(page, 'SM02 keyboard chapters/hash and scroll restoration add no result cue');
         const source = width === 1600 || width === 390 ? fixture.act1 : fixture.act2;
 
         const interrupted = evolveSuccession(
@@ -811,13 +969,11 @@ for (const width of [1600, 768, 390, 320]) {
         await motionMark(page, `SM02 fresh interrupted Act${source.stage.act} record`);
         const partialCueStart = trace.length;
         await outcomeSnapshot(page, interrupted);
-        await expect(page.getByRole('heading', { name: 'Match interrupted.' })).toBeVisible();
-        await expect(page.locator('.succession-result')).toHaveAttribute('data-motion-settled', 'true');
+        await expect(page.locator('.dossier-outcome h1')).toHaveText('Match interrupted');
+        await expect(page.locator('.dossier-outcome')).toContainText('no overall champion recorded');
         await page.waitForTimeout(2000);
         const partialCues = trace.slice(partialCueStart).filter((entry) => entry.kind === 'animate');
-        expect(partialCues).toHaveLength(reducedMotion === 'reduce' ? 0 : 1);
-
-        if (reducedMotion === 'no-preference') expect(partialCues[0].detail).toContain('"duration":180');
+        expect(partialCues).toHaveLength(0);
 
         if (reducedMotion === 'reduce')
           expect(trace.filter((entry) => entry.kind === 'animate')).toHaveLength(0);
@@ -826,17 +982,10 @@ for (const width of [1600, 768, 390, 320]) {
           for (const boundary of ['reduced', 'hidden'] as const) {
             await routes(page, viewOf(fixture.terminal, true));
             await page.goto('/matches/succession-ui');
-            await page.waitForFunction(() =>
-              document
-                .getAnimations()
-                .some(
-                  (animation) =>
-                    animation.playState === 'running' &&
-                    animation.effect instanceof KeyframeEffect &&
-                    animation.effect.target?.closest('.succession-result'),
-                ),
-            );
-            await motionMark(page, `SM03 confirmed active result before ${boundary}`);
+            await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · COMPLETED');
+            await expect(page.getByRole('button', { name: 'Final move', exact: true })).toBeEnabled();
+            const beforeBoundary = await page.locator('.dossier-outcome').innerText();
+            await motionMark(page, `SM03 static Dossier result before ${boundary}`);
 
             if (boundary === 'reduced') await page.emulateMedia({ reducedMotion: 'reduce' });
             else await visibility(page, 'hidden');
@@ -848,26 +997,24 @@ for (const width of [1600, 768, 390, 320]) {
                 ),
               )
               .toBe(0);
-            await motionMark(
-              page,
-              `SM03 ${boundary} canceled running animations; hidden boundary is simulated`,
-            );
+            await motionMark(page, `SM03 ${boundary} retains a static outcome; hidden boundary is simulated`);
 
             if (boundary === 'reduced') await page.emulateMedia({ reducedMotion: 'no-preference' });
             else await visibility(page, 'visible');
             const beforeRestore = trace.filter((entry) => entry.kind === 'animate').length;
             await page.waitForTimeout(2000);
             expect(trace.filter((entry) => entry.kind === 'animate').length).toBe(beforeRestore);
+            expect(await page.locator('.dossier-outcome').innerText()).toBe(beforeBoundary);
             await motionMark(page, `SM03 ${boundary} restored without burst`);
           }
 
           const transport = await routes(page, viewOf(fixture.act2));
           await page.goto('/matches/succession-ui');
-          await expect(page.getByRole('region', { name: 'Act 2 board' })).toBeVisible();
+          await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · ACT II');
           await visibility(page, 'hidden');
           const beforeHidden = trace.filter((entry) => entry.kind === 'animate').length;
           transport.publish(viewOf(fixture.terminal, true));
-          await expect(page.getByRole('heading', { name: 'One champion.' })).toBeAttached();
+          await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · COMPLETED');
           await visibility(page, 'visible');
           await page.waitForTimeout(2000);
           expect(trace.filter((entry) => entry.kind === 'animate').length).toBe(beforeHidden);
@@ -922,8 +1069,20 @@ for (const width of [1600, 320]) {
 
       if (!source) throw new Error('Missing late live discussion fixture');
       const live = viewOf(source);
-      const initial = { ...live, history: { ...live.history, streamHead: 1 } };
+      const initial = viewOf(fixture.act2);
       const transport = await routes(page, initial);
+      await testInfo.attach('history-heads.json', {
+        body: JSON.stringify(
+          {
+            initial: initial.history.streamHead,
+            live: live.history.streamHead,
+            first: fixture.events(false).find((event) => event.type === 'act-started'),
+          },
+          null,
+          2,
+        ),
+        contentType: 'application/json',
+      });
       let release = () => {};
 
       const gate = new Promise<void>((resolve) => {
@@ -941,42 +1100,53 @@ for (const width of [1600, 320]) {
       });
       await page.goto('/matches/succession-ui');
       await expect.poll(() => started).toBe(true);
+      const reader = record(page, 2);
+      await expect(reader).toHaveAttribute('aria-busy', 'true');
+      await expect(reader).toHaveAttribute('data-story-delivered', '0');
       transport.publish(live);
-      await expect(page.getByRole('region', { name: 'History page controls' })).toContainText(
-        `${live.history.streamHead} events available`,
+      await expect(page.getByRole('region', { name: 'Current match state' })).toHaveAttribute(
+        'data-phase',
+        live.phase.kind,
       );
+      await expect(reader).toHaveAttribute('data-story-delivered', '0');
       release();
-      const footer = page.locator('.feed-footer');
-      await expect(footer).toContainText('newer events available');
-      await page.locator('.history-paging').scrollIntoViewIfNeeded();
+      await expect
+        .poll(async () => Number(await reader.getAttribute('data-story-delivered')), { timeout: 15_000 })
+        .toBe(live.history.streamHead);
+      await expect(reader).toHaveAttribute('aria-busy', 'false');
+      await expectBoundedRecord(reader);
+      expect(
+        transport.pageRequests.some(
+          (url) => Number(url.searchParams.get('through')) === initial.history.streamHead,
+        ),
+      ).toBe(true);
+      expect(
+        transport.pageRequests.some(
+          (url) => Number(url.searchParams.get('through')) === live.history.streamHead,
+        ),
+      ).toBe(true);
       await page.screenshot({
-        path: `/tmp/opencode/succession-ui/paging-delayed-${width}.png`,
+        path: testInfo.outputPath(`paging-delayed-${width}.png`),
         fullPage: true,
       });
       await page.waitForTimeout(2000);
-      const next = page.getByRole('button', { name: 'Load next record page', exact: true });
-
-      for (let n = 0; n < 32 && (await next.isEnabled()); n++) {
-        await next.click();
-        await expect(page.getByRole('button', { name: 'Loading record…' })).toHaveCount(0);
-      }
-
-      await expect(next).toBeDisabled();
-      await expect(footer).not.toContainText('newer events available');
+      await expectReadingControls(page);
       await page.screenshot({
-        path: `/tmp/opencode/succession-ui/paging-caught-up-${width}.png`,
+        path: testInfo.outputPath(`paging-caught-up-${width}.png`),
         fullPage: true,
       });
-      const earlier = page.getByRole('button', { name: 'Load earlier record', exact: true });
-
-      await expect(earlier).toBeVisible();
-      await earlier.click();
-      await expect(footer).toContainText('newer events available');
+      const first = fixture.events(false).find((event) => event.type === 'act-started')!;
+      await readToSource(page, 2, first.id);
+      expect(Number(await reader.getAttribute('data-story-delivered'))).toBeLessThan(live.history.streamHead);
+      await expect(page.getByRole('region', { name: 'Current match state' })).toHaveAttribute(
+        'data-phase',
+        live.phase.kind,
+      );
       await page.screenshot({
-        path: `/tmp/opencode/succession-ui/paging-earlier-${width}.png`,
+        path: testInfo.outputPath(`paging-earlier-${width}.png`),
         fullPage: true,
       });
-      expect(transport.pageRequests.every((url) => Number(url.searchParams.get('limit')) <= 32)).toBe(true);
+      await transport.assertBounded();
       await page.waitForTimeout(2000);
     } finally {
       await context.close();

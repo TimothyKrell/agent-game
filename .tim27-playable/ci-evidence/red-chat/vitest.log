@@ -1,0 +1,64 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/tmp/opencode/agent-game-playable-ci[39m
+
+[90mstderr[2m | .tim27-playable/clock-ordering.test.ts
+[22m[39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mkj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe[0m
+
+  stack: /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+
+
+
+[90mstderr[2m | .tim27-playable/clock-ordering.test.ts[2m > [22m[2mdoes not advance a discussion past a received native HTTP action
+[22m[39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mkj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe[0m
+
+  stack: /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+
+
+
+[90mstderr[2m | .tim27-playable/clock-ordering.test.ts[2m > [22m[2mdoes not advance a discussion past a received native HTTP action
+[22m[39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mkj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe[0m
+
+  stack: /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+
+
+
+[90mstderr[2m | .tim27-playable/clock-ordering.test.ts[2m > [22m[2mdoes not advance a discussion past a received native HTTP action
+[22m[39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mkj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Connection reset by peer[0m
+
+  stack: /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+
+
+
+ [31m❯[39m .tim27-playable/clock-ordering.test.ts [2m([22m[2m1 test[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 9062[2mms[22m[39m
+[31m   [31m×[31m does not advance a discussion past a received native HTTP action[39m[33m 1289[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m .tim27-playable/clock-ordering.test.ts[2m > [22mdoes not advance a discussion past a received native HTTP action
+[31m[1mAssertionError[22m: expected { advanced: true } to match object { advanced: false }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "advanced": false,[39m
+[31m+   "advanced": true,[39m
+[2m  }[22m
+
+[36m [2m❯[22m .tim27-playable/clock-ordering.test.ts:[2m29:24[22m[39m
+    [90m 27|[39m     const failures = journal.filter((event) => event.type === 'failure…
+    [90m 28|[39m     await writeFile(`${evidence}/held-chat-control.json`, JSON.stringi…
+    [90m 29|[39m     [34mexpect[39m(transition)[33m.[39m[34mtoMatchObject[39m({ advanced[33m:[39m [35mfalse[39m })[33m;[39m
+    [90m   |[39m                        [31m^[39m
+    [90m 30|[39m     [34mexpect[39m(failures)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m 31|[39m     expect(journal.some((event) => event.command?.[0] === 'say' && eve…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m   Start at [22m 07:03:28
+[2m   Duration [22m 9.83s[2m (transform 114ms, setup 0ms, import 692ms, tests 9.06s, environment 0ms)[22m
+
+JSON report written to /tmp/opencode/agent-game-playable-ci/.tim27-playable/runs/ci-held-red-2/vitest.json

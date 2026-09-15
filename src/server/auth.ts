@@ -1,9 +1,14 @@
 import { betterAuth } from 'better-auth';
+import { APIError } from 'better-auth/api';
 import { GameError } from '../game/types';
 import { hashSecret, isLoopback, opaqueId } from './http';
 import type { AuthProvider, OwnerProfile } from '../shared/api';
+import { previewEnabled } from './preview-config';
+import { previewAuth } from './preview-auth';
+import { previewAuthority } from './preview-authority';
 
 export function authProviders(env: Env): AuthProvider[] {
+  if (previewEnabled(env)) return [];
   const providers: AuthProvider[] = [];
 
   if (env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET) providers.push('github');
@@ -16,13 +21,14 @@ export function authProviders(env: Env): AuthProvider[] {
 export function createAuth(env: Env) {
   if (!env.BETTER_AUTH_SECRET || env.BETTER_AUTH_SECRET.length < 32)
     throw new GameError('auth-unconfigured', 'Owner authentication is not configured yet.', 503);
-  const local = env.ENVIRONMENT === 'development' && isLoopback(env.APP_URL);
+  const target = previewEnabled(env);
+  const local = !target && env.ENVIRONMENT === 'development' && isLoopback(env.APP_URL);
   const socialProviders: NonNullable<Parameters<typeof betterAuth>[0]['socialProviders']> = {};
 
-  if (env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET)
+  if (!target && env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET)
     socialProviders.github = { clientId: env.GITHUB_CLIENT_ID, clientSecret: env.GITHUB_CLIENT_SECRET };
 
-  if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)
+  if (!target && env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)
     socialProviders.google = { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET };
 
   return betterAuth({
@@ -31,10 +37,18 @@ export function createAuth(env: Env) {
     basePath: '/api/auth',
     secret: env.BETTER_AUTH_SECRET,
     database: env.DB,
+    plugins: target ? [previewAuth(env)] : [],
     socialProviders,
     emailAndPassword: { enabled: local },
     account: { accountLinking: { enabled: true, disableImplicitLinking: true } },
-    session: { cookieCache: { enabled: false } },
+    session: {
+      cookieCache: { enabled: false },
+      disableSessionRefresh: target,
+      additionalFields: {
+        previewRequestId: { type: 'string', required: false, input: false, fieldName: 'preview_request_id' },
+      },
+    },
+    advanced: { cookiePrefix: target ? 'preview-auth' : 'better-auth' },
     trustedOrigins: local
       ? [
           env.APP_URL,
@@ -49,13 +63,23 @@ export function createAuth(env: Env) {
   });
 }
 
+async function authSession(request: Request, env: Env) {
+  try {
+    return await createAuth(env).api.getSession({ headers: request.headers });
+  } catch (cause) {
+    if (previewEnabled(env) && cause instanceof APIError)
+      throw new GameError('preview-authority', 'Source session is unavailable or revoked.', cause.statusCode);
+    throw cause;
+  }
+}
+
 export async function ownerSession(
   request: Request,
   env: Env,
   required = true,
 ): Promise<OwnerProfile | null> {
   if (!env.BETTER_AUTH_SECRET && !required) return null;
-  const session = await createAuth(env).api.getSession({ headers: request.headers });
+  const session = await authSession(request, env);
 
   if (!session) {
     if (required) throw new GameError('sign-in-required', 'Sign in to manage your agents.', 401);
@@ -68,6 +92,8 @@ export async function ownerSession(
     .first<OwnerProfile>();
 
   if (existing) return existing;
+
+  if (previewEnabled(env)) throw new GameError('preview-import', 'Source owner import is incomplete.', 401);
   const id = opaqueId('owner');
 
   const slug =
@@ -99,6 +125,15 @@ export interface AgentPrincipal {
   expiresAt: number;
 }
 
+export async function ownerPreviewAuthority(request: Request, env: Env, agentId: string) {
+  if (!previewEnabled(env)) return null;
+  const session = await authSession(request, env);
+
+  if (!session) throw new GameError('sign-in-required', 'Sign in through the source preview handoff.', 401);
+
+  return previewAuthority(env, 'session', session.session.id, agentId);
+}
+
 export async function agentSession(request: Request, env: Env): Promise<AgentPrincipal> {
   const token = request.headers.get('authorization')?.match(/^Bearer (agk_[A-Za-z0-9_-]{43})$/)?.[1];
 
@@ -120,12 +155,19 @@ export async function agentSession(request: Request, env: Env): Promise<AgentPri
       401,
     );
 
+  await previewAuthority(env, 'grant', principal.grantId, principal.agentId);
+
   return principal;
 }
 
 /** Local-only preview login still exercises Better Auth's real session and D1 paths. */
 export async function developmentLogin(request: Request, env: Env, name: string): Promise<Response> {
-  if (env.ENVIRONMENT !== 'development' || !isLoopback(request.url) || !isLoopback(env.APP_URL))
+  if (
+    previewEnabled(env) ||
+    env.ENVIRONMENT !== 'development' ||
+    !isLoopback(request.url) ||
+    !isLoopback(env.APP_URL)
+  )
     throw new GameError('not-found', 'Not found.', 404);
   const auth = createAuth(env);
   const digest = await hashSecret(`${env.BETTER_AUTH_SECRET}:${name.toLowerCase()}`);

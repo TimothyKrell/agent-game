@@ -1,0 +1,71 @@
+
+Running 2 tests using 1 worker
+
+  ✘  1 .dossier/ending.spec.mjs:108:3 › pending Final move respects later portrait ownership (2.4s)
+  ✘  2 .dossier/ending.spec.mjs:108:3 › pending Final move respects later chapter ownership (2.9s)
+
+
+  1) .dossier/ending.spec.mjs:108:3 › pending Final move respects later portrait ownership ─────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 3
+
+      Object {
+    -   "event": null,
+    -   "tag": "BUTTON",
+    -   "text": "",
+    +   "event": "story-226372697-1604",
+    +   "tag": "ARTICLE",
+    +   "text": "Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at ",
+      }
+
+      126 |     const after = await state(page);
+      127 |     await info.attach('ownership', { body: JSON.stringify({ before, after, requests: control.requests }, null, 2), contentType: 'application/json' });
+    > 128 |     expect(after.active).toEqual(before.active);
+          |                          ^
+      129 |     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
+      130 |     expect(after.modalFocus).toBe(before.modalFocus);
+      131 |     expect(control.faults).toEqual([]);
+        at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:128:26
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs/evidence/TIM-19-22-ending-intent/red/ending-pending-Final-move-respects-later-portrait-ownership/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: docs/evidence/TIM-19-22-ending-intent/red/ending-pending-Final-move-respects-later-portrait-ownership/error-context.md
+
+  2) .dossier/ending.spec.mjs:108:3 › pending Final move respects later chapter ownership ──────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "event": "story-2609918634-36",
+    +   "event": "story-226372697-1604",
+        "tag": "ARTICLE",
+    -   "text": "Act I · Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age",
+    +   "text": "Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at ",
+      }
+
+      126 |     const after = await state(page);
+      127 |     await info.attach('ownership', { body: JSON.stringify({ before, after, requests: control.requests }, null, 2), contentType: 'application/json' });
+    > 128 |     expect(after.active).toEqual(before.active);
+          |                          ^
+      129 |     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
+      130 |     expect(after.modalFocus).toBe(before.modalFocus);
+      131 |     expect(control.faults).toEqual([]);
+        at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:128:26
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs/evidence/TIM-19-22-ending-intent/red/ending-pending-Final-move-respects-later-chapter-ownership/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: docs/evidence/TIM-19-22-ending-intent/red/ending-pending-Final-move-respects-later-chapter-ownership/error-context.md
+
+  2 failed
+    .dossier/ending.spec.mjs:108:3 › pending Final move respects later portrait ownership ──────────
+    .dossier/ending.spec.mjs:108:3 › pending Final move respects later chapter ownership ───────────

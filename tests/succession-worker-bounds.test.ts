@@ -1,7 +1,9 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { promisify } from 'node:util';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 import { unstable_dev } from 'wrangler';
 import type { Observation2, ActionRequest2, HistoryPage2, ReplayFrame2 } from '../src/shared/succession';
 import type { QueueStatus } from '../src/shared/api';
@@ -17,6 +19,27 @@ let matchId: string;
 let controllers: FixtureController[];
 
 const measurements: Record<string, BoundsReport> = {};
+
+const observations = new Map<string, ReturnType<typeof checkpoint>>();
+
+let failed = false;
+
+const artifact = () =>
+  process.env.SUCCESSION_BOUNDS_RESULTS_PATH ??
+  join(tmpdir(), `succession-worker-bounds-results-${process.pid}.json`);
+
+function checkpoint(view: Observation2) {
+  return {
+    at: Date.now(),
+    matchId: view.matchId,
+    status: view.status,
+    phase: view.phase,
+    history: view.history,
+    you: view.you,
+    decisionId: view.decision?.id ?? null,
+    seats: view.seats,
+  };
+}
 
 const bytes = <T>(value: T) => Buffer.byteLength(JSON.stringify(value));
 
@@ -57,7 +80,14 @@ async function get<T>(path: string, controller?: FixtureController, body?: strin
   return JSON.parse(text);
 }
 
-const current = (controller?: FixtureController) => get<Observation2>(`/api/matches/${matchId}`, controller);
+async function current(controller?: FixtureController): Promise<Observation2> {
+  const view = await get<Observation2>(`/api/matches/${matchId}`, controller);
+  observations.set(controller?.agentId ?? 'public', checkpoint(view));
+
+  if (controller) expect(view.you?.agentId).toBe(controller.agentId);
+
+  return view;
+}
 
 const fixture = (suffix: string) => `/__fixture/matches/${matchId}/${suffix}`;
 
@@ -136,6 +166,58 @@ function decision(view: Observation2): ActionRequest2 {
   };
 }
 
+async function controllerViews() {
+  return Promise.all(
+    controllers.map(async (controller) => ({ controller, view: await current(controller) })),
+  );
+}
+
+async function nextDecision() {
+  const deadline = Date.now() + 120_000;
+
+  while (Date.now() < deadline) {
+    const seats = await controllerViews();
+    const selected = seats.find(({ view }) => view.decision && view.you?.alive && !view.you.forfeited);
+
+    if (selected) return selected;
+    const view = await current();
+    expect(view.status, 'A measured mutation requires an active match').toBe('active');
+    expect(
+      seats.some(({ view }) => view.you?.alive && !view.you.forfeited),
+      'A measured mutation requires an original controller with authority',
+    ).toBe(true);
+
+    if (view.phase.kind.includes('discussion'))
+      await get(fixture(`clock?kind=discussion&phaseId=${view.phase.id}`));
+  }
+
+  throw new Error('No authenticated controller reached the measured action checkpoint');
+}
+
+async function populate(offset: number, count: number, escaping = false) {
+  const batch = await get<{ first: number; through: number }>(
+    fixture(`populate?offset=${offset}&count=${count}${escaping ? '&escaping' : ''}`),
+  );
+
+  // Large corpus construction runs alongside real alarms. Keep the external controllers playing
+  // at natural decision boundaries without advancing discussion clocks during population.
+  const view = await current();
+  expect(view.status).toBe('active');
+
+  if (!view.phase.kind.includes('discussion')) {
+    const seats = await controllerViews();
+    await Promise.all(
+      seats.map(({ controller, view }) =>
+        view.decision && !view.you?.forfeited
+          ? get(`/api/matches/${matchId}/actions`, controller, JSON.stringify(decision(view)))
+          : Promise.resolve(),
+      ),
+    );
+  }
+
+  return batch;
+}
+
 async function drive(stop: (view: Observation2) => boolean) {
   const deadline = Date.now() + 120_000;
 
@@ -165,9 +247,9 @@ async function drive(stop: (view: Observation2) => boolean) {
 
 beforeAll(async () => {
   const started = performance.now();
-  directory = await mkdtemp('/tmp/opencode/succession-bounds-');
-  await promisify(execFile)('npx', [
-    'wrangler',
+  directory = await mkdtemp(join(tmpdir(), 'succession-bounds-'));
+  await promisify(execFile)(process.execPath, [
+    'node_modules/wrangler/bin/wrangler.js',
     'd1',
     'migrations',
     'apply',
@@ -185,11 +267,26 @@ beforeAll(async () => {
   );
 }, 60_000);
 
+afterEach(async ({ task }) => {
+  if (task.result?.state !== 'fail' || failed) return;
+  failed = true;
+
+  const failure = {
+    error: task.result.errors?.[0]?.message,
+    observations: [...observations.values()],
+    measurements,
+    directory,
+  };
+
+  console.error('SUCCESSION_BOUNDS_FAILURE', JSON.stringify(failure));
+  await writeFile(artifact(), JSON.stringify({ failure }, null, 2));
+});
+
 afterAll(async () => {
   const started = performance.now();
   await worker?.stop();
 
-  if (directory) await rm(directory, { recursive: true, force: true });
+  if (directory && !failed) await rm(directory, { recursive: true, force: true });
   console.info(
     'SUCCESSION_BOUNDS_LIFECYCLE',
     JSON.stringify({ phase: 'cleaned', elapsedMs: Math.round(performance.now() - started) }),
@@ -197,6 +294,7 @@ afterAll(async () => {
 });
 
 async function admitExternalGroup() {
+  observations.clear();
   controllers = await get<FixtureController[]>('/__fixture/controllers?count=10');
   await Promise.all(
     controllers.map((controller) =>
@@ -227,7 +325,7 @@ it('measures a small-history public/private current baseline on the actual host'
   const report = await record('small-history-current');
   expect(publicView.history.streamHead).toBeLessThan(64);
   await writeFile(
-    `/tmp/opencode/succession-worker-small-baseline-${process.pid}.json`,
+    join(tmpdir(), `succession-worker-small-baseline-${process.pid}.json`),
     JSON.stringify({ report, publicBytes: bytes(publicView), privateBytes: bytes(privateView) }, null, 2),
   );
   await drive((view) => view.status === 'finished');
@@ -253,16 +351,14 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
   let corpusStart = 0;
 
   for (let offset = 0; offset < 31_200; offset += 64) {
-    const batch = await get<{ first: number }>(
-      fixture(`populate?offset=${offset}&count=${Math.min(64, 31_200 - offset)}`),
-    );
+    const batch = await populate(offset, Math.min(64, 31_200 - offset));
 
     if (offset === 0) corpusStart = batch.first - 1;
 
     if ((offset + 64) % 4096 === 0) mark('populating', offset + 64);
   }
 
-  const corpusEnd = (await get<{ through: number }>(fixture('populate?offset=0&count=64&escaping'))).through;
+  const corpusEnd = (await populate(0, 64, true)).through;
   mark('populated', 31_264);
   await worker.stop();
   await start();
@@ -297,16 +393,14 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
   expect(Buffer.byteLength(frames[0])).toBeLessThanOrEqual(16_384);
   socket.close();
   await record('socket-resync');
-  const actionable = await drive((view) => !view.phase.kind.includes('discussion'));
-  const seats = await Promise.all(controllers.map((controller) => current(controller)));
-  const index = seats.findIndex((view) => view.decision);
-  const input = decision(seats[index]);
+  const { controller, view: actionable } = await nextDecision();
+  const input = decision(actionable);
   await reset();
-  const ack = await get(`/api/matches/${matchId}/actions`, controllers[index], JSON.stringify(input));
+  const ack = await get(`/api/matches/${matchId}/actions`, controller, JSON.stringify(input));
   expect(bytes(ack)).toBeLessThanOrEqual(16_384);
   await record('accepted-action-save-enqueue-broadcast-arm');
   await reset();
-  await get(`/api/matches/${matchId}/actions`, controllers[index], JSON.stringify(input));
+  await get(`/api/matches/${matchId}/actions`, controller, JSON.stringify(input));
   await record('receipt-retry');
   mark('hot-paths-checked');
   expect(actionable.status).toBe('active');
@@ -407,12 +501,8 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
   expect(escaping).toBe(64);
   mark('preserved', unicode + escaping);
 
-  const artifact =
-    process.env.SUCCESSION_BOUNDS_RESULTS_PATH ??
-    `/tmp/opencode/succession-worker-bounds-results-${process.pid}.json`;
-
   await writeFile(
-    artifact,
+    artifact(),
     JSON.stringify(
       {
         measurements,
@@ -427,7 +517,36 @@ it('bounds actual cold host, mutations, sockets, house context and terminal arch
       2,
     ),
   );
-  console.info(`Actual Worker bounds metrics: ${artifact}`);
+  console.info(`Actual Worker bounds metrics: ${artifact()}`);
   // Full 125MB preservation traversal: the two-CPU profile takes 220.52s locally;
   // hosted CI exceeds 240s. Wire/storage bounds remain assertions, independently of this budget.
 }, 480_000);
+
+it('keeps corpus controllers active and reacquires an authenticated decision after takeover', async () => {
+  await admitExternalGroup();
+  const discussion = await current();
+  await get(fixture(`clock?kind=discussion&phaseId=${discussion.phase.id}`));
+  const nomination = await current();
+  expect(nomination.phase.kind).toBe('nomination');
+  await populate(0, 64);
+  const government = await current();
+  expect(government.phase.kind).toBe('government-discussion');
+  expect(government.seats.every((seat) => !seat.forfeited)).toBe(true);
+
+  // The production grace path replaces the next coordinator. Its house nomination can
+  // advance the public phase between the fixture's public and authenticated reads.
+  const nextNomination = await drive(
+    (view) => view.round > government.round && view.phase.kind === 'nomination',
+  );
+
+  const seats = await controllerViews();
+  const held = seats.find(({ view }) => view.decision)!;
+  await get(fixture(`clock?kind=grace&phaseId=${nextNomination.phase.id}`));
+  const taken = await current(held.controller);
+  expect(taken.you?.forfeited).toBe(true);
+  expect(taken.decision).toBeNull();
+  const selected = await nextDecision();
+  expect(selected.view.you).toMatchObject({ agentId: selected.controller.agentId, forfeited: false });
+  expect(selected.view.decision).not.toBeNull();
+  await get(`/api/matches/${matchId}/actions`, selected.controller, JSON.stringify(decision(selected.view)));
+}, 30_000);

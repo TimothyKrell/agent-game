@@ -1,0 +1,28 @@
+{
+  "status": 200,
+  "before": [
+    {
+      "id": "3296bfff-82ad-494e-8fa5-86f740c3ffc5",
+      "match_id": "match_e1fdee7b-0877-408f-85ed-2eef7282bec9",
+      "kind": "required",
+      "expires_at": 1789447793590
+    }
+  ],
+  "after": [],
+  "chargesBefore": [
+    {
+      "id": "df185f1d-5c35-4bda-8972-3b4b2d7c3061",
+      "reserved": 1.49,
+      "actual": null,
+      "done": 0
+    }
+  ],
+  "chargesAfter": [
+    {
+      "id": "df185f1d-5c35-4bda-8972-3b4b2d7c3061",
+      "reserved": 1.49,
+      "actual": null,
+      "done": 0
+    }
+  ]
+}

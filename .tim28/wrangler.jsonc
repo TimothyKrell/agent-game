@@ -1,0 +1,43 @@
+{
+  "name": "tim28-local-pictures",
+  "main": "worker.ts",
+  "compatibility_date": "2026-09-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/__probe/*"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tim28",
+      "database_id": "00000000-0000-0000-0000-000000000028",
+      "migrations_dir": "../migrations",
+    },
+  ],
+  "r2_buckets": [{ "binding": "AGENT_PICTURES", "bucket_name": "tim28-local-pictures" }],
+  "durable_objects": {
+    "bindings": [
+      { "name": "MATCHES", "class_name": "MatchObject" },
+      { "name": "MATCHMAKING", "class_name": "MatchmakingObject" },
+      { "name": "HOUSE_SEATS", "class_name": "HouseSeatObject" },
+    ],
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["MatchObject", "MatchmakingObject", "HouseSeatObject"] },
+  ],
+  "vars": {
+    "APP_URL": "http://127.0.0.1:8828",
+    "ENVIRONMENT": "development",
+    "BETTER_AUTH_SECRET": "tim28-isolated-local-test-only-not-a-production-secret",
+    "HOUSE_PROVIDER": "preview",
+    "HOUSE_MODEL": "scripted",
+    "TIME_SCALE": "0.02",
+    "QUEUE_WAIT_SECONDS": "0",
+    "MAX_CONCURRENT_MATCHES": "3",
+    "HOUSE_DAILY_BUDGET_USD": "0",
+    "HOUSE_MATCH_RESERVATION_USD": "0",
+  },
+}

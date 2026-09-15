@@ -1,0 +1,27 @@
+{
+  "inspected": "2026-09-14",
+  "family": "base-nova",
+  "records": [
+    {
+      "name": "button",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/button.json",
+      "sha256": "9ba7e870178813f0552b818a913a2792fb500c779e36395740b4973e3025d427"
+    },
+    {
+      "name": "collapsible",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/collapsible.json",
+      "sha256": "74f78cd88a30185243847968977cf1de9ffbf576547f2ec1f14b5ef55505b90d"
+    },
+    {
+      "name": "dialog",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/dialog.json",
+      "sha256": "40fc321d25eb9590d07db54b00d9bc1a74274a549aa06d5915a34ba302ed8b94"
+    },
+    {
+      "name": "popover",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/popover.json",
+      "sha256": "ba5fe84f353f6c0fd2133a2ab893f5e8861fc60dc4dea548a7ec875acaa37b2c"
+    }
+  ],
+  "licenseURL": "https://raw.githubusercontent.com/shadcn-ui/ui/main/LICENSE.md"
+}

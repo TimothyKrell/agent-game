@@ -9,6 +9,10 @@ import type { RepositoryGameId } from './repository';
 import type { MatchSnapshot } from '../game/contracts';
 import { gameDescriptor } from '../game/descriptors';
 import { fault, opaqueId } from './http';
+import { HOUSE_CHAT_MIN_REMAINING_MS } from './house-contract';
+import { PreviewBrokerLedger } from './preview-ledger';
+import { PreviewTargetAllocations } from './preview-allocation';
+import { previewEnabled } from './preview-config';
 
 type Ticket = {
   game_id: RepositoryGameId;
@@ -42,10 +46,58 @@ export interface MatchInitialization {
   reservationUsd?: number;
 }
 
-interface InferenceReservation {
-  allowed: boolean;
-  retryAt: number;
+type InferenceKind = 'required' | 'initial' | 'followup';
+
+export interface InferenceRequest {
+  id: string;
+  matchId: string;
+  estimate: number;
+  deadline: number;
+  mandatory: boolean;
+  optionalKind?: 'initial' | 'followup';
 }
+
+export type InferenceDenial =
+  | 'allocation-closed'
+  | 'already-recorded'
+  | 'request-conflict'
+  | 'expired'
+  | 'match-budget'
+  | 'optional-budget'
+  | 'followup-budget'
+  | 'daily-budget'
+  | 'rate-limit'
+  | 'required-priority'
+  | 'initial-priority';
+
+export type InferenceReservation =
+  | { allowed: true; retryAt: number }
+  | {
+      allowed: false;
+      retryAt: number;
+      reason: InferenceDenial;
+      retryable: boolean;
+    };
+
+// Allocation assumptions, not predictions of a game's future decisions:
+// retain half for required work; follow-ups can use only a quarter of optional funding.
+const OPTIONAL_SHARE = 0.5;
+
+const FOLLOWUP_SHARE = 0.25;
+
+const INFERENCE_RETRY_MS = 1000;
+
+type Funding = {
+  kind: InferenceKind;
+  calls: number;
+  estimatedUsd: number;
+  measuredUsd: number;
+  accountedUsd: number;
+  irreversibleUsd: number;
+};
+
+const LEGACY_INFERENCE_KIND =
+  "coalesce(kind, CASE WHEN id LIKE '%:action:attempt:%' THEN 'required' WHEN id LIKE '%:chat:1:attempt:%' THEN 'followup' ELSE 'initial' END)";
 
 export type PlatformQueueStatus = QueueStatus & {
   requestId: string | null;
@@ -68,6 +120,8 @@ function validGame(gameId: RepositoryGameId): void {
 
 /** One deployed coordinator, two logical queues and global admission/participation limits. */
 export class PlatformQueue {
+  readonly preview: PreviewBrokerLedger;
+  readonly previewTarget: PreviewTargetAllocations;
   constructor(
     private readonly ctx: DurableObjectState,
     private readonly env: Env,
@@ -83,6 +137,13 @@ export class PlatformQueue {
     );
     ctx.storage.sql.exec(
       `CREATE TABLE IF NOT EXISTS usage (id TEXT PRIMARY KEY, match_id TEXT NOT NULL, day TEXT NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, reserved REAL NOT NULL, actual REAL, done INTEGER NOT NULL DEFAULT 0)`,
+    );
+    const usageColumns = ctx.storage.sql.exec<{ name: string }>('PRAGMA table_info(usage)').toArray();
+
+    if (!usageColumns.some((column) => column.name === 'kind'))
+      ctx.storage.sql.exec('ALTER TABLE usage ADD COLUMN kind TEXT');
+    ctx.storage.sql.exec(
+      'CREATE TABLE IF NOT EXISTS inference_waiters (id TEXT PRIMARY KEY, match_id TEXT NOT NULL, kind TEXT NOT NULL, expires_at INTEGER NOT NULL)',
     );
     ctx.storage.transactionSync(() => {
       for (const table of ['tickets', 'joins', 'allocations']) {
@@ -103,6 +164,14 @@ export class PlatformQueue {
       ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS coordinator_schema (version INTEGER PRIMARY KEY)');
       ctx.storage.sql.exec('INSERT OR IGNORE INTO coordinator_schema(version) VALUES (2)');
     });
+    this.preview = new PreviewBrokerLedger(ctx, env, {
+      capacity: (reservation) => this.capacity(reservation),
+      reservation: (game) => this.reservation(game),
+      reserve: (input) => this.reserveInference(input),
+      record: (id, actual) => this.recordInference(id, actual),
+      retire: (input) => this.retireInferenceWaiter(input),
+    });
+    this.previewTarget = new PreviewTargetAllocations(ctx, env);
   }
 
   private scale(): number {
@@ -175,11 +244,21 @@ export class PlatformQueue {
     return 'available';
   }
 
+  private queueCapacity(gameId: RepositoryGameId = 'secret-overlord'): QueueStatus['capacity'] {
+    return previewEnabled(this.env)
+      ? this.previewTarget.capacity(gameId)
+      : this.capacity(this.reservation(gameId));
+  }
+
   async retire(agentId: string, ownerId: string): Promise<RpcResult<{ retired: true }>> {
     return this.ctx.blockConcurrencyWhile(async () => {
       const current = this.status(agentId);
 
-      if (current.status === 'matched' || current.status === 'starting')
+      if (
+        current.status === 'matched' ||
+        (current.status === 'starting' &&
+          (!current.matchId || !this.previewTarget.canCancel(current.matchId)))
+      )
         return {
           ok: false,
           error: {
@@ -206,12 +285,13 @@ export class PlatformQueue {
 
   async exhibition(gameId: RepositoryGameId = 'secret-overlord'): Promise<RpcResult<{ matchId: string }>> {
     validGame(gameId);
-    const reservation = this.reservation(gameId);
-    const snapshot = this.snapshot(gameId, true);
+    const smoke = previewEnabled(this.env);
+    const reservation = smoke ? 0 : this.reservation(gameId);
+    const snapshot = smoke ? this.smokeSnapshot(gameId) : this.snapshot(gameId, true);
 
     if (
       this.env.ENVIRONMENT !== 'development' &&
-      !(this.env.ENVIRONMENT === 'preview' && this.env.HOUSE_PROVIDER === 'preview')
+      !(this.env.ENVIRONMENT === 'preview' && (smoke || this.env.HOUSE_PROVIDER === 'preview'))
     )
       return { ok: false, error: { code: 'not-found', message: 'Not found.', status: 404 } };
 
@@ -260,6 +340,25 @@ export class PlatformQueue {
     return { ok: true, value: { matchId: allocation.id } };
   }
 
+  private smokeSnapshot(gameId: RepositoryGameId): MatchSnapshot {
+    const descriptor = gameDescriptor(gameId);
+    const timing = descriptor.timing;
+
+    return {
+      ...descriptor,
+      mode: 'preview',
+      timing: {
+        nomination: timing.nomination * 0.1,
+        debate: timing.debate * 0.1,
+        executive: timing.executive * 0.1,
+        action: timing.action * 0.1,
+        grace: timing.grace * 0.1,
+        chatCooldown: timing.chatCooldown * 0.1,
+      },
+      houseModel: { provider: 'preview', model: 'scripted', policyVersion: descriptor.housePolicyVersion },
+    };
+  }
+
   async join(
     principal: AgentPrincipal,
     requestId: string,
@@ -267,6 +366,8 @@ export class PlatformQueue {
   ): Promise<RpcResult<PlatformQueueStatus>> {
     try {
       validGame(gameId);
+
+      if (previewEnabled(this.env)) await this.previewTarget.refresh();
 
       const valid = await this.env.DB.prepare('SELECT id FROM agents WHERE id = ? AND retired_at IS NULL')
         .bind(principal.agentId)
@@ -302,7 +403,7 @@ export class PlatformQueue {
             joinedAt: null,
             fillAt: null,
             position: null,
-            capacity: this.capacity(),
+            capacity: this.queueCapacity(receipt.game_id),
           },
         };
 
@@ -343,7 +444,7 @@ export class PlatformQueue {
             gameId,
           );
         });
-      await this.ctx.storage.setAlarm(Date.now() + 1);
+      await this.wakeAt(Date.now() + 1);
 
       return { ok: true, value: this.status(principal.agentId) };
     } catch (error) {
@@ -367,7 +468,7 @@ export class PlatformQueue {
         joinedAt: null,
         fillAt: null,
         position: null,
-        capacity: this.capacity(),
+        capacity: this.queueCapacity(),
       };
 
     const position = this.ctx.storage.sql
@@ -395,9 +496,9 @@ export class PlatformQueue {
       ),
       matchId: ticket.match_id,
       joinedAt: ticket.joined_at,
-      fillAt: oldest === null ? null : oldest + Number(this.env.QUEUE_WAIT_SECONDS) * 1000 * this.scale(),
+      fillAt: oldest === null ? null : this.fillAt(oldest),
       position,
-      capacity: this.capacity(this.reservation(ticket.game_id)),
+      capacity: this.queueCapacity(ticket.game_id),
     };
   }
 
@@ -432,16 +533,20 @@ export class PlatformQueue {
         },
       };
 
+    const cancellable =
+      ticket.state === 'queued' ||
+      (ticket.state === 'starting' && !!ticket.match_id && this.previewTarget.canCancel(ticket.match_id));
+
     if (
       expected &&
       (expected.gameId !== ticket.game_id ||
         expected.requestId !== ticket.request_id ||
         (expected.joinedAt !== undefined && expected.joinedAt !== ticket.joined_at) ||
-        ticket.state !== 'queued')
+        !cancellable)
     )
       return { ok: true, value: this.status(agentId) };
 
-    if (ticket.state !== 'queued')
+    if (!cancellable)
       return {
         ok: false,
         error: {
@@ -459,17 +564,19 @@ export class PlatformQueue {
         `${agentId}:${ticket.request_id}`,
       );
     });
-    this.ctx.waitUntil(this.ctx.storage.setAlarm(Date.now() + 1));
+    this.ctx.waitUntil(this.wakeAt(Date.now() + 1));
 
     return { ok: true, value: this.status(agentId) };
   }
 
   async complete(matchId: string): Promise<void> {
     this.ctx.storage.transactionSync(() => {
+      this.previewTarget.close(matchId);
       this.ctx.storage.sql.exec("UPDATE allocations SET state = 'settled' WHERE id = ?", matchId);
       this.ctx.storage.sql.exec('DELETE FROM tickets WHERE match_id = ?', matchId);
+      this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id = ?', matchId);
     });
-    await this.ctx.storage.setAlarm(Date.now() + 1);
+    await this.wakeAt(Date.now() + 1);
   }
 
   async revokeGrant(grantId: string): Promise<void> {
@@ -483,18 +590,76 @@ export class PlatformQueue {
     }
   }
 
-  reserveInference(input: {
-    id: string;
-    matchId: string;
-    estimate: number;
-    deadline: number;
-    mandatory: boolean;
-  }): InferenceReservation {
+  private funding(scope: 'match_id' | 'day', value: string): Funding[] {
+    return this.ctx.storage.sql
+      .exec<Funding>(
+        `SELECT ${LEGACY_INFERENCE_KIND} AS kind, count(*) AS calls,
+       sum(reserved) AS estimatedUsd, coalesce(sum(actual),0) AS measuredUsd,
+       sum(coalesce(actual,reserved)) AS accountedUsd,
+       sum(CASE WHEN done=1 OR expires_at<=? THEN coalesce(actual,reserved) ELSE 0 END) AS irreversibleUsd
+       FROM usage WHERE ${scope}=? GROUP BY 1`,
+        Date.now(),
+        value,
+      )
+      .toArray();
+  }
+
+  reserveInference(input: InferenceRequest): InferenceReservation {
+    const now = Date.now();
+
+    const kind: InferenceKind = input.mandatory
+      ? 'required'
+      : (input.optionalKind ?? (input.id.includes(':chat:1:attempt:') ? 'followup' : 'initial'));
+
+    const minimum = input.mandatory ? 500 : HOUSE_CHAT_MIN_REMAINING_MS;
+    this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE expires_at<=?', now);
+
+    const deny = (
+      reason: InferenceDenial,
+      retryAt = input.deadline,
+      transient = false,
+    ): InferenceReservation => {
+      const retryable = transient && retryAt > now && retryAt + minimum < input.deadline;
+
+      if (retryable && kind !== 'followup')
+        this.ctx.storage.sql.exec(
+          'INSERT INTO inference_waiters(id,match_id,kind,expires_at) VALUES (?,?,?,?) ON CONFLICT(id) DO UPDATE SET expires_at=excluded.expires_at',
+          input.id,
+          input.matchId,
+          kind,
+          input.deadline - minimum,
+        );
+      else this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE id=?', input.id);
+
+      return { allowed: false, reason, retryable, retryAt: retryable ? retryAt : input.deadline };
+    };
+
+    if (!Number.isFinite(input.estimate) || input.estimate < 0) throw new Error('Invalid inference estimate');
+
+    if (now >= input.deadline) return deny('expired');
+
     const existing = this.ctx.storage.sql
-      .exec<{ done: number }>('SELECT done FROM usage WHERE id = ?', input.id)
+      .exec<{ done: number; match_id: string; kind: InferenceKind; reserved: number; expires_at: number }>(
+        `SELECT done,match_id,${LEGACY_INFERENCE_KIND} AS kind,reserved,expires_at FROM usage WHERE id = ?`,
+        input.id,
+      )
       .toArray()[0];
 
-    if (existing) return { allowed: existing.done === 0, retryAt: Date.now() + 1000 };
+    if (existing) {
+      if (
+        existing.match_id !== input.matchId ||
+        existing.kind !== kind ||
+        existing.reserved < input.estimate ||
+        existing.expires_at !== input.deadline
+      )
+        return deny('request-conflict');
+
+      if (existing.done) return deny('already-recorded');
+
+      if (existing.expires_at <= now) return deny('expired');
+
+      return { allowed: true, retryAt: now };
+    }
 
     const allocation = this.ctx.storage.sql
       .exec<{ state: string; grants: string; reservation: number; snapshot: string | null }>(
@@ -503,20 +668,62 @@ export class PlatformQueue {
       )
       .toArray()[0];
 
-    if (!allocation || allocation.state === 'settled') return { allowed: false, retryAt: input.deadline };
+    if (!allocation || allocation.state === 'settled') return deny('allocation-closed');
 
     const snapshot: MatchSnapshot | null = allocation.snapshot ? JSON.parse(allocation.snapshot) : null;
 
+    const ceilings: { rows: Funding[]; limit: number; reason: InferenceDenial }[] = [];
+
     if (
-      allocation.grants === '{}' &&
+      (allocation.grants === '{}' ||
+        this.ctx.storage.sql
+          .exec('SELECT id FROM preview_broker_allocations WHERE id=?', input.matchId)
+          .toArray().length > 0) &&
       (snapshot?.houseModel.provider ?? this.env.HOUSE_PROVIDER) !== 'preview'
     ) {
-      const used = this.inferenceSummary(input.matchId).accountedUsd;
+      const funds = this.funding('match_id', input.matchId);
+      ceilings.push({ rows: funds, limit: allocation.reservation, reason: 'match-budget' });
 
-      if (used + input.estimate > allocation.reservation) return { allowed: false, retryAt: input.deadline };
+      if (!input.mandatory) {
+        const optionalLimit = allocation.reservation * OPTIONAL_SHARE;
+
+        if (kind === 'followup') {
+          ceilings.push({
+            rows: funds.filter((row) => row.kind === 'followup'),
+            limit: optionalLimit * FOLLOWUP_SHARE,
+            reason: 'followup-budget',
+          });
+        }
+
+        ceilings.push({
+          rows: funds.filter((row) => row.kind !== 'required'),
+          limit: optionalLimit,
+          reason: 'optional-budget',
+        });
+      }
     }
 
-    const now = Date.now();
+    if (!input.mandatory)
+      ceilings.push({
+        rows: this.funding('day', this.day()),
+        limit: Number(this.env.HOUSE_DAILY_BUDGET_USD),
+        reason: 'daily-budget',
+      });
+
+    // Waiting only helps if every applicable ceiling fits irreversible usage.
+    // Prefer a permanent denial over transient pressure in another envelope.
+    let pressure: InferenceDenial | null = null;
+
+    for (const { rows, limit, reason } of ceilings) {
+      const irreversible = rows.reduce((sum, row) => sum + row.irreversibleUsd, 0);
+
+      if (irreversible + input.estimate > limit) return deny(reason);
+      const accounted = rows.reduce((sum, row) => sum + row.accountedUsd, 0);
+
+      if (accounted + input.estimate > limit) pressure ??= reason;
+    }
+
+    if (pressure) return deny(pressure, now + INFERENCE_RETRY_MS, true);
 
     const recent = this.ctx.storage.sql
       .exec<{ count: number; oldest: number | null }>(
@@ -527,36 +734,51 @@ export class PlatformQueue {
 
     const limit = input.mandatory ? 250 : 180;
 
-    if (recent.count >= limit) return { allowed: false, retryAt: (recent.oldest ?? now) + 60_001 };
+    if (recent.count >= limit) return deny('rate-limit', (recent.oldest ?? now) + 60_001, true);
 
     if (!input.mandatory) {
-      const spent = this.ctx.storage.sql
-        .exec<{ total: number }>(
-          'SELECT coalesce(sum(coalesce(actual,reserved)),0) AS total FROM usage WHERE day = ?',
-          this.day(),
-        )
-        .one().total;
+      if (
+        this.ctx.storage.sql.exec("SELECT id FROM inference_waiters WHERE kind='required' LIMIT 1").toArray()
+          .length
+      )
+        return deny('required-priority', now + INFERENCE_RETRY_MS, true);
 
-      if (spent + input.estimate > Number(this.env.HOUSE_DAILY_BUDGET_USD))
-        return { allowed: false, retryAt: input.deadline };
+      if (
+        kind === 'followup' &&
+        this.ctx.storage.sql
+          .exec("SELECT id FROM inference_waiters WHERE kind='initial' AND match_id=? LIMIT 1", input.matchId)
+          .toArray().length
+      )
+        return deny('initial-priority', now + INFERENCE_RETRY_MS, true);
     }
 
+    this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE id=?', input.id);
     this.ctx.storage.sql.exec(
-      'INSERT INTO usage (id, match_id, day, created_at, expires_at, reserved) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO usage (id, match_id, day, created_at, expires_at, reserved, kind) VALUES (?, ?, ?, ?, ?, ?, ?)',
       input.id,
       input.matchId,
       this.day(),
       now,
       input.deadline,
       input.estimate,
+      kind,
     );
 
     return { allowed: true, retryAt: now };
   }
 
+  /** Retire priority only. Usage (including unknown or live reservations) is untouched. */
+  retireInferenceWaiter(input: Pick<InferenceRequest, 'id' | 'matchId'>): void {
+    this.ctx.storage.sql.exec(
+      'DELETE FROM inference_waiters WHERE id=? AND match_id=?',
+      input.id,
+      input.matchId,
+    );
+  }
+
   recordInference(id: string, actual: number | null): void {
     this.ctx.storage.sql.exec('UPDATE usage SET done = 1, actual = ? WHERE id = ? AND done = 0', actual, id);
-    this.ctx.waitUntil(this.ctx.storage.setAlarm(Date.now() + 1));
+    this.ctx.waitUntil(this.wakeAt(Date.now() + 1));
   }
 
   inferenceSummary(matchId: string) {
@@ -581,11 +803,14 @@ export class PlatformQueue {
       measuredUsd: rows.reduce((sum, row) => sum + (row.actual ?? 0), 0),
       accountedUsd: rows.reduce((sum, row) => sum + (row.actual ?? row.reserved), 0),
       peakRollingRpm,
+      funding: this.funding('match_id', matchId),
     };
   }
 
   async alarm(): Promise<void> {
     try {
+      if (!previewEnabled(this.env)) this.preview.dispatchReconciliation();
+
       for (const ticket of this.ctx.storage.sql
         .exec<Ticket>("SELECT * FROM tickets WHERE state = 'queued' AND expires_at <= ?", Date.now())
         .toArray())
@@ -594,9 +819,11 @@ export class PlatformQueue {
       for (const allocation of this.allocations().filter((entry) => entry.state === 'creating'))
         await this.finishAllocation(allocation);
 
+      if (previewEnabled(this.env) && this.candidates().length) await this.previewTarget.refresh();
+
       while (true) {
         const candidate = this.candidates().find(
-          (entry) => this.ready(entry.tickets) && this.capacity(entry.reservation) === 'available',
+          (entry) => this.ready(entry.tickets) && this.queueCapacity(entry.gameId) === 'available',
         );
 
         if (!candidate) break;
@@ -632,6 +859,12 @@ export class PlatformQueue {
           ].map((id) => entrant(this.env, id, gameId)),
         );
 
+        const id = opaqueId('match');
+
+        const previewIntent = previewEnabled(this.env)
+          ? await this.previewTarget.prepare(id, valid, gameId)
+          : null;
+
         // External reads may interleave with cancellation. Recheck the exact tickets before reservation.
         if (
           valid.some(
@@ -652,11 +885,10 @@ export class PlatformQueue {
           continue;
 
         // Other admissions can interleave while the entrant/credential reads await D1.
-        if (this.capacity(reservation) !== 'available') continue;
+        if (this.queueCapacity(gameId) !== 'available') continue;
 
         if (entries.length !== 10)
           throw new GameError('house-unavailable', 'Ten distinct entrants are required.');
-        const id = opaqueId('match');
         const grants = Object.fromEntries(valid.map((ticket) => [ticket.agent_id, ticket.grant_id]));
 
         const allocation: Allocation = {
@@ -671,6 +903,7 @@ export class PlatformQueue {
         };
 
         this.ctx.storage.transactionSync(() => {
+          if (previewIntent) this.previewTarget.persist(previewIntent);
           this.ctx.storage.sql.exec(
             'INSERT INTO allocations (id, state, entries, grants, created_at, reservation, game_id, snapshot) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             id,
@@ -691,6 +924,9 @@ export class PlatformQueue {
             );
         });
         await this.finishAllocation(allocation);
+
+        // The source has the only live-preview slot; refresh before considering another local admission.
+        if (previewIntent) await this.previewTarget.refresh();
       }
     } catch (error) {
       console.error(
@@ -700,16 +936,19 @@ export class PlatformQueue {
         }),
       );
     } finally {
+      this.previewTarget.dispatchCleanup();
       await this.schedule();
     }
   }
 
   private ready(tickets: Ticket[]): boolean {
-    return tickets.length >= 10 || (tickets.length > 0 && Date.now() >= this.fillAt(tickets[0]));
+    return tickets.length >= 10 || (tickets.length > 0 && Date.now() >= this.fillAt(tickets[0].joined_at));
   }
 
-  private fillAt(ticket: Ticket): number {
-    return ticket.joined_at + Number(this.env.QUEUE_WAIT_SECONDS) * 1000 * this.scale();
+  private fillAt(joinedAt: number): number {
+    if (previewEnabled(this.env)) return joinedAt + 30000;
+
+    return joinedAt + Number(this.env.QUEUE_WAIT_SECONDS) * 1000 * this.scale();
   }
 
   private candidates() {
@@ -734,13 +973,29 @@ export class PlatformQueue {
     );
   }
 
-  private async schedule(): Promise<void> {
+  /** The sole coordinator alarm writer. Preserve an earlier pending wake across concurrent callers. */
+  private wakeAt(at: number): Promise<void> {
+    // recordInference can run inside a synchronous SQL transaction; start this transaction after it commits.
+    return Promise.resolve().then(() =>
+      this.ctx.storage.transaction(async (txn) => {
+        const current = await txn.getAlarm();
+
+        if (current === null || at < current) await txn.setAlarm(at);
+      }),
+    );
+  }
+
+  async schedule(): Promise<void> {
     const now = Date.now();
     const candidates = this.candidates();
     const creating = this.allocations().some((allocation) => allocation.state === 'creating');
 
-    if (!candidates.length && !creating) return;
+    const cleanup = this.previewTarget.cleanupAt();
+
+    if (!candidates.length && !creating && cleanup === null && !this.preview.needsReconciliation()) return;
     const times = [now + 30_000];
+
+    if (cleanup !== null) times.push(Math.max(now + 1, cleanup));
 
     const expiry = this.ctx.storage.sql
       .exec<{ at: number | null }>("SELECT min(expires_at) AS at FROM tickets WHERE state = 'queued'")
@@ -751,19 +1006,19 @@ export class PlatformQueue {
     if (creating) times.push(now + 1000);
 
     for (const candidate of candidates) {
-      const fill = this.fillAt(candidate.tickets[0]);
+      const fill = this.fillAt(candidate.tickets[0].joined_at);
 
       if (fill > now) times.push(fill);
 
       for (const ticket of candidate.tickets) if (ticket.expires_at > now) times.push(ticket.expires_at);
 
-      if (this.capacity(candidate.reservation) === 'budget') {
+      if (this.queueCapacity(candidate.gameId) === 'budget') {
         const day = new Date(now);
         times.push(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate() + 1));
       }
     }
 
-    await this.ctx.storage.setAlarm(Math.max(now + 1, Math.min(...times)));
+    await this.wakeAt(Math.max(now + 1, Math.min(...times)));
   }
 
   private async finishAllocation(allocation: Allocation): Promise<void> {
@@ -777,8 +1032,13 @@ export class PlatformQueue {
 
     if (allocation.snapshot) input.snapshot = JSON.parse(allocation.snapshot);
 
-    await this.env.MATCHES.getByName(allocation.id).initialize(input);
+    const preview = await this.previewTarget.finish(input);
+
+    if (preview === 'abandoned') return;
+
+    if (preview === 'ordinary') await this.env.MATCHES.getByName(allocation.id).initialize(input);
     this.ctx.storage.transactionSync(() => {
+      this.previewTarget.recoverParticipation(allocation.id);
       this.ctx.storage.sql.exec(
         "UPDATE allocations SET state = 'active' WHERE id = ? AND state = 'creating'",
         allocation.id,

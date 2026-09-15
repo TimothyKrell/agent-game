@@ -1,0 +1,47 @@
+
+Running 3 tests using 1 worker
+
+  ✓  1 e2e/continuous-story.spec.ts:154:1 › reads 2,048 canonical messages forward/backward through eviction and revisits with a finite DOM (8.2s)
+  ✘  2 e2e/continuous-story.spec.ts:217:1 › holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading (727ms)
+  ✓  3 e2e/continuous-story.spec.ts:268:1 › fences pending reads on match A–B–A, keeps independent readers and recovers errors and epochs (1.2s)
+
+
+  1) e2e/continuous-story.spec.ts:217:1 › holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "key": "story-392621076-689",
+    -   "offset": -43,
+    +   "offset": -43.375,
+      }
+
+      260 |     .toBeLessThan(572);
+      261 |   await ready(page);
+    > 262 |   expect(await geometry(page)).toEqual(prependedAnchor);
+          |                                ^
+      263 |   await expect(timeline(page).locator('[data-story-key]')).toHaveCount(128);
+      264 |   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      265 |   expect(faults).toEqual([]);
+        at /tmp/opencode/agent-game-TIM-23/e2e/continuous-story.spec.ts:262:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .tim23/browser-results/continuous-story-holds-geo-2b9e9-and-narrow-keyboard-reading/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .tim23/browser-results/continuous-story-holds-geo-2b9e9-and-narrow-keyboard-reading/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .tim23/browser-results/continuous-story-holds-geo-2b9e9-and-narrow-keyboard-reading/trace.zip
+    Usage:
+
+        npx playwright show-trace .tim23/browser-results/continuous-story-holds-geo-2b9e9-and-narrow-keyboard-reading/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/continuous-story.spec.ts:217:1 › holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading
+  2 passed (13.6s)

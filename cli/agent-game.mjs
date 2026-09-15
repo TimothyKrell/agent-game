@@ -1,11 +1,15 @@
 #!/usr/bin/env node
-import { mkdir, readFile, writeFile, rename, chmod, realpath } from 'node:fs/promises';
+import { mkdir, readFile, realpath } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { randomBytes, createHash, randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { lockLedger } from './ledger.mjs';
+import { pictureCommand, pictureHelp, pictureOnboarding } from './picture.mjs';
+import { activeArtifacts, pinParticipation, verifyPins } from './preview-artifacts.mjs';
+import { writeJsonDurably } from './durable-json.mjs';
+import { ApiError, apiResponse } from './http-response.mjs';
 import {
   acceptCurrent,
   consumePage,
@@ -19,18 +23,7 @@ import {
   terminal,
 } from './current.mjs';
 
-export class ApiError extends Error {
-  constructor(status, code, message, details = {}) {
-    super(message);
-    this.status = status;
-    this.code = code;
-    this.details = Object.fromEntries(
-      ['gameId', 'matchId', 'requiredProtocolVersion', 'rulesUrl', 'cliUrl', 'cliDownloadUrl'].flatMap(
-        (key) => (details[key] === undefined ? [] : [[key, details[key]]]),
-      ),
-    );
-  }
-}
+export { ApiError };
 
 function boundedTime(ms) {
   const configured = process.env.AGENT_GAME_CHILD_DEADLINE;
@@ -49,7 +42,7 @@ function boundedTime(ms) {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, boundedTime(ms)));
 
 export class GameClient {
-  constructor(server, token = null) {
+  constructor(server, token = null, options = {}) {
     const url = new URL(server);
 
     if (
@@ -61,8 +54,13 @@ export class GameClient {
     if (url.username || url.password) throw new Error('Server URLs must not contain credentials.');
     this.server = url.origin;
     this.token = token;
+    this.eventAuthorization = options.eventAuthorization ?? 'entitled';
+    this.artifacts = options.artifacts;
+
+    if (!['entitled', 'public-wakeup'].includes(this.eventAuthorization))
+      throw new Error('Unsupported event authorization capability.');
   }
-  async request(path, body, method, authenticated = true) {
+  async request(path, body, method, authenticated = true, signal) {
     for (let attempt = 0; ; attempt++) {
       try {
         const headers = new Headers();
@@ -72,33 +70,35 @@ export class GameClient {
 
         if (authenticated && this.token) headers.set('authorization', `Bearer ${this.token}`);
 
+        const timeout = AbortSignal.timeout(boundedTime(10_000));
+
         const response = await fetch(`${this.server}${path}`, {
           method: method ?? (body === undefined ? 'GET' : 'POST'),
           redirect: 'error',
           headers,
           body: body === undefined ? undefined : JSON.stringify(body),
-          signal: AbortSignal.timeout(boundedTime(10_000)),
+          signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
         });
 
-        const data = await response.json();
-
-        if (!response.ok)
-          throw new ApiError(
-            response.status,
-            data.error?.code,
-            data.error?.message ?? 'Request failed',
-            data.error,
-          );
-
-        return data;
+        return await apiResponse(response);
       } catch (error) {
-        if (attempt >= 2 || (error instanceof ApiError && error.status < 500)) throw error;
+        if (signal?.aborted || attempt >= 2 || (error instanceof ApiError && error.status < 500)) throw error;
         await delay(250 * 2 ** attempt);
       }
     }
   }
-  async observation(matchId, after = 0) {
-    return this.request(`/api/matches/${matchId}?after=${after}`);
+  async observation(matchId, after = 0, signal) {
+    const view = await this.request(
+      `/api/matches/${matchId}?after=${after}`,
+      undefined,
+      undefined,
+      true,
+      signal,
+    );
+
+    if (this.artifacts) validateCurrent(view, this.artifacts);
+
+    return view;
   }
   async action(matchId, request) {
     return this.request(`/api/matches/${matchId}/actions`, request);
@@ -112,7 +112,11 @@ export class GameClient {
     return validatePage(await this.request(`/api/matches/${matchId}/history?${query}`), parameters);
   }
   async connect(matchId, after = 0, protocolVersion = '1') {
-    const ticket = this.token ? (await this.request(`/api/matches/${matchId}/ticket`, {})).ticket : null;
+    const ticket =
+      this.token && this.eventAuthorization !== 'public-wakeup'
+        ? (await this.request(`/api/matches/${matchId}/ticket`, {})).ticket
+        : null;
+
     const url = new URL(`/api/matches/${matchId}/events`, this.server);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.searchParams.set('after', String(after));
@@ -126,7 +130,14 @@ export class GameClient {
   /** Resolves on an observation, even across socket failures. A pending tool call carries it back into the model loop. */
   async wait(matchId, after, timeoutMs = 20_000, seen) {
     const until = Date.now() + boundedTime(timeoutMs);
-    const first = await this.observation(matchId, after);
+    const publicWake = this.eventAuthorization === 'public-wakeup';
+    const wakeAbort = new AbortController();
+
+    const wakeSignal = publicWake
+      ? AbortSignal.any([wakeAbort.signal, AbortSignal.timeout(Math.max(1, Math.floor(until - Date.now())))])
+      : undefined;
+
+    const first = await this.observation(matchId, after, wakeSignal);
 
     const changed = (view) =>
       view.protocolVersion === '2'
@@ -140,6 +151,9 @@ export class GameClient {
       let finished = false;
       let retries = 0;
       let retryTimer;
+      let readingWake = false;
+      let pendingWake = false;
+      let latestEntitled = first;
 
       const finish = (value, error) => {
         if (finished) return;
@@ -147,6 +161,7 @@ export class GameClient {
         clearTimeout(timer);
         clearTimeout(retryTimer);
         clearInterval(heartbeat);
+        wakeAbort.abort();
         socket?.close();
 
         if (error) reject(error);
@@ -155,6 +170,12 @@ export class GameClient {
 
       const timer = setTimeout(
         () => {
+          if (publicWake) {
+            finish(latestEntitled);
+
+            return;
+          }
+
           void this.observation(matchId, after).then(
             (view) => finish(view),
             (error) => finish(null, error),
@@ -179,17 +200,42 @@ export class GameClient {
             return;
           }
 
-          socket.onmessage = (event) => {
+          socket.onmessage = async (event) => {
             if (event.data === 'pong') return;
 
             try {
+              if (publicWake) {
+                if (finished) return;
+                pendingWake = true;
+
+                if (readingWake) return;
+                readingWake = true;
+
+                try {
+                  while (pendingWake && !finished && !wakeSignal.aborted) {
+                    pendingWake = false;
+                    latestEntitled = await this.observation(matchId, after, wakeSignal);
+
+                    if (changed(latestEntitled) || latestEntitled.decision || terminal(latestEntitled))
+                      finish(latestEntitled);
+                  }
+
+                  if (!finished && wakeSignal.aborted) finish(latestEntitled);
+                } finally {
+                  readingWake = false;
+                }
+
+                return;
+              }
+
               const packet = JSON.parse(event.data);
               const view = packet.observation;
 
               if (packet.type === 'observation' && (changed(view) || view.decision || terminal(view)))
                 finish(view);
             } catch (error) {
-              finish(null, error);
+              if (publicWake && wakeSignal.aborted && !(error instanceof ApiError)) finish(latestEntitled);
+              else finish(null, error);
             }
           };
 
@@ -237,6 +283,11 @@ function options(argv) {
       choice: { type: 'string' },
       json: { type: 'string' },
       text: { type: 'string' },
+      file: { type: 'string' },
+      'request-id': { type: 'string' },
+      'picture-source-server': { type: 'string' },
+      'picture-source-agent': { type: 'string' },
+      renew: { type: 'string' },
     },
   });
 
@@ -245,10 +296,7 @@ function options(argv) {
 
 export async function save(path, data) {
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-  const temp = `${path}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(temp, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
-  await rename(temp, path);
-  await chmod(path, 0o600);
+  await writeJsonDurably(path, data);
 }
 
 export async function updateCurrent(path, update) {
@@ -353,6 +401,12 @@ export async function main(argv = process.argv.slice(2)) {
       'Setup: setup --server URL --harness opencode|claude [--config PATH]\nStart or resume: start --config PATH\nSaved installations: connections --harness opencode|claude\n',
     );
     console.log(
+      'Registered previews: previews --config SOURCE_PATH\nSelect a preview: preview-select --server TARGET_URL --config SOURCE_PATH [--game succession] [--renew NEW_AUTHORIZATION_LABEL]\nSelection preserves source credentials/participation; use its returned target config and pinned executable/rules.\n',
+    );
+    console.log(
+      'Connect without joining: connect --config PATH\nOptional picture: picture-help | picture-status | picture-skip\n  picture-upload --file PATH [--request-id ID]\n  picture-remove [--request-id ID]\n  picture-retry [--request-id ID] (uses saved original bytes/revision)\nAppend --config PATH to each command. PNG/JPEG only, at most 2 MiB and 2048×2048.\nSetup offer lineage: --picture-source-server URL --picture-source-agent ID (choice only; never transfers images or credentials).\n',
+    );
+    console.log(
       'Game selection: setup|start|join|play --game secret-overlord|succession\nSupervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\n',
     );
     console.log(
@@ -371,6 +425,19 @@ export async function main(argv = process.argv.slice(2)) {
   if (command === 'setup' || command === 'connections') {
     const { setup, connections } = await import('./setup.mjs');
     print(command === 'setup' ? await setup(flags) : await connections(flags.harness));
+
+    return;
+  }
+
+  if (command === 'preview-select' || command === 'previews') {
+    const { previewSelect } = await import('./preview-select.mjs');
+    print(await previewSelect(flags, command === 'previews'));
+
+    return;
+  }
+
+  if (command === 'picture-help') {
+    print(pictureHelp);
 
     return;
   }
@@ -394,7 +461,21 @@ export async function main(argv = process.argv.slice(2)) {
     throw new Error(
       'Arena URL missing. Use setup --server URL --harness opencode|claude, or pair --server URL. Ask the owner for the arena URL if it was not supplied.',
     );
-  const client = new GameClient(String(server), state.token);
+  await verifyPins(activeArtifacts(state));
+
+  const client = new GameClient(String(server), state.token, {
+    eventAuthorization: state.preview ? 'public-wakeup' : state.eventAuthorization,
+    artifacts: activeArtifacts(state),
+  });
+
+  if (
+    ['picture-status', 'picture-skip', 'picture-upload', 'picture-remove', 'picture-retry'].includes(command)
+  ) {
+    print(await pictureCommand(client, state, path, command, flags));
+
+    return;
+  }
+
   let baseline = structuredClone(state);
 
   const change = (update) => {
@@ -419,7 +500,7 @@ export async function main(argv = process.argv.slice(2)) {
 
   state.selectedGame = gameId(flags.game ?? state.selectedGame);
 
-  if (['start', 'pair', 'join', 'play'].includes(command))
+  if (['connect', 'start', 'pair', 'join', 'play'].includes(command))
     await change((latest) => {
       latest.selectedGame = state.selectedGame;
     });
@@ -494,7 +575,7 @@ export async function main(argv = process.argv.slice(2)) {
     });
   };
 
-  if (command === 'start') {
+  if (command === 'start' || command === 'connect') {
     if (!state.agentId) {
       if (!state.pairing || state.pairing.expiresAt <= Date.now())
         return main([
@@ -517,7 +598,7 @@ export async function main(argv = process.argv.slice(2)) {
           ...result,
           ...state.pairing,
           configPath: path,
-          next: 'Show the owner verificationUrl. Keep calling start in the foreground; it waits between approval checks. If this session pauses, ask the owner to reply approved.',
+          next: `Show the owner verificationUrl. Keep calling ${command} in the foreground; it waits between approval checks. If this session pauses, ask the owner to reply approved.`,
         });
 
         return;
@@ -526,6 +607,26 @@ export async function main(argv = process.argv.slice(2)) {
       Object.assign(state, result);
       delete state.pairing;
       await persist(['status', 'connectionId', 'agentId', 'agentName', 'expiresAt', 'pairing']);
+    }
+
+    if (command === 'connect') {
+      const current = await client.request('/api/queue');
+
+      if (current.status !== 'idle') return main(['status', '--config', path]);
+      print({
+        status: 'ready',
+        agentId: state.agentId,
+        agentName: state.agentName,
+        configPath: path,
+        picture: await pictureOnboarding(
+          client,
+          state,
+          async () => (await client.request('/api/queue')).status === 'idle',
+        ),
+        next: 'Connection is ready. If picture.askOwner is true, read picture-help for the one-time optional offer. Run start to join; an answer, image tools or upload never gate play.',
+      });
+
+      return;
     }
 
     return main(['join', '--config', path, ...(flags.game ? ['--game', flags.game] : [])]);
@@ -557,7 +658,7 @@ export async function main(argv = process.argv.slice(2)) {
       status: 'pending',
       ...result,
       configPath: path,
-      next: 'Owner: open verificationUrl, sign in, create or select a competitor, and approve. Agent: keep calling start in the foreground to detect approval and join. If the session pauses, the owner can reply approved.',
+      next: 'Owner: open verificationUrl, sign in, create or select a competitor, and approve. Agent: keep calling connect in the foreground for setup before joining, or start to join immediately. If the session pauses, the owner can reply approved.',
     });
 
     return;
@@ -592,10 +693,12 @@ export async function main(argv = process.argv.slice(2)) {
     if (current.status === 'idle') {
       state.joinRequest ??= randomUUID();
       state.pendingJoin ??= { gameId: state.selectedGame, requestId: state.joinRequest };
+      pinParticipation(state, state.pendingJoin.requestId, state.selectedGame, path);
+      client.artifacts = activeArtifacts(state);
 
       if (state.pendingJoin.gameId !== state.selectedGame)
         throw new Error('A pending join belongs to another game. Resume or cancel it first.');
-      await persist(['joinRequest', 'pendingJoin']);
+      await persist(['joinRequest', 'pendingJoin', 'previewParticipation']);
     }
 
     if (current.status !== 'idle' && flags.game && gameId(current.gameId) !== flags.game)
@@ -610,7 +713,7 @@ export async function main(argv = process.argv.slice(2)) {
       result = await client.request('/api/queue', request);
     }
 
-    if (result.status !== 'idle') validateIdentity(result);
+    if (result.status !== 'idle') validateIdentity(result, activeArtifacts(state));
 
     if (result.status === 'queued') {
       delete state.matchId;
@@ -631,11 +734,13 @@ export async function main(argv = process.argv.slice(2)) {
 
       state.matchId = result.matchId;
       state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };
+
+      if (state.previewParticipation) state.previewParticipation.matchId = result.matchId;
       delete state.joinRequest;
       delete state.pendingJoin;
     }
 
-    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin']);
+    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin', 'previewParticipation']);
 
     const assignment = {
       ...result,
@@ -645,6 +750,8 @@ export async function main(argv = process.argv.slice(2)) {
           ? 'Run observe now, then keep the foreground act / say / wait loop running until finished or interrupted.'
           : 'Keep calling status --wait 5 in the foreground until matched. House agents fill open seats after the queue timer, subject to arena capacity.',
     };
+
+    if (state.preview) assignment.artifacts = activeArtifacts(state);
 
     if (result.matchId) assignment.watchUrl = `${client.server}/matches/${result.matchId}`;
     print(assignment);
@@ -661,9 +768,18 @@ export async function main(argv = process.argv.slice(2)) {
       await delay(seconds * 1000);
     }
 
-    const result = await client.request('/api/queue', undefined, command === 'leave' ? 'DELETE' : 'GET');
+    // Name the pending operation so a stale leave cannot cancel a replacement queue entry.
+    const pin = state.previewParticipation;
 
-    if (result.status !== 'idle') validateIdentity(result);
+    const cancellation =
+      command === 'leave'
+        ? (state.pendingJoin ??
+          (pin && !pin.matchId ? { gameId: pin.artifacts.gameId, requestId: pin.queueRequestId } : undefined))
+        : undefined;
+
+    const result = await client.request('/api/queue', cancellation, command === 'leave' ? 'DELETE' : 'GET');
+
+    if (result.status !== 'idle') validateIdentity(result, activeArtifacts(state));
 
     if (result.matchId) {
       if (state.matchId !== result.matchId) {
@@ -675,16 +791,36 @@ export async function main(argv = process.argv.slice(2)) {
 
       state.matchId = result.matchId;
       state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };
+
+      if (state.previewParticipation) state.previewParticipation.matchId = result.matchId;
       delete state.joinRequest;
       delete state.pendingJoin;
     }
 
     if (command === 'leave' && result.status === 'idle') {
+      if (
+        pin &&
+        !pin.matchId &&
+        pin.queueRequestId === cancellation?.requestId &&
+        pin.artifacts.gameId === cancellation.gameId
+      ) {
+        state.cancelledPreviewParticipations ??= {};
+        state.cancelledPreviewParticipations[pin.queueRequestId] ??= structuredClone(pin);
+        delete state.previewParticipation;
+      }
+
       delete state.joinRequest;
       delete state.pendingJoin;
     }
 
-    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin']);
+    await persist([
+      'matchId',
+      'participation',
+      'joinRequest',
+      'pendingJoin',
+      'previewParticipation',
+      'cancelledPreviewParticipations',
+    ]);
     print(result);
 
     return;
@@ -715,7 +851,7 @@ export async function main(argv = process.argv.slice(2)) {
   let currentParticipation = participationIdentity(state);
 
   const remember = async (view) => {
-    validateCurrent(view);
+    validateCurrent(view, activeArtifacts(state));
 
     return change((latest) => {
       if (

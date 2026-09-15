@@ -1,7 +1,10 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { setTimeout as pause } from 'node:timers/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { unstable_dev } from 'wrangler';
 import type { ActionRequest2, HistoryPage2, Observation2, ReplayFrame2 } from '../src/shared/succession';
 import type { ActionRequest, Observation } from '../src/game/types';
@@ -9,6 +12,11 @@ import type { GameId } from '../src/game/contracts';
 import { previewAction } from '../src/game/preview';
 import type { QueueStatus } from '../src/shared/api';
 import type { FixtureController, FixtureInspection } from './fixtures/succession-worker';
+import { Schema } from 'effect';
+import { HistoryCheckpoint2Schema } from '../src/shared/history-checkpoint';
+import type { HistoryCheckpoint2 } from '../src/shared/history-checkpoint';
+import type { RoundIndex2 } from '../src/shared/history';
+import { buildSuccessionStory } from '../src/client/succession-story';
 
 type RunningWorker = Awaited<ReturnType<typeof unstable_dev>>;
 
@@ -49,7 +57,85 @@ let provider: 'openai' | 'preview' = 'openai';
 
 const sockets = new Set<WebSocket>();
 
-const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+let lifetime: AbortController;
+
+let signal: AbortSignal;
+
+let firstFailure: Promise<void> | undefined;
+
+const pending = new Set<Promise<unknown>>();
+
+const progress = new Map<string, ReturnType<typeof currentMatch>>();
+
+const queues = new Map<string, QueueStatus>();
+
+function currentMatch(view: Observation | Observation2) {
+  return {
+    at: Date.now(),
+    matchId: view.matchId,
+    status: view.status,
+    phase: view.phase,
+    cursor: 'history' in view ? view.history : view.cursor,
+    seats: view.seats.map(({ number, alive, house, forfeited }) => ({ number, alive, house, forfeited })),
+  };
+}
+
+function captureFailure(error: Error): Promise<void> {
+  if (firstFailure) return firstFailure;
+
+  const snapshot = {
+    at: Date.now(),
+    error: error.message,
+    directory,
+    matches: [...progress.values()],
+    queues: [...queues.values()],
+    recentDriverSteps: driverSteps.slice(-12),
+  };
+
+  const current = worker;
+
+  firstFailure = (async () => {
+    let allocations;
+
+    try {
+      const response = await current.fetch('/__fixture/allocations', { signal: AbortSignal.timeout(2000) });
+      allocations = { status: response.status, body: await response.text() };
+    } catch (error) {
+      allocations = { error: String(error) };
+    }
+
+    const record = JSON.stringify({ ...snapshot, allocations }, null, 2) + '\n';
+    console.error('Succession fixture first failure:', record);
+    await writeFile(join(directory, 'first-failure.json'), record);
+  })();
+
+  return firstFailure;
+}
+
+function owned<T>(work: () => Promise<T>): Promise<T> {
+  const result = (async () => {
+    try {
+      signal.throwIfAborted();
+
+      return await work();
+    } catch (error) {
+      const capture = captureFailure(error instanceof Error ? error : new Error(String(error)));
+      lifetime.abort(error);
+      await capture;
+      throw error;
+    }
+  })();
+
+  pending.add(result);
+  void result.then(
+    () => pending.delete(result),
+    () => pending.delete(result),
+  );
+
+  return result;
+}
+
+const delay = (ms: number) => owned(() => pause(ms, undefined, { signal }));
 
 async function startWorker(): Promise<void> {
   worker = await unstable_dev('tests/fixtures/succession-worker.ts', {
@@ -70,10 +156,19 @@ async function startWorker(): Promise<void> {
   });
 }
 
-beforeAll(async () => {
-  directory = await mkdtemp('/tmp/opencode/succession-worker-');
-  await promisify(execFile)('npx', [
-    'wrangler',
+beforeEach(async (context) => {
+  lifetime = new AbortController();
+  signal = AbortSignal.any([lifetime.signal, context.signal]);
+  firstFailure = undefined;
+  progress.clear();
+  queues.clear();
+  driverSteps.length = 0;
+  provider = 'openai';
+  const root = resolve(process.env.GAME_FIXTURE_EVIDENCE_DIR ?? join(tmpdir(), 'agent-game-fixtures'));
+  await mkdir(root, { recursive: true });
+  directory = await mkdtemp(`${root}/succession-worker-`);
+  await promisify(execFile)(process.execPath, [
+    'node_modules/wrangler/bin/wrangler.js',
     'd1',
     'migrations',
     'apply',
@@ -87,11 +182,25 @@ beforeAll(async () => {
   await startWorker();
 }, 30_000);
 
-afterAll(async () => {
-  for (const socket of sockets) socket.close();
-  await worker?.stop();
+afterEach(async ({ task }) => {
+  try {
+    if (task.result?.state === 'fail')
+      await captureFailure(new Error(task.result.errors?.[0]?.message ?? 'Worker journey failed'));
+    await firstFailure;
+  } finally {
+    lifetime.abort(new Error('Worker journey ended'));
 
-  if (directory) await rm(directory, { recursive: true, force: true });
+    while (pending.size) await Promise.allSettled(pending);
+
+    for (const socket of sockets) socket.close();
+    sockets.clear();
+
+    try {
+      await writeFile(join(directory, 'driver-steps.json'), JSON.stringify(driverSteps));
+    } finally {
+      await worker?.stop();
+    }
+  }
 });
 
 async function request(
@@ -105,19 +214,25 @@ async function request(
 
   if (init.body) headers['content-type'] = 'application/json';
 
-  return worker.fetch(path, { ...init, headers });
+  return owned(() => worker.fetch(path, { ...init, headers, signal }));
 }
 
-async function data<T>(path: string, controller?: FixtureController, init: TestRequest = {}): Promise<T> {
-  const response = await request(path, controller, init);
-  const text = await response.text();
-  expect(response.ok, `${path}: ${response.status} ${text}`).toBe(true);
-  const parsed: T = JSON.parse(text);
+function data<T>(path: string, controller?: FixtureController, init: TestRequest = {}): Promise<T> {
+  return owned(async () => {
+    const response = await request(path, controller, init);
+    const text = await response.text();
+    expect(response.ok, `${path}: ${response.status} ${text}`).toBe(true);
+    const parsed: T = JSON.parse(text);
 
-  return parsed;
+    return parsed;
+  });
 }
 
-async function until<T>(load: () => Promise<T>, ready: (value: T) => boolean, timeout = 10_000): Promise<T> {
+function until<T>(load: () => Promise<T>, ready: (value: T) => boolean, timeout = 10_000): Promise<T> {
+  return owned(() => poll(load, ready, timeout));
+}
+
+async function poll<T>(load: () => Promise<T>, ready: (value: T) => boolean, timeout: number): Promise<T> {
   const deadline = Date.now() + timeout;
   let value = await load();
 
@@ -136,6 +251,7 @@ async function clock(
   view: Observation2 | Observation,
   kind: 'discussion' | 'grace' | 'late-alarm' = 'discussion',
 ) {
+  progress.set(matchId, currentMatch(view));
   await data(`/__fixture/matches/${matchId}/clock?kind=${kind}&phaseId=${encodeURIComponent(view.phase.id)}`);
 }
 
@@ -144,6 +260,9 @@ function action(view: Observation2): ActionRequest2 {
 
   const preferred = [
     'coup',
+    // These journeys require settlement, not twelve rounds of coin accumulation. Use the
+    // published lower-cost attack when available; every decision still goes through HTTP.
+    'assassinate',
     'tax',
     'pass',
     'income',
@@ -201,7 +320,35 @@ async function views(matchId: string, controllers: FixtureController[]): Promise
   );
 }
 
-async function drive(
+async function checkpoint(
+  view: Observation2,
+  controller?: FixtureController,
+  through = view.history.streamHead,
+): Promise<HistoryCheckpoint2> {
+  const value = await data(
+    `/api/matches/${view.matchId}/checkpoint?epoch=${view.history.visibilityEpoch}&through=${through}`,
+    controller,
+  );
+
+  return Schema.decodeUnknownSync(HistoryCheckpoint2Schema)(value);
+}
+
+function drive(...args: Parameters<typeof driveSteps>): ReturnType<typeof driveSteps> {
+  return owned(() => driveSteps(...args));
+}
+
+const driverSteps: {
+  at: number;
+  matchId: string;
+  phase: string;
+  head: number;
+  publicReadMs: number;
+  seatReadsMs: number;
+  readWindowMs: number;
+  decisions: number;
+}[] = [];
+
+async function driveSteps(
   matchId: string,
   controllers: FixtureController[],
   stop: (publicView: Observation2, seats: Observation2[]) => boolean,
@@ -210,8 +357,36 @@ async function drive(
   const deadline = Date.now() + timeout;
 
   while (Date.now() < deadline) {
-    const publicView = await data<Observation2>(`/api/matches/${matchId}`);
-    const seats = await views(matchId, controllers);
+    const started = Date.now();
+    let publicReadMs = 0;
+    let seatReadsMs = 0;
+    // These are independent entitled reads. Await every response before choosing an action or
+    // advancing a clock, without paying a second serial transport round trip for each phase.
+
+    const [publicView, seats] = await Promise.all([
+      data<Observation2>(`/api/matches/${matchId}`).then((view) => {
+        publicReadMs = Date.now() - started;
+
+        return view;
+      }),
+      views(matchId, controllers).then((views) => {
+        seatReadsMs = Date.now() - started;
+
+        return views;
+      }),
+    ]);
+
+    progress.set(matchId, currentMatch(publicView));
+    driverSteps.push({
+      at: Date.now(),
+      matchId,
+      phase: publicView.phase.kind,
+      head: publicView.history.streamHead,
+      publicReadMs,
+      seatReadsMs,
+      readWindowMs: Date.now() - started,
+      decisions: seats.filter((view) => view.decision).length,
+    });
     expect(Buffer.byteLength(JSON.stringify(publicView))).toBeLessThanOrEqual(14_336);
     expect(publicView.status, publicView.interruptionReason ?? '').not.toBe('interrupted');
 
@@ -236,11 +411,16 @@ async function drive(
   throw new Error(`Match ${matchId} did not reach its checkpoint within ${timeout}ms`);
 }
 
-async function driveOriginal(matchId: string, controllers: FixtureController[]): Promise<Observation> {
+function driveOriginal(matchId: string, controllers: FixtureController[]): Promise<Observation> {
+  return owned(() => driveOriginalSteps(matchId, controllers));
+}
+
+async function driveOriginalSteps(matchId: string, controllers: FixtureController[]): Promise<Observation> {
   const deadline = Date.now() + 120_000;
 
   while (Date.now() < deadline) {
     const publicView = await data<Observation>(`/api/matches/${matchId}`);
+    progress.set(matchId, currentMatch(publicView));
     expect(publicView.status, publicView.winReason ?? '').not.toBe('interrupted');
 
     if (publicView.status === 'finished') return publicView;
@@ -278,7 +458,21 @@ async function driveOriginal(matchId: string, controllers: FixtureController[]):
   throw new Error('Original game did not finish through actual HTTP decisions');
 }
 
-async function admitted(
+async function joinDrivers<A, B>(first: Promise<A>, second: Promise<B>): Promise<[A, B]> {
+  const [left, right] = await Promise.allSettled([first, second]);
+
+  if (left.status === 'rejected') throw left.reason;
+
+  if (right.status === 'rejected') throw right.reason;
+
+  return [left.value, right.value];
+}
+
+function admitted(...args: Parameters<typeof admitControllers>): ReturnType<typeof admitControllers> {
+  return owned(() => admitControllers(...args));
+}
+
+async function admitControllers(
   count: number,
   gameId: GameId = 'succession',
 ): Promise<{ matchId: string; controllers: FixtureController[] }> {
@@ -295,7 +489,12 @@ async function admitted(
   if (count < 10) await data('/__fixture/fill');
 
   const ticket = await until(
-    () => data<QueueStatus>('/api/queue', controllers[0]),
+    async () => {
+      const status = await data<QueueStatus>('/api/queue', controllers[0]);
+      queues.set(controllers[0].agentId, status);
+
+      return status;
+    },
     (value) => value.status === 'matched',
   );
 
@@ -539,10 +738,10 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
       ).toBe(false);
     }
 
-    const [teamResult, individualResult] = await Promise.all([
+    const [teamResult, individualResult] = await joinDrivers(
       driveOriginal(original.matchId, original.controllers),
       drive(succession.matchId, succession.controllers, (view) => view.status === 'finished'),
-    ]);
+    );
 
     expect(teamResult.winner).not.toBeNull();
     expect(individualResult.publicView.result?.kind).toBe('individual');
@@ -615,6 +814,25 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     const beforePublic = await data<Observation2>(`/api/matches/${matchId}`);
     const beforeOther = await data<Observation2>(`/api/matches/${matchId}`, controllers[1]);
     const firstVote = action(voting.seats[0]);
+    const historicalPublic = await checkpoint(beforePublic);
+    const historicalSeat = await checkpoint(voting.seats[0], controllers[0]);
+    expect(historicalPublic.baseline).toMatchObject({
+      private: null,
+      you: null,
+      decision: null,
+      chat: { open: false },
+      commitment: { reveal: null },
+    });
+    expect(historicalPublic.baseline && 'archive' in historicalPublic.baseline).toBe(false);
+    expect(historicalSeat.baseline?.private).toEqual(voting.seats[0].private);
+    expect((await checkpoint(beforePublic, undefined, 0)).through).toBe(0);
+    expect(
+      (
+        await request(
+          `/api/matches/${matchId}/replay?epoch=${beforePublic.history.visibilityEpoch}&through=0`,
+        )
+      ).status,
+    ).toBe(409);
 
     const downgraded = await request('/api/queue', controllers[0], {
       headers: { 'X-Agent-Game-Protocols': '' },
@@ -642,6 +860,8 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     expect(unrelated.frames).toHaveLength(1);
     expect(await data(`/api/matches/${matchId}`)).toEqual(beforePublic);
     expect(await data(`/api/matches/${matchId}`, controllers[1])).toEqual(beforeOther);
+    expect(await checkpoint(beforePublic)).toEqual(historicalPublic);
+    expect(await checkpoint(voting.seats[0], controllers[0])).toEqual(historicalSeat);
     await Promise.all(
       voting.seats.slice(1, 9).map((view, index) => submit(matchId, controllers[index + 1], action(view))),
     );
@@ -663,11 +883,29 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     );
 
     expect((await request(`/api/matches/${matchId}`, alternate)).status).toBe(403);
+    expect(
+      (
+        await request(
+          `/api/matches/${matchId}/checkpoint?epoch=${beforePublic.history.visibilityEpoch}&through=0`,
+          alternate,
+        )
+      ).status,
+    ).toBe(403);
     unrelated.socket.close();
     expect((await data<Observation2>(`/api/matches/${matchId}`, controllers[1])).you?.forfeited).toBe(false);
     const returned = await drive(matchId, controllers, (view) => view.act === 2);
     expect(returned.publicView).toMatchObject({ status: 'active', result: null, finishedAt: null });
     expect(returned.publicView.seats.every((seat) => seat.alive && seat.influence === 2)).toBe(true);
+
+    const liveIndex = await data<RoundIndex2>(
+      `/api/matches/${matchId}/rounds?epoch=${returned.publicView.history.visibilityEpoch}`,
+    );
+
+    const returnLandmark = liveIndex.rounds.find((round) => round.act === 2)!;
+    const liveReturn = await checkpoint(returned.publicView, undefined, returnLandmark.through);
+    expect(liveReturn.baseline?.seats.every((seat) => seat.alive && seat.influence === 2)).toBe(true);
+    expect(liveReturn.baseline?.private).toBeNull();
+    expect(await checkpoint(beforePublic)).toEqual(historicalPublic);
 
     for (const seat of returned.publicView.seats)
       expect(seat.coins).toBe(2 + (returned.publicView.act1Result?.bonuses[seat.number] ?? -1));
@@ -832,11 +1070,46 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     expect(oldBoard).toMatchObject({ act: 1, status: 'active', result: null });
     expect(returnBoard).toMatchObject({ act: 2, status: 'active', result: null });
     expect(returnBoard.seats.every((seat) => seat.alive && seat.influence === 2)).toBe(true);
+    expect((await checkpoint(finished.publicView, undefined, secondAct.id)).baseline).toEqual(returnBoard);
+    expect(
+      await data(
+        `/api/matches/${matchId}/checkpoint?epoch=${beforePublic.history.visibilityEpoch}&through=0`,
+      ),
+    ).toMatchObject({ reset: true, events: [] });
+
+    for (const event of events.filter((entry) =>
+      ['executed', 'influence-lost', 'act-started'].includes(entry.type),
+    )) {
+      const before = await checkpoint(finished.publicView, undefined, event.id - 1);
+      const at = await checkpoint(finished.publicView, undefined, event.id);
+
+      const model = buildSuccessionStory({
+        scope: { matchId, visibilityEpoch: reset.visibilityEpoch },
+        after: event.id - 1,
+        through: event.id,
+        baseline: before.baseline ?? undefined,
+        events: [event],
+      });
+
+      expect(
+        model.end.map((seat) => (seat.alive.status === 'unavailable' ? null : seat.alive.value)),
+      ).toEqual(at.baseline?.seats.map((seat) => seat.alive));
+    }
+
     const finalSnapshot = await data<Settlement>(`/__fixture/matches/${matchId}/settlement`);
     await submit(matchId, controllers[0], firstVote);
     expect(await data(`/__fixture/matches/${matchId}/settlement`)).toEqual(finalSnapshot);
     expect(spectator.frames.every((frame) => Buffer.byteLength(frame) <= 16_384)).toBe(true);
     expect(watching.frames.every((frame) => Buffer.byteLength(frame) <= 16_384)).toBe(true);
+    await data(`/__fixture/matches/${matchId}/revoke?grantId=${controllers[0].grantId}`);
+    expect(
+      (
+        await request(
+          `/api/matches/${matchId}/checkpoint?epoch=${reset.visibilityEpoch}&through=0`,
+          controllers[0],
+        )
+      ).status,
+    ).toBe(403);
   }, 180_000);
 
   it('runs mixed house fill through resurrection, actual timeout takeover, restart and final forfeit credit', async () => {
@@ -854,6 +1127,8 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     );
 
     const obsolete = action(externalTurn.seats[0]);
+    const beforeTakeover = await checkpoint(externalTurn.seats[0], controllers[0]);
+    expect(beforeTakeover.baseline?.private).not.toBeNull();
     await clock(matchId, externalTurn.publicView, 'grace');
 
     const forfeited = await until(
@@ -863,6 +1138,8 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
 
     expect(forfeited.private).toBeNull();
     expect(forfeited.status).toBe('active');
+    expect(await checkpoint(externalTurn.seats[0], controllers[0])).toEqual(beforeTakeover);
+    expect((await checkpoint(forfeited, controllers[0])).baseline?.private).toBeNull();
     expect(
       (
         await request(`/api/matches/${matchId}/actions`, controllers[0], {
@@ -928,4 +1205,51 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     expect(after.socketColumns).toContain('protocol');
     expect(socket.frames.length).toBeGreaterThanOrEqual(1);
   }, 30_000);
+
+  it('drains sibling HTTP drivers when an actual checkpoint fails without clearing their allocations', async () => {
+    const first = await admitted(10);
+    const second = await admitted(10);
+    let peerObserved = false;
+    let peerSettled = false;
+    let peerStopped = false;
+    const failure = new Error('Fixture checkpoint failure after both drivers started');
+
+    const peer = drive(second.matchId, second.controllers, () => {
+      peerObserved = true;
+
+      return peerStopped;
+    }).finally(() => {
+      peerSettled = true;
+    });
+
+    const failing = drive(first.matchId, first.controllers, () => {
+      if (peerObserved) throw failure;
+
+      return false;
+    });
+
+    try {
+      await expect(joinDrivers(failing, peer)).rejects.toBe(failure);
+      const allocations = await (await worker.fetch('/__fixture/allocations')).json();
+      await writeFile(
+        `${directory}/driver-failure-control.json`,
+        JSON.stringify({ peerSettled, allocations }),
+      );
+      expect(peerSettled).toBe(true);
+      expect(allocations).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: first.matchId, state: 'active', reservation: 1.5 }),
+          expect.objectContaining({ id: second.matchId, state: 'active', reservation: 1.5 }),
+        ]),
+      );
+    } finally {
+      // The red control must also drain its intentionally failed work before stopping the runtime.
+      peerStopped = true;
+      await Promise.allSettled([failing, peer]);
+    }
+  }, 30_000);
+
+  it('starts an independent journey with fresh storage after unfinished games', async () => {
+    expect(await data('/__fixture/allocations')).toEqual([]);
+  });
 });

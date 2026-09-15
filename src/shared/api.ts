@@ -1,4 +1,5 @@
 import { Schema } from 'effect';
+import { AgentPictureSchema, type AgentPicture } from './agent-picture';
 import type { ActionRequest, Observation, Role } from '../game/types';
 import type { GameDescriptor, GameId } from '../game/contracts';
 import type { ActionRequest2, IndividualResult2 } from './succession';
@@ -117,6 +118,7 @@ export interface RoleStats {
 
 export interface AgentProfile {
   id: string;
+  picture?: AgentPicture;
   ownerId: string | null;
   ownerHandle: string | null;
   name: string;
@@ -145,6 +147,13 @@ export interface ConnectionInfo {
   revokedAt: number | null;
 }
 
+/** Public original entrant identity; seat numbers refer to the summary's historical names. */
+export interface SummaryEntrant {
+  number: number;
+  agentId: string;
+  name: string;
+}
+
 export interface MatchSummary {
   gameId?: 'secret-overlord';
   id: string;
@@ -159,6 +168,7 @@ export interface MatchSummary {
   winner: string | null;
   winReason: string | null;
   names: string[];
+  entrants?: SummaryEntrant[];
 }
 
 export interface SuccessionSummary {
@@ -172,6 +182,7 @@ export interface SuccessionSummary {
   finishedAt: number | null;
   houseCount: number;
   names: string[];
+  entrants?: SummaryEntrant[];
   result: IndividualResult2 | null;
   act1Winner: 'cooperative' | 'rogue' | null;
   livingCount: number;
@@ -267,6 +278,7 @@ export const OwnerProfileSchema = Schema.Struct({
 
 export const AgentProfileSchema: Schema.Codec<AgentProfile> = Schema.Struct({
   id: Schema.String,
+  picture: Schema.optional(AgentPictureSchema),
   ownerId: Schema.NullOr(Schema.String),
   ownerHandle: Schema.NullOr(Schema.String),
   name: Schema.String,
@@ -291,6 +303,16 @@ export const AgentProfileSchema: Schema.Codec<AgentProfile> = Schema.Struct({
 
 export const AgentListSchema = Schema.mutable(Schema.Array(AgentProfileSchema));
 
+const SummaryEntrantsSchema = Schema.mutable(
+  Schema.Array(
+    Schema.Struct({
+      number: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 9 })),
+      agentId: Schema.String,
+      name: Schema.String,
+    }),
+  ),
+).check(Schema.isMaxLength(10));
+
 const MatchSummarySchema = Schema.Struct({
   gameId: Schema.optional(Schema.Literal('secret-overlord')),
   id: Schema.String,
@@ -305,6 +327,7 @@ const MatchSummarySchema = Schema.Struct({
   winner: Schema.NullOr(Schema.String),
   winReason: Schema.NullOr(Schema.String),
   names: Schema.mutable(Schema.Array(Schema.String)),
+  entrants: Schema.optional(SummaryEntrantsSchema),
 });
 
 export const SuccessionSummarySchema = Schema.Struct({
@@ -318,6 +341,7 @@ export const SuccessionSummarySchema = Schema.Struct({
   finishedAt: Schema.NullOr(Schema.Number),
   houseCount: Schema.Number,
   names: Schema.mutable(Schema.Array(Schema.String)),
+  entrants: Schema.optional(SummaryEntrantsSchema),
   result: Observation2Schema.fields.result,
   act1Winner: Schema.NullOr(TeamSchema),
   livingCount: Schema.Number,

@@ -1,0 +1,35 @@
+{
+  "status": 401,
+  "before": [
+    {
+      "id": "d431df80-5183-478b-b4a4-84932a5b9c3b",
+      "match_id": "match_2dcf4351-41b0-42b5-ae84-671444d7b3a6",
+      "kind": "required",
+      "expires_at": 1789447810014
+    }
+  ],
+  "after": [
+    {
+      "id": "d431df80-5183-478b-b4a4-84932a5b9c3b",
+      "match_id": "match_2dcf4351-41b0-42b5-ae84-671444d7b3a6",
+      "kind": "required",
+      "expires_at": 1789447810014
+    }
+  ],
+  "chargesBefore": [
+    {
+      "id": "7c68bfc3-9643-493d-9775-e63f63c24acf",
+      "reserved": 1.49,
+      "actual": null,
+      "done": 0
+    }
+  ],
+  "chargesAfter": [
+    {
+      "id": "7c68bfc3-9643-493d-9775-e63f63c24acf",
+      "reserved": 1.49,
+      "actual": null,
+      "done": 0
+    }
+  ]
+}

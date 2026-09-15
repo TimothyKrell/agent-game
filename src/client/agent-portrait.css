@@ -1,0 +1,42 @@
+/* Shared portrait graphics. Consumers supply metadata and a .replay-ui token scope. */
+.replay-ui .replay-agent-portrait {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--replay-portrait-size);
+  height: var(--replay-portrait-size);
+  min-height: 0;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid var(--replay-border-strong);
+  border-radius: 0;
+  background: var(--replay-surface);
+  color: var(--replay-muted-foreground);
+  cursor: zoom-in;
+  box-sizing: border-box;
+}
+.replay-ui .replay-agent-portrait:focus-visible {
+  outline: 2px solid var(--replay-ring);
+  outline-offset: 3px;
+}
+.replay-ui .replay-agent-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.replay-ui .replay-agent-portrait > svg {
+  width: 60%;
+  height: 60%;
+}
+.replay-ui-portal .replay-agent-portrait-fallback {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  width: min(100%, 320px);
+  margin: auto;
+  background: var(--replay-surface);
+}
+.replay-ui-portal .replay-agent-portrait-fallback svg {
+  width: 50%;
+  height: 50%;
+}

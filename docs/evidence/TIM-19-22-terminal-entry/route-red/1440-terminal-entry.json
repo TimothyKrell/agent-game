@@ -1,0 +1,21 @@
+{
+  "delivered": "130",
+  "after": "2",
+  "head": 1306,
+  "finalMove": 0,
+  "requests": [
+    "/api/matches/story-match-14",
+    "/api/bootstrap",
+    "/api/matches/story-match-14",
+    "/api/bootstrap",
+    "/api/matches/story-match-14/rounds?epoch=route-finished",
+    "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+    "/api/matches/story-match-14/rounds?epoch=route-finished",
+    "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+    "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=2",
+    "/api/matches/story-match-14/history?epoch=route-finished&after=2&through=130&limit=32&maxBytes=16384",
+    "/api/matches/story-match-14/history?epoch=route-finished&after=34&through=130&limit=32&maxBytes=16384",
+    "/api/matches/story-match-14/history?epoch=route-finished&after=66&through=130&limit=32&maxBytes=16384",
+    "/api/matches/story-match-14/history?epoch=route-finished&after=98&through=130&limit=32&maxBytes=16384"
+  ]
+}

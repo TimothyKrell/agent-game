@@ -1,0 +1,146 @@
+{
+  "implementationCommit": "f03678759895946012a049eedd8f3202a591a3ad",
+  "testsWorktreeParent": "87dda3896f37eafd9ed78273ff517b3b081aa4fc",
+  "gamesReceiptLegacySourceCommit": "Synthetic all-ones fixture PR head; actual expanded-suite artifact/build revision is testsWorktreeParent.",
+  "expanded": {
+    "passed": 170,
+    "failed": 0,
+    "files": 14,
+    "seconds": 513.3539592285156
+  },
+  "postCommitSupplement": {
+    "passed": 4,
+    "failed": 0,
+    "files": 1,
+    "seconds": 68.32967797851562
+  },
+  "priorUniqueAssertionsRetained": 164,
+  "originalUniqueAssertionsRetained": 121,
+  "originalRegression": {
+    "passed": 0,
+    "failed": 1,
+    "files": 1,
+    "seconds": 16.144039794921873,
+    "expectedStatus": "red"
+  },
+  "initialFocusedRunBeforeFinalValidation": true,
+  "actualNodeSmokeGames": [
+    {
+      "gameId": "secret-overlord",
+      "status": "finished",
+      "socket": {
+        "packets": 450,
+        "maxBytes": 95111,
+        "acts": []
+      }
+    },
+    {
+      "gameId": "succession",
+      "status": "finished",
+      "socket": {
+        "packets": 1709,
+        "maxBytes": 3913,
+        "acts": [
+          1,
+          2
+        ]
+      }
+    }
+  ],
+  "checks": {
+    "typecheck": "passed",
+    "repositoryLintDenyWarnings": "passed",
+    "productionBuild": "passed",
+    "scopedPrettier": "passed",
+    "diffCheck": "passed"
+  },
+  "artifact": {
+    "manifestSha256": "70446626a9d03604d1cab917c0c3fd040665bafaaec74dbb39cdc6f1787b7d70",
+    "files": 29,
+    "bytes": 4356376,
+    "branchArchive": {
+      "path": "assets/downloads/previews/f03678759895946012a049eedd8f3202a591a3ad/c03c9aa85e12ae05d0072e8eaba6c2bbf60caa07167fafaabb64b033d774660e.tgz",
+      "bytes": 18026,
+      "sha256": "c03c9aa85e12ae05d0072e8eaba6c2bbf60caa07167fafaabb64b033d774660e"
+    }
+  },
+  "localOnly": true,
+  "syntheticGitHubIdentity": true,
+  "hostedReleaseAttested": false,
+  "deploymentOrInferenceCalls": 0,
+  "node": "v24.21.0",
+  "textLogNormalization": "Trailing horizontal whitespace removed; final blank lines normalized to one newline.",
+  "rawLogHashes": {
+    "smoke-schema-red.log": "fd53058e80c71d0163fe42008109bb6de075340961fcb9f944a3dd7b2edc79e0",
+    "smoke-schema-initial.log": "27178dddc844ee83947a0f53bb1c507e21394841ceea028094b9a7532759d552",
+    "smoke-schema-expanded.log": "e1a3a3c7754b40d9a98778e3a3654a1175508eb3a5e0089fe48b9a4c185ed17e",
+    "smoke-schema-committed.log": "43cf7510342cffda52774602df2ca4ef804c720b2ed87d077895995128a47c04",
+    "smoke-schema-typecheck.log": "ca4c37b3d127f6b0232f40dcfab9c1021dac417482c1d583ed90524a35da2e38",
+    "smoke-schema-lint.log": "77dcac1d44868c19c6632ab53b78bf49d40633cdb5615cc77eadab6ad4afec82",
+    "smoke-schema-build.log": "a5e3ee61a230fe7ff62976812eeddc7c80bc95c7f06fdd9d19aa2c83547b0e8c",
+    "smoke-schema-format.log": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+    "smoke-schema-produce.log": "02aa158e5ba0964ee9a7da6da66193bb6741586f8c29d367f02fa86a19ddb581"
+  },
+  "hashes": {
+    "smoke-schema-red.json": "ab809c4e33191920282c6a3b91347a516ace2bc9c1c4d938df6f9e6c6e1f0f66",
+    "smoke-schema-red-observation.json": "6d1441e77c5944c57c0ada19cee806c778e2ef5afbc9252c61f663ace0ee8d50",
+    "smoke-schema-initial.json": "1ed5cafc35ed4ddc5582353931b8c6700ff02243b9d0e8fbc8eb9a86dcfa0749",
+    "smoke-schema-expanded.json": "1a060ab5907a7532fe66ef02acaa2bca3e6a4000bef05c9935ea3661d3da7f76",
+    "smoke-schema-committed.json": "4799e8de892318587644fe9d8af46284679a15b20b5d3815d46fc84ef1429747",
+    "smoke-schema-games.json": "f772f3a95cc3b4acd39700bf04e5cc762d6c9314cd7026a1deee9c1495b09786",
+    "smoke-schema-green-observation.json": "694b3289ecb453d4f897956e15753c9706dd6a100fcb1423e0c238d590fb87d5",
+    "smoke-schema-artifact-manifest.json": "70446626a9d03604d1cab917c0c3fd040665bafaaec74dbb39cdc6f1787b7d70",
+    "smoke-schema-red.txt": "fd53058e80c71d0163fe42008109bb6de075340961fcb9f944a3dd7b2edc79e0",
+    "smoke-schema-initial.txt": "27178dddc844ee83947a0f53bb1c507e21394841ceea028094b9a7532759d552",
+    "smoke-schema-expanded.txt": "e1a3a3c7754b40d9a98778e3a3654a1175508eb3a5e0089fe48b9a4c185ed17e",
+    "smoke-schema-committed.txt": "43cf7510342cffda52774602df2ca4ef804c720b2ed87d077895995128a47c04",
+    "smoke-schema-typecheck.txt": "d79cb736a16698caf66005ee46693121fedfd9e2ecefc12e4691089e169486fb",
+    "smoke-schema-lint.txt": "77dcac1d44868c19c6632ab53b78bf49d40633cdb5615cc77eadab6ad4afec82",
+    "smoke-schema-build.txt": "a5e3ee61a230fe7ff62976812eeddc7c80bc95c7f06fdd9d19aa2c83547b0e8c",
+    "smoke-schema-format.txt": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+    "smoke-schema-produce.txt": "21bcdf32d448438673203c98a5a7bc87d4da824eaf48262306cd1b0d9e450f01"
+  },
+  "preservedHashes": {
+    ".tim27-lifecycle/generation-before-red.json": "f369c9fa9db30c7299cf60fc1fc13da14dad414a0f4725b188019a349166c33c",
+    ".tim27-lifecycle/finalizer-before-red.json": "baf7ce8e25c952384b905b5986a4a2c7b6aa38a44a6b99f9a2279ec2ab61e978",
+    ".tim27-lifecycle/finalizer-confirmed-red.json": "ca4b1ae66fce52c1c4c08859c999991eb80c869fc259f3010a5073251e9cc4cd",
+    ".tim27-lifecycle/finalizer-red.json": "e9293a00a286956fdf6b8e3a01108af3368c4a549a8e4856f1971fd9a28433fd",
+    ".tim27-lifecycle/generation-tests.json": "e955bb179f497fd4cb006e711d968b25d40fb96794bd6ec79b9bb46d6950a772",
+    ".tim27-lifecycle/generation-committed-tests.json": "bfd481a8011acc403f12f30fd1dce9d4a14e2042ffc1b89681aa69a9fde6092c",
+    ".tim27-lifecycle/generation-smoke-tests.json": "495dfb8e8a39edf2ad2b3c3e2aa640e8cb8795c26e76234b275415911839ab44",
+    ".tim27-lifecycle/generation-integration.json": "b2eef3c83d64e9a75bf4a7c241897165527ac7c987235c7704632cb5aab04964",
+    ".tim27-lifecycle/generation-artifact-manifest.json": "e4ee281323bd3c6ee7b5a681f06b1aefb8ee9dc4fb8e6378c8bfe13ac7fd3f88",
+    ".tim27-lifecycle/generation-before-red.txt": "5cff682b49f3dc63c447d2133856947500a3f24a207a672fc123cd0e9cd43607",
+    ".tim27-lifecycle/finalizer-before-red.txt": "220bf140f70052d5d115bf2c2636d3aaa4708ae28d8af88b60452f631edb5136",
+    ".tim27-lifecycle/finalizer-confirmed-red.txt": "7246a8c35e40269004fc8b22134099b64becb61fc6606bb097f4bcade813c5a0",
+    ".tim27-lifecycle/finalizer-red.txt": "0a33d742a6efcdaaccc87a0addbc3e150080c4129162ace4195484cc15805dfa",
+    ".tim27-lifecycle/generation-tests.txt": "2c93338280693a44f6c6b602e75e9ce8f6351c455940215d6876414fccd4aa28",
+    ".tim27-lifecycle/generation-committed-tests.txt": "bb6f334cab3d6d8cceaa0c47ad0332149dd39d316e9b54d56e9e6348159afabc",
+    ".tim27-lifecycle/generation-smoke.txt": "c64959c02c04f485c2c75bb0a1f30b51b42531036dc5654f9361c9fbf2493131",
+    ".tim27-lifecycle/generation-typecheck-final.txt": "d79cb736a16698caf66005ee46693121fedfd9e2ecefc12e4691089e169486fb",
+    ".tim27-lifecycle/generation-lint-evidence.txt": "a70f08e95ed730a15a0dd847faa1d1df37155844289170be241563db98a20472",
+    ".tim27-lifecycle/generation-build.txt": "fdab3f622f4cdd52f95ea5bd7bfc8b90ffdca1339563917ed668c2085ea2b67d",
+    ".tim27-lifecycle/generation-format.txt": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+    ".tim27-lifecycle/generation-produce.txt": "b4a452da0e6e0c9edb851028e71962dbc3c2c1e3bf21e6f2c3556308679c8984",
+    ".tim27-lifecycle/generation-gap.test.ts": "5acb577d2043f4cdfa9b4d4d3b8efb50d5b7ff69b3d33c8518fd4566282d399f",
+    ".tim27-lifecycle/generation-gap.vitest.ts": "c39feaa70e2f5c05cf589d78aa192aaccab5436c71b0ca6bf1a376618f7dd7c3",
+    ".tim27-lifecycle/generation-gap.json": "d16ea732dfbf10862558fd06cd0d73d0a2291b36ad6558284abe0d28996eafee",
+    ".tim27-lifecycle/generation-gap.txt": "3260b9ca1a4d60b5bb4ad70025212cbf6af2939059caf84c813965a3e1b7c21c",
+    ".tim27-lifecycle/generation-checks.json": "3556b0ec865a206ab1efb9ed336cb101c81df839883b081c6b02c9f95a1ae43d",
+    "migrations/0008_preview_generation.sql": "dbd4d5973b17f39181724b1abe4afdb1ed323c5932addca9ed319115383b40fb",
+    "scripts/preview-apply.ts": "66101173ee41ab84ca0f80e026922538aeef25808bb1bd6b7071f27fbcefc6b8",
+    "scripts/preview-controller.ts": "686359763ccb75b650a451b63ac30fc6780a84b7ce466f6c01051d2fa75be912",
+    "scripts/preview-failure.ts": "30f9665e51fa930d17504e398ff9c65dfebf5f0e7e8971d09afb6261235a7c1b",
+    "scripts/preview-lifecycle.ts": "d13dbe5c113ea6da592936ba5855a246bcb2ed037e6bdd9771218a01015fff6f",
+    "scripts/preview-lifecycle-state.ts": "020622d57d0cfe6ef9b3fc1fad1185c172540ef46c09162cf674eb4032dcb732",
+    "scripts/preview-operations.ts": "7f952ffbf9ba72874ba117b88075f8ceab91184ddbc09720f8d6ae7023eb43b1",
+    "src/server/preview-generation.ts": "508c1d58fcd7c28bb5ce11e05750cf0ea1a82ec6bdda4d2893b3b3d279cb477a",
+    "src/server/preview-config.ts": "2bdf42c2b969c99659df84f51a6fd8e9e744b83243b34e9c1ee0505f5fb0bfb4",
+    "src/server/preview-broker-config.ts": "c99ffae28531155b4190acc9f2750def9df14e7568443624125685c60339c01c",
+    "src/server/preview-artifacts.ts": "5e61cded0aca01a056c26cd91e7e8f6878ad42b58f388240ab74245112db6084",
+    "scripts/preview-d1.ts": "f20e0daee0166dc859740d78fd483073971524df1f83dfbf69f0328b4bb855d5",
+    "scripts/preview-transaction.ts": "da785e3dff79dcfaa84ff55894d1195e50b148b52d57b3d4d79b9400d2241c8f",
+    "package.json": "e4976e52219d36bf55e13134e8cf1338bef26951d077db5b275acff005537763",
+    "package-lock.json": "c2ada230a41ee6bcdc9ea625b164183fb6db59ea3f5ff5c444add4815aa16667"
+  }
+}

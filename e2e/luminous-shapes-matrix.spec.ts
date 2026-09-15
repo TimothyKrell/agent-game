@@ -116,7 +116,11 @@ for (const width of [1600, 768, 390, 320]) {
         for (const game of ['secret-overlord', 'succession'] as const) {
           for (const archived of [false, true]) {
             await speechFixture(page, game, archived);
-            const bubbles = page.locator('.entry-speech:visible');
+
+            const bubbles = page.locator(
+              game === 'succession' ? '.dossier-speech blockquote:visible' : '.entry-speech:visible',
+            );
+
             await expect(bubbles).toHaveCount(3);
 
             for (let seat = 0; seat < 3; seat++) {

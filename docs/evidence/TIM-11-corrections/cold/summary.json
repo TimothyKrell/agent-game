@@ -1,0 +1,51 @@
+[
+  {
+    "run": "green-scanned-7",
+    "errors": 0,
+    "navigations": 1,
+    "reactURLs": [
+      "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/react.js?v=158291f2"
+    ]
+  },
+  {
+    "run": "red-control-9",
+    "errors": 1,
+    "navigations": 2,
+    "reactURLs": [
+      "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=f52f89c2",
+      "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=9ed2a51d"
+    ]
+  },
+  {
+    "run": "green-scanned-10",
+    "errors": 0,
+    "navigations": 1,
+    "reactURLs": [
+      "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react.js?v=d117b83f"
+    ]
+  },
+  {
+    "run": "green-scanned-11",
+    "errors": 0,
+    "navigations": 1,
+    "reactURLs": [
+      "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-11/vite-cache/deps/react.js?v=65a947f1"
+    ]
+  },
+  {
+    "run": "green-scanned-12",
+    "errors": 0,
+    "navigations": 1,
+    "reactURLs": [
+      "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-12/vite-cache/deps/react.js?v=6d70e3c8"
+    ]
+  },
+  {
+    "run": "green-full-13",
+    "errors": 0,
+    "navigations": 1,
+    "reactURLs": [
+      "http://127.0.0.1:6191/.tim11/cold-start/runs/green-full-13/vite-cache/deps/react.js?v=19e81697"
+    ]
+  }
+]

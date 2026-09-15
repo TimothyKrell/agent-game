@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { GameClient, save, updateCurrent } from './agent-game.mjs';
 import { gameId } from './current.mjs';
+import { pictureSource } from './picture.mjs';
+import { activeArtifacts } from './preview-artifacts.mjs';
 
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 
@@ -13,6 +15,16 @@ const quote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
 const entry = fileURLToPath(new URL('./agent-game.mjs', import.meta.url));
 
 const command = `node ${quote(entry)}`;
+
+export function installationCommands(configPath, cliPath = entry) {
+  const executable = `node ${quote(cliPath)}`;
+
+  return {
+    cliPath,
+    connectCommand: `${executable} connect --config ${quote(configPath)}`,
+    startCommand: `${executable} start --config ${quote(configPath)}`,
+  };
+}
 
 const read = async (path) =>
   readFile(path, 'utf8').catch((error) => {
@@ -34,6 +46,17 @@ function locations(harness) {
   };
 }
 
+export async function registerConnection(harness, configPath, server, cliPath = entry) {
+  const { registry } = locations(harness);
+  await updateCurrent(registry, (manifest) => {
+    const existing = (manifest.connections ?? []).find((item) => item.configPath === configPath);
+    manifest.connections = [
+      ...(manifest.connections ?? []).filter((item) => item.configPath !== configPath),
+      { ...existing, configPath, server, cliPath },
+    ];
+  });
+}
+
 export async function connections(harness) {
   const { registry } = locations(harness);
   const records = JSON.parse((await read(registry)) ?? '{}').connections ?? [];
@@ -42,6 +65,7 @@ export async function connections(harness) {
   for (const record of records) {
     const raw = await read(record.configPath);
     const state = JSON.parse(raw ?? '{}');
+    const artifacts = activeArtifacts(state);
     items.push({
       configPath: record.configPath,
       server: record.server,
@@ -49,15 +73,31 @@ export async function connections(harness) {
       agentId: state.agentId ?? null,
       selectedGame: state.selectedGame ?? 'secret-overlord',
       participation: state.participation ?? null,
+      previewParticipation: state.previewParticipation ?? null,
       expiresAt: state.expiresAt ?? null,
-      localStatus: !raw ? 'missing' : state.agentId ? 'paired' : 'unpaired',
-      startCommand: `${command} start --config ${quote(record.configPath)}`,
+      localStatus: !raw
+        ? 'missing'
+        : state.preview?.status === 'pending'
+          ? 'authorizing'
+          : state.agentId
+            ? 'paired'
+            : 'unpaired',
+      sourceOrigin: state.preview?.sourceOrigin ?? null,
+      incarnation: state.preview?.incarnation ?? null,
+      commit: state.preview?.commit ?? null,
+      selection: state.preview ? { gameId: state.selectedGame, artifacts: state.preview.artifacts } : null,
+      livePlay: state.preview?.livePlay ?? null,
+      availability: state.preview
+        ? 'Source registration at selection; start reports current admission or preview-allocation-pending.'
+        : null,
+      artifacts: artifacts ?? null,
+      ...installationCommands(record.configPath, artifacts?.executablePath ?? record.cliPath ?? entry),
     });
   }
 
   return {
     connections: items,
-    next: 'Choose the requested competitor; if there is exactly one, use it. If ambiguous, ask the owner. Run its startCommand. Paired is local metadata; the arena checks current authority.',
+    next: 'Choose the requested competitor; if there is exactly one, use it. If ambiguous, ask the owner. Run its connectCommand, then startCommand when ready. Paired is local metadata; the arena checks current authority.',
   };
 }
 
@@ -76,6 +116,14 @@ export async function setup(flags) {
 
   const state = JSON.parse((await read(path)) ?? '{}');
   state.selectedGame = gameId(flags.game ?? state.selectedGame);
+  const sourceServer = flags['picture-source-server'];
+  const sourceAgent = flags['picture-source-agent'];
+
+  if ((sourceServer === undefined) !== (sourceAgent === undefined))
+    throw new Error(
+      'Supply both --picture-source-server and --picture-source-agent for an offer-choice lineage.',
+    );
+  const lineage = sourceServer === undefined ? undefined : pictureSource(sourceServer, sourceAgent);
 
   if (state.server && state.server !== server)
     throw new Error('This config belongs to another arena. Use a separate --config.');
@@ -90,7 +138,7 @@ export async function setup(flags) {
       `A custom or modified skill already exists at ${skill}. Preserve it and move it aside before retrying setup, or add these installation instructions to it yourself.`,
     );
   const source = await readFile(new URL('../skills/agent-game/SKILL.md', import.meta.url), 'utf8');
-  const content = `${source}\n## Local installation\n\nUse this command from any directory (Node 22.12+):\n\n\`\`\`sh\n${command} connections --harness ${flags.harness}\n\`\`\`\n\nThis lists saved arena URLs, selected games, actual participation, competitor names, config paths and exact start commands without exposing credentials. Select the requested competitor, or the only connection. Ask if several fit. Use the selected absolute CLI path and append its \`--config\` to every command. Before joining Secret Overlord read ${quote(fileURLToPath(new URL('../public/rules.md', import.meta.url)))}; for Succession read ${quote(fileURLToPath(new URL('../public/games/succession/rules.md', import.meta.url)))}. Read the same game's bundled protocol for history paging and rating-method for credit.\n`;
+  const content = `${source}\n## Local installation\n\nUse this command from any directory (Node 22.12+):\n\n\`\`\`sh\n${command} connections --harness ${flags.harness}\n\`\`\`\n\nThis lists saved arena URLs, source provenance, selected games, actual participation, competitor names, config paths and exact start commands without exposing credentials. Select the requested competitor and arena, or the only connection. Ask if several fit. Use the selected absolute CLI path and append its \`--config\` to every command. For previews, use the listed participation's immutable \`artifacts\` paths; run \`preview-select\` through the source connection to choose a new target. For production Secret Overlord read ${quote(fileURLToPath(new URL('../public/rules.md', import.meta.url)))}; for production Succession read ${quote(fileURLToPath(new URL('../public/games/succession/rules.md', import.meta.url)))}. Read the same game's protocol for history paging and rating-method for credit.\n`;
   await mkdir(dirname(skill), { recursive: true });
   await writeFile(skill, content, { mode: 0o600 });
   state.server = server;
@@ -103,11 +151,17 @@ export async function setup(flags) {
     latest.harness = flags.harness;
     latest.installation ??= state.installation;
     latest.selectedGame = gameId(flags.game ?? latest.selectedGame);
+
+    if (lineage) latest.pictureSource = lineage;
     state.selectedGame = latest.selectedGame;
   });
   manifest.connections = [
     ...manifest.connections.filter((item) => item.configPath !== path),
-    { configPath: path, server },
+    {
+      configPath: path,
+      server,
+      cliPath: manifest.connections.find((item) => item.configPath === path)?.cliPath ?? entry,
+    },
   ];
   manifest.skillHash = digest(content);
   await save(registry, manifest);
@@ -124,7 +178,8 @@ export async function setup(flags) {
     ),
     configPath: path,
     skillPath: skill,
+    connectCommand: `${command} connect --config ${quote(path)}`,
     startCommand: `${command} start --config ${quote(path)}`,
-    next: 'Read the installed skill and bundled rules, then run startCommand now. In a fresh local session, ask Start an Agent Game or use /agent-game. Setup itself does not join a match.',
+    next: 'Read the installed skill and bundled rules, then run connectCommand now. Once ready, use startCommand to play; optional picture setup never gates joining. In a fresh local session, ask Start an Agent Game or use /agent-game. Setup itself does not join a match.',
   };
 }

@@ -1,0 +1,47 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/tmp/opencode/agent-game-playable-ci[39m
+
+[90mstderr[2m | tests/preview-playable.test.ts
+[22m[39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mkj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe[0m
+
+  stack: /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+
+
+
+[90mstderr[2m | tests/preview-playable.test.ts
+[22m[39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mkj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Connection reset by peer[0m
+
+  stack: /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+
+
+
+[90mstderr[2m | tests/preview-playable.test.ts
+[22m[39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mkj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe[0m
+
+  stack: /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+
+
+
+[90mstderr[2m | tests/preview-playable.test.ts
+[22m[39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mkj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe[0m
+
+  stack: /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+
+
+
+[90mstderr[2m | tests/preview-playable.test.ts
+[22m[39m[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mkj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Connection reset by peer[0m
+
+  stack: /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/timothykrell/Code/agent-games/node_modules/miniflare/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+
+
+
+ [32m✓[39m tests/preview-playable.test.ts [2m([22m[2m5 tests[22m[2m | [22m[33m4 skipped[39m[2m)[22m[33m 90270[2mms[22m[39m
+   [33m[2m✓[22m[39m admits installed opencode/secret-overlord through the real queue alarm and plays with source-metered house HTTP [33m 83264[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m4 skipped[39m[90m (5)[39m
+[2m   Start at [22m 06:59:18
+[2m   Duration [22m 91.27s[2m (transform 224ms, setup 0ms, import 919ms, tests 90.27s, environment 0ms)[22m
+
+JSON report written to /tmp/opencode/agent-game-playable-ci/.tim27-playable/runs/ci-red-two-cpu-1/vitest.json

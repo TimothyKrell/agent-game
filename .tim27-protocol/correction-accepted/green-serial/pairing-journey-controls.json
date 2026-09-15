@@ -1,0 +1,34 @@
+{
+  "beforeProbe": 1,
+  "probes": [
+    {
+      "path": "/",
+      "status": 404,
+      "apiRequests": 1
+    },
+    {
+      "path": "/health",
+      "status": 404,
+      "apiRequests": 1
+    },
+    {
+      "path": "/probe",
+      "status": 404,
+      "apiRequests": 1
+    },
+    {
+      "path": "/api/unknown",
+      "status": 404,
+      "apiRequests": 1
+    }
+  ],
+  "apiPaths": [
+    "/api/pairing",
+    "/api/pairing/status",
+    "/api/queue",
+    "/api/queue",
+    "/api/matches/match_two?after=0",
+    "/api/matches/match_two/actions",
+    "/api/queue"
+  ]
+}

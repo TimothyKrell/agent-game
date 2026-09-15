@@ -1,0 +1,406 @@
+{
+  "checkedAt": "2026-09-15T01:23:55.854Z",
+  "checks": [
+    {
+      "name": "desktop: document contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: reading-only controls",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: no editorial event labels or raw data panels",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: archive hidden by default",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: entire public chronology in source order",
+      "passed": true,
+      "evidence": 974
+    },
+    {
+      "name": "desktop: every recorded quote preserved exactly",
+      "passed": true,
+      "evidence": 416
+    },
+    {
+      "name": "desktop: all ten reconstructed balances match terminal source",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: all six actual action types",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: declaration payment retained",
+      "passed": true,
+      "evidence": [
+        {
+          "name": "Spark",
+          "coins": [
+            6,
+            3
+          ],
+          "influence": [
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "desktop: proof replaces without influence loss",
+      "passed": true,
+      "evidence": [
+        {
+          "name": "Katniss Everdeen",
+          "coins": [
+            3,
+            3
+          ],
+          "influence": [
+            2,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "desktop: failed claim eliminates at historical cursor",
+      "passed": true,
+      "evidence": [
+        {
+          "name": "Orbit",
+          "coins": [
+            3,
+            3
+          ],
+          "influence": [
+            1,
+            0
+          ],
+          "lost": "Envoy",
+          "status": "Eliminated · coins frozen"
+        }
+      ]
+    },
+    {
+      "name": "desktop: ten published ballots",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: ten fresh starts with correct bonuses",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: hover explanation remains readable under pointer",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Escape dismisses hover",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: popup fits viewport",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: dialog keeps keyboard focus",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Escape restores trigger and reading position",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Coins explanation",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Influence explanation",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: cursor-specific private Exchange draw",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: private cards remain contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: final move locates real Coup",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: shareable example dataset",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: examples use recorded actions and labeled alternatives",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: three round-cap criteria",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: gallery contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: reload retains dataset",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: original A and B comparison still opens",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: document contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: reading-only controls",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: no editorial event labels or raw data panels",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: archive hidden by default",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: entire public chronology in source order",
+      "passed": true,
+      "evidence": 974
+    },
+    {
+      "name": "narrow: every recorded quote preserved exactly",
+      "passed": true,
+      "evidence": 416
+    },
+    {
+      "name": "narrow: all ten reconstructed balances match terminal source",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: all six actual action types",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: declaration payment retained",
+      "passed": true,
+      "evidence": [
+        {
+          "name": "Spark",
+          "coins": [
+            6,
+            3
+          ],
+          "influence": [
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "narrow: proof replaces without influence loss",
+      "passed": true,
+      "evidence": [
+        {
+          "name": "Katniss Everdeen",
+          "coins": [
+            3,
+            3
+          ],
+          "influence": [
+            2,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "narrow: failed claim eliminates at historical cursor",
+      "passed": true,
+      "evidence": [
+        {
+          "name": "Orbit",
+          "coins": [
+            3,
+            3
+          ],
+          "influence": [
+            1,
+            0
+          ],
+          "lost": "Envoy",
+          "status": "Eliminated · coins frozen"
+        }
+      ]
+    },
+    {
+      "name": "narrow: ten published ballots",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: ten fresh starts with correct bonuses",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: popup fits viewport",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: dialog keeps keyboard focus",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Escape restores trigger and reading position",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Coins explanation",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Influence explanation",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: cursor-specific private Exchange draw",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: private cards remain contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: final move locates real Coup",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: shareable example dataset",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: examples use recorded actions and labeled alternatives",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: three round-cap criteria",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: gallery contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: reload retains dataset",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: original A and B comparison still opens",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "No application exceptions",
+      "passed": true,
+      "evidence": []
+    },
+    {
+      "name": "No backend requests during preview",
+      "passed": true,
+      "evidence": []
+    }
+  ],
+  "captures": [
+    "desktop-entry.png",
+    "desktop-ballots.png",
+    "desktop-return.png",
+    "desktop-speech.png",
+    "desktop-proof.png",
+    "desktop-loss.png",
+    "desktop-transfer.png",
+    "desktop-rule-hover.png",
+    "desktop-guard-rules.png",
+    "desktop-coins-rules.png",
+    "desktop-influence-rules.png",
+    "desktop-archive-exchange.png",
+    "desktop-final-move.png",
+    "desktop-example-index.png",
+    "desktop-double-loss.png",
+    "desktop-round-cap.png",
+    "narrow-entry.png",
+    "narrow-ballots.png",
+    "narrow-return.png",
+    "narrow-speech.png",
+    "narrow-proof.png",
+    "narrow-loss.png",
+    "narrow-transfer.png",
+    "narrow-guard-rules.png",
+    "narrow-coins-rules.png",
+    "narrow-influence-rules.png",
+    "narrow-archive-exchange.png",
+    "narrow-final-move.png",
+    "narrow-example-index.png",
+    "narrow-double-loss.png",
+    "narrow-round-cap.png"
+  ],
+  "errors": [],
+  "requests": []
+}

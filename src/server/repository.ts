@@ -13,8 +13,10 @@ import type {
   OwnerProfile,
   RoleStats,
   SuccessionSummary,
+  SummaryEntrant,
 } from '../shared/api';
 import { nameValue, opaqueId } from './http';
+import { pictureView } from './agent-picture-data';
 
 export type RepositoryEnv = Pick<Env, 'DB' | 'HOUSE_PROVIDER' | 'HOUSE_MODEL'>;
 
@@ -66,7 +68,7 @@ function agentSelect(gameId: RepositoryGameId): string {
 
   if (gameId === 'secret-overlord') return AGENT_SELECT;
 
-  return `SELECT a.id, a.owner_id, a.name, a.description, a.house, a.retired_at, a.created_at, a.persona,
+  return `SELECT a.id, a.owner_id, a.name, a.description, a.house, a.retired_at, a.created_at, a.persona, p.picture_json,
     o.handle AS owner_handle, coalesce(s.rating,1000) AS rating, coalesce(s.games,0) AS games,
     coalesce(s.wins,0) AS wins, coalesce(s.losses,0) AS losses, coalesce(s.forfeits,0) AS forfeits,
     coalesce(s.placements,0) AS placements, coalesce(s.stats_json,'{}') AS roles_json,
@@ -75,7 +77,8 @@ function agentSelect(gameId: RepositoryGameId): string {
       WHERE t.game_id = 'succession' AND t.rating_pool_id = 'succession-1'
       AND b.house = 0 AND b.retired_at IS NULL AND t.placements >= ${PLACEMENT_RESULTS} AND t.rating > s.rating)
     ELSE NULL END AS rank FROM agents a LEFT JOIN owners o ON o.id = a.owner_id
-    LEFT JOIN agent_game_stats s ON s.agent_id = a.id AND s.game_id = 'succession' AND s.rating_pool_id = 'succession-1'`;
+    LEFT JOIN agent_game_stats s ON s.agent_id = a.id AND s.game_id = 'succession' AND s.rating_pool_id = 'succession-1'
+    LEFT JOIN agent_pictures p ON p.agent_id = a.id`;
 }
 
 const RoleStatsSchema = Schema.Record(
@@ -85,6 +88,7 @@ const RoleStatsSchema = Schema.Record(
 
 interface AgentRow {
   id: string;
+  picture_json: string | null;
   owner_id: string | null;
   owner_handle: string | null;
   name: string;
@@ -103,10 +107,11 @@ interface AgentRow {
   persona: string | null;
 }
 
-const AGENT_SELECT = `SELECT a.*, o.handle AS owner_handle,
+const AGENT_SELECT = `SELECT a.*, p.picture_json, o.handle AS owner_handle,
   CASE WHEN a.house = 0 AND a.retired_at IS NULL AND a.placements >= ${PLACEMENT_RESULTS}
   THEN 1 + (SELECT COUNT(*) FROM agents b WHERE b.house = 0 AND b.retired_at IS NULL AND b.placements >= ${PLACEMENT_RESULTS} AND b.rating > a.rating)
-  ELSE NULL END AS rank FROM agents a LEFT JOIN owners o ON o.id = a.owner_id`;
+  ELSE NULL END AS rank FROM agents a LEFT JOIN owners o ON o.id = a.owner_id
+  LEFT JOIN agent_pictures p ON p.agent_id = a.id`;
 
 function agentView(row: AgentRow): AgentProfile {
   const roles: Record<string, RoleStats> = Schema.decodeUnknownSync(RoleStatsSchema)(
@@ -115,6 +120,7 @@ function agentView(row: AgentRow): AgentProfile {
 
   return {
     id: row.id,
+    picture: pictureView(row.picture_json),
     ownerId: row.owner_id,
     ownerHandle: row.owner_handle,
     name: row.name,
@@ -281,6 +287,34 @@ function summary(row: MatchRow): MatchSummary | SuccessionSummary {
   };
 }
 
+/** One read for a bounded match page; never consult current profiles or replacement controllers. */
+async function summaryEntrants(env: RepositoryEnv, matches: GameMatchSummary[]) {
+  if (!matches.length) return matches;
+
+  const rows = await env.DB.prepare(
+    `SELECT match_id, seat, MIN(agent_id) AS agent_id FROM match_participants
+     WHERE match_id IN (${matches.map(() => '?').join(',')}) AND seat IN (0,1,2,3,4,5,6,7,8,9)
+     GROUP BY match_id, seat HAVING COUNT(*) = 1 ORDER BY match_id, seat`,
+  )
+    .bind(...matches.map((match) => match.id))
+    .all<{ match_id: string; seat: number; agent_id: string }>();
+
+  const byId = new Map(matches.map((match) => [match.id, match]));
+  const entrants = new Map<string, SummaryEntrant[]>();
+
+  for (const row of rows.results) {
+    const name = byId.get(row.match_id)?.names[row.seat];
+
+    // Missing names or ambiguous participant seats cannot supply an honest portrait identity.
+    if (!Number.isInteger(row.seat) || name === undefined || !row.agent_id) continue;
+    const roster = entrants.get(row.match_id) ?? [];
+    roster.push({ number: row.seat, agentId: row.agent_id, name });
+    entrants.set(row.match_id, roster);
+  }
+
+  return matches.map((match) => ({ ...match, entrants: entrants.get(match.id) ?? [] }));
+}
+
 export function matchList(env: RepositoryEnv, active: boolean, limit?: number): Promise<MatchSummary[]>;
 export function matchList(
   env: RepositoryEnv,
@@ -295,14 +329,17 @@ export async function matchList(
   gameId: RepositoryGameId = 'secret-overlord',
 ): Promise<(MatchSummary | SuccessionSummary)[]> {
   validateGame(gameId);
+  const pageSize = Number.isFinite(limit) ? Math.max(0, Math.min(50, Math.trunc(limit))) : 20;
+
+  if (!pageSize) return [];
 
   const rows = await env.DB.prepare(
     `SELECT * FROM matches WHERE game_id = ? AND status ${active ? '=' : '!='} 'active' ORDER BY created_at DESC LIMIT ?`,
   )
-    .bind(gameId, limit)
+    .bind(gameId, pageSize)
     .all<MatchRow>();
 
-  return rows.results.map(summary);
+  return summaryEntrants(env, rows.results.map(summary));
 }
 
 export async function agentHistory(

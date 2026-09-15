@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 .dossier/ending.spec.mjs:316:1 › unmount retires a held request; a fresh route visit can navigate (4.9s)
+
+  1 passed (7.0s)

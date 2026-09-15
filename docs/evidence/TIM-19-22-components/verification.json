@@ -1,0 +1,29 @@
+{
+  "commands": {
+    "npm run typecheck": "passed",
+    "npm run lint": "passed: 0 warnings, 0 errors",
+    "scoped prettier": "passed",
+    "npm run build": "passed",
+    "vitest dossier-components + succession-story + continuous-succession-history + agent-picture-data": "passed: 53 tests",
+    "node .dossier/verify.mjs": "passed: 212 assertions",
+    "preserved guide regression": "passed: 138 assertions",
+    "node .dossier/route.mjs": "54 passing assertions; 3 chapter-removal focus failures; exit 1",
+    "node .dossier/production.mjs": "asset/exclusion checks pass; production route has 57 passing assertions and the same 3 focus failures; exit 1",
+    "git diff --check": "passed"
+  },
+  "actualMatchRouteAssembled": true,
+  "productionRouteAcceptance": false,
+  "sharedPortraitCommits": ["49935cc", "e2d98ca"],
+  "incomingDependenciesMerged": ["4cba978", "bba70f8", "d1b2a9b", "ee2220f"],
+  "pictureLookupDependency": { "source": "ee945f5", "cherryPick": "6419fc8" },
+  "ports": [6291, 6292],
+  "browser": "Chromium/Linux",
+  "widths": [1440, 390, 320],
+  "canonicalRouteFixtureArchiveEvents": 1306,
+  "maximumVisibleRowsPerReader": 128,
+  "measuredRetainedRowDriftPx": 0.421875,
+  "pendingOwnerAcceptance": [
+    "Pinned rule help on whole-chapter removal closes but returns focus to body despite connected fallback heading",
+    "Parent-reported TIM-23 multi-document scroll ownership, act-index race and offline-paused corrections"
+  ]
+}

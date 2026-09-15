@@ -46,9 +46,9 @@ for (const route of ['/agents/local-agent', '/owners/shape-review']) {
     });
     await page.goto(`${route}?gameId=succession`);
     await expect(page.getByRole('combobox', { name: 'Stats for', exact: true })).toHaveValue('succession');
-    await expect(page.locator(route.startsWith('/agents') ? '.profile-stats' : 'a.leader-row')).toContainText(
-      '1,777',
-    );
+    await expect(
+      page.locator(route.startsWith('/agents') ? '.profile-stats' : '.leader-row:not(.leader-head)'),
+    ).toContainText('1,777');
     await page.screenshot({ path: testInfo.outputPath('healthy-selected-pool.png'), fullPage: true });
     await page.getByRole('combobox', { name: 'Stats for', exact: true }).selectOption('secret-overlord');
     await expect(page.getByRole('combobox', { name: 'Stats for', exact: true })).toHaveValue(
@@ -57,9 +57,9 @@ for (const route of ['/agents/local-agent', '/owners/shape-review']) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       route.startsWith('/agents') ? agent.name : '@shape-review',
     );
-    await expect(page.locator(route.startsWith('/agents') ? '.profile-stats' : 'a.leader-row')).toHaveCount(
-      0,
-    );
+    await expect(
+      page.locator(route.startsWith('/agents') ? '.profile-stats' : '.leader-row:not(.leader-head)'),
+    ).toHaveCount(0);
     await expect(page.getByRole('alert').first()).toContainText('Default pool unavailable');
     await page.screenshot({
       path: testInfo.outputPath('local-failed-pool-retained-identity.png'),
@@ -198,22 +198,26 @@ test('delayed A–B–A statistics and stale failures never enter the current po
   await select.selectOption('secret-overlord');
   await expect.poll(() => requests.length).toBe(3);
   await requests[2].fulfill({ json: [agent] });
-  await expect(page.locator('a.leader-row')).toContainText('1,234');
+  await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,234');
   await requests[0].fulfill({ json: [{ ...agent, rating: 9999 }] });
   await requests[1].fulfill({
     status: 500,
     json: { error: { code: 'temporary', message: 'Obsolete pool failure' } },
   });
-  await expect(page.locator('a.leader-row')).toContainText('1,234');
+  await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,234');
   await expect(page.getByText('Obsolete pool failure')).toHaveCount(0);
   await expect(page.getByRole('alert')).toHaveCount(0);
   await select.selectOption('succession');
   await expect.poll(() => requests.length).toBe(4);
-  await expect(page.locator('a.leader-row')).toHaveCount(0);
+  await expect(page.locator('.leader-row:not(.leader-head)')).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('standings-delayed.png'), fullPage: true });
   await requests[3].fulfill({ json: [{ ...agent, rating: 1777 }] });
-  await expect(page.locator('a.leader-row')).toContainText('1,777');
-  await expect(page.locator('a.leader-row')).toHaveAttribute('href', '/agents/local-agent?gameId=succession');
+  await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,777');
+  await expect(
+    page
+      .locator('.leader-row:not(.leader-head)')
+      .getByRole('link', { name: 'Local Strategist', exact: true }),
+  ).toHaveAttribute('href', '/agents/local-agent?gameId=succession');
 });
 
 test('roster draft, expanded prompt and server participation survive a delayed stats choice', async ({
@@ -251,7 +255,12 @@ test('roster draft, expanded prompt and server participation survive a delayed s
     return route.fulfill({ json: body });
   });
   await page.goto('/dashboard?code=keep');
-  await page.locator('.roster-setup summary').click();
+
+  const setup = page.locator('.roster-setup').filter({
+    has: page.getByRole('heading', { name: 'Connect an installation', exact: true }),
+  });
+
+  await setup.locator('summary').click();
   await page.getByRole('combobox', { name: 'Play', exact: true }).selectOption('succession');
   const draft = page.locator('#create-agent input').first();
   await draft.fill('Draft survives');
@@ -260,7 +269,7 @@ test('roster draft, expanded prompt and server participation survive a delayed s
   await expect.poll(() => pending.length).toBe(1);
   await expect(draft).toHaveValue('Draft survives');
   await expect(draft).toHaveAttribute('data-retained', 'yes');
-  await expect(page.locator('.roster-setup')).toHaveAttribute('open', '');
+  await expect(setup).toHaveAttribute('open', '');
   await expect(page.getByRole('combobox', { name: 'Play', exact: true })).toHaveValue('succession');
   await expect(page.locator('.roster-card')).toContainText('Secret Overlord');
   await expect(page.locator('.roster-card')).toContainText('matched');
@@ -299,7 +308,7 @@ test('a delayed manual retry from an earlier visit cannot replace fresh A–B–
     status: 503,
     json: { error: { code: 'temporary', message: 'Obsolete failure' } },
   });
-  await expect(page.locator('a.leader-row')).toContainText('1,234');
+  await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,234');
   await expect(page.getByText('Obsolete failure')).toHaveCount(0);
   await expect(page.getByRole('alert')).toHaveCount(0);
 });
@@ -389,12 +398,12 @@ test('Arena browser, contenders and mixed archive are independent; partial failu
   });
   await expect(page.getByText(/Succession archive unavailable:/)).toBeVisible();
   await page.getByRole('combobox', { name: 'Standings', exact: true }).selectOption('succession');
-  await expect(page.locator('a.leader-row')).toContainText('1,777');
+  await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,777');
   await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveValue('secret-overlord');
   await expect(page.locator('#live')).toContainText('7 SECRET OVERLORD AGENTS IN QUEUE');
   await page.getByRole('combobox', { name: 'Matches', exact: true }).selectOption('succession');
   await expect.poll(() => archiveRequests.length).toBe(2);
-  await expect(page.locator('a.leader-row')).toContainText('1,777');
+  await expect(page.locator('.leader-row:not(.leader-head)')).toContainText('1,777');
   await expect(page.locator('.archive-card')).toContainText('Secret Overlord');
   await expect(page.locator('.game-introduction h2')).toHaveText(['Secret Overlord', 'Succession']);
   await expect(page.getByRole('link', { name: 'Full leaderboard' })).toHaveAttribute(

@@ -1,0 +1,16 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: 1440: completed entry loads the bounded terminal window
+    at check (file:///tmp/opencode/agent-game-dossier/.dossier/route.mjs:43:10)
+    at file:///tmp/opencode/agent-game-dossier/.dossier/route.mjs:255:5 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

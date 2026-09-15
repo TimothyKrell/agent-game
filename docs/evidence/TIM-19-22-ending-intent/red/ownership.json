@@ -1,0 +1,109 @@
+[
+  {
+    "title": "pending Final move respects later portrait ownership",
+    "status": "failed",
+    "ownership": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1
+      },
+      "after": {
+        "y": 12638,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-226372697-1604",
+          "text": "Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at "
+        },
+        "modalFocus": false,
+        "dialogs": 1
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "pending Final move respects later chapter ownership",
+    "status": "failed",
+    "ownership": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I · Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0
+      },
+      "after": {
+        "y": 13817,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-226372697-1604",
+          "text": "Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at "
+        },
+        "modalFocus": false,
+        "dialogs": 0
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=0",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=0&through=2&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384"
+      ]
+    }
+  }
+]

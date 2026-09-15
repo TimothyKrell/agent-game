@@ -1,0 +1,259 @@
+{
+  "passed": 10,
+  "failed": 0,
+  "totalSeconds": 464.5577019042969,
+  "tests": [
+    {
+      "name": "does not advance a discussion past a received native HTTP action",
+      "status": "passed",
+      "seconds": 9.735274755
+    },
+    {
+      "name": "waits for actual house HTTP completion before its explicit discussion expiry",
+      "status": "passed",
+      "seconds": 10.914701980000002
+    },
+    {
+      "name": "captures the distinct errors caused by an active predecessor and its unconsumed fault",
+      "status": "passed",
+      "seconds": 8.955663139
+    },
+    {
+      "name": "starts the next journey in fresh storage after preserving the failed-case ledger and clearing only controls",
+      "status": "passed",
+      "seconds": 7.604443704000001
+    },
+    {
+      "name": "retains a pending native mandatory HTTP action before an explicit grace advance",
+      "status": "passed",
+      "seconds": 3.860109620000001
+    },
+    {
+      "name": "admits installed opencode/secret-overlord through the real queue alarm and plays with source-metered house HTTP",
+      "status": "passed",
+      "seconds": 76.90639507099999
+    },
+    {
+      "name": "admits installed claude/succession through the real queue alarm and plays with source-metered house HTTP",
+      "status": "passed",
+      "seconds": 210.31577542200003
+    },
+    {
+      "name": "recovers lost source and Match acknowledgements with identical installed-client intent, then retains branch A and hot-revocation accounting",
+      "status": "passed",
+      "seconds": 42.246399786000026
+    },
+    {
+      "name": "runs native Claude on a normal source-funded Secret Overlord seat and preserves unknown charges across timeout takeover and closure",
+      "status": "passed",
+      "seconds": 71.14666915400001
+    },
+    {
+      "name": "rechecks revoked grants and canceled exact tickets before first initialization through installed start/leave",
+      "status": "passed",
+      "seconds": 10.751263825999981
+    }
+  ],
+  "providerHttpRequests": 922,
+  "completed": [
+    {
+      "harness": "claude",
+      "game": "succession",
+      "matchId": "match_dbf6df41-ab7f-4c08-afda-c0f63f75cf8d",
+      "allocationId": "preview_allocation_13225e45-3019-4eb8-893a-11703edfdd9e",
+      "reportedFillMs": 30000,
+      "actualQueueMs": 30037,
+      "status": "finished",
+      "invocations": 1,
+      "restarts": 0,
+      "originalAgentForfeited": false,
+      "logicalDiscussionWindows": 121,
+      "sourceUsageRows": 580,
+      "accountedUsd": 0.0417600000000001
+    },
+    {
+      "harness": "opencode",
+      "game": "secret-overlord",
+      "matchId": "match_6240b3e9-5825-4bfa-9330-66f09dba171c",
+      "allocationId": "preview_allocation_7ec9b3fd-ca73-4652-9e9d-8941ae3a51df",
+      "reportedFillMs": 30000,
+      "actualQueueMs": 30033,
+      "status": "finished",
+      "invocations": 1,
+      "restarts": 0,
+      "originalAgentForfeited": false,
+      "logicalDiscussionWindows": 22,
+      "sourceUsageRows": 226,
+      "accountedUsd": 0.0162719999999999
+    }
+  ],
+  "ledgers": [
+    {
+      "sourceLedger": "preview_allocation_13225e45-3019-4eb8-893a-11703edfdd9e",
+      "providerCalls": 580,
+      "billedRows": 580,
+      "accountedUsd": 0.0417600000000001
+    },
+    {
+      "sourceLedger": "preview_allocation_7ec9b3fd-ca73-4652-9e9d-8941ae3a51df",
+      "providerCalls": 226,
+      "billedRows": 226,
+      "accountedUsd": 0.0162719999999999
+    },
+    {
+      "sourceLedger": "preview_allocation_3f56eed3-4d3a-4c75-909c-ee4f76ce5ac8",
+      "providerCalls": 9,
+      "billedRows": 9,
+      "accountedUsd": 0.000648
+    }
+  ],
+  "takeover": {
+    "seat": 7,
+    "generation": 1,
+    "unknownRows": 29,
+    "reservedUsd": 0.08125239999999999
+  },
+  "deferredOptionalJobs": 447,
+  "cleanup": [
+    {
+      "case": "case-4CaVEH",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-4CaVEH",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-6CMZW5",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 0,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-6CMZW5",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 0,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-8OLWQK",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-8OLWQK",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-EFJwkK",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-EFJwkK",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-F5MZzD",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-F5MZzD",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-FngNeL",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 2,
+      "unknownRowsRetained": 32,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-FngNeL",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-JlcOjp",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-JlcOjp",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-jCZTnn",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 2,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-jCZTnn",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 2,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-mRY4Nz",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-mRY4Nz",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-wOJZnJ",
+      "origin": "http://127.0.0.1:6501",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    },
+    {
+      "case": "case-wOJZnJ",
+      "origin": "http://127.0.0.1:6502",
+      "allocationsRetained": 1,
+      "unknownRowsRetained": 0,
+      "syntheticControlsCleared": true
+    }
+  ]
+}

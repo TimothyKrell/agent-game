@@ -1,0 +1,1245 @@
+{
+  "upstream": "debd8a4a071bc43483b6af8be463e1904d169efc",
+  "sourceArchiveSha256": "a0d4f7b0199efa6144c2fa84f51116820d747d575643afc63edf2b13cf24e635",
+  "fixtureDirectory": "/tmp/opencode/agent-game-playable-ci/.tim27-playable/runs/ci-green-two-cpu-3/evidence/case-FngNeL/runtime",
+  "providerUrl": "http://127.0.0.1:6504/v1",
+  "providerCalls": [
+    {
+      "at": 1789472408093,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408269,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408276,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408299,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408362,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408428,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408529,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408652,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408745,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408830,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472408930,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472409293,
+      "task": "action",
+      "phase": "nomination",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472409584,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472409783,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472409877,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472409970,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410070,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410175,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410271,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410372,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410470,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410881,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410881,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410881,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410932,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410932,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410933,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410934,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410934,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472410985,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    },
+    {
+      "at": 1789472411383,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": false,
+      "finished": true
+    }
+  ],
+  "captures": [
+    {
+      "sharedSlotsAndPriority": {
+        "version": 1,
+        "sourceRevision": "debd8a4a071bc43483b6af8be463e1904d169efc",
+        "sourcePolicyVersion": "preview-broker-1",
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "profiles": [
+          "smoke",
+          "live"
+        ],
+        "secretOverlord": {
+          "day": "2026-09-15",
+          "accountedUsd": 0.0027064000000000003,
+          "activeReservedUsd": 3,
+          "activeAllocations": 2,
+          "livePreviewAllocations": 1,
+          "maxConcurrent": 3,
+          "dailyTargetUsd": 5,
+          "reservationUsd": 1.5,
+          "remainingAdmissionUsd": 1.9972936,
+          "capacity": "busy"
+        },
+        "succession": {
+          "day": "2026-09-15",
+          "accountedUsd": 0.0027064000000000003,
+          "activeReservedUsd": 3,
+          "activeAllocations": 2,
+          "livePreviewAllocations": 1,
+          "maxConcurrent": 3,
+          "dailyTargetUsd": 5,
+          "reservationUsd": 1.5,
+          "remainingAdmissionUsd": 1.9972936,
+          "capacity": "busy"
+        }
+      },
+      "nativePreviewAllocation": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+      "productionMatch": "match_80fc290c-48d7-46f2-bdf3-6ce578e4e3e8",
+      "controlledReservations": {
+        "blockedPreviewRequired": "playable-required-7fb84684-d81a-4760-ad5d-c03b779426b5",
+        "blockedProductionOptional": "playable-optional-5ffda4e0-365b-4346-9a50-224756738b3a",
+        "admittedProductionRequired": "playable-production-required-35c40615-ec19-44d0-806f-e299f9e8e3fe"
+      },
+      "controlledRequiredSettlement": "unknown estimate retained; no provider dispatch attributed to control"
+    },
+    {
+      "discussion": "d7f1824f-76a9-46e0-80ea-66f723595c24",
+      "matchId": "match_acefb09b-e369-4d84-bcde-901fd65f2f32",
+      "nativeReady": true,
+      "house": {
+        "complete": true,
+        "jobs": [
+          {
+            "id": "secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:0:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:1:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:2:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:3:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:4:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:5:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:6:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:8:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:9:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          }
+        ]
+      },
+      "at": 1789472409276
+    },
+    {
+      "discussion": "305d5ca7-cfea-4130-96ee-d5cb76b10101",
+      "matchId": "match_acefb09b-e369-4d84-bcde-901fd65f2f32",
+      "nativeReady": true,
+      "house": {
+        "complete": true,
+        "jobs": [
+          {
+            "id": "secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:0:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:1:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:2:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:3:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:4:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:5:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:6:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:8:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:9:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          }
+        ]
+      },
+      "at": 1789472410813
+    },
+    {
+      "harness": "claude",
+      "game": "secret-overlord",
+      "simulatedNativeLatency": true,
+      "takeover": {
+        "seat": 7,
+        "generation": 1
+      },
+      "supervisor": {
+        "status": "interrupted",
+        "reason": null,
+        "gameId": "secret-overlord",
+        "matchId": "match_acefb09b-e369-4d84-bcde-901fd65f2f32",
+        "winner": null,
+        "result": null,
+        "winningSeat": null,
+        "originalAgentResult": null,
+        "overallReason": null,
+        "you": {
+          "seat": 7,
+          "agentId": "agent_6ea02e86-b15d-4639-9645-8020b5849468",
+          "alive": true,
+          "forfeited": true,
+          "generation": 1
+        },
+        "controller": {
+          "house": true,
+          "generation": 1,
+          "forfeited": true
+        },
+        "serverStatus": "interrupted",
+        "observedAt": 1789472441476.6453,
+        "snapshotStale": true,
+        "invocations": 1,
+        "restarts": 0,
+        "costUsd": 0.01,
+        "accounting": {
+          "mode": "enforced",
+          "limit": 2,
+          "known": 0.01,
+          "observed": true,
+          "watermark": 0,
+          "unknown": false,
+          "exceeded": false,
+          "remaining": 1.99,
+          "unresolvedGranted": null
+        },
+        "durationMs": 33463.094482421875,
+        "queueDurationMs": 30039,
+        "queue": null
+      },
+      "unknownRowsBeforeClose": [
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:6:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408074,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027064000000000003,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:8:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408265,
+          "expires_at": 1789472427515,
+          "reserved": 0.002706,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:9:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408358,
+          "expires_at": 1789472427515,
+          "reserved": 0.0026964000000000003,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:0:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408426,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027036000000000004,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:1:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408527,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027012,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:2:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408648,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027396000000000005,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:3:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408743,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027372,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:4:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408827,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027372,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:5:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408928,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027476,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:e44aceb7-26d0-4632-8da0-dc70ca317d50:6:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409292,
+          "expires_at": 1789472469268,
+          "reserved": 0.003038,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:6:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409582,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027932,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:8:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409781,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027928000000000002,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:9:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409875,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027832,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:0:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409968,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027904,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:1:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410068,
+          "expires_at": 1789472439057,
+          "reserved": 0.002788,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:2:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410173,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027908000000000004,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:3:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410269,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027884,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:4:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410370,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027884,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:5:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410468,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027988,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:5:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410875,
+          "expires_at": 1789472470789,
+          "reserved": 0.002858,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:4:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410875,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028476000000000005,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:3:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410875,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028476000000000005,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:1:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410915,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028472,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:6:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410916,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028524,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:2:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410916,
+          "expires_at": 1789472470789,
+          "reserved": 0.00285,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:0:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410916,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028496000000000003,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:8:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410917,
+          "expires_at": 1789472470789,
+          "reserved": 0.002852,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:9:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410935,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028424,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:7:1:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472411374,
+          "expires_at": 1789472441346,
+          "reserved": 0.0029784000000000004,
+          "actual": null,
+          "done": 0,
+          "kind": "required"
+        }
+      ],
+      "retainedRows": [
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:6:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408074,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027064000000000003,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:8:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408265,
+          "expires_at": 1789472427515,
+          "reserved": 0.002706,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:9:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408358,
+          "expires_at": 1789472427515,
+          "reserved": 0.0026964000000000003,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:0:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408426,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027036000000000004,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:1:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408527,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027012,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:2:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408648,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027396000000000005,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:3:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408743,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027372,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:4:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408827,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027372,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:d7f1824f-76a9-46e0-80ea-66f723595c24:5:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472408928,
+          "expires_at": 1789472427515,
+          "reserved": 0.0027476,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:e44aceb7-26d0-4632-8da0-dc70ca317d50:6:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409292,
+          "expires_at": 1789472469268,
+          "reserved": 0.003038,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:6:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409582,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027932,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:8:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409781,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027928000000000002,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:9:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409875,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027832,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:0:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472409968,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027904,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:1:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410068,
+          "expires_at": 1789472439057,
+          "reserved": 0.002788,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:2:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410173,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027908000000000004,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:3:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410269,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027884,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:4:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410370,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027884,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:305d5ca7-cfea-4130-96ee-d5cb76b10101:5:0:chat:0\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410468,
+          "expires_at": 1789472439057,
+          "reserved": 0.0027988,
+          "actual": null,
+          "done": 1,
+          "kind": "initial"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:5:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410875,
+          "expires_at": 1789472470789,
+          "reserved": 0.002858,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:4:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410875,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028476000000000005,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:3:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410875,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028476000000000005,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:1:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410915,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028472,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:6:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410916,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028524,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:2:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410916,
+          "expires_at": 1789472470789,
+          "reserved": 0.00285,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:0:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410916,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028496000000000003,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:8:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410917,
+          "expires_at": 1789472470789,
+          "reserved": 0.002852,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:9:0:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472410935,
+          "expires_at": 1789472470789,
+          "reserved": 0.0028424,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        },
+        {
+          "id": "[\"preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d\",\"secret-overlord:24f78e39-9b70-4ba1-bc84-e10de065ee0e:7:1:action\",1]",
+          "match_id": "preview_allocation_a28d0feb-0809-42da-9e78-963a5237762d",
+          "day": "2026-09-15",
+          "created_at": 1789472411374,
+          "expires_at": 1789472441346,
+          "reserved": 0.0029784000000000004,
+          "actual": null,
+          "done": 1,
+          "kind": "required"
+        }
+      ]
+    }
+  ],
+  "cleanupErrors": [],
+  "paidCalls": 0
+}

@@ -1,0 +1,6 @@
+{
+  "request": "POST /api/queue HTTP/1.1\r\nHost: 127.0.0.1:39095\r\nConnection: close\r\nX-Agent-Game-Protocols: 1,2\r\nContent-Type: application/json\r\nContent-Length: 1\r\n\r\n{",
+  "response": "HTTP/1.1 500 Internal Server Error\r\ncontent-type: application/json\r\nDate: Tue, 15 Sep 2026 07:00:26 GMT\r\nConnection: close\r\nTransfer-Encoding: chunked\r\n\r\n2b\r\n{\"error\":{\"code\":\"fixture-handler-failed\"}}\r\n0\r\n\r\n",
+  "awaitedRejection": true,
+  "apiRequests": 1
+}

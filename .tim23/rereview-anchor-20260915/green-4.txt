@@ -1,0 +1,20 @@
+
+Running 15 tests using 1 worker
+
+  ✓   1 e2e/continuous-story.spec.ts:161:1 › announces paused Query reads as offline waiting, keeps delivered rows and cancels hidden or unmounted pauses (957ms)
+  ✓   2 e2e/continuous-story.spec.ts:211:1 › reads 2,048 canonical messages forward/backward through eviction and revisits with a finite DOM (8.9s)
+  ✓   3 e2e/continuous-story.spec.ts:272:1 › holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading (719ms)
+  ✓   4 e2e/continuous-story.spec.ts:329:1 › pauses hidden reading, follows successive frozen live heads, and recovers a network retry from an empty record (771ms)
+  ✓   5 e2e/continuous-story.spec.ts:371:1 › keeps two open document chapters independently reachable through scrolling, focus and window replacement (1.5s)
+  ✓   6 e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across forward tall-to-short windows (720ms)
+  ✓   7 e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across forward tall-to-omitted windows (562ms)
+  ✓   8 e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across backward tall-to-short windows (607ms)
+  ✓   9 e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across backward tall-to-omitted windows (560ms)
+  ✓  10 e2e/continuous-story.spec.ts:579:1 › fences a held document replacement against actual navigation and focus into the other chapter (563ms)
+  ✓  11 e2e/continuous-story.spec.ts:631:1 › keeps live follow at the visible document edge through tall-row eviction (579ms)
+  ✓  12 e2e/continuous-story.spec.ts:686:1 › uses document scrolling and retains a focused row across automatic prepending (415ms)
+  ✓  13 e2e/continuous-story.spec.ts:709:1 › crosses a long run of omitted row renderings in both directions without a request loop (1.0s)
+  ✓  14 e2e/continuous-story.spec.ts:734:1 › keeps actual command mutation receipts independent of cancelled reading and newer authoritative current (407ms)
+  ✓  15 e2e/continuous-story.spec.ts:779:1 › fences pending reads on match A–B–A, keeps independent readers and recovers errors and epochs (1.1s)
+
+  15 passed (21.2s)

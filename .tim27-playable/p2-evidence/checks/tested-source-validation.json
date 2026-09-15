@@ -1,0 +1,42 @@
+{
+  "behavioralFiles": 6,
+  "formattingOnlyChange": "Collapse fixtureDiscussion signature onto one line",
+  "records": [
+    {
+      "path": ".tim27-playable/worker.ts",
+      "testedSha256": "b9dadf9059d95bdb2fd1ba8ad8a0edcb89426fb724417e74eeb4e10970283811",
+      "finalSha256": "a247ad6d11ef94123222b2da51c0ffee12479a34976068cb4c6eeb07708c40a2",
+      "sameCompiledJavaScript": true
+    },
+    {
+      "path": ".tim27-playable/admission-ordering.test.ts",
+      "testedSha256": "1a936447da2bf6b428ea365d38e20909c0fee60f28003a7a16ec20a78de794e8",
+      "finalSha256": "1a936447da2bf6b428ea365d38e20909c0fee60f28003a7a16ec20a78de794e8",
+      "sameCompiledJavaScript": true
+    },
+    {
+      "path": ".tim27-playable/harness.ts",
+      "testedSha256": "d4b92b7aaf6226778c099c9eefd1f738aca0f353508828ca9f14068c56fbbe6e",
+      "finalSha256": "d4b92b7aaf6226778c099c9eefd1f738aca0f353508828ca9f14068c56fbbe6e",
+      "sameCompiledJavaScript": true
+    },
+    {
+      "path": ".tim27-playable/native.cjs",
+      "testedSha256": "c8a88c2c4f355710ed798fce2b9b4e0146af78deb50b66f77fee2c611342e7b0",
+      "finalSha256": "c8a88c2c4f355710ed798fce2b9b4e0146af78deb50b66f77fee2c611342e7b0",
+      "sameCompiledJavaScript": true
+    },
+    {
+      "path": ".tim27-playable/ci.config.mjs",
+      "testedSha256": "81a76e2f68eef4909cbb9e70c67c5900f7c219f152bcfd8f361a099a8da178c7",
+      "finalSha256": "81a76e2f68eef4909cbb9e70c67c5900f7c219f152bcfd8f361a099a8da178c7",
+      "sameCompiledJavaScript": true
+    },
+    {
+      "path": "tests/preview-playable.test.ts",
+      "testedSha256": "5cc2cb8f087f757900fc38b2f0cd87a14b06e5271341fe02132adb8fab53badb",
+      "finalSha256": "5cc2cb8f087f757900fc38b2f0cd87a14b06e5271341fe02132adb8fab53badb",
+      "sameCompiledJavaScript": true
+    }
+  ]
+}

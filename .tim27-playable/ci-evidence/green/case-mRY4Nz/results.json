@@ -1,0 +1,586 @@
+{
+  "upstream": "debd8a4a071bc43483b6af8be463e1904d169efc",
+  "sourceArchiveSha256": "a0d4f7b0199efa6144c2fa84f51116820d747d575643afc63edf2b13cf24e635",
+  "fixtureDirectory": "/tmp/opencode/agent-game-playable-ci/.tim27-playable/runs/ci-green-two-cpu-3/evidence/case-mRY4Nz/runtime",
+  "providerUrl": "http://127.0.0.1:6504/v1",
+  "providerCalls": [
+    {
+      "at": 1789472478161,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472478214,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472478313,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472478423,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472478515,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472478612,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472478713,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472478811,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472479010,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472479314,
+      "task": "action",
+      "phase": "nomination",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472479615,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472479700,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472479813,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472479895,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472479996,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480095,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480196,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480299,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480496,
+      "task": "chat",
+      "phase": "government-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480894,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480894,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480938,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480938,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480940,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480940,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480940,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480941,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472480945,
+      "task": "action",
+      "phase": "voting",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472481338,
+      "task": "action",
+      "phase": "coordinator-discard",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472481636,
+      "task": "action",
+      "phase": "executor-policy",
+      "choice": 0,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472481928,
+      "task": "chat",
+      "phase": "executive-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472482019,
+      "task": "chat",
+      "phase": "executive-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472482112,
+      "task": "chat",
+      "phase": "executive-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472482209,
+      "task": "chat",
+      "phase": "executive-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472482312,
+      "task": "chat",
+      "phase": "executive-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472482414,
+      "task": "chat",
+      "phase": "executive-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472482511,
+      "task": "chat",
+      "phase": "executive-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472482612,
+      "task": "chat",
+      "phase": "executive-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472482811,
+      "task": "chat",
+      "phase": "executive-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    }
+  ],
+  "captures": [
+    {
+      "discussion": "dfd4ac22-7a1e-4cf3-869b-777c3af34ef5",
+      "matchId": "match_6dffec8d-6492-4203-8c6f-49de1c0f261c",
+      "nativeReady": true,
+      "house": {
+        "complete": true,
+        "jobs": [
+          {
+            "id": "secret-overlord:dfd4ac22-7a1e-4cf3-869b-777c3af34ef5:0:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:dfd4ac22-7a1e-4cf3-869b-777c3af34ef5:2:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:dfd4ac22-7a1e-4cf3-869b-777c3af34ef5:3:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:dfd4ac22-7a1e-4cf3-869b-777c3af34ef5:4:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:dfd4ac22-7a1e-4cf3-869b-777c3af34ef5:5:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:dfd4ac22-7a1e-4cf3-869b-777c3af34ef5:6:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:dfd4ac22-7a1e-4cf3-869b-777c3af34ef5:7:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:dfd4ac22-7a1e-4cf3-869b-777c3af34ef5:8:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:dfd4ac22-7a1e-4cf3-869b-777c3af34ef5:9:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          }
+        ]
+      },
+      "at": 1789472479297
+    },
+    {
+      "discussion": "da0ce974-8c19-4cda-94f7-d6b626a4dc14",
+      "matchId": "match_6dffec8d-6492-4203-8c6f-49de1c0f261c",
+      "nativeReady": true,
+      "house": {
+        "complete": true,
+        "jobs": [
+          {
+            "id": "secret-overlord:da0ce974-8c19-4cda-94f7-d6b626a4dc14:0:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:da0ce974-8c19-4cda-94f7-d6b626a4dc14:2:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:da0ce974-8c19-4cda-94f7-d6b626a4dc14:3:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:da0ce974-8c19-4cda-94f7-d6b626a4dc14:4:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:da0ce974-8c19-4cda-94f7-d6b626a4dc14:5:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:da0ce974-8c19-4cda-94f7-d6b626a4dc14:6:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:da0ce974-8c19-4cda-94f7-d6b626a4dc14:7:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:da0ce974-8c19-4cda-94f7-d6b626a4dc14:8:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          },
+          {
+            "id": "secret-overlord:da0ce974-8c19-4cda-94f7-d6b626a4dc14:9:0:chat:0",
+            "status": "done",
+            "outcome": "silent",
+            "admissionReason": null,
+            "deferred": false,
+            "running": false,
+            "complete": true
+          }
+        ]
+      },
+      "at": 1789472480847
+    }
+  ],
+  "cleanupErrors": [],
+  "paidCalls": 0
+}

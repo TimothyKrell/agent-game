@@ -1,0 +1,385 @@
+{
+  "config": {
+    "argv": [
+      "/home/timothykrell/.vite-plus/js_runtime/node/24.21.0/bin/node",
+      "/tmp/opencode/agent-game-dossier/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      ".dossier/ending.config.ts",
+      "--grep",
+      "page gutter"
+    ],
+    "configFile": "/tmp/opencode/agent-game-dossier/.dossier/ending.config.ts",
+    "rootDir": "/tmp/opencode/agent-game-dossier/.dossier",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-red",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/opencode/agent-game-dossier/.dossier",
+        "testIgnore": [],
+        "testMatch": [
+          "ending.spec.mjs"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../docs/evidence/TIM-23-dossier-owned-navigation/gutter-red/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "ending.spec.mjs",
+      "file": "ending.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "1440: native wheel in the page gutter continues the visible record",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6560,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:418:94",
+                    "location": {
+                      "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                      "column": 94,
+                      "line": 418
+                    },
+                    "snippet": "  416 |       await gutterScroll(page,input);\n  417 |       await info.attach('gutter-target', {body:JSON.stringify({target,after,input,width}),contentType:'application/json'});\n> 418 |       await expect.poll(async () => Number(await timeline.getAttribute('data-story-after'))).toBeLessThan(after);\n      |                                                                                              ^\n  419 |       await expect(timeline).toHaveAttribute('aria-busy','false');\n  420 |       expect(await timeline.locator('[data-story-key]').count()).toBeLessThanOrEqual(128);\n  421 |       await info.attach('gutter-delivery', {body:JSON.stringify({after:Number(await timeline.getAttribute('data-story-after')),requests:control.requests.slice(requests)}),contentType:'application/json'});"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                        "column": 94,
+                        "line": 418
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n\n  416 |       await gutterScroll(page,input);\n  417 |       await info.attach('gutter-target', {body:JSON.stringify({target,after,input,width}),contentType:'application/json'});\n> 418 |       await expect.poll(async () => Number(await timeline.getAttribute('data-story-after'))).toBeLessThan(after);\n      |                                                                                              ^\n  419 |       await expect(timeline).toHaveAttribute('aria-busy','false');\n  420 |       expect(await timeline.locator('[data-story-key]').count()).toBeLessThanOrEqual(128);\n  421 |       await info.attach('gutter-delivery', {body:JSON.stringify({after:Number(await timeline.getAttribute('data-story-after')),requests:control.requests.slice(requests)}),contentType:'application/json'});\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:418:94"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:28:54.699Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "gutter-target",
+                      "contentType": "application/json",
+                      "body": "eyJ0YXJnZXQiOnsidGFnIjoiRElWIiwiY2xhc3NOYW1lIjoiIiwiY2hhcHRlciI6bnVsbH0sImFmdGVyIjoxMTc4LCJpbnB1dCI6IndoZWVsIiwid2lkdGgiOjE0NDB9"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-red/ending-1440-native-wheel-i-56e0e-ontinues-the-visible-record/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-red/ending-1440-native-wheel-i-56e0e-ontinues-the-visible-record/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                    "column": 94,
+                    "line": 418
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-b242ff086d4c8ed3b12a",
+          "file": "ending.spec.mjs",
+          "line": 402,
+          "column": 5
+        },
+        {
+          "title": "1440: native touch in the page gutter continues the visible record",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6634,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:418:94",
+                    "location": {
+                      "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                      "column": 94,
+                      "line": 418
+                    },
+                    "snippet": "  416 |       await gutterScroll(page,input);\n  417 |       await info.attach('gutter-target', {body:JSON.stringify({target,after,input,width}),contentType:'application/json'});\n> 418 |       await expect.poll(async () => Number(await timeline.getAttribute('data-story-after'))).toBeLessThan(after);\n      |                                                                                              ^\n  419 |       await expect(timeline).toHaveAttribute('aria-busy','false');\n  420 |       expect(await timeline.locator('[data-story-key]').count()).toBeLessThanOrEqual(128);\n  421 |       await info.attach('gutter-delivery', {body:JSON.stringify({after:Number(await timeline.getAttribute('data-story-after')),requests:control.requests.slice(requests)}),contentType:'application/json'});"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                        "column": 94,
+                        "line": 418
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n\n  416 |       await gutterScroll(page,input);\n  417 |       await info.attach('gutter-target', {body:JSON.stringify({target,after,input,width}),contentType:'application/json'});\n> 418 |       await expect.poll(async () => Number(await timeline.getAttribute('data-story-after'))).toBeLessThan(after);\n      |                                                                                              ^\n  419 |       await expect(timeline).toHaveAttribute('aria-busy','false');\n  420 |       expect(await timeline.locator('[data-story-key]').count()).toBeLessThanOrEqual(128);\n  421 |       await info.attach('gutter-delivery', {body:JSON.stringify({after:Number(await timeline.getAttribute('data-story-after')),requests:control.requests.slice(requests)}),contentType:'application/json'});\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:418:94"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:29:02.998Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "gutter-target",
+                      "contentType": "application/json",
+                      "body": "eyJ0YXJnZXQiOnsidGFnIjoiRElWIiwiY2xhc3NOYW1lIjoiIiwiY2hhcHRlciI6bnVsbH0sImFmdGVyIjoxMTc4LCJpbnB1dCI6InRvdWNoIiwid2lkdGgiOjE0NDB9"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-red/ending-1440-native-touch-i-4712e-ontinues-the-visible-record/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-red/ending-1440-native-touch-i-4712e-ontinues-the-visible-record/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                    "column": 94,
+                    "line": 418
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-d8b39397df3882517b0b",
+          "file": "ending.spec.mjs",
+          "line": 402,
+          "column": 5
+        },
+        {
+          "title": "390: native wheel in the page gutter continues the visible record",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6411,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:418:94",
+                    "location": {
+                      "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                      "column": 94,
+                      "line": 418
+                    },
+                    "snippet": "  416 |       await gutterScroll(page,input);\n  417 |       await info.attach('gutter-target', {body:JSON.stringify({target,after,input,width}),contentType:'application/json'});\n> 418 |       await expect.poll(async () => Number(await timeline.getAttribute('data-story-after'))).toBeLessThan(after);\n      |                                                                                              ^\n  419 |       await expect(timeline).toHaveAttribute('aria-busy','false');\n  420 |       expect(await timeline.locator('[data-story-key]').count()).toBeLessThanOrEqual(128);\n  421 |       await info.attach('gutter-delivery', {body:JSON.stringify({after:Number(await timeline.getAttribute('data-story-after')),requests:control.requests.slice(requests)}),contentType:'application/json'});"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                        "column": 94,
+                        "line": 418
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n\n  416 |       await gutterScroll(page,input);\n  417 |       await info.attach('gutter-target', {body:JSON.stringify({target,after,input,width}),contentType:'application/json'});\n> 418 |       await expect.poll(async () => Number(await timeline.getAttribute('data-story-after'))).toBeLessThan(after);\n      |                                                                                              ^\n  419 |       await expect(timeline).toHaveAttribute('aria-busy','false');\n  420 |       expect(await timeline.locator('[data-story-key]').count()).toBeLessThanOrEqual(128);\n  421 |       await info.attach('gutter-delivery', {body:JSON.stringify({after:Number(await timeline.getAttribute('data-story-after')),requests:control.requests.slice(requests)}),contentType:'application/json'});\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:418:94"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:29:10.990Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "gutter-target",
+                      "contentType": "application/json",
+                      "body": "eyJ0YXJnZXQiOnsidGFnIjoiRElWIiwiY2xhc3NOYW1lIjoiIiwiY2hhcHRlciI6bnVsbH0sImFmdGVyIjoxMTc4LCJpbnB1dCI6IndoZWVsIiwid2lkdGgiOjM5MH0="
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-red/ending-390-native-wheel-in-654cc-ontinues-the-visible-record/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-red/ending-390-native-wheel-in-654cc-ontinues-the-visible-record/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                    "column": 94,
+                    "line": 418
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-7a345b94afe56029fdda",
+          "file": "ending.spec.mjs",
+          "line": 402,
+          "column": 5
+        },
+        {
+          "title": "390: native touch in the page gutter continues the visible record",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6571,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:418:94",
+                    "location": {
+                      "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                      "column": 94,
+                      "line": 418
+                    },
+                    "snippet": "  416 |       await gutterScroll(page,input);\n  417 |       await info.attach('gutter-target', {body:JSON.stringify({target,after,input,width}),contentType:'application/json'});\n> 418 |       await expect.poll(async () => Number(await timeline.getAttribute('data-story-after'))).toBeLessThan(after);\n      |                                                                                              ^\n  419 |       await expect(timeline).toHaveAttribute('aria-busy','false');\n  420 |       expect(await timeline.locator('[data-story-key]').count()).toBeLessThanOrEqual(128);\n  421 |       await info.attach('gutter-delivery', {body:JSON.stringify({after:Number(await timeline.getAttribute('data-story-after')),requests:control.requests.slice(requests)}),contentType:'application/json'});"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                        "column": 94,
+                        "line": 418
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m1178\u001b[39m\nReceived:   \u001b[31m1178\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n\n  416 |       await gutterScroll(page,input);\n  417 |       await info.attach('gutter-target', {body:JSON.stringify({target,after,input,width}),contentType:'application/json'});\n> 418 |       await expect.poll(async () => Number(await timeline.getAttribute('data-story-after'))).toBeLessThan(after);\n      |                                                                                              ^\n  419 |       await expect(timeline).toHaveAttribute('aria-busy','false');\n  420 |       expect(await timeline.locator('[data-story-key]').count()).toBeLessThanOrEqual(128);\n  421 |       await info.attach('gutter-delivery', {body:JSON.stringify({after:Number(await timeline.getAttribute('data-story-after')),requests:control.requests.slice(requests)}),contentType:'application/json'});\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:418:94"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:29:19.179Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "gutter-target",
+                      "contentType": "application/json",
+                      "body": "eyJ0YXJnZXQiOnsidGFnIjoiRElWIiwiY2xhc3NOYW1lIjoiIiwiY2hhcHRlciI6bnVsbH0sImFmdGVyIjoxMTc4LCJpbnB1dCI6InRvdWNoIiwid2lkdGgiOjM5MH0="
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-red/ending-390-native-touch-in-c5a4d-ontinues-the-visible-record/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-red/ending-390-native-touch-in-c5a4d-ontinues-the-visible-record/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                    "column": 94,
+                    "line": 418
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-5cdca92f15550a7e28ec",
+          "file": "ending.spec.mjs",
+          "line": 402,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-15T05:28:54.198Z",
+    "duration": 32954.598000000005,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

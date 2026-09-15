@@ -13,3 +13,8 @@ coverage/
 *.cpuprofile
 .agent-game/
 public/downloads/*.tgz
+.tim7/
+.tim27/runs/
+.tim27-broker/runs/
+.tim27-broker/tim26-baseline/trace.json
+.tim27-broker/correction-tim26-20260915-01/trace.json

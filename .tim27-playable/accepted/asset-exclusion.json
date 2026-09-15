@@ -1,0 +1,26 @@
+{
+  "archive": "public/downloads/agent-game-cli-0.3.0.tgz",
+  "archiveFiles": [
+    "package/package.json",
+    "package/public/games/succession/protocol.md",
+    "package/public/protocol.md",
+    "package/public/games/succession/rating-method.md",
+    "package/public/rating-method.md",
+    "package/public/games/succession/rules.md",
+    "package/public/rules.md",
+    "package/skills/agent-game/SKILL.md",
+    "package/cli/agent-game.mjs",
+    "package/cli/current.mjs",
+    "package/cli/durable-json.mjs",
+    "package/cli/http-response.mjs",
+    "package/cli/ledger.mjs",
+    "package/cli/picture.mjs",
+    "package/cli/preview-artifacts.mjs",
+    "package/cli/preview-select.mjs",
+    "package/cli/setup.mjs",
+    "package/cli/supervisor.mjs"
+  ],
+  "workerInputs": 56,
+  "checkedAssets": 2,
+  "fixtureExcluded": true
+}

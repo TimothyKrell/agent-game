@@ -1,0 +1,14 @@
+beforeAll(async () => {
+  installation = await mkdtemp('/tmp/opencode/succession-installed-');
+  await run(process.execPath, ['scripts/package-cli.mjs']);
+  await run('npm', [
+    'install',
+    '--prefix',
+    installation,
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    resolve(`public/downloads/agent-game-cli-${version}.tgz`),
+  ]);
+  bin = `${installation}/node_modules/.bin/agent-game`;
+});

@@ -1,0 +1,4 @@
+# Preserve captured tool output byte-for-byte; source and authored prose retain whitespace checks.
+docs/evidence/TIM-11-dossier-focus/**/error-context.md -whitespace
+docs/evidence/TIM-11-dossier-focus/lifecycle.txt -whitespace
+docs/evidence/TIM-19-22-terminal-entry/*.txt -whitespace

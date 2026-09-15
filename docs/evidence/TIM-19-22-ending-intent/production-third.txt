@@ -1,0 +1,74 @@
+
+Running 27 tests using 1 worker
+
+  ✓   1 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later portrait ownership (1.5s)
+  ✓   2 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later portrait-closed ownership (1.2s)
+  ✓   3 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later rule ownership (1.4s)
+  ✓   4 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later chapter ownership (1.5s)
+  ✓   5 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later keyboard ownership (650ms)
+  ✓   6 .dossier/ending.spec.mjs:197:5 › 1440: pending Final move respects later wheel ownership (1.2s)
+  ✓   7 .dossier/ending.spec.mjs:260:3 › 1440: held navigation completes without new intent; fresh cached navigation still works (1.4s)
+  ✓   8 .dossier/ending.spec.mjs:287:3 › 1440: a new visibility scope retires the old held navigation (1.4s)
+  ✓   9 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later portrait ownership (1.2s)
+  ✓  10 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later portrait-closed ownership (1.1s)
+  ✓  11 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later rule ownership (1.3s)
+  ✓  12 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later chapter ownership (1.2s)
+  ✓  13 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later keyboard ownership (620ms)
+  ✓  14 .dossier/ending.spec.mjs:197:5 › 390: pending Final move respects later wheel ownership (1.4s)
+  ✓  15 .dossier/ending.spec.mjs:260:3 › 390: held navigation completes without new intent; fresh cached navigation still works (1.7s)
+  ✓  16 .dossier/ending.spec.mjs:287:3 › 390: a new visibility scope retires the old held navigation (1.4s)
+  ✓  17 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later portrait ownership (1.2s)
+  ✓  18 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later portrait-closed ownership (1.1s)
+  ✓  19 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later rule ownership (1.4s)
+  ✓  20 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later chapter ownership (1.2s)
+  ✓  21 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later keyboard ownership (583ms)
+  ✓  22 .dossier/ending.spec.mjs:197:5 › 320: pending Final move respects later wheel ownership (1.0s)
+  ✓  23 .dossier/ending.spec.mjs:260:3 › 320: held navigation completes without new intent; fresh cached navigation still works (1.3s)
+  ✓  24 .dossier/ending.spec.mjs:287:3 › 320: a new visibility scope retires the old held navigation (1.2s)
+  ✘  25 .dossier/ending.spec.mjs:316:1 › unmount retires a held request; a fresh route visit can navigate (5.6s)
+  ✓  26 .dossier/ending.spec.mjs:342:1 › intervention also cancels a held history page after anchor resolution (1.4s)
+  ✓  27 .dossier/ending.spec.mjs:362:1 › a fresh request supersedes a held one without retaining its old completion (2.0s)
+
+
+  1) .dossier/ending.spec.mjs:316:1 › unmount retires a held request; a fresh route visit can navigate
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'The arena', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'The arena', exact: true }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'The arena', exact: true })
+
+
+      319 |   await page.getByRole('link', { name: 'Back to Succession arena' }).click();
+      320 |   await expect(page.locator('.dossier')).toHaveCount(0);
+    > 321 |   await expect(page.getByRole('heading', { name: 'The arena', exact: true })).toBeVisible();
+          |                                                                             ^
+      322 |   await page.getByRole('link', { name: 'How to play', exact: true }).focus();
+      323 |   const before = await state(page);
+      324 |   control.hold = false;
+        at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:321:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs/evidence/TIM-19-22-ending-intent/production/intent/ending-unmount-retires-a-h-13d9b-sh-route-visit-can-navigate/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: docs/evidence/TIM-19-22-ending-intent/production/intent/ending-unmount-retires-a-h-13d9b-sh-route-visit-can-navigate/error-context.md
+
+  1 failed
+    .dossier/ending.spec.mjs:316:1 › unmount retires a held request; a fresh route visit can navigate
+  26 passed (41.9s)
+file:///tmp/opencode/agent-game-dossier/.dossier/production.mjs:129
+        code === 0 ? resolve() : reject(new Error(`Ending intent suite exited ${code}`)),
+                                        ^
+
+Error: Ending intent suite exited 1
+    at ChildProcess.<anonymous> (file:///tmp/opencode/agent-game-dossier/.dossier/production.mjs:129:41)
+    at ChildProcess.emit (node:events:514:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)
+
+Node.js v24.21.0

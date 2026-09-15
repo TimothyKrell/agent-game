@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "*.ts",
+    "../tests/preview-playable.test.ts",
+    "../worker-configuration.d.ts",
+    "../src/server/secrets.d.ts"
+  ]
+}

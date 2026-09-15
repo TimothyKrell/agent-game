@@ -1,0 +1,10 @@
+[
+  {
+    "level": "info",
+    "message": "dependency optimized: @base-ui/react/collapsible"
+  },
+  {
+    "level": "info",
+    "message": "optimized dependencies changed. reloading"
+  }
+]

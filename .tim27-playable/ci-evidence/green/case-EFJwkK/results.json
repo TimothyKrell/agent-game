@@ -1,0 +1,101 @@
+{
+  "upstream": "debd8a4a071bc43483b6af8be463e1904d169efc",
+  "sourceArchiveSha256": "a0d4f7b0199efa6144c2fa84f51116820d747d575643afc63edf2b13cf24e635",
+  "fixtureDirectory": "/tmp/opencode/agent-game-playable-ci/.tim27-playable/runs/ci-green-two-cpu-3/evidence/case-EFJwkK/runtime",
+  "providerUrl": "http://127.0.0.1:6504/v1",
+  "providerCalls": [
+    {
+      "at": 1789472491760,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472491811,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472491911,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472492114,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472492232,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472492308,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472492427,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472492513,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    },
+    {
+      "at": 1789472492609,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": true
+    }
+  ],
+  "captures": [],
+  "cleanupErrors": [],
+  "paidCalls": 0
+}

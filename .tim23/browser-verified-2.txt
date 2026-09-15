@@ -1,0 +1,12 @@
+
+Running 7 tests using 1 worker
+
+  ✓  1 e2e/continuous-story.spec.ts:175:1 › reads 2,048 canonical messages forward/backward through eviction and revisits with a finite DOM (8.4s)
+  ✓  2 e2e/continuous-story.spec.ts:236:1 › holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading (656ms)
+  ✓  3 e2e/continuous-story.spec.ts:293:1 › pauses hidden reading, follows successive frozen live heads, and recovers a network retry from an empty record (731ms)
+  ✓  4 e2e/continuous-story.spec.ts:335:1 › uses document scrolling and retains a focused row across automatic prepending (487ms)
+  ✓  5 e2e/continuous-story.spec.ts:358:1 › crosses a long run of omitted row renderings in both directions without a request loop (1.0s)
+  ✓  6 e2e/continuous-story.spec.ts:383:1 › keeps actual command mutation receipts independent of cancelled reading and newer authoritative current (400ms)
+  ✓  7 e2e/continuous-story.spec.ts:428:1 › fences pending reads on match A–B–A, keeps independent readers and recovers errors and epochs (1.1s)
+
+  7 passed (14.3s)

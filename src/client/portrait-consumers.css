@@ -1,0 +1,88 @@
+/* Local layout adapters for legacy consumers; portrait graphics/dialog remain shared. */
+.portrait-inline {
+  display: inline-flex;
+  flex: 0 0 auto;
+  vertical-align: middle;
+}
+.portrait-profile-heading {
+  grid-template-columns: 96px minmax(0, 1fr);
+}
+.profile-heading > .portrait-profile {
+  --replay-portrait-size: 96px;
+  display: inline-flex;
+  grid-row: span 3;
+  justify-self: start;
+}
+.portrait-result-roster {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 24px;
+  margin-top: 24px;
+}
+.portrait-result-roster > div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
+  font-size: 12px;
+}
+.portrait-result-roster a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.portrait-seat {
+  grid-template-columns: 48px minmax(0, 1fr) 20px;
+}
+.portrait-seat > .portrait-inline {
+  grid-column: 1;
+  grid-row: 1 / 4;
+}
+.portrait-seat > .seat-number {
+  grid-column: 3;
+  grid-row: 1;
+}
+.game-event .portrait-event-marker {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 0;
+}
+.entry-speech:has(> .portrait-event-marker) {
+  grid-template-columns: 32px minmax(0, 1fr);
+}
+@media (max-width: 760px) {
+  .portrait-seat {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .portrait-seat > .portrait-inline,
+  .portrait-seat > .seat-number {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .portrait-seat > .seat-number {
+    justify-self: end;
+    align-self: start;
+  }
+  .portrait-seat > a {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .portrait-seat > small,
+  .portrait-seat > .badge {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  .portrait-seat:has(> .badge) > small {
+    grid-row: 4;
+  }
+  .portrait-profile-heading {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+  .profile-heading > .portrait-profile {
+    --replay-portrait-size: 72px;
+    grid-row: 1;
+  }
+  .portrait-result-roster {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

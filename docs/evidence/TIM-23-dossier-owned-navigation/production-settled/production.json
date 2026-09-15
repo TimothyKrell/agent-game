@@ -1,0 +1,12 @@
+{
+  "scannedAssets": 3,
+  "entryBundleBytes": 253534,
+  "productionComponentImportGraphClean": true,
+  "directGuideExcluded": true,
+  "directFixtureExcluded": true,
+  "noPrototypeOrAgentationRequests": true,
+  "integratedProductionRoute": true,
+  "dossierIncluded": true,
+  "readerIncluded": true,
+  "integrationBoundary": "Route browser acceptance is recorded separately in the route checks; independent integration review follows the lane handoff."
+}

@@ -1,0 +1,69 @@
+{
+  "errors": [
+    "TypeError: Cannot read properties of null (reading 'useRef')\n    at exports.useRef (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=9ed2a51d:745:30)\n    at useRefWithInit (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d:26:27)\n    at useStableCallback (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d:45:17)\n    at CollapsibleRoot (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/@base-ui_react_collapsible.js?v=75cb35c6:155:23)\n    at Object.react_stack_bottom_frame (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=8426b7f9:12904:12)\n    at renderWithHooks (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=8426b7f9:4235:19)\n    at updateForwardRef (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=8426b7f9:5434:16)\n    at beginWork (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=8426b7f9:6242:21)\n    at runWithFiberInDEV (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=8426b7f9:852:66)\n    at performUnitOfWork (http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=8426b7f9:8467:92)"
+  ],
+  "modules": [
+    "http://127.0.0.1:6191/.tim11/foundations.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=f52f89c2",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=8426b7f9",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/lucide-react.js?v=40d75848",
+    "http://127.0.0.1:6191/src/client/ui/button.tsx",
+    "http://127.0.0.1:6191/src/client/ui/collapsible.tsx",
+    "http://127.0.0.1:6191/src/client/ui/dialog.tsx",
+    "http://127.0.0.1:6191/src/client/ui/rule-help.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react_jsx-dev-runtime.js?v=f52f89c2",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=3999c33e",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/@base-ui_react_collapsible.js?v=75cb35c6",
+    "http://127.0.0.1:6191/src/client/ui/popover.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/@base-ui_react_dialog.js?v=f072db00",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom.js?v=f52f89c2",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/@base-ui_react_popover.js?v=a880ab88",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react_jsx-runtime.js?v=f52f89c2",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/useOpenInteractionType-CiwfYWvX.js?v=3999c33e",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react_jsx-runtime.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/foundations.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/lucide-react.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/src/client/ui/button.tsx",
+    "http://127.0.0.1:6191/src/client/ui/collapsible.tsx",
+    "http://127.0.0.1:6191/src/client/ui/dialog.tsx",
+    "http://127.0.0.1:6191/src/client/ui/rule-help.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react_jsx-dev-runtime.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/@base-ui_react_collapsible.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/@base-ui_react_dialog.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/src/client/ui/popover.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/@base-ui_react_popover.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react_jsx-runtime.js?v=9ed2a51d",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/useOpenInteractionType-Bczes2pA.js?v=9ed2a51d"
+  ],
+  "navigations": [
+    "http://127.0.0.1:6191/.tim11/foundations.html",
+    "http://127.0.0.1:6191/.tim11/foundations.html"
+  ],
+  "responses": [
+    {
+      "url": "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=8426b7f9",
+      "imports": "import { t as __commonJSMin } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=3999c33e\";\nimport { t as require_react } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=f52f89c2\";\nimport { t as require_react_dom } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom.js?v=f52f89c2\";\n//#region ../../../home/timothykrell/Code/agent-games/node_modules/scheduler/cjs/scheduler.development.js\n/**\n* @license React\n* scheduler.development.js\n*\n* Copyright (c) Meta Platforms, Inc. and affiliates.\n*\n* This source code is licensed under the MIT license found in the\n* LICENSE file in the root directory of this source tree.\n*/\nvar require_scheduler_development = /* @__PURE__ */ __commonJSMin(((exports) => {\n\t(function() {\n\t\tfunction performWorkUntilDeadline() {\n\t\t\tneedsPaint = !1;\n\t\t\tif (isMessageLoopRunning) {\n\t\t\t\tvar currentTime = exports.unstable_now();\n\t\t\t\tstartTime = currentTime;\n\t\t\t\tvar hasMoreWork = !0;\n\t\t\t\ttry {"
+    },
+    {
+      "url": "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d",
+      "imports": "import { r as __toESM } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=9ed2a51d\";\nimport { t as require_react } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=9ed2a51d\";\nimport { t as require_react_dom } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom.js?v=9ed2a51d\";\n//#region ../../../home/timothykrell/Code/agent-games/node_modules/@base-ui/utils/safeReact.mjs\nvar import_react = /* @__PURE__ */ __toESM(require_react(), 1);\n/**\n* A clone of the React namespace for reading APIs that may be missing in older\n* supported React versions. Bundlers can rewrite direct `React.someNewApi`\n* reads into named imports, which breaks React 17. Reading from this cloned\n* object keeps those lookups optional.\n*\n* @see https://github.com/mui/material-ui/issues/41190#issuecomment-2040873379\n*/\nvar SafeReact = { ...import_react };\n//#endregion\n//#region ../../../home/timothykrell/Code/agent-games/node_modules/@base-ui"
+    },
+    {
+      "url": "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom_client.js?v=9ed2a51d",
+      "imports": "import { t as __commonJSMin } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=9ed2a51d\";\nimport { t as require_react } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=9ed2a51d\";\nimport { t as require_react_dom } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom.js?v=9ed2a51d\";\n//#region ../../../home/timothykrell/Code/agent-games/node_modules/scheduler/cjs/scheduler.development.js\n/**\n* @license React\n* scheduler.development.js\n*\n* Copyright (c) Meta Platforms, Inc. and affiliates.\n*\n* This source code is licensed under the MIT license found in the\n* LICENSE file in the root directory of this source tree.\n*/\nvar require_scheduler_development = /* @__PURE__ */ __commonJSMin(((exports) => {\n\t(function() {\n\t\tfunction performWorkUntilDeadline() {\n\t\t\tneedsPaint = !1;\n\t\t\tif (isMessageLoopRunning) {\n\t\t\t\tvar currentTime = exports.unstable_now();\n\t\t\t\tstartTime = currentTime;\n\t\t\t\tvar hasMoreWork = !0;\n\t\t\t\ttry {"
+    },
+    {
+      "url": "http://127.0.0.1:6191/.tim11/cold-start/runs/red-control-9/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9ed2a51d",
+      "imports": "import { r as __toESM } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=9ed2a51d\";\nimport { t as require_react } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react.js?v=9ed2a51d\";\nimport { t as require_react_dom } from \"/.tim11/cold-start/runs/red-control-9/vite-cache/deps/react-dom.js?v=9ed2a51d\";\n//#region ../../../home/timothykrell/Code/agent-games/node_modules/@base-ui/utils/safeReact.mjs\nvar import_react = /* @__PURE__ */ __toESM(require_react(), 1);\n/**\n* A clone of the React namespace for reading APIs that may be missing in older\n* supported React versions. Bundlers can rewrite direct `React.someNewApi`\n* reads into named imports, which breaks React 17. Reading from this cloned\n* object keeps those lookups optional.\n*\n* @see https://github.com/mui/material-ui/issues/41190#issuecomment-2040873379\n*/\nvar SafeReact = { ...import_react };\n//#endregion\n//#region ../../../home/timothykrell/Code/agent-games/node_modules/@base-ui"
+    }
+  ]
+}

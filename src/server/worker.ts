@@ -1,4 +1,7 @@
 import { cliArchive } from '../shared/onboarding';
+import { PICTURE_BATCH_LIMIT } from '../shared/agent-picture';
+import { agentPictures, collectAgentPictures } from './agent-picture-data';
+import { changeAgentPicture, readAgentPicture } from './agent-pictures';
 import { GameError } from '../game/types';
 import { GAME_DESCRIPTORS } from '../game/descriptors';
 import { platformCoordinator } from './coordinator';
@@ -12,7 +15,14 @@ import {
   QueueCancelSchema,
   GameSelectionSchema,
 } from '../shared/api';
-import { agentSession, authProviders, createAuth, developmentLogin, ownerSession } from './auth';
+import {
+  agentSession,
+  authProviders,
+  createAuth,
+  developmentLogin,
+  ownerSession,
+  ownerPreviewAuthority,
+} from './auth';
 import {
   checkOrigin,
   fault,
@@ -24,6 +34,13 @@ import {
   rpcResponse,
 } from './http';
 import { houseConfigured } from './house-model';
+import { sourcePreviewRoute } from './preview-source';
+import { sourceBrokerRoute } from './preview-inference';
+import { targetPreviewRoute } from './preview-target';
+import { previewEnabled } from './preview-config';
+import { previewPage } from './preview-pages';
+import { PreviewOwnerCompleteSchema } from '../shared/preview';
+import { previewBrowserOrigin } from './preview-transport';
 import { approvePairing, pairingDetails, pollPairing, startPairing } from './pairing';
 import {
   agentHistory,
@@ -42,12 +59,21 @@ export { MatchmakingObject } from './matchmaking';
 export { HouseSeatObject } from './house-seat';
 
 export default {
-  async fetch(request, env): Promise<Response> {
+  async scheduled(_controller, env) {
+    await collectAgentPictures(env);
+  },
+  async fetch(request, env, ctx?: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
 
     try {
+      if (path === '/preview' || path.startsWith('/preview/')) {
+        const page = await previewPage(request, env);
+
+        if (page) return page;
+      }
+
       if (path === '/agents.md' && (method === 'GET' || method === 'HEAD')) {
         // This is a bounded, build-owned Markdown asset, rendered for the requested arena.
         const asset = await env.ASSETS.fetch(new Request(new URL('/agents.md', url), { method: 'GET' }));
@@ -65,11 +91,55 @@ export default {
         );
       }
 
+      if (path.startsWith('/api/preview/')) {
+        const preview =
+          (await targetPreviewRoute(request, env)) ??
+          (await sourcePreviewRoute(request, env)) ??
+          (await sourceBrokerRoute(request, env, ctx));
+
+        if (preview) return preview;
+      }
+
+      if (path === '/api/auth/preview/complete' && method === 'POST' && previewEnabled(env)) {
+        previewBrowserOrigin(request, env);
+        const input = await readJson(request, PreviewOwnerCompleteSchema, 4096);
+
+        return await createAuth(env).handler(
+          new Request(request, { method: 'POST', body: JSON.stringify(input) }),
+        );
+      }
+
       if (path.startsWith('/api/auth/')) return await createAuth(env).handler(request);
 
       if (path === '/api/health') return json({ ok: true, protocolVersion: '1' });
 
       if (path === '/api/games' && method === 'GET') return json(Object.values(GAME_DESCRIPTORS));
+
+      if (path === '/api/agent-pictures' && method === 'GET') {
+        const ids = url.searchParams.getAll('agentId');
+
+        if (!ids.length || ids.length > PICTURE_BATCH_LIMIT || ids.some((id) => !/^[\w-]{1,100}$/.test(id)))
+          throw new GameError('picture-agent-ids', 'Supply 1–50 stable agentId query parameters.', 400);
+
+        return json(await agentPictures(env, ids));
+      }
+
+      const pictureRoute = path.match(/^\/api\/agents\/([\w-]{1,100})\/picture(?:\/([\w-]{1,100}))?$/);
+
+      if (pictureRoute) {
+        if (method === 'GET' || method === 'HEAD')
+          return await readAgentPicture(request, env, pictureRoute[1], pictureRoute[2]);
+
+        if (!pictureRoute[2] && (method === 'PUT' || method === 'DELETE')) {
+          const principal = await agentSession(request, env);
+
+          if (principal.agentId !== pictureRoute[1])
+            throw new GameError('agent-not-found', 'Agent not found.', 404);
+
+          return await changeAgentPicture(request, env, principal.agentId, principal);
+        }
+      }
+
       const queue = platformCoordinator(env);
       const protocols = request.headers.get('X-Agent-Game-Protocols') ?? '';
       const evaluation = path.match(/^\/api\/dev\/evaluation\/(match_[\w-]+)$/);
@@ -108,7 +178,7 @@ export default {
           leaderboard,
           queueCount,
           authProviders: authProviders(env),
-          localLogin: env.ENVIRONMENT === 'development' && isLoopback(request.url),
+          localLogin: !previewEnabled(env) && env.ENVIRONMENT === 'development' && isLoopback(request.url),
           houseAvailable: houseConfigured(env),
         });
       }
@@ -197,6 +267,21 @@ export default {
           return json(await createAgent(env, owner, input.name, input.description), 201);
         }
 
+        const picture = path.match(/^\/api\/owner\/agents\/([\w-]{1,100})\/picture$/);
+
+        if (picture && (method === 'PUT' || method === 'DELETE')) {
+          const agent = await ownedAgent(env, owner.id, picture[1]);
+
+          if (agent.retired && method === 'PUT')
+            throw new GameError(
+              'agent-retired',
+              'Retired agents can have their picture removed, but cannot upload a new one.',
+              409,
+            );
+
+          return await changeAgentPicture(request, env, agent.id, { ownerId: owner.id, grantId: null });
+        }
+
         const retirement = path.match(/^\/api\/owner\/agents\/([^/]+)\/retire$/);
 
         if (retirement && method === 'POST') {
@@ -229,7 +314,15 @@ export default {
         if (path === '/api/owner/pairing/approve' && method === 'POST') {
           const input = await readJson(request, PairApproveSchema);
 
-          return json(await approvePairing(env, owner.id, input.code, input.agentId));
+          return json(
+            await approvePairing(
+              env,
+              owner.id,
+              input.code,
+              input.agentId,
+              await ownerPreviewAuthority(request, env, input.agentId),
+            ),
+          );
         }
       }
 
@@ -276,7 +369,7 @@ export default {
         }
 
         if (method === 'POST') {
-          if (!houseConfigured(env))
+          if (!previewEnabled(env) && !houseConfigured(env))
             throw new GameError(
               'house-unavailable',
               'House agents are not configured. Match admission is paused.',
@@ -304,19 +397,41 @@ export default {
         );
 
       const matchRoute = path.match(
-        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)(?:\/(actions|ticket|events|history|history-anchor|replay|rounds))?$/,
+        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)(?:\/(actions|ticket|events|history|history-anchor|checkpoint|replay|rounds))?$/,
       );
 
       if (matchRoute) {
         const match = env.MATCHES.getByName(matchRoute[1]);
         const operation = matchRoute[2];
 
-        if (operation === 'events' && method === 'GET') return await match.fetch(request);
+        if (operation === 'events' && method === 'GET') {
+          if (previewEnabled(env) && url.searchParams.has('ticket'))
+            throw new GameError(
+              'preview-public-wakeup',
+              'Use public event wakeups and authenticated HTTP observations.',
+              403,
+            );
 
-        if (operation === 'ticket' && method === 'POST')
-          return rpcResponse(await match.socketTicket(await agentSession(request, env), protocols));
+          return await match.fetch(request);
+        }
 
-        if (['history', 'history-anchor', 'replay', 'rounds'].includes(operation) && method === 'GET') {
+        if (operation === 'ticket' && method === 'POST') {
+          const principal = await agentSession(request, env);
+
+          if (previewEnabled(env))
+            throw new GameError(
+              'preview-public-wakeup',
+              'Use public event wakeups and authenticated HTTP observations.',
+              403,
+            );
+
+          return rpcResponse(await match.socketTicket(principal, protocols));
+        }
+
+        if (
+          ['history', 'history-anchor', 'checkpoint', 'replay', 'rounds'].includes(operation) &&
+          method === 'GET'
+        ) {
           const principal = request.headers.has('authorization') ? await agentSession(request, env) : null;
           const epoch = url.searchParams.get('epoch') ?? undefined;
 
@@ -328,6 +443,16 @@ export default {
           if (operation === 'replay')
             return rpcResponse(
               await match.replay(principal, epoch, Number(url.searchParams.get('through') ?? 0), protocols),
+            );
+
+          if (operation === 'checkpoint')
+            return rpcResponse(
+              await match.checkpoint(
+                principal,
+                epoch,
+                Number(url.searchParams.get('through') ?? 0),
+                protocols,
+              ),
             );
 
           if (operation === 'rounds') return rpcResponse(await match.rounds(principal, epoch, protocols));

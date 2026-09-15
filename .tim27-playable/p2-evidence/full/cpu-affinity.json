@@ -1,0 +1,105 @@
+{
+  "root": 882586,
+  "allDescendantsPinned": true,
+  "processes": [
+    {
+      "pid": 882586,
+      "parent": 882585,
+      "name": "MainThread",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 882648,
+      "parent": 882586,
+      "name": "MainThread",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 882991,
+      "parent": 882648,
+      "name": "esbuild",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 883238,
+      "parent": 882648,
+      "name": "esbuild",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 891006,
+      "parent": 882648,
+      "name": "workerd",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 891116,
+      "parent": 882648,
+      "name": "workerd",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 891370,
+      "parent": 882648,
+      "name": "workerd",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 891402,
+      "parent": 882648,
+      "name": "workerd",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 894494,
+      "parent": 882648,
+      "name": "MainThread",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 894512,
+      "parent": 894494,
+      "name": "MainThread",
+      "cpus": [
+        0,
+        1
+      ]
+    },
+    {
+      "pid": 902186,
+      "parent": 894512,
+      "name": "MainThread",
+      "cpus": [
+        0,
+        1
+      ]
+    }
+  ]
+}

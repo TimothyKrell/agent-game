@@ -1,0 +1,73 @@
+diff --git a/tests/cli-succession.test.ts b/tests/cli-succession.test.ts
+index a6e4b87..e8918a2 100644
+--- a/tests/cli-succession.test.ts
++++ b/tests/cli-succession.test.ts
+@@ -601,8 +601,7 @@ const current: Observation2 = {
+   },
+ };
+ 
+-it('preserves selected game through first pairing and start recursion, then copies the exact action envelope', async () => {
+-  const directory = await mkdtemp('/tmp/opencode/succession-cli-');
++function successionPairingFixture() {
+   const bodies: { path: string; data: Partial<ActionRequest2> & { requestId?: string } }[] = [];
+   let queued = false;
+ 
+@@ -635,6 +634,18 @@ it('preserves selected game through first pairing and start recursion, then copi
+     response.end(JSON.stringify(value));
+   });
+ 
++  return {
++    server,
++    bodies,
++    close: () => new Promise<void>((done) => server.close(() => done())),
++  };
++}
++
++it('preserves selected game through first pairing and start recursion, then copies the exact action envelope', async () => {
++  const directory = await mkdtemp('/tmp/opencode/succession-cli-');
++  const fixture = successionPairingFixture();
++  const { server, bodies } = fixture;
++
+   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+   const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
+   const config = `${directory}/connection.json`;
+@@ -653,6 +664,11 @@ it('preserves selected game through first pairing and start recursion, then copi
+   try {
+     await cli('start', '--game', 'succession');
+     expect(JSON.parse(await readFile(config, 'utf8')).selectedGame).toBe('succession');
++    const beforeProbe = bodies.length;
++    const probe = await fetch(`http://127.0.0.1:${address.port}/`, { signal: AbortSignal.timeout(1000) });
++    expect(probe.status).toBe(404);
++    await probe.text();
++    expect(bodies).toHaveLength(beforeProbe);
+     await cli('start');
+     expect(bodies.find((item) => item.path === '/api/queue' && item.data.requestId)?.data).toMatchObject({
+       gameId: 'succession',
+@@ -674,11 +690,26 @@ it('preserves selected game through first pairing and start recursion, then copi
+     });
+     await expect(cli('start', '--game', 'secret-overlord')).rejects.toThrow();
+   } finally {
+-    await new Promise<void>((done) => server.close(() => done()));
++    await fixture.close();
+     await rm(directory, { recursive: true, force: true });
+   }
+ });
+ 
++it.each([undefined, '1'])('propagates a pairing fixture API protocol failure into awaited work (header=%s)', async (header) => {
++  const fixture = successionPairingFixture();
++  await new Promise<void>((done) => fixture.server.listen(0, '127.0.0.1', done));
++  const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(fixture.server.address());
++  const headers = new Headers({ 'content-type': 'application/json' });
++  if (header !== undefined) headers.set('X-Agent-Game-Protocols', header);
++  const response = await fetch(`http://127.0.0.1:${address.port}/api/queue`, {
++    method: 'POST', headers, body: '{}', signal: AbortSignal.timeout(1000),
++  }).then(async (response) => ({ status: response.status, body: await response.text() }), () => null);
++  const completion = fixture.close();
++  await expect(completion).rejects.toThrow(/POST \/api\/queue/);
++  expect(response).toMatchObject({ status: 500 });
++  expect(fixture.bodies).toEqual([]);
++});
++
+ it('requests a bounded server page without advancing a delivered cursor to the current head', async () => {
+   const directory = await mkdtemp('/tmp/opencode/succession-page-');
+   let query = new URLSearchParams();

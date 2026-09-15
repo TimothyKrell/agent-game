@@ -1,5 +1,7 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { appendFile, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { setTimeout as pause } from 'node:timers/promises';
+import { afterAll, afterEach, beforeAll, expect, it } from 'vitest';
 import { unstable_dev } from 'wrangler';
 import type { HistoryMetadata2, HistoryPage2 } from '../src/shared/succession';
 import type { HistoryAudience, HistoryEvent, HistoryQuery } from '../src/server/history';
@@ -8,10 +10,26 @@ let worker: Awaited<ReturnType<typeof unstable_dev>>;
 
 let directory: string;
 
+let evidence: string;
+
+let failed = false;
+
+interface PopulationAttempt {
+  name: string;
+  expectedOffset: number;
+  count: number;
+  escaping: boolean;
+  attempt: number;
+  status: number | null;
+  body: string;
+  retry: boolean;
+}
+
+const populationAttempts: PopulationAttempt[] = [];
+
 const publicAudience: HistoryAudience = { seat: null, house: false, terminal: false };
 
-beforeAll(async () => {
-  directory = await mkdtemp('/tmp/opencode/succession-history-');
+async function start() {
   worker = await unstable_dev('tests/fixtures/history-worker.ts', {
     config: 'tests/history.wrangler.jsonc',
     local: true,
@@ -22,12 +40,60 @@ beforeAll(async () => {
     logLevel: 'error',
     experimental: { forceLocal: true, disableExperimentalWarning: true, watch: false },
   });
+  await appendFile(
+    resolve(evidence, 'launches.jsonl'),
+    JSON.stringify({ at: Date.now(), directory, port: worker.port }) + '\n',
+  );
+}
+
+beforeAll(async () => {
+  const root = resolve(process.env.HISTORY_FIXTURE_EVIDENCE_DIR ?? '.agent-game/ci-evidence/history');
+  await mkdir(root, { recursive: true });
+  evidence = await mkdtemp(resolve(root, 'run-'));
+  directory = await mkdtemp(resolve(evidence, 'runtime-'));
+  await writeFile(resolve(evidence, 'runtime.json'), JSON.stringify({ directory, pid: process.pid }));
+  await start();
 }, 600_000);
+
+it('replays a concurrent population batch from its exact receipt and rejects conflicting provenance', async () => {
+  const batch = { type: 'populate', expectedOffset: 0, count: 4, escaping: false };
+  const responses = await Promise.all([command('receipts', batch), command('receipts', batch)]);
+  const receipts = await Promise.all(responses.map((response) => response.json()));
+  expect(responses.map((response) => response.status)).toEqual([200, 200]);
+  expect(receipts[0]).toEqual(receipts[1]);
+  expect(receipts[0]).toMatchObject({ streamHead: 4 });
+  expect((await command('receipts', { ...batch, expectedOffset: 4 })).status).toBe(200);
+  await worker.stop();
+  await start();
+  expect(await (await command('receipts', batch)).json()).toEqual(receipts[0]);
+
+  for (const conflict of [
+    { ...batch, count: 3 },
+    { ...batch, escaping: true },
+    { ...batch, expectedOffset: 1 },
+    { ...batch, expectedOffset: 9 },
+    { ...batch, expectedOffset: 8, count: 65 },
+  ])
+    expect((await command('receipts', conflict)).status).toBe(400);
+
+  expect(
+    await (await command('receipts', { type: 'metadata', audience: publicAudience })).json(),
+  ).toMatchObject({ streamHead: 8 });
+});
+
+afterEach(async ({ task }) => {
+  if (task.result?.state !== 'fail' || failed) return;
+  failed = true;
+  await writeFile(
+    resolve(evidence, 'failure.json'),
+    JSON.stringify({ test: task.name, errors: task.result.errors, directory }, null, 2),
+  );
+});
 
 afterAll(async () => {
   await worker?.stop();
 
-  if (directory) await rm(directory, { recursive: true, force: true });
+  if (directory && !failed) await rm(directory, { recursive: true, force: true });
 });
 
 async function command<T>(name: string, body: T) {
@@ -36,6 +102,82 @@ async function command<T>(name: string, body: T) {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
   });
+}
+
+function connectionLost(body: string) {
+  if (/^Error: Network connection lost\.(?:\r?\n|$)/.test(body.trim())) return true;
+
+  try {
+    // Wrangler's native error middleware also serializes Worker errors as JSON.
+    const error: { name?: unknown; message?: unknown } | null = JSON.parse(body);
+
+    return error?.name === 'Error' && error.message === 'Network connection lost.';
+  } catch {
+    return false;
+  }
+}
+
+async function populate(name: string, expectedOffset: number, count: number, escaping = false) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    let response: Awaited<ReturnType<typeof command>> | undefined;
+    let failure: Error | undefined;
+    let body = '';
+    let transient = false;
+
+    try {
+      response = await command(name, { type: 'populate', expectedOffset, count, escaping });
+      body = await response.clone().text();
+      transient = response.status === 500 && connectionLost(body);
+    } catch (error) {
+      if (!(error instanceof Error)) throw error;
+      failure = error;
+      body = error.stack ?? error.message;
+      const cause = error.cause;
+      transient =
+        (response === undefined || response.status === 200 || response.status === 500) &&
+        (error.message === 'Network connection lost.' ||
+          (cause instanceof Error &&
+            'code' in cause &&
+            ['UND_ERR_SOCKET', 'ECONNRESET', 'EPIPE'].includes(String(cause.code))));
+    }
+
+    const record = {
+      name,
+      expectedOffset,
+      count,
+      escaping,
+      attempt,
+      status: response?.status ?? null,
+      body,
+      retry: transient && attempt < 3,
+    };
+
+    populationAttempts.push(record);
+    // Persist the actual failed response and offset before any replay of this exact batch.
+    await appendFile(
+      resolve(evidence, 'population.jsonl'),
+      JSON.stringify({ at: Date.now(), ...record }) + '\n',
+    );
+
+    if (!record.retry) {
+      if (failure) throw failure;
+
+      if (response) return response;
+    }
+
+    await pause(attempt * 100);
+  }
+
+  throw new Error('Population retry loop exhausted without a response');
+}
+
+async function fault(
+  name: string,
+  expectedOffset: number,
+  stage: 'before' | 'after' | 'unrelated' | 'receipt',
+  remaining = 1,
+) {
+  expect((await command('__population-fault', { name, expectedOffset, stage, remaining })).status).toBe(200);
 }
 
 async function page(
@@ -195,14 +337,14 @@ it('keeps worst escaped legal messages whole within server byte limits and rolls
 });
 
 it('retains and traverses 31,200 maximum-length four-byte messages with bounded current metadata and pages', async () => {
+  await fault('large', 64, 'before');
+  await fault('large', 128, 'after');
+
   for (let offset = 0; offset < 31_200; offset += 64) {
-    const populated = await command('large', {
-      type: 'populate',
-      count: Math.min(64, 31_200 - offset),
-      escaping: false,
-    });
+    const populated = await populate('large', offset, Math.min(64, 31_200 - offset));
 
     expect(populated.status).toBe(200);
+    await populated.arrayBuffer();
   }
 
   const metadata: HistoryMetadata2 = JSON.parse(
@@ -250,4 +392,80 @@ it('retains and traverses 31,200 maximum-length four-byte messages with bounded 
 
   expect(reset).toMatchObject({ reset: true, events: [], cursor: 0, streamHead: 31_200 });
   expect(Buffer.byteLength(JSON.stringify(reset))).toBeLessThan(1024);
+  const failures = populationAttempts.filter((row) => row.name === 'large' && row.retry);
+  expect(failures).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ expectedOffset: 64, status: 500 }),
+      expect.objectContaining({ expectedOffset: 128, status: 500 }),
+    ]),
+  );
 }, 600_000);
+
+it.each(['before', 'after'] as const)(
+  'recovers native %s-commit acknowledgement loss with one exact batch',
+  async (stage) => {
+    await fault(stage, 0, stage, 3);
+    const lost = await populate(stage, 0, 64);
+    expect(lost.status).toBe(500);
+    expect(await lost.text()).toContain('Network connection lost.');
+    const beforeRetry = await (await command(stage, { type: 'metadata', audience: publicAudience })).json();
+    expect(beforeRetry).toMatchObject({ streamHead: stage === 'before' ? 0 : 64 });
+    // Readback is evidence only; the retry still relies exclusively on the atomic receipt.
+    await worker.stop();
+    await start();
+    const response = await populate(stage, 0, 64);
+    expect(response.status).toBe(200);
+    const metadata: HistoryMetadata2 = JSON.parse(await response.text());
+    expect(metadata.streamHead).toBe(64);
+    const attempts = populationAttempts.filter((row) => row.name === stage);
+    expect(attempts.map((row) => row.status)).toEqual([500, 500, 500, 200]);
+    expect(attempts[0].body).toContain('Network connection lost.');
+
+    if (stage === 'after') expect(metadata).toEqual(beforeRetry);
+    expect(await (await command(stage, { type: 'metadata', audience: publicAudience })).json()).toEqual(
+      metadata,
+    );
+    expect(
+      await (
+        await command(stage, { type: 'populate', expectedOffset: 0, count: 64, escaping: false })
+      ).json(),
+    ).toEqual(metadata);
+  },
+);
+
+it('does not retry conflicting batches or unrelated native failures and stops after three transport attempts', async () => {
+  expect((await populate('conflict', 0, 4)).status).toBe(200);
+  expect((await populate('conflict', 0, 3)).status).toBe(400);
+  expect(populationAttempts.filter((row) => row.name === 'conflict' && row.count === 3)).toHaveLength(1);
+  await fault('unrelated', 0, 'unrelated');
+  const unrelated = await populate('unrelated', 0, 4);
+  expect(unrelated.status).toBe(500);
+  expect(await unrelated.text()).toContain('History fixture non-transport failure');
+  expect(populationAttempts.filter((row) => row.name === 'unrelated')).toHaveLength(1);
+  await fault('exhausted', 0, 'before', 3);
+  const exhausted = await populate('exhausted', 0, 4);
+  expect(exhausted.status).toBe(500);
+  expect(await exhausted.text()).toContain('Network connection lost.');
+  expect(populationAttempts.flatMap((row) => (row.name === 'exhausted' ? [row.retry] : []))).toEqual([
+    true,
+    true,
+    false,
+  ]);
+  expect(
+    await (await command('exhausted', { type: 'metadata', audience: publicAudience })).json(),
+  ).toMatchObject({ streamHead: 0 });
+});
+
+it('rolls back the append with a failed SQLite receipt write and does not retry the SQL error', async () => {
+  await fault('atomic', 0, 'receipt');
+  const response = await populate('atomic', 0, 4);
+  expect(response.status).toBe(400);
+  expect(await response.text()).toContain('no such table: fixture_missing_receipt_table');
+  expect(populationAttempts.filter((row) => row.name === 'atomic')).toHaveLength(1);
+  expect(
+    await (await command('atomic', { type: 'metadata', audience: publicAudience })).json(),
+  ).toMatchObject({ streamHead: 0 });
+  const recovered = await populate('atomic', 0, 4);
+  expect(recovered.status).toBe(200);
+  expect(await recovered.json()).toMatchObject({ streamHead: 4 });
+});

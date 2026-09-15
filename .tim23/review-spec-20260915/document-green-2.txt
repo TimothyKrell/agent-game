@@ -1,0 +1,14 @@
+
+Running 9 tests using 1 worker
+
+  ✓  1 e2e/continuous-story.spec.ts:160:1 › announces paused Query reads as offline waiting, keeps delivered rows and cancels hidden or unmounted pauses (808ms)
+  ✓  2 e2e/continuous-story.spec.ts:210:1 › reads 2,048 canonical messages forward/backward through eviction and revisits with a finite DOM (8.1s)
+  ✓  3 e2e/continuous-story.spec.ts:271:1 › holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading (660ms)
+  ✓  4 e2e/continuous-story.spec.ts:328:1 › pauses hidden reading, follows successive frozen live heads, and recovers a network retry from an empty record (764ms)
+  ✓  5 e2e/continuous-story.spec.ts:370:1 › keeps two open document chapters independently reachable through scrolling, focus and window replacement (1.4s)
+  ✓  6 e2e/continuous-story.spec.ts:418:1 › uses document scrolling and retains a focused row across automatic prepending (424ms)
+  ✓  7 e2e/continuous-story.spec.ts:441:1 › crosses a long run of omitted row renderings in both directions without a request loop (1.0s)
+  ✓  8 e2e/continuous-story.spec.ts:466:1 › keeps actual command mutation receipts independent of cancelled reading and newer authoritative current (389ms)
+  ✓  9 e2e/continuous-story.spec.ts:511:1 › fences pending reads on match A–B–A, keeps independent readers and recovers errors and epochs (1.1s)
+
+  9 passed (16.4s)

@@ -1,0 +1,6 @@
+
+> agent-game@0.2.0 lint
+> oxlint .
+
+Found 0 warnings and 0 errors.
+Finished in 1.2s on 267 files with 120 rules using 32 threads.

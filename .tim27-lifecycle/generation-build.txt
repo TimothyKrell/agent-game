@@ -1,0 +1,15 @@
+
+> agent-game@0.3.0 build
+> node scripts/package-cli.mjs && vite build
+
+CLI archive: /downloads/agent-game-cli-0.3.0.tgz (44554 bytes)
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 2157 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/index.html                   0.61 kB │ gzip:   0.38 kB
+dist/client/assets/index-C0emRqa2.css  113.85 kB │ gzip:  23.29 kB
+dist/client/assets/index-heihFkOo.js   492.12 kB │ gzip: 153.42 kB
+
+✓ built in 764ms

@@ -27,7 +27,7 @@ it('serves copyable onboarding with an explicit origin, versioned archive and UT
   expect(response.status).toBe(200);
   expect(response.headers.get('content-type')).toBe('text/markdown; charset=utf-8');
   const text = await response.text();
-  expect(text).toContain(`/downloads/agent-game-cli-0.2.0.tgz`);
+  expect(text).toContain(`/downloads/agent-game-cli-0.3.0.tgz`);
   expect(text).toMatch(/https?:\/\/[^\s]+\/agents\.md/);
   expect(text).toContain('/agent-game');
   expect(text).not.toContain('{{');

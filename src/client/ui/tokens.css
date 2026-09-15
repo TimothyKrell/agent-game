@@ -1,0 +1,74 @@
+/* Semantic replay roles. Never repurpose legacy --muted (which is text). */
+.replay-ui,
+.replay-ui-portal {
+  --replay-background: var(--bg);
+  --replay-surface: var(--surface);
+  --replay-foreground: #e8f1ed;
+  --replay-muted-foreground: var(--muted);
+  --replay-border: var(--line);
+  --replay-border-strong: #65857b;
+  --replay-ring: var(--green);
+  --replay-accent: var(--green);
+  --replay-accent-foreground: var(--bg);
+  --replay-cooperative: var(--teal);
+  --replay-rogue: var(--red);
+  --replay-neutral: var(--brass);
+  --replay-private: var(--violet);
+  --replay-destructive: var(--danger);
+  --replay-departure: #ffb8c7;
+  --replay-departure-background: #3a1722;
+  --replay-departure-fill: linear-gradient(105deg, #3a1722, #20131b);
+  --replay-departure-border: #a95466;
+  --replay-bonus: #e5c586;
+  --replay-bonus-background: #302b1b;
+  --replay-bonus-fill: linear-gradient(120deg, #302b1b, #171f1c);
+  --replay-bonus-border: #8e794f;
+  --replay-help-background: #142925;
+  --replay-help-foreground: #cfdfcf;
+  --replay-help-border: #a5b68b;
+  --replay-font-body: 'Montserrat', sans-serif;
+  --replay-font-display: 'Poiret One', sans-serif;
+  --replay-space-1: 4px;
+  --replay-space-2: 8px;
+  --replay-space-3: 12px;
+  --replay-space-4: 16px;
+  --replay-space-6: 24px;
+  --replay-portrait-size: 88px;
+  --replay-step: var(--step);
+  --replay-frame: url('/deco-frame.svg');
+  --replay-motion-fast: 120ms;
+  --replay-motion-ease: ease-out;
+  --replay-overlay-z: 100;
+}
+
+@media (max-width: 760px) {
+  .replay-ui,
+  .replay-ui-portal {
+    --replay-portrait-size: 64px;
+  }
+}
+
+@theme inline {
+  --color-replay-background: var(--replay-background);
+  --color-replay-surface: var(--replay-surface);
+  --color-replay-foreground: var(--replay-foreground);
+  --color-replay-muted-foreground: var(--replay-muted-foreground);
+  --color-replay-border: var(--replay-border);
+  --color-replay-border-strong: var(--replay-border-strong);
+  --color-replay-ring: var(--replay-ring);
+  --color-replay-accent: var(--replay-accent);
+  --color-replay-accent-foreground: var(--replay-accent-foreground);
+  --color-replay-cooperative: var(--replay-cooperative);
+  --color-replay-rogue: var(--replay-rogue);
+  --color-replay-neutral: var(--replay-neutral);
+  --color-replay-private: var(--replay-private);
+  --color-replay-destructive: var(--replay-destructive);
+  --color-replay-departure: var(--replay-departure);
+  --color-replay-departure-background: var(--replay-departure-background);
+  --color-replay-departure-border: var(--replay-departure-border);
+  --color-replay-bonus: var(--replay-bonus);
+  --color-replay-bonus-background: var(--replay-bonus-background);
+  --color-replay-bonus-border: var(--replay-bonus-border);
+  --font-replay-body: var(--replay-font-body);
+  --font-replay-display: var(--replay-font-display);
+}

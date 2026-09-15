@@ -1,0 +1,276 @@
+{
+  "diagnosticBase": "508bbef73cbe8726829752baea3aaab0d78b1905",
+  "classification": "Current failure mode reproduced: unsolicited moshi-hook root request trips a blanket async fixture assertion. Historical request attribution remains unproven because its packet was not recorded.",
+  "originalCopies": [
+    {
+      "path": "/tmp/opencode/TIM27-cli-spec-review/b42248e-4un18tta/review-evidence/regressions.log",
+      "sha256": "b7e8624e5d6c03a0fb70cac61731070ebd1561f4bd938f43dec6e6c47679da40",
+      "bytes": 11284
+    },
+    {
+      "path": "/home/timothykrell/Code/agent-games-archive/TIM-27-cli-2026-09-15/worktree-evidence.tar.gz",
+      "member": ".tim27-cli/regressions.log",
+      "sha256": "b7e8624e5d6c03a0fb70cac61731070ebd1561f4bd938f43dec6e6c47679da40",
+      "bytes": 11284
+    },
+    {
+      "path": "/home/timothykrell/Code/agent-games-archive/TIM-27-cli-2026-09-15/lead-review-evidence.tar.gz",
+      "member": "TIM27-cli-spec-review/b42248e-4un18tta/review-evidence/regressions.log",
+      "sha256": "b7e8624e5d6c03a0fb70cac61731070ebd1561f4bd938f43dec6e6c47679da40",
+      "bytes": 11284
+    }
+  ],
+  "originalExcerpt": {
+    "lines": [
+      62,
+      86
+    ],
+    "sha256": "5023a12649e69976ccda51e07ad69f3221f8d51bcbc9f7ca5e002026de581f16"
+  },
+  "sourceVersions": [
+    {
+      "revision": "854eeae7e335b2d1423ec99440bfe0db87af34a3",
+      "files": [
+        {
+          "path": "cli/agent-game.mjs",
+          "sha256": "4d3255a826bdf36ac28f7a264b99d221006127e9822dc50d5d930d61337e3155",
+          "bytes": 35430
+        },
+        {
+          "path": "cli/supervisor.mjs",
+          "sha256": "366060df3560304cfe4ed67b2d426d6a150a8a2a40b1faf002123cb3f32b7021",
+          "bytes": 35731
+        },
+        {
+          "path": "tests/cli-succession.test.ts",
+          "sha256": "ffd62085c53fd2acdcb5cd576b0a8172daf4909ecca7bddad132b1f923068da0",
+          "bytes": 24576
+        },
+        {
+          "path": "package.json",
+          "sha256": "e4976e52219d36bf55e13134e8cf1338bef26951d077db5b275acff005537763",
+          "bytes": 2950
+        }
+      ]
+    },
+    {
+      "revision": "b42248ec39714205535825e623d8c96b035b4de3",
+      "files": [
+        {
+          "path": "cli/agent-game.mjs",
+          "sha256": "4d3255a826bdf36ac28f7a264b99d221006127e9822dc50d5d930d61337e3155",
+          "bytes": 35430
+        },
+        {
+          "path": "cli/supervisor.mjs",
+          "sha256": "366060df3560304cfe4ed67b2d426d6a150a8a2a40b1faf002123cb3f32b7021",
+          "bytes": 35731
+        },
+        {
+          "path": "tests/cli-succession.test.ts",
+          "sha256": "2efb400b9fb265d0df150fff3725d4d5bf5bb0acb6b568005ca215cbe9241e93",
+          "bytes": 24782
+        },
+        {
+          "path": "package.json",
+          "sha256": "e4976e52219d36bf55e13134e8cf1338bef26951d077db5b275acff005537763",
+          "bytes": 2950
+        }
+      ]
+    },
+    {
+      "revision": "f932a0e9a42400cef3ced5157bca542a4426ef6b",
+      "files": [
+        {
+          "path": "cli/agent-game.mjs",
+          "sha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+          "bytes": 36774
+        },
+        {
+          "path": "cli/supervisor.mjs",
+          "sha256": "077f45d5a534c66f5ef6672cd2c1d09999266f2dd014399fe71117df3ec1b3d6",
+          "bytes": 36505
+        },
+        {
+          "path": "cli/http-response.mjs",
+          "sha256": "d90b1bc7bd9ac08182b7cb39e891b90edc8afe527d79edd5ece63212212079ca",
+          "bytes": 1176
+        },
+        {
+          "path": "tests/cli-succession.test.ts",
+          "sha256": "2efb400b9fb265d0df150fff3725d4d5bf5bb0acb6b568005ca215cbe9241e93",
+          "bytes": 24782
+        },
+        {
+          "path": "package.json",
+          "sha256": "e4976e52219d36bf55e13134e8cf1338bef26951d077db5b275acff005537763",
+          "bytes": 2950
+        }
+      ]
+    },
+    {
+      "revision": "508bbef73cbe8726829752baea3aaab0d78b1905",
+      "files": [
+        {
+          "path": "cli/agent-game.mjs",
+          "sha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+          "bytes": 36774
+        },
+        {
+          "path": "cli/supervisor.mjs",
+          "sha256": "077f45d5a534c66f5ef6672cd2c1d09999266f2dd014399fe71117df3ec1b3d6",
+          "bytes": 36505
+        },
+        {
+          "path": "cli/http-response.mjs",
+          "sha256": "d90b1bc7bd9ac08182b7cb39e891b90edc8afe527d79edd5ece63212212079ca",
+          "bytes": 1176
+        },
+        {
+          "path": "tests/cli-succession.test.ts",
+          "sha256": "2efb400b9fb265d0df150fff3725d4d5bf5bb0acb6b568005ca215cbe9241e93",
+          "bytes": 24782
+        },
+        {
+          "path": "package.json",
+          "sha256": "e4976e52219d36bf55e13134e8cf1338bef26951d077db5b275acff005537763",
+          "bytes": 2950
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-Im9aeb/fixture-input.json",
+      "copy": "probe-Im9aeb/fixture-input.json",
+      "bytes": 1624,
+      "sha256": "dff8f851a3c6cecd023d70787d191f71d7781d73897241533771a0c02142394b"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-Im9aeb/result.json",
+      "copy": "probe-Im9aeb/result.json",
+      "bytes": 1410,
+      "sha256": "745222358e94876a6e51f275d5ab6a742f0688b2471cc98e2f8d74f3af3714b3"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-2FjE2w/fixture-input.json",
+      "copy": "probe-2FjE2w/fixture-input.json",
+      "bytes": 1624,
+      "sha256": "dff8f851a3c6cecd023d70787d191f71d7781d73897241533771a0c02142394b"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-2FjE2w/result.json",
+      "copy": "probe-2FjE2w/result.json",
+      "bytes": 10952,
+      "sha256": "e571faa460e55b5e0ef8e5baf30cbe3b119a67649195423e0017099aad44e31c"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ONemAw/fixture-input.json",
+      "copy": "probe-ONemAw/fixture-input.json",
+      "bytes": 1624,
+      "sha256": "dff8f851a3c6cecd023d70787d191f71d7781d73897241533771a0c02142394b"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ONemAw/result.json",
+      "copy": "probe-ONemAw/result.json",
+      "bytes": 5302,
+      "sha256": "23b14a6b18940a3add62419611b53a658ac49857cbc51df4394b535683c487c3"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-lMuYFA/fixture-input.json",
+      "copy": "probe-lMuYFA/fixture-input.json",
+      "bytes": 1624,
+      "sha256": "dff8f851a3c6cecd023d70787d191f71d7781d73897241533771a0c02142394b"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-lMuYFA/result.json",
+      "copy": "probe-lMuYFA/result.json",
+      "bytes": 7692,
+      "sha256": "d0d02321f3191058ec583cf3cf510a7d98d9798992a550eb22b71e9ffad54018"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/fixture-input.json",
+      "copy": "probe-ERK9KC/fixture-input.json",
+      "bytes": 1624,
+      "sha256": "dff8f851a3c6cecd023d70787d191f71d7781d73897241533771a0c02142394b"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/result.json",
+      "copy": "probe-ERK9KC/result.json",
+      "bytes": 23050,
+      "sha256": "2c97c0837811232d6b36cf88a1e370c2675965bb1a6188dfb9dc2a199a91d546"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-UXa2vE/fixture-input.json",
+      "copy": "probe-UXa2vE/fixture-input.json",
+      "bytes": 1624,
+      "sha256": "dff8f851a3c6cecd023d70787d191f71d7781d73897241533771a0c02142394b"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-UXa2vE/result.json",
+      "copy": "probe-UXa2vE/result.json",
+      "bytes": 20484,
+      "sha256": "5b8bcb3d546b91f26dc0286ab21629668d42fd5baf34a869de1899750e5cea78"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/listener-EHQlz3/result.json",
+      "copy": "listener-EHQlz3/result.json",
+      "bytes": 774,
+      "sha256": "3adcb2bbaa8b357ee393c55b2cdd0ab89b0ba6394174ccc450e37942d2a63100"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/listener-ofThDy/result.json",
+      "copy": "listener-ofThDy/result.json",
+      "bytes": 1069,
+      "sha256": "7979571a35a97983b1f8cf5bea718cc1be8671fe037e55cec735b42f8376698c"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/listener-QVtNIb/result.json",
+      "copy": "listener-QVtNIb/result.json",
+      "bytes": 1086,
+      "sha256": "44dc7f88f6a21bb7f3727280addb70ccfc9541e17f28c91f7f3b290671df8922"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/negotiation-PUwIcw/result.json",
+      "copy": "negotiation-PUwIcw/result.json",
+      "bytes": 2073,
+      "sha256": "d4e08bacbba0973271da4c76832273303f56d8b54ccf7e7e0a6d6284155b04ba"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/async-red/vitest.json",
+      "copy": "async-red/vitest.json",
+      "bytes": 969,
+      "sha256": "07b5e37d30d0c6e9c4c26e3112718a78529b6f1ff76b3d294db187ded45e9ef6"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/async-red/vitest.log",
+      "copy": "async-red/vitest.log",
+      "bytes": 2868,
+      "sha256": "c4a08cfef2014466f8da5ffd008466e74ba56d0804aabee04ac38c51a4ceb624"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/async-scoped/vitest.json",
+      "copy": "async-scoped/vitest.json",
+      "bytes": 976,
+      "sha256": "038f69d8ae6cbd78042f84cc1d3f97fbcaae3ccd46481cec5d99555fd243be39"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/async-scoped/vitest.log",
+      "copy": "async-scoped/vitest.log",
+      "bytes": 998,
+      "sha256": "8a94b98ab06b908723c2df9d2cdaeb00a157b6354d4c1949180b3e53d8b81bf4"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/blanket-FkeHEQ/result.json",
+      "copy": "blanket-FkeHEQ/result.json",
+      "bytes": 412,
+      "sha256": "7660692013b0aa0fdeb5630900098d8d508cd5238afe96676a0c9adb62f83d80"
+    },
+    {
+      "source": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/blanket-n5cRGH/result.json",
+      "copy": "blanket-n5cRGH/result.json",
+      "bytes": 411,
+      "sha256": "8c8e5f2105a65b9abb98ee674886243cc8cca8402085ede2f8048c34ccfb5af8"
+    }
+  ]
+}

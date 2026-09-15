@@ -1,0 +1,23 @@
+{
+  "scoped": false,
+  "generatedHttpRequests": 0,
+  "cliInvocations": 0,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "protocols": null,
+      "userAgent": "Go-http-client/1.1",
+      "headerNames": [
+        "host",
+        "user-agent",
+        "connection",
+        "accept-encoding"
+      ],
+      "peer": {
+        "address": "127.0.0.1",
+        "port": 53352
+      }
+    }
+  ]
+}

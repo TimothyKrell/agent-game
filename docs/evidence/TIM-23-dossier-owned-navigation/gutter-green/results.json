@@ -1,0 +1,349 @@
+{
+  "config": {
+    "argv": [
+      "/home/timothykrell/.vite-plus/js_runtime/node/24.21.0/bin/node",
+      "/tmp/opencode/agent-game-dossier/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      ".dossier/ending.config.ts",
+      "--grep",
+      "gutter"
+    ],
+    "configFile": "/tmp/opencode/agent-game-dossier/.dossier/ending.config.ts",
+    "rootDir": "/tmp/opencode/agent-game-dossier/.dossier",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-23-dossier-owned-navigation/gutter-green",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/opencode/agent-game-dossier/.dossier",
+        "testIgnore": [],
+        "testMatch": [
+          "ending.spec.mjs"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../docs/evidence/TIM-23-dossier-owned-navigation/gutter-green/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "ending.spec.mjs",
+      "file": "ending.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "1440: native wheel in the page gutter continues the visible record",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1934,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:30:17.835Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "gutter-target",
+                      "contentType": "application/json",
+                      "body": "eyJ0YXJnZXQiOnsidGFnIjoiRElWIiwiY2xhc3NOYW1lIjoiIiwiY2hhcHRlciI6bnVsbH0sImFmdGVyIjoxMTc4LCJpbnB1dCI6IndoZWVsIiwid2lkdGgiOjE0NDB9"
+                    },
+                    {
+                      "name": "gutter-delivery",
+                      "contentType": "application/json",
+                      "body": "eyJhZnRlciI6MTExNCwicmVxdWVzdHMiOlsiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTE0IiwiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLCIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiXX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-b242ff086d4c8ed3b12a",
+          "file": "ending.spec.mjs",
+          "line": 402,
+          "column": 5
+        },
+        {
+          "title": "1440: native touch in the page gutter continues the visible record",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1647,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:30:21.064Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "gutter-target",
+                      "contentType": "application/json",
+                      "body": "eyJ0YXJnZXQiOnsidGFnIjoiRElWIiwiY2xhc3NOYW1lIjoiIiwiY2hhcHRlciI6bnVsbH0sImFmdGVyIjoxMTc4LCJpbnB1dCI6InRvdWNoIiwid2lkdGgiOjE0NDB9"
+                    },
+                    {
+                      "name": "gutter-delivery",
+                      "contentType": "application/json",
+                      "body": "eyJhZnRlciI6MTExNCwicmVxdWVzdHMiOlsiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTE0IiwiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLCIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiXX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-d8b39397df3882517b0b",
+          "file": "ending.spec.mjs",
+          "line": 402,
+          "column": 5
+        },
+        {
+          "title": "1440: native gutter input cannot page behind a pending portrait reference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2096,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:30:22.716Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "modal-gutter",
+                      "contentType": "application/json",
+                      "body": "eyJiZWZvcmUiOnsieSI6MCwiYWN0aXZlIjp7InRhZyI6IkJVVFRPTiIsImV2ZW50IjpudWxsLCJ0ZXh0IjoiIn0sIm1vZGFsRm9jdXMiOnRydWUsImRpYWxvZ3MiOjEsInZpc2libGUiOnsia2V5Ijoic3RvcnktMjI2MzcyNjk3LTEzNjYiLCJ5Ijo2NzcuMzc1fX0sImFmdGVyIjp7InkiOjAsImFjdGl2ZSI6eyJ0YWciOiJCVVRUT04iLCJldmVudCI6bnVsbCwidGV4dCI6IiJ9LCJtb2RhbEZvY3VzIjp0cnVlLCJkaWFsb2dzIjoxLCJ2aXNpYmxlIjp7ImtleSI6InN0b3J5LTIyNjM3MjY5Ny0xMzY2IiwieSI6Njc3LjM3NX19fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-1b11121b9c89ba445d25",
+          "file": "ending.spec.mjs",
+          "line": 446,
+          "column": 3
+        },
+        {
+          "title": "390: native wheel in the page gutter continues the visible record",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1434,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:30:24.817Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "gutter-target",
+                      "contentType": "application/json",
+                      "body": "eyJ0YXJnZXQiOnsidGFnIjoiRElWIiwiY2xhc3NOYW1lIjoiIiwiY2hhcHRlciI6bnVsbH0sImFmdGVyIjoxMTc4LCJpbnB1dCI6IndoZWVsIiwid2lkdGgiOjM5MH0="
+                    },
+                    {
+                      "name": "gutter-delivery",
+                      "contentType": "application/json",
+                      "body": "eyJhZnRlciI6MTExNCwicmVxdWVzdHMiOlsiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTE0IiwiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLCIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiXX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-7a345b94afe56029fdda",
+          "file": "ending.spec.mjs",
+          "line": 402,
+          "column": 5
+        },
+        {
+          "title": "390: native touch in the page gutter continues the visible record",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1628,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:30:26.256Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "gutter-target",
+                      "contentType": "application/json",
+                      "body": "eyJ0YXJnZXQiOnsidGFnIjoiRElWIiwiY2xhc3NOYW1lIjoiIiwiY2hhcHRlciI6bnVsbH0sImFmdGVyIjoxMTc4LCJpbnB1dCI6InRvdWNoIiwid2lkdGgiOjM5MH0="
+                    },
+                    {
+                      "name": "gutter-delivery",
+                      "contentType": "application/json",
+                      "body": "eyJhZnRlciI6MTExNCwicmVxdWVzdHMiOlsiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTE0IiwiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLCIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTQ2JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNzgmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiXX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-5cdca92f15550a7e28ec",
+          "file": "ending.spec.mjs",
+          "line": 402,
+          "column": 5
+        },
+        {
+          "title": "390: native gutter input cannot page behind a pending portrait reference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1894,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T05:30:27.890Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "modal-gutter",
+                      "contentType": "application/json",
+                      "body": "eyJiZWZvcmUiOnsieSI6MTIxLCJhY3RpdmUiOnsidGFnIjoiQlVUVE9OIiwiZXZlbnQiOm51bGwsInRleHQiOiIifSwibW9kYWxGb2N1cyI6dHJ1ZSwiZGlhbG9ncyI6MSwidmlzaWJsZSI6eyJrZXkiOiJzdG9yeS0yMjYzNzI2OTctMTM2NiIsInkiOjg0Mi41NjI1fX0sImFmdGVyIjp7InkiOjEyMSwiYWN0aXZlIjp7InRhZyI6IkJVVFRPTiIsImV2ZW50IjpudWxsLCJ0ZXh0IjoiIn0sIm1vZGFsRm9jdXMiOnRydWUsImRpYWxvZ3MiOjEsInZpc2libGUiOnsia2V5Ijoic3RvcnktMjI2MzcyNjk3LTEzNjYiLCJ5Ijo4NDIuNTYyNX19fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-058e915e4001a5cce9d9",
+          "file": "ending.spec.mjs",
+          "line": 446,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-15T05:30:17.394Z",
+    "duration": 12471.49,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

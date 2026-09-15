@@ -1,0 +1,97 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/tmp/opencode/agent-game-dossier[39m
+
+ [31m❯[39m tests/continuous-succession-history.test.ts [2m([22m[2m20 tests[22m[2m | [22m[31m4 failed[39m[2m | [22m[33m16 skipped[39m[2m)[22m[33m 326[2mms[22m[39m
+   [2m[90m↓[39m[22m exposes an offline initial Query read as paused, then resumes exactly once without advancing quiet-table delivery
+   [2m[90m↓[39m[22m pauses the window after an in-flight anchor read goes offline, retaining delivered rows until one reconnect
+   [2m[90m↓[39m[22m hides and disposes paused readers without zombie resumes or affecting another reader in the same Query cache
+   [2m[90m↓[39m[22m uses exact pre-window engine checkpoints across a long chat gap and Tax resource changes
+   [2m[90m↓[39m[22m does not turn observed head growth into delivery and completes the frozen window before following a newer head
+   [2m[90m↓[39m[22m preserves zero-event and unavailable baselines honestly, then follows new records without freezing at zero
+   [2m[90m↓[39m[22m retires previously delivered rows after a source reset and asks the authoritative owner to refresh
+   [2m[90m↓[39m[22m retires previously delivered rows after a source denied and asks the authoritative owner to refresh
+   [2m[90m↓[39m[22m rejects a skipped source cursor without discarding delivered history and retries the same bounded operation
+   [2m[90m↓[39m[22m cancels hidden/unmounted reads without accepting their late bodies or cancelling another reader
+   [2m[90m↓[39m[22m keeps a newly visible opposite-edge anchor when an older scroll request completes late
+[31m   [31m×[31m aborts only its pending navigation at anchor, retaining the delivered window and latest reading anchor[39m[32m 62[2mms[22m[39m
+[31m   [31m×[31m aborts only its pending navigation at page, retaining the delivered window and latest reading anchor[39m[32m 103[2mms[22m[39m
+[31m   [31m×[31m aborts only its pending navigation at paused, retaining the delivered window and latest reading anchor[39m[32m 52[2mms[22m[39m
+[31m   [31m×[31m cancels a queued closed-panel navigation without replaying it when the panel opens[39m[32m 54[2mms[22m[39m
+   [2m[90m↓[39m[22m a navigation abort leaves a sibling reader in the shared Query cache running
+   [2m[90m↓[39m[22m old and completed navigation signals cannot cancel a successor or later live-follow read
+   [2m[90m↓[39m[22m uses canonical return landmarks for independent act windows with steady and freezes completed Act I on live head growth
+   [2m[90m↓[39m[22m uses canonical return landmarks for independent act windows with in-flight-transition and freezes completed Act I on live head growth
+   [2m[90m↓[39m[22m uses canonical return landmarks for independent act windows with in-flight-head and freezes completed Act I on live head growth
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/continuous-succession-history.test.ts[2m > [22maborts only its pending navigation at anchor, retaining the delivered window and latest reading anchor
+[41m[1m FAIL [22m[49m tests/continuous-succession-history.test.ts[2m > [22maborts only its pending navigation at page, retaining the delivered window and latest reading anchor
+[31m[1mAssertionError[22m: expected { …(13) } to match object { status: 'ready', after: +0, …(1) }
+(18 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "after": 0,[22m
+[2m    "delivered": 128,[22m
+[32m-   "status": "ready",[39m
+[31m+   "status": "loading",[39m
+[2m  }[22m
+
+[36m [2m❯[22m tests/continuous-succession-history.test.ts:[2m373:35[22m[39m
+    [90m371|[39m     reading[33m.[39m[34mrememberAnchor[39m(anchor)[33m;[39m
+    [90m372|[39m     navigation[33m.[39m[34mabort[39m()[33m;[39m
+    [90m373|[39m     expect(reading.getSnapshot()).toMatchObject({ status: 'ready', aft…
+    [90m   |[39m                                   [31m^[39m
+    [90m374|[39m     [34mexpect[39m(reading[33m.[39m[34mgetSnapshot[39m()[33m.[39mrows)[33m.[39m[34mtoBe[39m(before[33m.[39mrows)[33m;[39m
+    [90m375|[39m     [34mexpect[39m(reading[33m.[39m[34mgetAnchor[39m())[33m.[39m[34mtoBe[39m(anchor)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/continuous-succession-history.test.ts[2m > [22maborts only its pending navigation at paused, retaining the delivered window and latest reading anchor
+[31m[1mAssertionError[22m: expected { …(13) } to match object { status: 'ready', after: +0, …(1) }
+(18 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "after": 0,[22m
+[2m    "delivered": 128,[22m
+[32m-   "status": "ready",[39m
+[31m+   "status": "paused",[39m
+[2m  }[22m
+
+[36m [2m❯[22m tests/continuous-succession-history.test.ts:[2m373:35[22m[39m
+    [90m371|[39m     reading[33m.[39m[34mrememberAnchor[39m(anchor)[33m;[39m
+    [90m372|[39m     navigation[33m.[39m[34mabort[39m()[33m;[39m
+    [90m373|[39m     expect(reading.getSnapshot()).toMatchObject({ status: 'ready', aft…
+    [90m   |[39m                                   [31m^[39m
+    [90m374|[39m     [34mexpect[39m(reading[33m.[39m[34mgetSnapshot[39m()[33m.[39mrows)[33m.[39m[34mtoBe[39m(before[33m.[39mrows)[33m;[39m
+    [90m375|[39m     [34mexpect[39m(reading[33m.[39m[34mgetAnchor[39m())[33m.[39m[34mtoBe[39m(anchor)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/continuous-succession-history.test.ts[2m > [22mcancels a queued closed-panel navigation without replaying it when the panel opens
+[31m[1mAssertionError[22m: expected 'loading' to be 'ready' // Object.is equality[39m
+
+Expected: [32m"ready"[39m
+Received: [31m"loading"[39m
+
+[36m [2m❯[22m tests/continuous-succession-history.test.ts:[2m399:40[22m[39m
+    [90m397|[39m   reading[33m.[39m[34msetEnabled[39m([35mtrue[39m)[33m;[39m
+    [90m398|[39m   [34mexpect[39m(reading[33m.[39m[34mgetSnapshot[39m()[33m.[39mrows)[33m.[39m[34mtoBe[39m(before[33m.[39mrows)[33m;[39m
+    [90m399|[39m   [34mexpect[39m(reading[33m.[39m[34mgetSnapshot[39m()[33m.[39mstatus)[33m.[39m[34mtoBe[39m([32m'ready'[39m)[33m;[39m
+    [90m   |[39m                                        [31m^[39m
+    [90m400|[39m   [34mexpect[39m(state[33m.[39manchors)[33m.[39m[34mtoBe[39m([34m0[39m)[33m;[39m
+    [90m401|[39m })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[33m16 skipped[39m[90m (20)[39m
+[2m   Start at [22m 01:22:40
+[2m   Duration [22m 724ms[2m (transform 175ms, setup 0ms, import 328ms, tests 326ms, environment 0ms)[22m

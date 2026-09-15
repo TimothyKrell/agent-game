@@ -1,0 +1,30 @@
+{
+  "base": "00b3ad2429326f8a73c8be10915eff7beae6f61d",
+  "files": [
+    {
+      "path": "/tmp/opencode/TIM27-playable-ci-correction-review/README.md",
+      "bytes": 8355,
+      "sha256": "a93eb0e0346b83bce0c3c27b2dad6e736af1ffc2764d840bdfd6bfa5e4cabf6f"
+    },
+    {
+      "path": "/tmp/opencode/TIM27-playable-ci-correction-review/counterprobe.test.ts",
+      "bytes": 3526,
+      "sha256": "f52ed9f668759643942000a65ee8a442aab47fe71adc8dbc73c3ca8d8d4c6df4"
+    },
+    {
+      "path": "/tmp/opencode/TIM27-playable-ci-correction-review/counterprobe-run/evidence/case-trojk5/denied-then-admitted-control.json",
+      "bytes": 66751,
+      "sha256": "9accf4d442a55c5dc870423deca57acb907b26e2b0100a5bec377914a0475fc9"
+    },
+    {
+      "path": ".tim27-playable/worker.ts",
+      "bytes": 13344,
+      "sha256": "3c779e0e347b501b118dfade9358d15f78605714d2a04cfabe434e0c6a5e542e"
+    },
+    {
+      "path": ".tim27-playable/admission-ordering.test.ts",
+      "bytes": 3249,
+      "sha256": "6c4add1068814b854309d79e84e5acfc64c32a6a542346b50879207d6fbe26ff"
+    }
+  ]
+}

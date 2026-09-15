@@ -9,20 +9,31 @@ export function gameId(value = 'secret-overlord') {
   return value;
 }
 
-export function validateIdentity(value) {
+export function validateIdentity(value, artifacts) {
   const id = gameId(value.gameId);
 
   if (value.protocolVersion === '2' && id !== 'succession')
     throw new Error('Protocol 2 requires an explicit Succession identity.');
 
-  if (id === 'succession' && (value.protocolVersion !== '2' || value.rulesVersion !== 'succession-1'))
+  if (
+    artifacts &&
+    (id !== artifacts.gameId ||
+      value.protocolVersion !== artifacts.protocolVersion ||
+      value.rulesVersion !== artifacts.rulesVersion)
+  )
+    throw new Error('Arena identity differs from this participation’s pinned protocol/rules.');
+
+  if (
+    id === 'succession' &&
+    (value.protocolVersion !== '2' || value.rulesVersion !== (artifacts?.rulesVersion ?? 'succession-1'))
+  )
     throw new Error('Unsupported Succession protocol/rules. Upgrade the CLI.');
 
   return id;
 }
 
-export function validateCurrent(value) {
-  validateIdentity(value);
+export function validateCurrent(value, artifacts) {
+  validateIdentity(value, artifacts);
 
   if (!['active', 'finished', 'interrupted'].includes(value.status))
     throw new Error('Unsupported server lifecycle.');

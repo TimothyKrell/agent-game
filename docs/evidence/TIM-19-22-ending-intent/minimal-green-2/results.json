@@ -1,0 +1,211 @@
+{
+  "config": {
+    "argv": [
+      "/home/timothykrell/.vite-plus/js_runtime/node/24.21.0/bin/node",
+      "/tmp/opencode/agent-game-dossier/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      ".dossier/ending.config.ts"
+    ],
+    "configFile": "/tmp/opencode/agent-game-dossier/.dossier/ending.config.ts",
+    "rootDir": "/tmp/opencode/agent-game-dossier/.dossier",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-19-22-ending-intent/minimal-green-2",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/opencode/agent-game-dossier/.dossier",
+        "testIgnore": [],
+        "testMatch": [
+          "ending.spec.mjs"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../docs/evidence/TIM-19-22-ending-intent/minimal-green-2/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "ending.spec.mjs",
+      "file": "ending.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pending Final move respects later portrait ownership",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2681,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m7381\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m7381\u001b[39m\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:140:42",
+                    "location": {
+                      "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                      "column": 42,
+                      "line": 140
+                    },
+                    "snippet": "  138 |     await info.attach('ownership', { body: JSON.stringify({ before, after, requests: control.requests }, null, 2), contentType: 'application/json' });\n  139 |     expect(after.active).toEqual(before.active);\n> 140 |     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);\n      |                                          ^\n  141 |     expect(after.modalFocus).toBe(before.modalFocus);\n  142 |     expect(control.faults).toEqual([]);\n  143 |   });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                        "column": 42,
+                        "line": 140
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m7381\u001b[39m\n\n  138 |     await info.attach('ownership', { body: JSON.stringify({ before, after, requests: control.requests }, null, 2), contentType: 'application/json' });\n  139 |     expect(after.active).toEqual(before.active);\n> 140 |     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);\n      |                                          ^\n  141 |     expect(after.modalFocus).toBe(before.modalFocus);\n  142 |     expect(control.faults).toEqual([]);\n  143 |   });\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:140:42"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:29:43.344Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "scroll-trace",
+                      "contentType": "application/json",
+                      "body": "WwogIHsKICAgICJhcmdzIjogWwogICAgICB7CiAgICAgICAgInRvcCI6IDAsCiAgICAgICAgImJlaGF2aW9yIjogImluc3RhbnQiCiAgICAgIH0KICAgIF0sCiAgICAic3RhY2siOiAiRXJyb3JcbiAgICBhdCB3aW5kb3cuPGNvbXB1dGVkPiAoPGFub255bW91cz46OToxOClcbiAgICBhdCBtb3ZlIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvc3JjL2NsaWVudC9zdWNjZXNzaW9uLXRpbWVsaW5lLnRzeDo0MDoxNSlcbiAgICBhdCByZXN0b3JlIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvc3JjL2NsaWVudC9zdWNjZXNzaW9uLXRpbWVsaW5lLnRzeDoxMTk6MTcpXG4gICAgYXQgUmVzaXplT2JzZXJ2ZXIuPGFub255bW91cz4gKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjIxMDo0KSIsCiAgICAieSI6IDU2MwogIH0sCiAgewogICAgImFyZ3MiOiBbCiAgICAgIHsKICAgICAgICAidG9wIjogNzAzNy44NDM3NSwKICAgICAgICAiYmVoYXZpb3IiOiAiaW5zdGFudCIKICAgICAgfQogICAgXSwKICAgICJzdGFjayI6ICJFcnJvclxuICAgIGF0IHdpbmRvdy48Y29tcHV0ZWQ+ICg8YW5vbnltb3VzPjo5OjE4KVxuICAgIGF0IG1vdmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjQwOjE1KVxuICAgIGF0IE9iamVjdC5yZXN0b3JlV2luZG93IFthcyByZXN0b3JlXSAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL3NyYy9jbGllbnQvc3VjY2Vzc2lvbi10aW1lbGluZS50c3g6OTM6MylcbiAgICBhdCBXaW5kb3dDb21taXQuY29tcG9uZW50RGlkVXBkYXRlIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvc3JjL2NsaWVudC9zdWNjZXNzaW9uLXRpbWVsaW5lLnRzeDoxMjoyOClcbiAgICBhdCBPYmplY3QucmVhY3Rfc3RhY2tfYm90dG9tX2ZyYW1lIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvQGZzL3RtcC9vcGVuY29kZS9kb3NzaWVyLXZpdGUtY2FjaGUvZGVwcy9yZWFjdC1kb21fY2xpZW50LmpzP3Y9ZThiNmYyOTg6MTI5MjQ6MTQpXG4gICAgYXQgcnVuV2l0aEZpYmVySW5ERVYgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9AZnMvdG1wL29wZW5jb2RlL2Rvc3NpZXItdml0ZS1jYWNoZS9kZXBzL3JlYWN0LWRvbV9jbGllbnQuanM/dj1lOGI2ZjI5ODo4NTI6NjYpXG4gICAgYXQgY29tbWl0TGF5b3V0RWZmZWN0T25GaWJlciAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL0Bmcy90bXAvb3BlbmNvZGUvZG9zc2llci12aXRlLWNhY2hlL2RlcHMvcmVhY3QtZG9tX2NsaWVudC5qcz92PWU4YjZmMjk4OjcwMDY6NTgpXG4gICAgYXQgcmVjdXJzaXZlbHlUcmF2ZXJzZUxheW91dEVmZmVjdHMgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9AZnMvdG1wL29wZW5jb2RlL2Rvc3NpZXItdml0ZS1jYWNoZS9kZXBzL3JlYWN0LWRvbV9jbGllbnQuanM/dj1lOGI2ZjI5ODo3NTE3OjEwMilcbiAgICBhdCBjb21taXRMYXlvdXRFZmZlY3RPbkZpYmVyIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvQGZzL3RtcC9vcGVuY29kZS9kb3NzaWVyLXZpdGUtY2FjaGUvZGVwcy9yZWFjdC1kb21fY2xpZW50LmpzP3Y9ZThiNmYyOTg6Njk5Njo2KVxuICAgIGF0IHJlY3Vyc2l2ZWx5VHJhdmVyc2VMYXlvdXRFZmZlY3RzIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvQGZzL3RtcC9vcGVuY29kZS9kb3NzaWVyLXZpdGUtY2FjaGUvZGVwcy9yZWFjdC1kb21fY2xpZW50LmpzP3Y9ZThiNmYyOTg6NzUxNzoxMDIpIiwKICAgICJ5IjogMAogIH0sCiAgewogICAgImFyZ3MiOiBbCiAgICAgIHsKICAgICAgICAidG9wIjogMCwKICAgICAgICAiYmVoYXZpb3IiOiAiaW5zdGFudCIKICAgICAgfQogICAgXSwKICAgICJzdGFjayI6ICJFcnJvclxuICAgIGF0IHdpbmRvdy48Y29tcHV0ZWQ+ICg8YW5vbnltb3VzPjo5OjE4KVxuICAgIGF0IG1vdmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjQwOjE1KVxuICAgIGF0IHJlc3RvcmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjExOToxNylcbiAgICBhdCBSZXNpemVPYnNlcnZlci48YW5vbnltb3VzPiAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL3NyYy9jbGllbnQvc3VjY2Vzc2lvbi10aW1lbGluZS50c3g6MjEwOjQpIiwKICAgICJ5IjogNzAzOAogIH0sCiAgewogICAgImFyZ3MiOiBbCiAgICAgIHsKICAgICAgICAidG9wIjogMCwKICAgICAgICAiYmVoYXZpb3IiOiAiaW5zdGFudCIKICAgICAgfQogICAgXSwKICAgICJzdGFjayI6ICJFcnJvclxuICAgIGF0IHdpbmRvdy48Y29tcHV0ZWQ+ICg8YW5vbnltb3VzPjo5OjE4KVxuICAgIGF0IG1vdmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjQwOjE1KVxuICAgIGF0IHJlc3RvcmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjExOToxNylcbiAgICBhdCBSZXNpemVPYnNlcnZlci48YW5vbnltb3VzPiAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL3NyYy9jbGllbnQvc3VjY2Vzc2lvbi10aW1lbGluZS50c3g6MjEwOjQpIiwKICAgICJ5IjogMAogIH0sCiAgewogICAgImFyZ3MiOiBbCiAgICAgIHsKICAgICAgICAidG9wIjogNzM4MS4zNTkzNzUsCiAgICAgICAgImJlaGF2aW9yIjogImluc3RhbnQiCiAgICAgIH0KICAgIF0sCiAgICAic3RhY2siOiAiRXJyb3JcbiAgICBhdCB3aW5kb3cuPGNvbXB1dGVkPiAoPGFub255bW91cz46OToxOClcbiAgICBhdCBtb3ZlIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvc3JjL2NsaWVudC9zdWNjZXNzaW9uLXRpbWVsaW5lLnRzeDo0MDoxNSlcbiAgICBhdCBPYmplY3QucmVzdG9yZVdpbmRvdyBbYXMgcmVzdG9yZV0gKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjkzOjMpXG4gICAgYXQgV2luZG93Q29tbWl0LmNvbXBvbmVudERpZFVwZGF0ZSAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL3NyYy9jbGllbnQvc3VjY2Vzc2lvbi10aW1lbGluZS50c3g6MTI6MjgpXG4gICAgYXQgT2JqZWN0LnJlYWN0X3N0YWNrX2JvdHRvbV9mcmFtZSAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL0Bmcy90bXAvb3BlbmNvZGUvZG9zc2llci12aXRlLWNhY2hlL2RlcHMvcmVhY3QtZG9tX2NsaWVudC5qcz92PWU4YjZmMjk4OjEyOTI0OjE0KVxuICAgIGF0IHJ1bldpdGhGaWJlckluREVWIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvQGZzL3RtcC9vcGVuY29kZS9kb3NzaWVyLXZpdGUtY2FjaGUvZGVwcy9yZWFjdC1kb21fY2xpZW50LmpzP3Y9ZThiNmYyOTg6ODUyOjY2KVxuICAgIGF0IGNvbW1pdExheW91dEVmZmVjdE9uRmliZXIgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9AZnMvdG1wL29wZW5jb2RlL2Rvc3NpZXItdml0ZS1jYWNoZS9kZXBzL3JlYWN0LWRvbV9jbGllbnQuanM/dj1lOGI2ZjI5ODo3MDA2OjU4KVxuICAgIGF0IHJlY3Vyc2l2ZWx5VHJhdmVyc2VMYXlvdXRFZmZlY3RzIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvQGZzL3RtcC9vcGVuY29kZS9kb3NzaWVyLXZpdGUtY2FjaGUvZGVwcy9yZWFjdC1kb21fY2xpZW50LmpzP3Y9ZThiNmYyOTg6NzUxNzoxMDIpXG4gICAgYXQgY29tbWl0TGF5b3V0RWZmZWN0T25GaWJlciAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL0Bmcy90bXAvb3BlbmNvZGUvZG9zc2llci12aXRlLWNhY2hlL2RlcHMvcmVhY3QtZG9tX2NsaWVudC5qcz92PWU4YjZmMjk4OjY5OTY6NilcbiAgICBhdCByZWN1cnNpdmVseVRyYXZlcnNlTGF5b3V0RWZmZWN0cyAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL0Bmcy90bXAvb3BlbmNvZGUvZG9zc2llci12aXRlLWNhY2hlL2RlcHMvcmVhY3QtZG9tX2NsaWVudC5qcz92PWU4YjZmMjk4Ojc1MTc6MTAyKSIsCiAgICAieSI6IDAKICB9LAogIHsKICAgICJhcmdzIjogWwogICAgICB7CiAgICAgICAgInRvcCI6IDAsCiAgICAgICAgImJlaGF2aW9yIjogImluc3RhbnQiCiAgICAgIH0KICAgIF0sCiAgICAic3RhY2siOiAiRXJyb3JcbiAgICBhdCB3aW5kb3cuPGNvbXB1dGVkPiAoPGFub255bW91cz46OToxOClcbiAgICBhdCBtb3ZlIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvc3JjL2NsaWVudC9zdWNjZXNzaW9uLXRpbWVsaW5lLnRzeDo0MDoxNSlcbiAgICBhdCByZXN0b3JlIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvc3JjL2NsaWVudC9zdWNjZXNzaW9uLXRpbWVsaW5lLnRzeDoxMTk6MTcpXG4gICAgYXQgUmVzaXplT2JzZXJ2ZXIuPGFub255bW91cz4gKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjIxMDo0KSIsCiAgICAieSI6IDczODEKICB9Cl0="
+                    },
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEKICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogNzM4MSwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQlVUVE9OIiwKICAgICAgImV2ZW50IjogbnVsbCwKICAgICAgInRleHQiOiAiIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogdHJ1ZSwKICAgICJkaWFsb2dzIjogMQogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTExNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNDQ2IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTEwNTAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEwNTAmdGhyb3VnaD0xMTc4JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMDgyJnRocm91Z2g9MTE3OCZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTExNzgmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMTc4JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IgogIF0KfQ=="
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-19-22-ending-intent/minimal-green-2/ending-pending-Final-move-respects-later-portrait-ownership/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-19-22-ending-intent/minimal-green-2/ending-pending-Final-move-respects-later-portrait-ownership/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                    "column": 42,
+                    "line": 140
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-c920bfa69ff2896e0bc0",
+          "file": "ending.spec.mjs",
+          "line": 118,
+          "column": 3
+        },
+        {
+          "title": "pending Final move respects later chapter ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2568,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:29:47.711Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "scroll-trace",
+                      "contentType": "application/json",
+                      "body": "WwogIHsKICAgICJhcmdzIjogWwogICAgICB7CiAgICAgICAgInRvcCI6IDAsCiAgICAgICAgImJlaGF2aW9yIjogImluc3RhbnQiCiAgICAgIH0KICAgIF0sCiAgICAic3RhY2siOiAiRXJyb3JcbiAgICBhdCB3aW5kb3cuPGNvbXB1dGVkPiAoPGFub255bW91cz46OToxOClcbiAgICBhdCBtb3ZlIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvc3JjL2NsaWVudC9zdWNjZXNzaW9uLXRpbWVsaW5lLnRzeDo0MDoxNSlcbiAgICBhdCByZXN0b3JlIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvc3JjL2NsaWVudC9zdWNjZXNzaW9uLXRpbWVsaW5lLnRzeDoxMTk6MTcpXG4gICAgYXQgUmVzaXplT2JzZXJ2ZXIuPGFub255bW91cz4gKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjIxMDo0KSIsCiAgICAieSI6IDU2NwogIH0sCiAgewogICAgImFyZ3MiOiBbCiAgICAgIHsKICAgICAgICAidG9wIjogNzAzNy44NDM3NSwKICAgICAgICAiYmVoYXZpb3IiOiAiaW5zdGFudCIKICAgICAgfQogICAgXSwKICAgICJzdGFjayI6ICJFcnJvclxuICAgIGF0IHdpbmRvdy48Y29tcHV0ZWQ+ICg8YW5vbnltb3VzPjo5OjE4KVxuICAgIGF0IG1vdmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjQwOjE1KVxuICAgIGF0IE9iamVjdC5yZXN0b3JlV2luZG93IFthcyByZXN0b3JlXSAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL3NyYy9jbGllbnQvc3VjY2Vzc2lvbi10aW1lbGluZS50c3g6OTM6MylcbiAgICBhdCBXaW5kb3dDb21taXQuY29tcG9uZW50RGlkVXBkYXRlIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvc3JjL2NsaWVudC9zdWNjZXNzaW9uLXRpbWVsaW5lLnRzeDoxMjoyOClcbiAgICBhdCBPYmplY3QucmVhY3Rfc3RhY2tfYm90dG9tX2ZyYW1lIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvQGZzL3RtcC9vcGVuY29kZS9kb3NzaWVyLXZpdGUtY2FjaGUvZGVwcy9yZWFjdC1kb21fY2xpZW50LmpzP3Y9ZThiNmYyOTg6MTI5MjQ6MTQpXG4gICAgYXQgcnVuV2l0aEZpYmVySW5ERVYgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9AZnMvdG1wL29wZW5jb2RlL2Rvc3NpZXItdml0ZS1jYWNoZS9kZXBzL3JlYWN0LWRvbV9jbGllbnQuanM/dj1lOGI2ZjI5ODo4NTI6NjYpXG4gICAgYXQgY29tbWl0TGF5b3V0RWZmZWN0T25GaWJlciAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL0Bmcy90bXAvb3BlbmNvZGUvZG9zc2llci12aXRlLWNhY2hlL2RlcHMvcmVhY3QtZG9tX2NsaWVudC5qcz92PWU4YjZmMjk4OjcwMDY6NTgpXG4gICAgYXQgcmVjdXJzaXZlbHlUcmF2ZXJzZUxheW91dEVmZmVjdHMgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9AZnMvdG1wL29wZW5jb2RlL2Rvc3NpZXItdml0ZS1jYWNoZS9kZXBzL3JlYWN0LWRvbV9jbGllbnQuanM/dj1lOGI2ZjI5ODo3NTE3OjEwMilcbiAgICBhdCBjb21taXRMYXlvdXRFZmZlY3RPbkZpYmVyIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvQGZzL3RtcC9vcGVuY29kZS9kb3NzaWVyLXZpdGUtY2FjaGUvZGVwcy9yZWFjdC1kb21fY2xpZW50LmpzP3Y9ZThiNmYyOTg6Njk5Njo2KVxuICAgIGF0IHJlY3Vyc2l2ZWx5VHJhdmVyc2VMYXlvdXRFZmZlY3RzIChodHRwOi8vMTI3LjAuMC4xOjYyOTEvQGZzL3RtcC9vcGVuY29kZS9kb3NzaWVyLXZpdGUtY2FjaGUvZGVwcy9yZWFjdC1kb21fY2xpZW50LmpzP3Y9ZThiNmYyOTg6NzUxNzoxMDIpIiwKICAgICJ5IjogMAogIH0sCiAgewogICAgImFyZ3MiOiBbCiAgICAgIHsKICAgICAgICAidG9wIjogMCwKICAgICAgICAiYmVoYXZpb3IiOiAiaW5zdGFudCIKICAgICAgfQogICAgXSwKICAgICJzdGFjayI6ICJFcnJvclxuICAgIGF0IHdpbmRvdy48Y29tcHV0ZWQ+ICg8YW5vbnltb3VzPjo5OjE4KVxuICAgIGF0IG1vdmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjQwOjE1KVxuICAgIGF0IHJlc3RvcmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjExOToxNylcbiAgICBhdCBSZXNpemVPYnNlcnZlci48YW5vbnltb3VzPiAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL3NyYy9jbGllbnQvc3VjY2Vzc2lvbi10aW1lbGluZS50c3g6MjEwOjQpIiwKICAgICJ5IjogNzAzOAogIH0sCiAgewogICAgImFyZ3MiOiBbCiAgICAgIHsKICAgICAgICAidG9wIjogMCwKICAgICAgICAiYmVoYXZpb3IiOiAiaW5zdGFudCIKICAgICAgfQogICAgXSwKICAgICJzdGFjayI6ICJFcnJvclxuICAgIGF0IHdpbmRvdy48Y29tcHV0ZWQ+ICg8YW5vbnltb3VzPjo5OjE4KVxuICAgIGF0IG1vdmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjQwOjE1KVxuICAgIGF0IHJlc3RvcmUgKGh0dHA6Ly8xMjcuMC4wLjE6NjI5MS9zcmMvY2xpZW50L3N1Y2Nlc3Npb24tdGltZWxpbmUudHN4OjExOToxNylcbiAgICBhdCBSZXNpemVPYnNlcnZlci48YW5vbnltb3VzPiAoaHR0cDovLzEyNy4wLjAuMTo2MjkxL3NyYy9jbGllbnQvc3VjY2Vzc2lvbi10aW1lbGluZS50c3g6MjEwOjQpIiwKICAgICJ5IjogMAogIH0KXQ=="
+                    },
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkFSVElDTEUiLAogICAgICAiZXZlbnQiOiAic3RvcnktMjYwOTkxODYzNC0zNiIsCiAgICAgICJ0ZXh0IjogIkFjdCBJIMK3IEVsZWN0aW9uIDEwMDowMDowMSBVVENBZ2VudCA0QWdlbnQgNGV4ZWN1dGVkQWdlbnQgNyBleGVjdXRlcyBBZ2VudCA0LkNvb3JkaW5hdG9yOiBBZ2VudCA3QWdlIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAKICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMCwKICAgICJhY3RpdmUiOiB7CiAgICAgICJ0YWciOiAiQVJUSUNMRSIsCiAgICAgICJldmVudCI6ICJzdG9yeS0yNjA5OTE4NjM0LTM2IiwKICAgICAgInRleHQiOiAiQWN0IEkgwrcgRWxlY3Rpb24gMTAwOjAwOjAxIFVUQ0FnZW50IDRBZ2VudCA0ZXhlY3V0ZWRBZ2VudCA3IGV4ZWN1dGVzIEFnZW50IDQuQ29vcmRpbmF0b3I6IEFnZW50IDdBZ2UiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMAogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTExNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3RvcnktYW5jaG9yP2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmV2ZW50S2V5PXN0b3J5LTIyNjM3MjY5Ny0xNDQ2IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvcm91bmRzP2Vwb2NoPXJvdXRlLWZpbmlzaGVkIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvY2hlY2twb2ludD9lcG9jaD1yb3V0ZS1maW5pc2hlZCZ0aHJvdWdoPTAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTAmdGhyb3VnaD0yJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IgogIF0KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-72855e29549db6e232b6",
+          "file": "ending.spec.mjs",
+          "line": 118,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-15T04:29:42.954Z",
+    "duration": 8407.842,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

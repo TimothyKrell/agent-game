@@ -1,0 +1,128 @@
+{
+  "checkedAt": "2026-09-15T01:50:22.138Z",
+  "checks": [
+    {
+      "name": "desktop: values integrated in winner rule controls",
+      "passed": true
+    },
+    {
+      "name": "desktop: enlarged portrait loads and fits",
+      "passed": true
+    },
+    {
+      "name": "desktop: portrait keyboard focus contained",
+      "passed": true
+    },
+    {
+      "name": "desktop: portrait closes with reading position and focus intact",
+      "passed": true
+    },
+    {
+      "name": "desktop: Exchange states chooser, count and privacy",
+      "passed": true
+    },
+    {
+      "name": "desktop: Exchange public phase exposes no private cards",
+      "passed": true
+    },
+    {
+      "name": "desktop: discussion identifies turn ownership without an actor heading",
+      "passed": true
+    },
+    {
+      "name": "desktop: same picture follows speaker into state panel",
+      "passed": true
+    },
+    {
+      "name": "desktop: consecutive discussion rows are close and divider-free",
+      "passed": true
+    },
+    {
+      "name": "desktop: inline portraits stay square",
+      "passed": true
+    },
+    {
+      "name": "desktop: missing-picture fallback has explicit explanation",
+      "passed": true
+    },
+    {
+      "name": "desktop: close button restores fallback trigger",
+      "passed": true
+    },
+    {
+      "name": "desktop: revised examples contained",
+      "passed": true
+    },
+    {
+      "name": "narrow: values integrated in winner rule controls",
+      "passed": true
+    },
+    {
+      "name": "narrow: enlarged portrait loads and fits",
+      "passed": true
+    },
+    {
+      "name": "narrow: portrait keyboard focus contained",
+      "passed": true
+    },
+    {
+      "name": "narrow: portrait closes with reading position and focus intact",
+      "passed": true
+    },
+    {
+      "name": "narrow: Exchange states chooser, count and privacy",
+      "passed": true
+    },
+    {
+      "name": "narrow: Exchange public phase exposes no private cards",
+      "passed": true
+    },
+    {
+      "name": "narrow: discussion identifies turn ownership without an actor heading",
+      "passed": true
+    },
+    {
+      "name": "narrow: same picture follows speaker into state panel",
+      "passed": true
+    },
+    {
+      "name": "narrow: consecutive discussion rows are close and divider-free",
+      "passed": true
+    },
+    {
+      "name": "narrow: inline portraits stay square",
+      "passed": true
+    },
+    {
+      "name": "narrow: missing-picture fallback has explicit explanation",
+      "passed": true
+    },
+    {
+      "name": "narrow: close button restores fallback trigger",
+      "passed": true
+    },
+    {
+      "name": "narrow: revised examples contained",
+      "passed": true
+    },
+    {
+      "name": "No application exceptions in new interactions",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "captures": [
+    "desktop-portrait.png",
+    "desktop-exchange-explained.png",
+    "desktop-discussion-label.png",
+    "desktop-thief-icon.png",
+    "desktop-challenge-icon.png",
+    "desktop-portrait-fallback.png",
+    "narrow-portrait.png",
+    "narrow-exchange-explained.png",
+    "narrow-discussion-label.png",
+    "narrow-thief-icon.png",
+    "narrow-challenge-icon.png",
+    "narrow-portrait-fallback.png"
+  ]
+}

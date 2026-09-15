@@ -1,0 +1,171 @@
+{
+  "held": [
+    {
+      "phaseId": "5fc49f09-a7ab-4448-a124-e60acce88bde",
+      "type": "vote"
+    }
+  ],
+  "transition": {
+    "advanced": false,
+    "reason": "native-http-pending"
+  },
+  "before": {
+    "seat": 1,
+    "agentId": "agent_d99c6306-8d34-4390-92cd-6b1685d5d405",
+    "alive": true,
+    "forfeited": false,
+    "generation": 0
+  },
+  "after": {
+    "seat": 1,
+    "agentId": "agent_d99c6306-8d34-4390-92cd-6b1685d5d405",
+    "alive": true,
+    "forfeited": false,
+    "generation": 0
+  },
+  "failures": [],
+  "commands": [
+    {
+      "at": 1789472478464,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "dfd4ac22-7a1e-4cf3-869b-777c3af34ef5",
+      "required": false,
+      "cursor": 3
+    },
+    {
+      "at": 1789472478543,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "dfd4ac22-7a1e-4cf3-869b-777c3af34ef5",
+      "required": false,
+      "cursor": 3
+    },
+    {
+      "at": 1789472478631,
+      "type": "cli",
+      "command": [
+        "say",
+        "--text",
+        "Local native fixture: delivered context read; required choices first."
+      ],
+      "required": false,
+      "accepted": true
+    },
+    {
+      "at": 1789472479325,
+      "type": "cli",
+      "command": [
+        "wait",
+        "--timeout",
+        "1"
+      ],
+      "status": "active",
+      "phase": "55549e2a-62f8-49b4-8617-6ffc5fdb8e86",
+      "required": false,
+      "cursor": 5
+    },
+    {
+      "at": 1789472479393,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "55549e2a-62f8-49b4-8617-6ffc5fdb8e86",
+      "required": false,
+      "cursor": 5
+    },
+    {
+      "at": 1789472479614,
+      "type": "cli",
+      "command": [
+        "wait",
+        "--timeout",
+        "1"
+      ],
+      "status": "active",
+      "phase": "da0ce974-8c19-4cda-94f7-d6b626a4dc14",
+      "required": false,
+      "cursor": 7
+    },
+    {
+      "at": 1789472479689,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "da0ce974-8c19-4cda-94f7-d6b626a4dc14",
+      "required": false,
+      "cursor": 7
+    },
+    {
+      "at": 1789472480732,
+      "type": "cli",
+      "command": [
+        "wait",
+        "--timeout",
+        "1"
+      ],
+      "status": "active",
+      "phase": "da0ce974-8c19-4cda-94f7-d6b626a4dc14",
+      "required": false,
+      "cursor": 7
+    },
+    {
+      "at": 1789472480807,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "da0ce974-8c19-4cda-94f7-d6b626a4dc14",
+      "required": false,
+      "cursor": 7
+    },
+    {
+      "at": 1789472480968,
+      "type": "cli",
+      "command": [
+        "wait",
+        "--timeout",
+        "1"
+      ],
+      "status": "active",
+      "phase": "5fc49f09-a7ab-4448-a124-e60acce88bde",
+      "decision": "5fc49f09-a7ab-4448-a124-e60acce88bde:1:0",
+      "required": true,
+      "cursor": 8
+    },
+    {
+      "at": 1789472481037,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "5fc49f09-a7ab-4448-a124-e60acce88bde",
+      "decision": "5fc49f09-a7ab-4448-a124-e60acce88bde:1:0",
+      "required": true,
+      "cursor": 8
+    },
+    {
+      "at": 1789472481305,
+      "type": "cli",
+      "command": [
+        "act",
+        "--choice",
+        "0"
+      ],
+      "required": false,
+      "accepted": true
+    }
+  ]
+}

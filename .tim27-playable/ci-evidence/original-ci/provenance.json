@@ -1,0 +1,22 @@
+[
+  {
+    "source": "/tmp/opencode/TIM-27-pr10-ci/failed.log",
+    "bytes": 808276,
+    "sha256": "e9f70599f0912d063f193f45ef5e5230fa183ef5f45555c0eadcb7b19ee22eaf"
+  },
+  {
+    "source": "/tmp/opencode/TIM-27-pr10-ci/run.json",
+    "bytes": 14819,
+    "sha256": "62b1158282adf30760ab1806dec68879a24b8d980657cb9ca92dc1937c72abaa"
+  },
+  {
+    "source": "/tmp/opencode/TIM-27-pr10-ci/artifacts/unit-3-34957418324-1/home/runner/work/agent-game/agent-game/unit-results.json",
+    "bytes": 119410,
+    "sha256": "a7484d67e46ce3fdf477ac4e7b41dda7c3aaaae5b7e6a2bb5f278cb8fb486132"
+  },
+  {
+    "source": "/tmp/opencode/TIM-27-pr10-ci/artifacts/unit-3-34957418324-1/home/runner/work/agent-game/agent-game/unit.log",
+    "bytes": 196488,
+    "sha256": "d03196e9405b466df6fd6a9d097120bcafe584d602ea89b60495ce54b46777bd"
+  }
+]
