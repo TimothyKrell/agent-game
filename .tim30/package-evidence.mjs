@@ -15,6 +15,8 @@ const files = stdout.trim().split('\n');
 
 assert(files.includes('package/cli/picture.mjs'));
 
+assert(files.includes('package/cli/durable-json.mjs'));
+
 assert(files.includes('package/skills/agent-game/SKILL.md'));
 
 assert(

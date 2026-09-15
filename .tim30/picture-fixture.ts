@@ -10,6 +10,8 @@ export const png = Buffer.from(
   'base64',
 );
 
+export const picturePort = Number(process.env.TIM30_PORT_BASE ?? 6301);
+
 interface PictureAttempt {
   method: string;
   revision: string;
@@ -35,12 +37,16 @@ interface FixtureState {
   joins: number;
   pairs: number;
   queueDuringRead: boolean;
+  queueReads: number;
+  queueFault: string | null;
+  endAuthorityDuringRead: string | null;
+  beforePictureRead?: () => Promise<void>;
   requests: PictureAttempt[];
   view: Observation | Observation2 | null;
 }
 
 // Local contract fixture, not a hosted arena or model invocation. TIM-28 owns real Worker/R2 coverage.
-export async function pictureFixture(port = 6301) {
+export async function pictureFixture(port = picturePort) {
   const agentId = 'agent_tim30';
   const path = `/api/agents/${agentId}/picture`;
   const origin = `http://127.0.0.1:${port}`;
@@ -61,6 +67,9 @@ export async function pictureFixture(port = 6301) {
     joins: 0,
     pairs: 0,
     queueDuringRead: false,
+    queueReads: 0,
+    queueFault: null,
+    endAuthorityDuringRead: null,
     requests: [],
     view: null,
   };
@@ -118,6 +127,15 @@ export async function pictureFixture(port = 6301) {
     }
 
     if (request.url === '/api/queue') {
+      state.queueReads++;
+
+      if (state.queueFault) {
+        response.statusCode = 401;
+        json({ error: { code: state.queueFault, status: 401, message: 'Connection authority ended.' } });
+
+        return;
+      }
+
       if (request.method === 'POST') {
         state.joins++;
         state.queue = { status: 'queued' };
@@ -149,9 +167,14 @@ export async function pictureFixture(port = 6301) {
 
     if (request.method === 'GET') {
       state.reads++;
+      const beforeRead = state.beforePictureRead;
+      delete state.beforePictureRead;
+      await beforeRead?.();
       response.setHeader('ETag', state.etag || `"${state.picture.revision}"`);
 
       if (state.queueDuringRead) state.queue = { status: 'queued' };
+
+      if (state.endAuthorityDuringRead) state.queueFault = state.endAuthorityDuringRead;
 
       if (state.malformed) response.end(state.malformed);
       else json(state.picture);

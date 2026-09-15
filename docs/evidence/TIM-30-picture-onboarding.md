@@ -104,3 +104,34 @@ Reproduce sequentially with `bash .tim30/verify.sh`. It builds first (the real W
 The original Worker regression prints missing-ASSETS root-probe and Miniflare broken-pipe diagnostics; its game assertions pass. TIM-30's real picture Worker run uses TIM-28's existing fixture/config with a fresh storage directory and port **6303**. The HTTP contract/preview fixtures use **6301/6302** and are closed after every case. Existing regression fixtures retain their ephemeral ports. The PNG is TIM-28's validated one-pixel fixture; the JPEG is its retained 8×8 fixture, copied to a local path to represent external-tool output. Neither fixture claims an actual image-generation tool was invoked.
 
 Hosted OpenCode/Claude conversational adherence to the offer, actual owner-supplied file UX in those chats, availability/failure behavior of real external image tools, and end-to-end hosted preview lineage remain acceptance gaps for the parent/TIM-27. No actual-agent claim is made from scripted fixtures. The retained 20-scenario/36-term guide and its production exclusion remain unchanged.
+
+## Review corrections from `e524898`
+
+The parent review identified two P2 correctness gaps and one P3 duplication finding. Both correctness gaps were reproduced through fresh processes of the installed CLI before changing production code:
+
+```sh
+TIM30_PORT_BASE=6331 npx vitest run tests/cli-picture.test.ts --no-file-parallelism \
+  -t 'orphaned|authoritative queue recheck'
+```
+
+**Red:** six cases failed on `e524898` (`.tim30/review-red.log`). The journal cases first induced a real filesystem publication failure: during the initial picture metadata read, the fixture made the future `pending.json` destination a directory. The CLI durably saved the operation journal, failed to rename the pointer into place, and sent **zero PUTs**. After removing that directory, a cold same-ID `picture-upload` or explicit `picture-retry` sent the saved operation without repairing its pointer. With that acknowledgment lost, a new-ID upload was incorrectly admitted and default `picture-retry` could not find the unresolved request. Separate cases showed an orphaned saved operation bypassing another pending request's fence. The authority cases returned valid missing picture metadata between an idle queue read and a queue `401 connection-expired`/`connection-revoked`; the CLI incorrectly returned `ready` with a choice-storage explanation.
+
+**Corrections:**
+
+- Before any further source-file or network I/O for a saved **pending** operation, validate its journal, reject a pointer owned by another unresolved operation, and durably establish/repair its own pointer while holding the existing picture lock. This applies to both explicit retry commands and same-ID upload commands. Completion still clears only that operation's pointer; received/rejected journals retain their existing behavior.
+- The authoritative queue recheck now runs outside the optional choice-storage catch. Its errors propagate to the normal CLI error envelope and exit status. Picture GET 401/404/503 and optional choice-storage failures retain their nonblocking behavior.
+- `cli/durable-json.mjs` now owns `writeJsonDurably(path, value)`: exclusive mode-0600 temporary file, file sync/close, atomic rename, containing-directory sync/close. The callers own directory preparation and locking. `saveLedger` retains its existing revision increment and delegates the write; picture operations prepare their mode-0700 directory, while the existing choice lock prepares the choice directory. This consolidates the durability algorithm without changing ledger fields or pending semantics.
+
+The journal and choice schemas remain **version 1**, with the original lineage and retry-proof fields. The package script already includes every CLI `.mjs` file, so the helper needs no packaging change. This correction adds no package/release/version, source-grant, preview-bridge, broker or infrastructure change.
+
+**Green:** the same six cases plus three existing picture-HTTP availability controls passed (`.tim30/review-green.log`). The repair cases verify the durable pointer, a blocked new operation, default cold retry with the exact original ID/revision/bytes, and only one committed write. Another-pending cases verify rejection before a second network write and successful default reconciliation of the rightful pending operation.
+
+Final correction verification is retained separately from the original results:
+
+```sh
+bash .tim30/verify-review.sh
+```
+
+**Final result:** all **92 cases passed** in one serial run: 24 picture/onboarding cases (the original 18 plus six corrections) and the original 68 CLI/supervisor regressions, including supervisor recovery/accounting, native child deadlines and real Worker play. Typecheck, lint, build, scoped formatting, package-content assertions and whitespace checks passed. `.tim30/review-package-contents.txt` confirms the installed archive contains the shared durable writer.
+
+The script uses **6331–6333** by default (`TIM30_PORT_BASE` selects another three-port range), runs installed picture tests and the original 68 CLI/supervisor regressions serially, then checks typecheck, lint, build, scoped formatting, package contents and whitespace. The original port defaults and baseline evidence remain available. Hosted-agent and TIM-27 acceptance gaps listed above still apply.
