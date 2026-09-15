@@ -316,6 +316,10 @@ function Home({
   const matches = choice.invalid ? [] : ((tab === 'live' ? browser.data?.live : browser.data?.recent) ?? []);
   const selected = matches.find((match) => match.id === selection) ?? matches[0];
 
+  const { pictures, revalidateUnavailable } = useAgentPictures(
+    (selected?.entrants ?? []).map((entrant) => ({ id: entrant.agentId })),
+  );
+
   const exhibition = async () => {
     setBusy(true);
 
@@ -526,12 +530,28 @@ function Home({
               )}
               <div className="eyebrow">AT THIS TABLE</div>
               <div className="selected-seats">
-                {selected.names.map((name, index) => (
-                  <div key={`${index}-${name}`}>
-                    <Avatar name={name} index={index} />
-                    <span>{name}</span>
-                  </div>
-                ))}
+                {selected.names.map((name, index) => {
+                  const entrant = selected.entrants?.find((candidate) => candidate.number === index);
+
+                  return (
+                    <div key={`${selected.id}-${index}`}>
+                      {entrant ? (
+                        <span className="replay-ui portrait-inline">
+                          <AgentPortrait
+                            agentId={entrant.agentId}
+                            name={name}
+                            picture={pictures.get(entrant.agentId)}
+                            size={32}
+                            onImageError={revalidateUnavailable}
+                          />
+                        </span>
+                      ) : (
+                        <Avatar name={name} index={index} />
+                      )}
+                      <span>{name}</span>
+                    </div>
+                  );
+                })}
               </div>
               <Link href={`/matches/${selected.id}`} className="button primary">
                 {selected.status === 'active' ? 'Watch this table' : 'Open replay'}

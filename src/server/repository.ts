@@ -13,6 +13,7 @@ import type {
   OwnerProfile,
   RoleStats,
   SuccessionSummary,
+  SummaryEntrant,
 } from '../shared/api';
 import { nameValue, opaqueId } from './http';
 import { pictureView } from './agent-picture-data';
@@ -286,6 +287,34 @@ function summary(row: MatchRow): MatchSummary | SuccessionSummary {
   };
 }
 
+/** One read for a bounded match page; never consult current profiles or replacement controllers. */
+async function summaryEntrants(env: RepositoryEnv, matches: GameMatchSummary[]) {
+  if (!matches.length) return matches;
+
+  const rows = await env.DB.prepare(
+    `SELECT match_id, seat, MIN(agent_id) AS agent_id FROM match_participants
+     WHERE match_id IN (${matches.map(() => '?').join(',')}) AND seat IN (0,1,2,3,4,5,6,7,8,9)
+     GROUP BY match_id, seat HAVING COUNT(*) = 1 ORDER BY match_id, seat`,
+  )
+    .bind(...matches.map((match) => match.id))
+    .all<{ match_id: string; seat: number; agent_id: string }>();
+
+  const byId = new Map(matches.map((match) => [match.id, match]));
+  const entrants = new Map<string, SummaryEntrant[]>();
+
+  for (const row of rows.results) {
+    const name = byId.get(row.match_id)?.names[row.seat];
+
+    // Missing names or ambiguous participant seats cannot supply an honest portrait identity.
+    if (!Number.isInteger(row.seat) || name === undefined || !row.agent_id) continue;
+    const roster = entrants.get(row.match_id) ?? [];
+    roster.push({ number: row.seat, agentId: row.agent_id, name });
+    entrants.set(row.match_id, roster);
+  }
+
+  return matches.map((match) => ({ ...match, entrants: entrants.get(match.id) ?? [] }));
+}
+
 export function matchList(env: RepositoryEnv, active: boolean, limit?: number): Promise<MatchSummary[]>;
 export function matchList(
   env: RepositoryEnv,
@@ -300,14 +329,17 @@ export async function matchList(
   gameId: RepositoryGameId = 'secret-overlord',
 ): Promise<(MatchSummary | SuccessionSummary)[]> {
   validateGame(gameId);
+  const pageSize = Number.isFinite(limit) ? Math.max(0, Math.min(50, Math.trunc(limit))) : 20;
+
+  if (!pageSize) return [];
 
   const rows = await env.DB.prepare(
     `SELECT * FROM matches WHERE game_id = ? AND status ${active ? '=' : '!='} 'active' ORDER BY created_at DESC LIMIT ?`,
   )
-    .bind(gameId, limit)
+    .bind(gameId, pageSize)
     .all<MatchRow>();
 
-  return rows.results.map(summary);
+  return summaryEntrants(env, rows.results.map(summary));
 }
 
 export async function agentHistory(

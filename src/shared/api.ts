@@ -147,6 +147,13 @@ export interface ConnectionInfo {
   revokedAt: number | null;
 }
 
+/** Public original entrant identity; seat numbers refer to the summary's historical names. */
+export interface SummaryEntrant {
+  number: number;
+  agentId: string;
+  name: string;
+}
+
 export interface MatchSummary {
   gameId?: 'secret-overlord';
   id: string;
@@ -161,6 +168,7 @@ export interface MatchSummary {
   winner: string | null;
   winReason: string | null;
   names: string[];
+  entrants?: SummaryEntrant[];
 }
 
 export interface SuccessionSummary {
@@ -174,6 +182,7 @@ export interface SuccessionSummary {
   finishedAt: number | null;
   houseCount: number;
   names: string[];
+  entrants?: SummaryEntrant[];
   result: IndividualResult2 | null;
   act1Winner: 'cooperative' | 'rogue' | null;
   livingCount: number;
@@ -294,6 +303,16 @@ export const AgentProfileSchema: Schema.Codec<AgentProfile> = Schema.Struct({
 
 export const AgentListSchema = Schema.mutable(Schema.Array(AgentProfileSchema));
 
+const SummaryEntrantsSchema = Schema.mutable(
+  Schema.Array(
+    Schema.Struct({
+      number: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 9 })),
+      agentId: Schema.String,
+      name: Schema.String,
+    }),
+  ),
+).check(Schema.isMaxLength(10));
+
 const MatchSummarySchema = Schema.Struct({
   gameId: Schema.optional(Schema.Literal('secret-overlord')),
   id: Schema.String,
@@ -308,6 +327,7 @@ const MatchSummarySchema = Schema.Struct({
   winner: Schema.NullOr(Schema.String),
   winReason: Schema.NullOr(Schema.String),
   names: Schema.mutable(Schema.Array(Schema.String)),
+  entrants: Schema.optional(SummaryEntrantsSchema),
 });
 
 export const SuccessionSummarySchema = Schema.Struct({
@@ -321,6 +341,7 @@ export const SuccessionSummarySchema = Schema.Struct({
   finishedAt: Schema.NullOr(Schema.Number),
   houseCount: Schema.Number,
   names: Schema.mutable(Schema.Array(Schema.String)),
+  entrants: Schema.optional(SummaryEntrantsSchema),
   result: Observation2Schema.fields.result,
   act1Winner: Schema.NullOr(TeamSchema),
   livingCount: Schema.Number,
