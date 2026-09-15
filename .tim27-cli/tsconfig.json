@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "worker.ts",
+    "artifacts.ts",
+    "../tests/cli-preview.test.ts",
+    "../worker-configuration.d.ts",
+    "../src/server/secrets.d.ts"
+  ]
+}
