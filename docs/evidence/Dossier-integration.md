@@ -1,5 +1,7 @@
 # Production Dossier — parent integration
 
+**Current acceptance:** Dossier implementation is accepted through **787a991** (Standards0 / Spec0), and the clean parent application suite passes **153/153** at **508bbef**. TIM-19,20,21,22 and31 are Done. Earlier “remaining work” sections below are preserved checkpoints; the final acceptance and recovery sections supersede their status.
+
 Sources through **4f7901b** are locally integrated at **13d96bf**, on top of corrected continuous-history code through74592b8 and accepted picture lookup throughdfb44e6. The Dossier branch contained an older cherry-pick of the picture lookup. Add/add conflicts were resolved by retaining the newer accepted data source, tests and correction evidence unchanged.
 
 ## Independent verification
@@ -50,6 +52,18 @@ Standards review found twoP3s: the route calculates a compensating seek from the
 
 The Spec reviewer subsequently closed the original deferred-focus P2, including portrait-open/closed-before-release and modal focus containment. It independently reproduced a new **P2 gutter-scroll regression** at1440/390: wheel input targeting a page-wrapper DIV marks reading ownership as `other`, suppressing boundary reads while Act II remains visible. Baselineab8706c loads the earlier window from the same gutter input. This is assigned to the same ownership refactor, with exact probes in `/tmp/opencode/Dossier-ending-correction-review/`. The reviewer's successful development traversal does not close the parent's separate production drift failure.
 
+### Final reader-owned navigation accepted
+
+**4be03e2 /f149d9e**, integrated at **787a991**, close both StandardsP3s and both navigation SpecP2s. `reader.seek(eventKey, signal?)` owns cancellation without compensating HTTP reads, and `SuccessionTimelineHandle.ownsViewport()` reuses timeline geometry. Explicit act data replaces accessibility-label interpretation. Gutter wheel/touch input follows the visible reader while modal/reference input preserves its own focus and scroll.
+
+Parent **79 units,38 established reader/Query cases,33 development/33 production navigation cases and87/90 actual-route assertions all pass**, including production graph/direct-route exclusions. The current production traversal retains128 rows and **0.421875px** maximum drift under the unchanged1px threshold. The prior1.8125px observation is preserved with exact cause unconfirmed. The improved runner establishes a stable native-scroll baseline and records every traversal step; it does not adjust geometry or widen tolerance.
+
+Independent final reviews report **Standards0 /Spec0**. The reviewer independently passed seven reader lifetime probes and the exact1440/390 gutter reproduction; its first production route run passed90/90. Its production runner executed33 distinct scenarios twice after discovering a pinned test copy;66 executions are not counted as66 unique scenarios. **TIM-21 is now locally accepted and Done.** All Dossier presentation/guide implementation issues are accepted; the separate established browser and hosted acceptance gates remain tracked.
+
+Recovery archive: `/home/timothykrell/Code/agent-games-archive/Dossier-2026-09-15/`, preserving2,435 source/evidence and3,861 parent/reviewer entries. All member hashes, unchanged source, bundle and independent source recovery verified. Snapshot SHA-256 `d54bec8adcda08927c802802f506cdc4bffd3cfc50134eb99cf1f05d780a9ffb`; parent/reviewer archive `d4037e63f581727232e0a916df0c6e395f022022026b1685b732f18b37bf8e8e`; bundle `2619e970f242ea8c7875055d88dde6447a237e4440da29f465cb5bded4258d27`.
+
+The completed Dossier worktree and merged branch were retired after a clean audit. The approved TIM-6 reference worktree remains available.
+
 The test-only established browser migration **41cf9a1 /fac8770** is integrated at **dfc9c79 /988580d**. Source reports153 passed/0 failed/0 skipped/0 flaky against actual local Worker/D1/DO, with2559 archived events and128 mounted rows. Independent assertion-preservation review and a clean parent full-suite run are active. The source's initial JSON/HTML baseline reports were overwritten by later collection commands; original console,28 failure traces/screenshots and source archive remain preserved. This exception is documented in `Dossier-browser-regressions.md` and is not presented as complete original report preservation.
 
 ### Parent established-suite follow-up
@@ -59,3 +73,13 @@ Independent migration review reports **0 correctness findings** after checking b
 Parent's clean988580d checkout initially passed112/153. Forty cases could not open a page because the isolated HOME lacked Playwright's recorder; the installed `ffmpeg-1011` was subsequently selected explicitly using `PLAYWRIGHT_BROWSERS_PATH`, preserving the isolated HOME and source assertions. The remaining initial failure was the Worker test's asynchronous response-body capture racing navigation, assigned to its test owner without suppressing capture errors.
 
 The forty video-dependent cases then passed39/40. The remaining case matched14 copies of the challenge notice across the current phase and historical timeline. Parent **d1777bd** scopes that existing assertion to the named Current match state region and exact text. All eight width/motion variants subsequently pass, with no retries or skips. This establishes152 distinct passing cases across the parent runs; the Worker response-capture correction remains pending. Original reports, traces and runner copies remain isolated under `/tmp/opencode/Dossier-lead-browser/`, `/tmp/opencode/Dossier-lead-browser-video/` and `/tmp/opencode/Dossier-lead-live-captures/`; no source failure was discarded or baseline report overwritten.
+
+### Complete established suite accepted
+
+Source **f3ed69d**, integrated at **508bbef**, replaces fixed-snapshot capture draining with request-start admission and a live pending map. The test waits for both body consumption and the native terminal event before its finite, terminal-state reload. Only genuine `net::ERR_ABORTED` requests are classified as canceled; capture errors and all privacy, historical-state, response-size and row-bound assertions remain strict.
+
+Independent correctness review reports **0 findings**, with two native streamed-HTTP cases reproduced against the exact final helper and 57 evidence hashes verified. Parent also passed both native cases. The final clean parent build then passed **all 153 established browser tests in 479.7 seconds**, with **zero failures, retries, skips or flakes**, using one Chromium worker and actual local Worker/D1/DO. Report: `/tmp/opencode/Dossier-lead-browser-final/report.json`.
+
+Final Worker evidence includes the completed two-act match, a **4,627-byte historical checkpoint**, **128 maximum mounted rows**, **235 completed history captures bounded to32 events/16,350 bytes**, and canonical anchor preservation. Decoded evidence and source hashes are in `Dossier-lead-browser-final/audited-evidence/`. The recorder-startup, ambiguous-selector and response-capture failures remain in their original evidence directories. This closes the local established-suite gate while preserving hosted owner acceptance as downstream work.
+
+The final browser archive at `/home/timothykrell/Code/agent-games-archive/Dossier-browser-2026-09-15/` preserves **8,573 source/evidence and19,107 parent/reviewer entries**, including both parent verification checkouts and the exact detached selector commit. All member hashes, bundle recovery and integration patch identities verified before retiring the three completed worktrees and source branch. Snapshot SHA-256 `aaa86a90a84f402a1b01965faa94b0806d910a1302a7915adf40fa6dae778088`; parent/reviewer archive `36d8fe5b637a17b7042bd1853f622734ce3c08d544416340190ea2511fa7835b`; bundle `83d42312f5d2da35dfd93f705254872c519e7476bb6fe1644e521d3ffd4d969f`.

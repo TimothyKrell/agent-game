@@ -104,6 +104,29 @@ The full combined inventory at988580d passes **769 tests across88 suites**, with
 
 Reports: `/tmp/opencode/TIM-integrated-final-unit-results.json` and `/tmp/opencode/TIM-integrated-final-unit.log`; native broker/identity/CLI captures use separate `TIM-integrated-final-unit-*` directories. CLI fixtures ran serially on6361–6364 and did not overwrite original committed evidence. During execution only documentation and the isolated browser-selector correction advanced; production source and package/lock bytes remained unchanged.
 
+### Installed playable integration accepted
+
+Test-only source **3694b15**, integrated at **5da447c**, passes independent **Standards0 /Spec0** and the parent's complete **5/5** journey run. The actual installed source CLI, native OpenCode/Claude adapters, source broker, target queue/Match/HouseSeat, authenticated observations and source provider accounting operate together. Both games finish after actual30-second queue admission with one invocation, no restarts and no original-entrant forfeiture.
+
+| Parent native journey | Actual queue | Provider calls / source usage rows | Synthetic accounted cost |
+| --- | ---: | ---: | ---: |
+| OpenCode / Secret Overlord | 30,036ms | 215 /215 | $0.015480 |
+| Claude / Succession | 30,086ms | 762 /762 | $0.054864 |
+
+The parent run also covers lost acknowledgements, target restart, retained branch-A participation pins, hot revocation, fresh-incarnation authorization, shared required-work priority and conservative unknown-charge retention. Each completed Succession audience contains1,114 unique events in28 bounded pages and19 round-index entries. The source run has different generated histories, with229/229 and764/764 accounting; both independently reconcile their own provider observations and ledgers.
+
+The provider/native responses and discussion/grace-clock advancement are explicit local fixtures. They establish runtime composition without claiming real-model dialogue quality or a hosted release. The source53,767-byte and parent53,775-byte development CLI archives have identical18 regular-file contents; three text-file permission entries explain their different tarball hashes. Each journey verifies its own pinned archive before execution. Neither archive is an attested hosted0.3.0 release.
+
+Recovery archive: `/home/timothykrell/Code/agent-games-archive/TIM-27-playable-2026-09-15/`, preserving **2,445 source/evidence and5,915 parent/reviewer entries**, including both complete native storage sets and the769-test inventory. All member hashes, unchanged source, independent bundle recovery and integration patch equivalence verified before retiring the source worktree/branch. Snapshot SHA-256 `f2beed99260f9700ffac0991c16c3edae1528973b9d5f533499f1ec42b162f86`; parent/reviewer archive `ab3822ce958081b8fcad0e6dbcf06b8c95f3d423e9102f0d4bfbb1f724e70392`; bundle `e50aadc53371241a9dc6389cca961522f4e9e1cf9809b27833adb51964c7d9c7`.
+
+### Hosted D1 adapter contract
+
+The parent directly verified numeric/null parameter handling, ordered results/metadata, data and schema rollback, and stale-precondition rejection at the real D1 REST ingress. One disposable database was created and removed; HTTP404/code7404 confirms cleanup. Initial probe assertions incorrectly required INTEGER storage for an untyped numeric parameter and omitted the actual deletion-error wording. Raw packets and failures are preserved; the corrected assessment uses those observations without repeating the remote experiment.
+
+See `TIM-27-hosted-d1-contract.md` and the21-file verified recovery archive `TIM-27-D1-REST-2026-09-15`. The independent reviewer verified all20 final-manifest entries. This closes the REST-specific evidence gap; it does not activate a preview or attest a released executable.
+
+Trusted lifecycle work still owns durable0008 generation fencing and the independent P2 where a successful deployment flag can authorize retirement after a transient publication failure. Both corrections remain required before lifecycle acceptance. The historical missing-protocol-header rejection has a separate diagnostic lane on508bbef, with no production changes authorized without a concrete finding.
+
 ### Actual API and restart regression
 
 The unchanged API inventory also passes **six tests** against a clean1c43b1b checkout and real local Worker/D1/DO processes. It covers full externally controlled completion, retry receipts, reconnect/private isolation, actual CLI pairing/queue/revocation, same-owner matchmaking and a real Worker restart during a required decision without downtime forfeiture.
