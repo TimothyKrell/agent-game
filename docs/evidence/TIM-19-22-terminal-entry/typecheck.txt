@@ -1,0 +1,4 @@
+
+> agent-game@0.2.0 typecheck
+> tsc --noEmit && tsc --noEmit -p tsconfig.infra.json && tsc --noEmit -p tsconfig.oxlint.json
+

@@ -321,6 +321,7 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
   return (
     <article
       id={dossierRowId(row)}
+      tabIndex={-1}
       className={`dossier-row ${speech ? 'dossier-speech' : ''} ${system ? 'dossier-system' : ''} ${departure ? 'dossier-departure' : ''} ${row.visibility !== 'public' ? 'dossier-private' : ''}`}
       data-event-type={fact.kind}
       data-source-id={row.source.cursor}

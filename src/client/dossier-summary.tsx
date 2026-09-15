@@ -1,4 +1,5 @@
-import { Trophy } from 'lucide-react';
+import { ArrowRight, Trophy } from 'lucide-react';
+import { Button } from './ui/button';
 import type { CapEvidence2 } from '../shared/succession';
 import type { StoryChapters, StoryEntrant, StoryReturn, StoryValue } from './succession-story-types';
 import { dossierName, dossierValue, DossierIdentity } from './dossier-identity';
@@ -164,11 +165,13 @@ export function DossierOutcome({
   status,
   act,
   entrants,
+  ending,
 }: {
   chapters: StoryChapters;
   status: DossierStatus;
   act: 1 | 2;
   entrants: DossierEntrants;
+  ending?: { label: string; onRead?: () => void };
 }) {
   const outcome = dossierValue(chapters.outcome);
   const interruption = dossierValue(chapters.interruption);
@@ -224,6 +227,11 @@ export function DossierOutcome({
           <summary>Round cap comparison</summary>
           <DossierCap evidence={outcome.result.tieBreak} entrants={entrants} />
         </details>
+      )}
+      {ending && (
+        <Button onClick={ending.onRead} disabled={!ending.onRead}>
+          {ending.label} <ArrowRight aria-hidden="true" size={16} />
+        </Button>
       )}
     </header>
   );

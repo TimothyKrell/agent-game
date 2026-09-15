@@ -107,7 +107,7 @@ try {
         dossierIncluded,
         readerIncluded,
         integrationBoundary:
-          'Route browser acceptance is recorded separately in route-production/checks.json; parent owns pending TIM-23 review corrections.',
+          'Route browser acceptance is recorded separately in the route checks; independent integration review follows the lane handoff.',
       },
       null,
       2,

@@ -1,0 +1,22 @@
+
+> agent-game@0.2.0 test
+> vitest run tests/dossier-components.test.ts tests/succession-story.test.ts tests/continuous-succession-history.test.ts tests/succession-history-loading.test.ts tests/agent-picture-data.test.ts
+
+
+ RUN  v4.1.11 /tmp/opencode/agent-game-dossier
+
+ ✓ tests/agent-picture-data.test.ts (14 tests) 112ms
+ ✓ tests/succession-history-loading.test.ts (13 tests) 55ms
+ ✓ tests/continuous-succession-history.test.ts (14 tests) 1270ms
+ ✓ tests/dossier-components.test.ts (5 tests) 983ms
+     ✓ renders all twenty retained groups, including exact engine-generated outcomes and connected paid cancellation  567ms
+ ✓ tests/succession-story.test.ts (27 tests) 2067ms
+     ✓ preserves the final Tax reaction through the canonical 120-turn cap after 119 legal Exchange turns  627ms
+     ✓ matches actual event checkpoints through a complete two-act trajectory (seed 11)  543ms
+     ✓ matches actual event checkpoints through a complete two-act trajectory (seed 29)  521ms
+
+ Test Files  5 passed (5)
+      Tests  73 passed (73)
+   Start at  00:00:40
+   Duration  3.25s (transform 2.20s, setup 0ms, import 4.08s, tests 4.49s, environment 0ms)
+

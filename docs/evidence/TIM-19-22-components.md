@@ -1,6 +1,10 @@
 # TIM-19–22 / TIM-31 · Production Dossier presentation
 
-## Delivered code and integration
+## Review correction follow-up
+
+The original handoff below is preserved for provenance. Current correction evidence is in [terminal entry and Final move](TIM-19-22-terminal-entry/README.md), [shared RuleHelp focus red/green](TIM-11-dossier-focus/README.md), and [canonical facts/vocabulary](TIM-19-22-standards-corrections.md). The three chapter-focus failures now pass in development and production. Accepted TIM-23 corrections through `0fb03f8` are consumed. Final independent parent acceptance remains pending.
+
+## Original delivered code and integration
 
 - **`f9bc6f2`**: canonical production components and chapter slot; preserved approved-guide baseline.
 - **`db34430`**: all twenty retained scenario groups adopted as production-component consumers, exact source and independent engine fixtures, browser evidence.

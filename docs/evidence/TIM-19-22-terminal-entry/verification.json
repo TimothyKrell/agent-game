@@ -1,0 +1,41 @@
+{
+  "reviewBaseline": "4f7901b",
+  "focusCorrection": "54a3abd",
+  "canonicalFactsCorrection": "a59fbbc",
+  "acceptedHistoryDependency": "0fb03f8",
+  "widths": [1440, 390, 320],
+  "completedEntry": {
+    "before": { "checkpoint": 2, "delivered": 130, "head": 1306, "finalMove": false },
+    "after": { "checkpoint": 1178, "delivered": 1306, "head": 1306, "finalMove": true },
+    "declaration": 1301,
+    "terminalResult": 1305,
+    "trailingAudit": 1306,
+    "initialProductionHistoryRequests": 4,
+    "historyLimit": 32,
+    "historyMaxBytes": 16384
+  },
+  "developmentRoute": { "assertions": 87, "failures": 0 },
+  "productionRoute": { "assertions": 90, "failures": 0 },
+  "unitTests": { "passed": 73, "failed": 0 },
+  "componentGuide": { "assertions": 212, "failures": 0 },
+  "originalGuide": { "assertions": 138, "failures": 0 },
+  "originalRuleHelp": { "tests": 9, "failed": 0 },
+  "focusedRuleHelp": { "tests": 4, "failed": 0 },
+  "preservedSource": {
+    "scenarioGroups": 20,
+    "ruleTerms": 36,
+    "publicEntries": 974,
+    "exactQuotes": 416,
+    "historicalEliminationCounts": 9
+  },
+  "maxVisibleRecordsPerReader": 128,
+  "forwardRetainedRowDriftPx": 0.421875,
+  "typecheck": "passed",
+  "lint": "passed",
+  "build": "passed",
+  "productionGraphAndDevExclusion": "passed",
+  "interceptedCanonicalBackend": true,
+  "deployedAuthorizationTest": false,
+  "laneChecksPassed": true,
+  "finalIndependentAcceptance": "pending-parent-review"
+}

@@ -9,27 +9,68 @@ import { SuccessionTimeline } from './succession-timeline';
 import { SuccessionDossier, useDossierChapters } from './succession-dossier';
 import { SuccessionBoard, SuccessionPrivacy } from './succession-board';
 import { SuccessionControls, SuccessionPhase } from './succession-controls';
+import { dossierEnding } from './dossier-ending';
+import { dossierRowId } from './dossier-row';
 
 export function SuccessionMatch({ initial }: { initial: Observation2 }) {
   const match = useSuccessionMatch(initial, { history: false });
   const { view, connected, error, receipt, pending, act, refresh } = match;
   const chapters = useDossierChapters(view.status, view.act);
   // Fixed for this route visit: status updates must not reconstruct readers or discard their anchors.
-  const [liveAct] = useState(initial.status === 'active' ? initial.act : null);
+  const [entryAct] = useState(initial.status === 'finished' ? 2 : initial.act);
 
   const actOne = useSuccessionStory(view, {
     act: 1,
     enabled: chapters.open[1],
-    initial: liveAct === 1 ? 'latest' : 'start',
+    initial: entryAct === 1 ? 'latest' : 'start',
     onReset: refresh,
   });
 
   const actTwo = useSuccessionStory(view, {
     act: 2,
     enabled: chapters.open[2],
-    initial: liveAct === 2 ? 'latest' : 'start',
+    initial: entryAct === 2 ? 'latest' : 'start',
     onReset: refresh,
   });
+
+  const terminal = useMemo(() => dossierEnding(actTwo.rows), [actTwo.rows]);
+  const [savedEnding, setSavedEnding] = useState(terminal);
+  const [requestedEnding, setRequestedEnding] = useState<ReturnType<typeof dossierEnding>>(null);
+  const ending = terminal ?? savedEnding;
+
+  const currentEnding =
+    ending?.source.matchId === view.matchId && ending.source.visibilityEpoch === view.history.visibilityEpoch
+      ? ending
+      : null;
+
+  useEffect(() => {
+    if (terminal) setSavedEnding(terminal);
+  }, [terminal]);
+
+  useEffect(() => {
+    if (view.status !== 'active' || view.act !== 1) actOne.detach();
+
+    if (view.status !== 'active' || view.act !== 2) actTwo.detach();
+  }, [view.status, view.act, actOne.detach, actTwo.detach]);
+
+  useEffect(() => {
+    if (
+      !requestedEnding ||
+      requestedEnding.source.matchId !== view.matchId ||
+      requestedEnding.source.visibilityEpoch !== view.history.visibilityEpoch
+    )
+      return;
+    const reader = requestedEnding.act === 1 ? actOne : actTwo;
+
+    if (!chapters.open[requestedEnding.act] || reader.status !== 'ready') return;
+    const row = reader.rows.find((row) => row.source.eventKey === requestedEnding.source.eventKey);
+    const element = row && document.getElementById(dossierRowId(row));
+
+    if (!element) return;
+    element.scrollIntoView({ block: 'start', behavior: 'instant' });
+    element.focus({ preventScroll: true });
+    setRequestedEnding(null);
+  }, [requestedEnding, actOne, actTwo, chapters.open, view.matchId, view.history.visibilityEpoch]);
 
   const summary = useMemo(
     () =>
@@ -94,6 +135,20 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
         archiveAvailable={ended}
         pictures={pictures.pictures}
         onImageError={pictures.revalidateUnavailable}
+        ending={
+          view.status === 'finished'
+            ? {
+                label: currentEnding?.label ?? 'Terminal record',
+                onRead: currentEnding
+                  ? () => {
+                      chapters.setOpen(currentEnding.act, true);
+                      setRequestedEnding(currentEnding);
+                      void (currentEnding.act === 1 ? actOne : actTwo).seek(currentEnding.source.eventKey);
+                    }
+                  : undefined,
+              }
+            : undefined
+        }
         currentState={
           !ended && (
             <div className="dossier-current">
@@ -114,15 +169,24 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
             </div>
           )
         }
-        renderChapter={({ act: chapter, renderRow }) => (
-          <SuccessionTimeline
-            reader={chapter === 1 ? actOne : actTwo}
-            aria-label={`Act ${chapter === 1 ? 'I' : 'II'} record`}
-            role="region"
-            className="dossier-timeline"
-            renderRow={renderRow}
-          />
-        )}
+        renderChapter={({ act: chapter, renderRow }) => {
+          const reader = chapter === 1 ? actOne : actTwo;
+          const live = view.status === 'active' && view.act === chapter;
+
+          return (
+            <SuccessionTimeline
+              reader={{
+                ...reader,
+                following: live && reader.following,
+                follow: live ? reader.follow : reader.loadLater,
+              }}
+              aria-label={`Act ${chapter === 1 ? 'I' : 'II'} record`}
+              role="region"
+              className="dossier-timeline"
+              renderRow={renderRow}
+            />
+          );
+        }}
       />
       <details className="tie-commitment">
         <summary>Precommitted final-tie priority</summary>

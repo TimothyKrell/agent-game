@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+[DEBUG-rule-focus] change {"open":true,"reason":"trigger-press"}
+[DEBUG-rule-focus] change {"open":false,"reason":"outside-press","target":"_r_1_","connected":true}
+[DEBUG-rule-focus] detach {"id":"_r_1_","open":false,"target":"_r_1_","connected":false,"fallback":"Rules chapter"}
+[DEBUG-rule-focus] resolve {"target":"_r_1_","connected":false}
+[DEBUG-rule-focus] change {"open":false,"reason":"imperative-action","target":"_r_1_","connected":false}
+  ✘  1 .dossier/rule-help-focus.spec.ts:3:1 › activating the actual chapter control during pinned help returns focus to its surviving heading (6.1s)
+
+
+  1) .dossier/rule-help-focus.spec.ts:3:1 › activating the actual chapter control during pinned help returns focus to its surviving heading 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('button', { name: 'Rules chapter', exact: true, includeHidden: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: 'Rules chapter', exact: true, includeHidden: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Rules chapter', exact: true, includeHidden: true })
+        14 × locator resolved to <button tabindex="0" type="button" aria-disabled="false" aria-expanded="false">Rules chapter</button>
+           - unexpected value "inactive"
+
+
+      11 |   await expect(page.getByRole('dialog')).toHaveCount(0);
+      12 |   await expect(page.getByRole('button', { name: 'Coins rules', exact: true })).toHaveCount(0);
+    > 13 |   await expect(heading).toBeFocused();
+         |                         ^
+      14 | });
+      15 |
+        at /tmp/opencode/agent-game-dossier/.dossier/rule-help-focus.spec.ts:13:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    docs/evidence/TIM-11-dossier-focus/instrumented/rule-help-focus-activating-c7a1d-us-to-its-surviving-heading/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: docs/evidence/TIM-11-dossier-focus/instrumented/rule-help-focus-activating-c7a1d-us-to-its-surviving-heading/error-context.md
+
+  1 failed
+    .dossier/rule-help-focus.spec.ts:3:1 › activating the actual chapter control during pinned help returns focus to its surviving heading 

@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ✓  1 .dossier/rule-help-focus.spec.ts:4:3 › Collapsible chapter activation during pinned help restores the surviving heading (2.1s)
+  ✓  2 .dossier/rule-help-focus.spec.ts:4:3 › native chapter activation during pinned help restores the surviving heading (559ms)
+  ✓  3 .dossier/rule-help-focus.spec.ts:30:3 › whole provider removal from pinned help respects the route owner's chosen external focus (510ms)
+  ✓  4 .dossier/rule-help-focus.spec.ts:30:3 › whole provider removal from hover help respects the route owner's chosen external focus (555ms)
+
+  4 passed (4.3s)

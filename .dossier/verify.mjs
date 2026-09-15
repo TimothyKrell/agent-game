@@ -4,7 +4,7 @@ import { chromium } from '@playwright/test';
 
 const origin = process.env.DOSSIER_ORIGIN ?? 'http://127.0.0.1:6291';
 
-const directory = 'docs/evidence/TIM-19-22-components/after';
+const directory = process.env.DOSSIER_EVIDENCE_DIR ?? 'docs/evidence/TIM-19-22-components/after';
 
 await mkdir(directory, { recursive: true });
 

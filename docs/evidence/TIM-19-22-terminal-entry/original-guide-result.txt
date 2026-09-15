@@ -1,0 +1,21 @@
+dossier {
+  "checks": 58,
+  "passed": 58,
+  "failed": [],
+  "captures": 31
+}
+
+annotations {
+  "checks": 27,
+  "passed": 27,
+  "failed": [],
+  "captures": 12
+}
+
+moments {
+  "checks": 53,
+  "passed": 53,
+  "failed": [],
+  "captures": 16
+}
+
