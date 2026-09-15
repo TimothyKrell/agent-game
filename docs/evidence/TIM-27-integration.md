@@ -86,6 +86,18 @@ The source recorded93 tests, including16 native broker,56 ledger/regression,18 i
 
 Initial broker integration **1c43b1b** preserves the source artifact GET alongside broker-aware discovery, exact checkpoint/history code and additive migrations0005/0006/0007. Parent passed **88 native/identity/Worker/queue/repository/summary/cleanup cases**, then **11 ledger/registry cases**, and **27 installed CLI preview cases** against the combined server. The first command named a nonexistent `preview-ledger.test.ts`; parent explicitly ran the actual five-case `preview-broker-ledger.test.ts` in the subsequent11-case command. Typecheck/lint/build and whitespace checks pass. These establish integration compatibility and do not close the three assigned broker findings.
 
+### Broker correction accepted
+
+**6ec2fc8 /7987815**, integrated at **a1d9db7**, close all three broker findings: **Standards0 /Spec0**. The ledger enforces signed origin/incarnation ownership atomically before touching shared waiters or allocations. All coordinator alarm writes preserve the earliest deadline transactionally, and queue status/readiness/scheduling share the profile-aware fill time.
+
+Parent **77 focused cases plus the full TIM-26 gate pass**; the full summary is byte-identical to the accepted baseline, SHA-256 `0146971cf0b7b759903887a069564f2147798b69c15e85d367d5b9f61badec47`. The reviewer independently passed66 head cases, reproduced four baseline failures and verified292 correction hashes plus223 original files and24 accepted artifacts. Production waiters and the$1.49 reservation survive unauthorized closure; automatic alarm postponement is0ms and live fill time is30 seconds.
+
+Recovery: `/home/timothykrell/Code/agent-games-archive/TIM-27-broker-2026-09-15/`, preserving1,526 source/evidence and10,170 parent/reviewer entries. All member hashes, unchanged source, bundle and independent source recovery verified. Snapshot SHA-256 `d69d5b3847d1b94bcb2431765dc5f43aee45c9a535e1d0beffa0aede4a95b17d`; parent/reviewer archive `19274462e406fa861be2f5e52df7e6ad241a6739a98c4bd590c21a2dfca0a47b`; bundle `77d6ddf426b4b3d258ebdb65f0f37c1927870094ed3549ca1cd64b9575067f82`.
+
+The completed broker worktree and merged local branch were retired after a final clean audit and removal of only their disposable dependency symlink. Source and all review/runtime evidence remain recoverable from the archive.
+
+Trusted lifecycle work at **e49507f** has121 passing local cases and an independently retained source/target A→B→A generation failure. Parent reserved additive **0008_preview_generation.sql** and approved the narrow control-plane generation helper to fence delayed configure/register/publication/retirement batches. That lane remains active and activation default-off. The installed-CLI/broker integration and established browser migration have separate verification owners.
+
 ### Actual API and restart regression
 
 The unchanged API inventory also passes **six tests** against a clean1c43b1b checkout and real local Worker/D1/DO processes. It covers full externally controlled completion, retry receipts, reconnect/private isolation, actual CLI pairing/queue/revocation, same-owner matchmaking and a real Worker restart during a required decision without downtime forfeiture.
