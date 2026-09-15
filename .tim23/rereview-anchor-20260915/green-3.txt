@@ -1,0 +1,53 @@
+
+Running 15 tests using 1 worker
+
+  ✓   1 e2e/continuous-story.spec.ts:161:1 › announces paused Query reads as offline waiting, keeps delivered rows and cancels hidden or unmounted pauses (835ms)
+  ✓   2 e2e/continuous-story.spec.ts:211:1 › reads 2,048 canonical messages forward/backward through eviction and revisits with a finite DOM (8.8s)
+  ✓   3 e2e/continuous-story.spec.ts:272:1 › holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading (803ms)
+  ✓   4 e2e/continuous-story.spec.ts:329:1 › pauses hidden reading, follows successive frozen live heads, and recovers a network retry from an empty record (847ms)
+  ✓   5 e2e/continuous-story.spec.ts:371:1 › keeps two open document chapters independently reachable through scrolling, focus and window replacement (1.7s)
+  ✘   6 e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across forward tall-to-short windows (576ms)
+  ✓   7 e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across forward tall-to-omitted windows (852ms)
+  ✓   8 e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across backward tall-to-short windows (709ms)
+  ✓   9 e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across backward tall-to-omitted windows (680ms)
+  ✓  10 e2e/continuous-story.spec.ts:565:1 › fences a held document replacement against actual navigation and focus into the other chapter (607ms)
+  ✓  11 e2e/continuous-story.spec.ts:615:1 › keeps live follow at the visible document edge through tall-row eviction (602ms)
+  ✓  12 e2e/continuous-story.spec.ts:668:1 › uses document scrolling and retains a focused row across automatic prepending (444ms)
+  ✓  13 e2e/continuous-story.spec.ts:691:1 › crosses a long run of omitted row renderings in both directions without a request loop (1.1s)
+  ✓  14 e2e/continuous-story.spec.ts:716:1 › keeps actual command mutation receipts independent of cancelled reading and newer authoritative current (401ms)
+  ✓  15 e2e/continuous-story.spec.ts:761:1 › fences pending reads on match A–B–A, keeps independent readers and recovers errors and epochs (1.1s)
+
+
+  1) e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across forward tall-to-short windows
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 1
+    Received:    28.390625
+
+      483 |         });
+      484 |         await expect(metrics(page, 'secondary')).toContainText('"head":906');
+    > 485 |         expect(Math.abs((await page.evaluate(() => window.scrollY)) - target)).toBeLessThanOrEqual(1);
+          |                                                                                ^
+      486 |       }
+      487 |
+      488 |       await page.addStyleTag({
+        at /tmp/opencode/agent-game-TIM-23/e2e/continuous-story.spec.ts:485:80
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .tim23/rereview-anchor-20260915/green-3/browser-results/continuous-story-retains-t-c605a-rward-tall-to-short-windows/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .tim23/rereview-anchor-20260915/green-3/browser-results/continuous-story-retains-t-c605a-rward-tall-to-short-windows/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .tim23/rereview-anchor-20260915/green-3/browser-results/continuous-story-retains-t-c605a-rward-tall-to-short-windows/trace.zip
+    Usage:
+
+        npx playwright show-trace .tim23/rereview-anchor-20260915/green-3/browser-results/continuous-story-retains-t-c605a-rward-tall-to-short-windows/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/continuous-story.spec.ts:457:5 › retains the pre-replacement document anchor across forward tall-to-short windows
+  14 passed (23.8s)
