@@ -2,9 +2,11 @@ import { isDeepStrictEqual } from 'node:util';
 import { Schema } from 'effect';
 import { requireCondition, sha256, validateArtifact } from './preview-artifact.ts';
 import { branchContentForTarget } from './preview-content.ts';
-import { previewTarget } from './preview-controller.ts';
+import { previewTarget } from './preview-target.ts';
 import { boundedResponse, verifyManifestIdentity } from './preview-github.ts';
 import type { VerifiedRun } from './preview-github.ts';
+import { PreviewArtifactManifestSchema } from '../src/shared/preview-artifacts.ts';
+import { PreviewReadbackInvalid } from './preview-failure.ts';
 
 const SourceExecutable = Schema.Struct({
   url: Schema.String,
@@ -103,9 +105,58 @@ export async function verifySourcePublicationReadback(
         .includes('no-store') === true,
     'Current source artifact publication unavailable',
   );
-  const actual: unknown = JSON.parse((await boundedResponse(response, 16 * 1024)).toString('utf8'));
-  requireCondition(
-    isDeepStrictEqual(actual, publication),
-    'Source artifact readback differs from verified publication',
+
+  const actual = Schema.decodeUnknownSync(PreviewArtifactManifestSchema)(
+    JSON.parse((await boundedResponse(response, 16 * 1024)).toString('utf8')),
   );
+
+  if (!isDeepStrictEqual(actual, publication))
+    throw new PreviewReadbackInvalid('Source artifact readback differs from verified publication');
+}
+
+/** Discovery's livePlay bit describes source configuration, never capacity. */
+export async function verifySourceArenaReadback(
+  publication: ReturnType<typeof previewArtifactPublication>,
+  fetcher: typeof fetch = fetch,
+) {
+  const response = await fetcher(`${publication.sourceOrigin}/api/preview/arenas`, {
+    redirect: 'error',
+    signal: AbortSignal.timeout(30_000),
+    headers: { accept: 'application/json' },
+  });
+
+  requireCondition(
+    response.ok &&
+      response.headers
+        .get('cache-control')
+        ?.split(',')
+        .map((value) => value.trim())
+        .includes('no-store') === true,
+    'Source arena readback unavailable',
+  );
+
+  const arenas = Schema.decodeUnknownSync(
+    Schema.Array(
+      Schema.Struct({
+        origin: Schema.String,
+        incarnation: Schema.String,
+        commit: Schema.String,
+        identityVersion: Schema.Literal(1),
+        ownerEntryUrl: Schema.String,
+        livePlay: Schema.Boolean,
+      }),
+    ),
+  )(JSON.parse((await boundedResponse(response, 64 * 1024)).toString('utf8')));
+
+  const matches = arenas.filter((arena) => arena.origin === publication.targetOrigin);
+  requireCondition(matches.length === 1, 'Source arena readback unavailable or ambiguous');
+
+  if (!(
+    matches[0].incarnation === publication.incarnation &&
+    matches[0].commit === publication.commit &&
+    matches[0].ownerEntryUrl === `${publication.targetOrigin}/preview`
+  ))
+    throw new PreviewReadbackInvalid('Source arena tuple differs from registered artifacts');
+
+  return matches[0].livePlay;
 }

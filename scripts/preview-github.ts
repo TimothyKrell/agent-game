@@ -116,6 +116,14 @@ export interface ExpectedRun {
   attempt: number;
 }
 
+/** An observed eligibility change, distinct from an unavailable/malformed API
+ * response. Only this class authorizes retiring a pending delivery on recheck. */
+export class PreviewEligibilityChanged extends Error {}
+
+function requireCurrent(condition: boolean, message: string): asserts condition {
+  if (!condition) throw new PreviewEligibilityChanged(message);
+}
+
 function testedIdentity(jobs: readonly (typeof Job.Type)[], run: typeof Run.Type) {
   const matches = jobs.filter((job) => job.name === 'Verify');
   requireCondition(matches.length === 1, 'Missing/duplicate Verify identity job');
@@ -157,7 +165,10 @@ function testedIdentity(jobs: readonly (typeof Job.Type)[], run: typeof Run.Type
   };
 }
 
-export function verifyRecords(records: VerificationRecords, expected: ExpectedRun) {
+function verifyCurrentRun(
+  records: Pick<VerificationRecords, 'repository' | 'workflow' | 'run' | 'pr'>,
+  expected: ExpectedRun,
+) {
   const { repository, workflow, run, pr } = records;
   requireCondition(
     repository.full_name === expected.repository && repository.id === expected.repositoryId,
@@ -170,9 +181,10 @@ export function verifyRecords(records: VerificationRecords, expected: ExpectedRu
       run.head_repository.full_name === repository.full_name,
     'Wrong run repository or fork',
   );
+  requireCondition(run.id === expected.runId, 'Wrong run');
   requireCondition(
-    run.id === expected.runId && run.run_attempt === expected.attempt,
-    'Superseded run attempt',
+    Number.isSafeInteger(run.run_attempt) && run.run_attempt >= expected.attempt,
+    'Invalid run attempt',
   );
   requireCondition(
     run.event === 'pull_request' &&
@@ -182,34 +194,43 @@ export function verifyRecords(records: VerificationRecords, expected: ExpectedRu
       run.workflow_id === workflow.id,
     'Wrong workflow/event/path',
   );
-  requireCondition(run.status === 'completed' && run.conclusion === 'success', 'CI did not succeed');
   requireCondition(
-    pr.state === 'open' &&
-      pr.base.repo.id === repository.id &&
+    pr.base.repo.id === repository.id &&
       pr.head.repo.id === repository.id &&
       pr.base.repo.full_name === repository.full_name &&
-      pr.head.repo.full_name === repository.full_name &&
-      pr.base.ref === repository.default_branch,
-    'Closed, fork, or wrong-base PR',
+      pr.head.repo.full_name === repository.full_name,
+    'Fork or wrong-repository PR',
   );
   requireCondition(
     Number.isSafeInteger(pr.number) && pr.number > 0 && run.pull_requests.length === 1,
     'Ambiguous run PR',
   );
   const association = run.pull_requests[0];
-  const tested = testedIdentity(records.jobs, run);
   requireCondition(
     association.number === pr.number &&
-      association.head.sha === pr.head.sha &&
       association.head.repo.id === repository.id &&
-      association.base.repo.id === repository.id &&
-      run.head_branch === pr.head.ref,
-    'Superseded PR head or wrong association',
+      association.base.repo.id === repository.id,
+    'Wrong PR association',
   );
   requireCondition(
-    [pr.head.sha, records.mergeCommit, run.head_sha].every((sha) => commitPattern.test(sha)),
+    [pr.head.sha, association.head.sha, run.head_sha].every((sha) => commitPattern.test(sha)),
     'Invalid commit SHA',
   );
+  requireCondition(pr.state === 'open' || pr.state === 'closed', 'Invalid PR state');
+  requireCurrent(run.run_attempt === expected.attempt, 'Superseded run attempt');
+  requireCondition(run.status === 'completed' && run.conclusion === 'success', 'CI did not succeed');
+  requireCurrent(pr.state === 'open' && pr.base.ref === repository.default_branch, 'Closed or wrong-base PR');
+  requireCurrent(
+    association.head.sha === pr.head.sha && run.head_branch === pr.head.ref,
+    'Superseded PR head',
+  );
+}
+
+export function verifyRecords(records: VerificationRecords, expected: ExpectedRun) {
+  verifyCurrentRun(records, expected);
+  const { repository, workflow, run, pr } = records;
+  const tested = testedIdentity(records.jobs, run);
+  requireCondition(commitPattern.test(records.mergeCommit), 'Invalid commit SHA');
   requireCondition(
     records.mergeCommit !== pr.head.sha &&
       records.mergeCommit === tested.merge &&
@@ -228,7 +249,7 @@ export function verifyRecords(records: VerificationRecords, expected: ExpectedRu
     records.runs.some((candidate) => candidate.id === run.id && candidate.run_attempt === run.run_attempt),
     'Current run missing from GitHub inventory',
   );
-  requireCondition(
+  requireCurrent(
     !records.runs.some(
       (candidate) =>
         candidate.workflow_id === workflow.id &&
@@ -372,6 +393,9 @@ export class GitHub {
     );
 
     requireCondition(commitPattern.test(pr.head.sha), 'Invalid PR head');
+    // Classify independently observed changes before fetching attempt-specific
+    // jobs; a newer attempt may still be running or have no complete inventory.
+    verifyCurrentRun({ repository, workflow, run, pr }, expected);
 
     // Finite inventories fail closed at the page boundary instead of silently
     // accepting a truncated list. Current CI has < 20 jobs/artifacts.

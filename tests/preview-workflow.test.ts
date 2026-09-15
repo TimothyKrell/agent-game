@@ -71,7 +71,7 @@ it('validates YAML credential boundaries, pinned default checkout, complete CI j
         expect(step.uses ?? '').not.toMatch(/cache|download-artifact|\.\/\.github\/actions/);
 
         if (step.env?.PREVIEW_DEPLOY_TOKEN) {
-          expect(step.run).toMatch(/^node scripts\/preview-controller\.ts (deploy|cleanup)$/);
+          expect(step.run).toMatch(/^node scripts\/preview-controller\.ts (deploy|cleanup|retire)$/);
           expect(step.env.PREVIEW_DEPLOY_TOKEN).toBe('${{ secrets.TRUSTED_PREVIEW_CLOUDFLARE_API_TOKEN }}');
         }
       }
@@ -143,9 +143,8 @@ it('executes the trusted command wrapper with hostile PR scripts present without
   );
   expect(JSON.parse(await readFile(recorded, 'utf8'))).toEqual({
     argv: [
-      resolve(trusted, 'node_modules/alchemy/bin/alchemy.ts'),
+      resolve(trusted, 'scripts/preview-alchemy.ts'),
       'deploy',
-      resolve(trusted, 'alchemy.run.ts'),
       '--stage',
       'pr-27',
       '--profile',
@@ -192,6 +191,32 @@ it('posts honest tested-merge/artifact status and includes R2 in cleanup comment
   expect(body).toContain(`Actual build / tested merge commit: \`${merge}\``);
   expect(body).toContain('artifact `preview-bundle-100-2` (ID 700)');
   expect(body).toContain('**not configured**');
+
+  const ready = {
+    ...deliveryProof(verifyRecords(records(), expected), 'b'.repeat(64), base, 'tk-d86'),
+    sourceRegistration: {
+      status: 'ready',
+      sourceOrigin: 'https://source.example.test',
+      incarnation: 'registered-incarnation',
+      commit: merge,
+      readback: 'verified',
+      livePlay: { sourceConfigured: true, targetConfigured: false, capacityReserved: false },
+    },
+  };
+
+  await writeFile(proofPath, canonical(ready));
+  execFileSync(process.execPath, ['scripts/preview-comment.mjs', 'deployed'], { env });
+  const readyComment = await readFile(output, 'utf8');
+  expect(readyComment).toContain('Source-account registration is **ready**');
+  expect(readyComment).toContain('Source discovery livePlay: true');
+  expect(readyComment).toContain('Live queue admission on this target is **not configured**');
+  await writeFile(
+    proofPath,
+    canonical({ ...ready, sourceRegistration: { ...ready.sourceRegistration, readback: 'pending' } }),
+  );
+  expect(spawnSync(process.execPath, ['scripts/preview-comment.mjs', 'deployed'], { env }).status).not.toBe(
+    0,
+  );
   execFileSync(process.execPath, ['scripts/preview-comment.mjs', 'removed'], { env });
   expect(await readFile(output, 'utf8')).toContain('R2 picture bucket');
 });
@@ -303,9 +328,8 @@ it.each([
       expect(child.status, child.stderr).toBe(0);
       expect(JSON.parse(await readFile(capture, 'utf8'))).toEqual({
         argv: [
-          resolve(scratch, 'node_modules/alchemy/bin/alchemy.ts'),
+          resolve(scratch, 'scripts/preview-alchemy.ts'),
           'destroy',
-          resolve(scratch, 'alchemy.run.ts'),
           '--stage',
           'pr-27',
           '--profile',

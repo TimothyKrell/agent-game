@@ -1,0 +1,66 @@
+{
+  "implementationCommit": "3c7bf990a7ecfb8686d33a199a9ccdc37de8d949",
+  "testsRunBeforeCommit": true,
+  "testsWorktreeParent": "12e5c00af446abf8a10c3f15ff6ae1fda286a094",
+  "fullSuiteBeforeFinalResourceBindingAssertions": true,
+  "finalResourceBindingAssertionsCoveredByRunnerReport": true,
+  "runtimeUnchangedSinceOriginalEvidence": true,
+  "tests": {
+    "passed": 121,
+    "failed": 0,
+    "files": 11,
+    "seconds": 57.814951416015624
+  },
+  "runner": {
+    "passed": 2,
+    "failed": 0,
+    "files": 1,
+    "seconds": 8.166638671875
+  },
+  "unresolvedGenerationGap": {
+    "passed": 0,
+    "failed": 2,
+    "files": 1,
+    "seconds": 4.542369140625,
+    "expectedStatus": "red",
+    "blocksIdentityActivation": true
+  },
+  "checks": {
+    "typecheck": "passed",
+    "repositoryLintDenyWarnings": "passed",
+    "productionBuild": "passed",
+    "scopedPrettier": "passed",
+    "diffCheck": "passed"
+  },
+  "artifact": {
+    "manifestSha256": "b40de2b6192606aebefc12aaad6ed5add56963bd2551a726b3cb296ccb957927",
+    "files": 28,
+    "bytes": 4354556,
+    "branchArchive": {
+      "path": "assets/downloads/previews/3c7bf990a7ecfb8686d33a199a9ccdc37de8d949/c03c9aa85e12ae05d0072e8eaba6c2bbf60caa07167fafaabb64b033d774660e.tgz",
+      "bytes": 18026,
+      "sha256": "c03c9aa85e12ae05d0072e8eaba6c2bbf60caa07167fafaabb64b033d774660e"
+    }
+  },
+  "localOnly": true,
+  "syntheticGitHubIdentity": true,
+  "hostedReleaseAttested": false,
+  "deploymentOrInferenceCalls": 0,
+  "textLogNormalization": "Final blank lines normalized to one newline.",
+  "node": "v24.21.0",
+  "hashes": {
+    "followup-tests.json": "0bb38c41b2c4a35dd49d41c6b8d9a6ab79df084913f601c8276307b8fe30b358",
+    "followup-runner.json": "c8ec69a5d1801619877d108d9f689b9405b28bfb8ecf0444c68687faa28cb039",
+    "generation-gap.json": "d16ea732dfbf10862558fd06cd0d73d0a2291b36ad6558284abe0d28996eafee",
+    "followup-integration.json": "5e5d67384a63be937512d47145ca1e5b8abe67ca57e00b4d49560c7aa44f81c9",
+    "followup-artifact-manifest.json": "b40de2b6192606aebefc12aaad6ed5add56963bd2551a726b3cb296ccb957927",
+    "retry-red.txt": "1ac974b999b178b1e25d2b68c1aa2d820d8124b1c2456b66caaf4cecb17d02db",
+    "followup-tests.txt": "facf4ad9b44e327f837ae114a53c9c3d7f0d7bf0a1c1443427c6d96e485547dc",
+    "followup-runner.txt": "320c1c33cb260673db82a32fa612b7def12b942c2b6b40d298b4f1fd3deb1866",
+    "generation-gap.txt": "3260b9ca1a4d60b5bb4ad70025212cbf6af2939059caf84c813965a3e1b7c21c",
+    "followup-typecheck.txt": "d79cb736a16698caf66005ee46693121fedfd9e2ecefc12e4691089e169486fb",
+    "followup-lint.txt": "42c35bbaa79fb477874f3c8b0c728648268ef0f8015fc759a39fa2d4911e0858",
+    "followup-build.txt": "d9c4a8edae6dba94b4fcc1b3f47d3b8130d00da3b64e7da841628893b0b7e391",
+    "followup-format.txt": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+  }
+}

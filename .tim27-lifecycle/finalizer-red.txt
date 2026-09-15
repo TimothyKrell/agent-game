@@ -1,0 +1,147 @@
+
+ RUN  v4.1.11 /tmp/opencode/agent-game-preview-lifecycle
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+Plan: 5 to create
+[AgentPictures] create
+[Arena] create
+[Arena/AGENT_PICTURES] create
+[Arena/APP_URL] create
+[Arena/BETTER_AUTH_SECRET] create
+[Arena/DB] create
+[Arena/ENVIRONMENT] create
+[Arena/HOUSE_DAILY_BUDGET_USD] create
+[Arena/HOUSE_MATCH_RESERVATION_USD] create
+[Arena/HOUSE_MODEL] create
+[Arena/HOUSE_PROVIDER] create
+[Arena/HOUSE_SEATS] create
+[Arena/HOUSE_SUCCESSION_MATCH_RESERVATION_USD] create
+[Arena/MATCHES] create
+[Arena/MATCHMAKING] create
+[Arena/MAX_CONCURRENT_MATCHES] create
+[Arena/OPENAI_BASE_URL] create
+[Arena/PREVIEW_SOURCE_URL] create
+[Arena/QUEUE_WAIT_SECONDS] create
+[Arena/TIME_SCALE] create
+[Identity] create
+[PreviewAuth] create
+[PreviewIdentity] create
+
+[Identity] pending
+[Identity] creating
+[AgentPictures] pending
+[AgentPictures] creating
+[AgentPictures] created
+[PreviewAuth] pending
+[PreviewAuth] creating
+[PreviewAuth] created
+[PreviewIdentity] pending
+[Arena] pending
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+[PreviewIdentity] creating
+[Identity] created
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+[Arena] creating
+[PreviewIdentity] created
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+[Arena] created
+[AgentPictures] created
+[PreviewAuth] created
+[Identity] created
+[PreviewIdentity] created
+[Arena] created
+
+Done: 10 succeeded
+
+ × tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization 4627ms
+   → expected true to be false // Object.is equality
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+Plan: 5 to create
+[AgentPictures] create
+[Arena] create
+[Arena/AGENT_PICTURES] create
+[Arena/APP_URL] create
+[Arena/BETTER_AUTH_SECRET] create
+[Arena/DB] create
+[Arena/ENVIRONMENT] create
+[Arena/HOUSE_DAILY_BUDGET_USD] create
+[Arena/HOUSE_MATCH_RESERVATION_USD] create
+[Arena/HOUSE_MODEL] create
+[Arena/HOUSE_PROVIDER] create
+[Arena/HOUSE_SEATS] create
+[Arena/HOUSE_SUCCESSION_MATCH_RESERVATION_USD] create
+[Arena/MATCHES] create
+[Arena/MATCHMAKING] create
+[Arena/MAX_CONCURRENT_MATCHES] create
+[Arena/OPENAI_BASE_URL] create
+[Arena/PREVIEW_SOURCE_URL] create
+[Arena/QUEUE_WAIT_SECONDS] create
+[Arena/TIME_SCALE] create
+[Identity] create
+[PreviewAuth] create
+[PreviewIdentity] create
+
+[Identity] pending
+[Identity] creating
+[AgentPictures] pending
+[AgentPictures] creating
+[AgentPictures] created
+[PreviewAuth] pending
+[PreviewAuth] creating
+[PreviewAuth] created
+[PreviewIdentity] pending
+[Arena] pending
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+[PreviewIdentity] creating
+[Identity] created
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+[Arena] creating
+[PreviewIdentity] created
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+[Arena] created
+[AgentPictures] created
+[PreviewAuth] created
+[Identity] created
+[PreviewIdentity] created
+[Arena] created
+
+Done: 10 succeeded
+
+ × tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization 4206ms
+   → expected true to be false // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+ FAIL  tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/preview-finalizer.test.ts:20:25
+     18|   await fixture.finalize().catch(() => {});
+     19|   const after = (await retainedIdentity(fixture.runner.state, 'pr-27')…
+     20|   expect(after.retired).toBe(false);
+       |                         ^
+     21|   expect(after.incarnation).toBe(before.incarnation);
+     22|   expect(after.delivery).toEqual(before.delivery);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  02:02:13
+   Duration  11.44s (transform 292ms, setup 0ms, import 2.52s, tests 8.83s, environment 0ms)
+
+JSON report written to /tmp/opencode/agent-game-preview-lifecycle/.tim27-lifecycle/finalizer-red.json

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { GitHub, verifyRecords, verifyManifestIdentity, boundedResponse } from '../scripts/preview-github.ts';
+import {
+  GitHub,
+  PreviewEligibilityChanged,
+  verifyRecords,
+  verifyManifestIdentity,
+  boundedResponse,
+} from '../scripts/preview-github.ts';
 import type { VerificationRecords } from '../scripts/preview-github.ts';
 import { deliveryProof, previewTarget } from '../scripts/preview-controller.ts';
 import { records, expected, base, head, merge } from './fixtures/preview-github';
@@ -195,6 +201,17 @@ describe('trusted GitHub delivery eligibility', () => {
     const record = records();
     change(record);
     expect(() => verifyRecords(record, expected)).toThrow();
+    let failure: unknown;
+
+    try {
+      verifyRecords(record, expected);
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(failure instanceof PreviewEligibilityChanged).toBe(
+      ['rerun attempt', 'closed PR', 'superseded PR head', 'newer failed CI'].includes(_name),
+    );
   });
 
   it.each([
@@ -257,8 +274,10 @@ describe('trusted GitHub delivery eligibility', () => {
   it('queries live API inventories again, rejecting a synchronization between checks', async () => {
     const record = records();
     const paths: string[] = [];
+    let unavailable = false;
 
     const fetcher: typeof fetch = async (url) => {
+      if (unavailable) throw new Error('Synthetic GitHub unavailable');
       const path = new URL(String(url)).pathname.replace('/repos/TimothyKrell/agent-game', '');
       paths.push(path);
 
@@ -287,9 +306,14 @@ describe('trusted GitHub delivery eligibility', () => {
     const api = new GitHub(expected.repository, 'synthetic-github-token', fetcher);
     expect((await api.verify(expected, base)).builtCommit).toBe(merge);
     record.pr = { ...record.pr, head: { ...record.pr.head, sha: base } };
-    await expect(api.verify(expected, base)).rejects.toThrow();
+    await expect(api.verify(expected, base)).rejects.toBeInstanceOf(PreviewEligibilityChanged);
     expect(paths.filter((path) => path === '/pulls/27')).toHaveLength(2);
     expect(paths).toContain('/actions/runs/100/attempts/2/jobs');
+    record.pr = records().pr;
+    record.run = { ...record.run, run_attempt: 3, status: 'in_progress', conclusion: null };
+    await expect(api.verify(expected, base)).rejects.toBeInstanceOf(PreviewEligibilityChanged);
+    unavailable = true;
+    await expect(api.verify(expected, base)).rejects.not.toBeInstanceOf(PreviewEligibilityChanged);
   });
 
   it('pins the original tested merge across base advancement before delivery, before publication and on a full rerun', async () => {

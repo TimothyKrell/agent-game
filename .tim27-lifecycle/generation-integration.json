@@ -1,0 +1,79 @@
+{
+  "localOnly": true,
+  "syntheticGitHubIdentity": true,
+  "publication": {
+    "version": 1,
+    "sourceOrigin": "https://localhost",
+    "targetOrigin": "https://agent-game-pr-27.test.workers.dev",
+    "incarnation": "630079b0-d955-4a91-8117-f5adfeece252",
+    "commit": "dd998d5a9e529990db18ef48f200da29bf30ed33",
+    "executable": {
+      "url": "https://localhost/downloads/agent-game-cli-0.3.0.tgz",
+      "sha256": "9999081559a89be5ea1251d9195beda8bad6775d1915fd440197eb2978d8e616",
+      "bytes": 44554,
+      "version": "0.3.0",
+      "protocols": [
+        1,
+        2
+      ]
+    },
+    "games": [
+      {
+        "gameId": "secret-overlord",
+        "protocol": 1,
+        "rulesVersion": "secret-overlord-1",
+        "rules": {
+          "path": "package/public/rules.md",
+          "bytes": 4870,
+          "sha256": "27bcb315bf3927b2924970eb17459197696789de22fa77972549161729e2ccc3"
+        },
+        "skill": {
+          "path": "package/skills/agent-game/SKILL.md",
+          "bytes": 10329,
+          "sha256": "2d0e539e1d758685caaf05be03d8ef716839b2a8cce4c7458c36c9ea30aa067b"
+        },
+        "protocolFile": {
+          "path": "package/public/protocol.md",
+          "bytes": 6449,
+          "sha256": "29dfa6d7ce2bdd82ca802c629acd17edf6aeece42be7d9916621d1953680b6f2"
+        },
+        "archive": {
+          "url": "https://agent-game-pr-27.test.workers.dev/downloads/previews/dd998d5a9e529990db18ef48f200da29bf30ed33/c03c9aa85e12ae05d0072e8eaba6c2bbf60caa07167fafaabb64b033d774660e.tgz",
+          "sha256": "c03c9aa85e12ae05d0072e8eaba6c2bbf60caa07167fafaabb64b033d774660e",
+          "bytes": 18026
+        }
+      },
+      {
+        "gameId": "succession",
+        "protocol": 2,
+        "rulesVersion": "succession-1",
+        "rules": {
+          "path": "package/public/games/succession/rules.md",
+          "bytes": 12473,
+          "sha256": "51af9c20be2b7d3f34de52240baa2d3802f92dfda6075098c185fbff0c03a63a"
+        },
+        "skill": {
+          "path": "package/skills/agent-game/SKILL.md",
+          "bytes": 10329,
+          "sha256": "2d0e539e1d758685caaf05be03d8ef716839b2a8cce4c7458c36c9ea30aa067b"
+        },
+        "protocolFile": {
+          "path": "package/public/games/succession/protocol.md",
+          "bytes": 8996,
+          "sha256": "67b383a7f4e7b6704bb845cd829b97f41db016b288c9c257fda8fdd4b2db8af3"
+        },
+        "archive": {
+          "url": "https://agent-game-pr-27.test.workers.dev/downloads/previews/dd998d5a9e529990db18ef48f200da29bf30ed33/c03c9aa85e12ae05d0072e8eaba6c2bbf60caa07167fafaabb64b033d774660e.tgz",
+          "sha256": "c03c9aa85e12ae05d0072e8eaba6c2bbf60caa07167fafaabb64b033d774660e",
+          "bytes": 18026
+        }
+      }
+    ]
+  },
+  "checks": 6,
+  "ownerImport": true,
+  "agentHandoff": true,
+  "artifactIndependentRetirement": true,
+  "noPublicRegistrationRoute": true,
+  "inferenceCalls": 0
+}

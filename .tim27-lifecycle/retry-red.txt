@@ -1,0 +1,63 @@
+
+ RUN  v4.1.11 /tmp/opencode/agent-game-preview-lifecycle
+
+ ↓ tests/preview-lifecycle-state.test.ts > persists encrypted identity with the actual Alchemy engine across a serialized cold restart and stable update
+ ↓ tests/preview-lifecycle-state.test.ts > retains a failed-revocation identity and mints a new incarnation only after source retirement/recreation
+ ↓ tests/preview-lifecycle-state.test.ts > fails closed for missing production capability outputs and forged target database aliases
+ ↓ tests/preview-lifecycle-state.test.ts > publishes real source GET artifacts and completes same-owner browser/agent handoffs through both actual Workers
+ ↓ tests/preview-lifecycle-state.test.ts > fences a delayed target configure after a newer commit wins the actual atomic D1 transaction
+ ↓ tests/preview-lifecycle-state.test.ts > fences a delayed source register after a newer commit wins the actual atomic D1 transaction
+ ↓ tests/preview-lifecycle-state.test.ts > recovers a lost source-register acknowledgement with the retained key and rejects stale publication after closure
+stdout | tests/preview-lifecycle-state.test.ts > keeps the registered incarnation through a transient GitHub read failure and retries with the same key
+Plan: 2 to create
+[PreviewAuth] create
+[PreviewIdentity] create
+
+[PreviewAuth] pending
+[PreviewAuth] creating
+[PreviewAuth] created
+[PreviewIdentity] pending
+[PreviewIdentity] creating
+
+stdout | tests/preview-lifecycle-state.test.ts > keeps the registered incarnation through a transient GitHub read failure and retries with the same key
+[PreviewIdentity] created
+[PreviewAuth] created
+[PreviewIdentity] created
+
+Done: 4 succeeded
+
+ × tests/preview-lifecycle-state.test.ts > keeps the registered incarnation through a transient GitHub read failure and retries with the same key 2976ms
+   → expected true to be false // Object.is equality
+ ↓ tests/preview-lifecycle-state.test.ts > requires independent source revision/configuration and current target runtime before broker enablement, without any inference
+ ↓ tests/preview-lifecycle-state.test.ts > recovers a lost retirement acknowledgement without forgetting the incarnation or requiring an artifact
+ ↓ tests/preview-lifecycle-state.test.ts > fences a delayed old close after a concurrent retirement and same-proof cold refresh creates a new incarnation
+ ↓ tests/preview-lifecycle-state.test.ts > refuses source capability/migration drift before publishing a key and safely destroys an incomplete create
+ ↓ tests/preview-lifecycle-state.test.ts > tombstones never-published state before destruction and rejects late old-incarnation cleanup after recreation
+ ↓ tests/preview-lifecycle-state.test.ts > keeps retry identity on source outage and closes immediately when eligibility changes after registration
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/preview-lifecycle-state.test.ts > keeps the registered incarnation through a transient GitHub read failure and retries with the same key
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/preview-lifecycle-state.test.ts:600:27
+    598|   }, fixture.fetcher)).rejects.toThrow('connection failure');
+    599|   const pending = (await retainedIdentity(state, 'pr-27'))!.identity;
+    600|   expect(pending.retired).toBe(false);
+       |                           ^
+    601|   expect(pending.incarnation).toBe(identity.incarnation);
+    602|   expect(Redacted.value(pending.encryptedKey)).toBe(Redacted.value(ide…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 skipped (14)
+   Start at  00:47:38
+   Duration  4.44s (transform 352ms, setup 0ms, import 1.37s, tests 2.98s, environment 0ms)

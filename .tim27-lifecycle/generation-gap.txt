@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 /tmp/opencode/agent-game-preview-lifecycle
+
+ × .tim27-lifecycle/generation-gap.test.ts > rejects delayed source write after the predecessor cycles A→B→A 2055ms
+   → expected { outcome: 'accepted', …(1) } to deeply equal { outcome: 'rejected', …(1) }
+ × .tim27-lifecycle/generation-gap.test.ts > rejects delayed target write after the predecessor cycles A→B→A 2051ms
+   → expected { outcome: 'accepted', …(1) } to deeply equal { outcome: 'rejected', …(1) }
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  .tim27-lifecycle/generation-gap.test.ts > rejects delayed source write after the predecessor cycles A→B→A
+ FAIL  .tim27-lifecycle/generation-gap.test.ts > rejects delayed target write after the predecessor cycles A→B→A
+AssertionError: expected { outcome: 'accepted', …(1) } to deeply equal { outcome: 'rejected', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+-   "outcome": "rejected",
++   "commit": "cccccccccccccccccccccccccccccccccccccccc",
++   "outcome": "accepted",
+  }
+
+ ❯ .tim27-lifecycle/generation-gap.test.ts:115:53
+    113|       phase === 'source' ? await sourceRevision(db, lifecycleTargetOri…
+    114|
+    115|     expect({ outcome, commit: current?.commit_id }).toEqual({ outcome:…
+       |                                                     ^
+    116|   },
+    117|   120_000,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  01:11:30
+   Duration  4.54s (transform 108ms, setup 0ms, import 364ms, tests 4.11s, environment 0ms)
+
+JSON report written to /tmp/opencode/agent-game-preview-lifecycle/.tim27-lifecycle/generation-gap.json

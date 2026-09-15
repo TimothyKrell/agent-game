@@ -1,10 +1,11 @@
 import { GameError } from '../game/types';
 import { houseConfigured } from './house-model';
 import { previewEnabled } from './preview-config';
+import type { PreviewDatabase } from './preview-config';
 
 /** Trusted deployment-controller API; defaults off. It does not create or raise an allowance. */
 export async function configurePreviewBroker(
-  env: Pick<Env, 'DB'>,
+  env: { DB: PreviewDatabase },
   input: { enabled: boolean; revision: string },
 ): Promise<void> {
   if (!/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(input.revision)) throw new Error('Invalid broker revision');

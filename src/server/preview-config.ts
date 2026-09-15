@@ -2,6 +2,28 @@ import { symmetricDecrypt, symmetricEncrypt } from 'better-auth/crypto';
 import { GameError } from '../game/types';
 import { isLoopback } from './http';
 
+/** Minimal control-plane database contract; native Worker D1 remains assignable. */
+export interface PreviewStatement {
+  bind(...values: (string | number | null)[]): PreviewStatement;
+  first<T = unknown>(): Promise<T | null>;
+  run<T = unknown>(): Promise<D1Result<T>>;
+}
+
+export interface PreviewDatabase {
+  prepare(sql: string): PreviewStatement;
+  batch<T = unknown>(statements: PreviewStatement[]): Promise<D1Result<T>[]>;
+}
+
+export type PreviewEnvironment = Pick<
+  Env,
+  'ENVIRONMENT' | 'APP_URL' | 'PREVIEW_SOURCE_URL' | 'BETTER_AUTH_SECRET'
+> & { DB: PreviewDatabase };
+
+export type PreviewSourceEnvironment = Pick<
+  PreviewEnvironment,
+  'DB' | 'APP_URL' | 'ENVIRONMENT' | 'PREVIEW_SOURCE_URL'
+>;
+
 export interface PreviewTarget {
   sourceOrigin: string;
   origin: string;
@@ -17,11 +39,11 @@ export interface PreviewRegistration {
   publicKey: string;
 }
 
-export function previewEnabled(env: Env): boolean {
+export function previewEnabled(env: Pick<Env, 'PREVIEW_SOURCE_URL'>): boolean {
   return !!env.PREVIEW_SOURCE_URL;
 }
 
-export function previewOrigin(value: string, env: Env): string {
+export function previewOrigin(value: string, env: Pick<Env, 'ENVIRONMENT'>): string {
   const url = new URL(value);
 
   if (
@@ -33,22 +55,22 @@ export function previewOrigin(value: string, env: Env): string {
   return value;
 }
 
-export function sealPreview(env: Env, value: string): Promise<string> {
+export function sealPreview(env: Pick<Env, 'BETTER_AUTH_SECRET'>, value: string): Promise<string> {
   return symmetricEncrypt({ key: previewSecret(env), data: value });
 }
 
-export function openPreview(env: Env, value: string): Promise<string> {
+export function openPreview(env: Pick<Env, 'BETTER_AUTH_SECRET'>, value: string): Promise<string> {
   return symmetricDecrypt({ key: previewSecret(env), data: value });
 }
 
-function previewSecret(env: Env): string {
+function previewSecret(env: Pick<Env, 'BETTER_AUTH_SECRET'>): string {
   if (!env.BETTER_AUTH_SECRET || env.BETTER_AUTH_SECRET.length < 32)
     throw new GameError('preview-unconfigured', 'Preview authentication secret is not configured.', 503);
 
   return env.BETTER_AUTH_SECRET;
 }
 
-export async function previewTarget(env: Env): Promise<PreviewTarget> {
+export async function previewTarget(env: PreviewEnvironment): Promise<PreviewTarget> {
   if (!previewEnabled(env)) throw new GameError('not-found', 'Preview bridge is not configured.', 404);
 
   const row = await env.DB.prepare(
@@ -67,7 +89,10 @@ export async function previewTarget(env: Env): Promise<PreviewTarget> {
 }
 
 /** Trusted deployment-controller interface. Deliberately has no public HTTP route. */
-export async function registerPreviewTarget(env: Env, registration: PreviewRegistration): Promise<void> {
+export async function registerPreviewTarget(
+  env: Pick<PreviewEnvironment, 'DB' | 'ENVIRONMENT'>,
+  registration: PreviewRegistration,
+): Promise<void> {
   previewOrigin(registration.origin, env);
 
   if (
@@ -93,7 +118,7 @@ export async function registerPreviewTarget(env: Env, registration: PreviewRegis
 
 /** Trusted controller writes target-local configuration using the independent auth secret. */
 export async function configurePreviewTarget(
-  env: Env,
+  env: PreviewEnvironment,
   incarnation: string,
   commit: string,
   privateKey: string,
@@ -123,7 +148,11 @@ export async function configurePreviewTarget(
 }
 
 /** Closing/replacing an incarnation permanently retires it; even trusted retries cannot reopen it. */
-export async function closePreviewTarget(env: Env, origin: string, incarnation: string): Promise<void> {
+export async function closePreviewTarget(
+  env: Pick<PreviewEnvironment, 'DB'>,
+  origin: string,
+  incarnation: string,
+): Promise<void> {
   await env.DB.prepare(
     'UPDATE preview_arenas SET closed_at=? WHERE origin=? AND incarnation=? AND closed_at IS NULL',
   )
