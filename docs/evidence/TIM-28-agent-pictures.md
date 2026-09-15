@@ -130,3 +130,48 @@ Checked against installed Alchemy **2.0.0-beta.76**, Wrangler **4.129.1**, and l
 - [Workers node:zlib](https://developers.cloudflare.com/workers/runtime-apis/nodejs/zlib/): native compression/checksum API compatibility.
 - Installed `node_modules/alchemy/src/Cloudflare/R2/Bucket.ts`: resource constructor, stage-derived names, default/private public access; `Cloudflare/Workers/Worker.ts`: resource env binding and `crons` property.
 - Installed `node_modules/wrangler/config-schema.json`, `@cloudflare/workers-types/index.d.ts`; regenerated `worker-configuration.d.ts` with `npx wrangler types --strict-vars=false`.
+
+## Review correction — response decoding and current-metadata reconciliation
+
+Correction based on `6434591`, after the parent integrated the initial implementation at `7233eb6`. This section supplements the original evidence above.
+
+### Findings and reproduction
+
+1. The picture client parsed `response.json()` before classifying HTTP errors. Native HTTP tests reproduced non-JSON `401`, `403`, and `503` becoming `SyntaxError`; malformed `200` JSON also bypassed the unreadable-picture error. Wrong-shape `200` JSON manufactured status `502`, and structured errors dropped `details`. The initial run of `tests/agent-picture-api.test.ts` had **6 failures and 2 passes**.
+2. The owner control treated a confirmed receipt as current metadata and relied on `useLoad.refresh()` resolving to imply a successful refresh. A real dashboard/browser reproduction committed upload revision 1, lost its response, removed it at revision 2 through another authenticated request, replayed the old receipt, and failed the roster read. The control displayed the obsolete image URL and “Picture saved.” without a retry. The new browser assertion failed as expected. [Before correction](../../../.tim28/captures/correction-reconciliation-before.png).
+
+### Corrected interfaces and behavior
+
+- `src/client/api-response.ts` now owns the shared `ApiError`, cancellation-aware body decoder, `requireApiResponse`, and typed `decodeApiResponse`. `src/client/api.ts` re-exports the same `ApiError` class for existing callers. Ordinary JSON reads and bodyless-result mutations use this boundary; `agent-picture-api.ts` keeps its local binary request construction and uses the same response decoder.
+- Failed HTTP responses preserve their **actual status** with the canonical structured code/message/details or `The request failed (<status>). Please try again.` fallback. An invalid successful body is still an error with the actual successful HTTP status. Picture bodies retain `The server returned an unreadable picture response.` with undefined code; ordinary JSON callers retain their existing unreadable-response text. Cancellation continues to propagate as cancellation, including during success/error body reads.
+- `OwnerAgentPicture` separates a confirmed operation from current-picture metadata. A valid receipt retires the mutation retry and initiates an actual result-bearing `GET /api/agents/:agentId/picture`. Receipt metadata is never assigned to the displayed current picture.
+- While that GET is pending or failed, the control hides the unconfirmed current portrait, disables new mutations, and offers **Retry picture metadata** after failure. This retry sends only a GET. Fresh metadata supplies the current picture/revision; the roster refresh remains a separate update and cannot turn a confirmed mutation into an uncertain one.
+
+| Outcome                                                           | Owner recovery                                                                                                             |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Structured or non-JSON mutation 4xx                               | Refresh owner state; no uncertain mutation retry                                                                           |
+| Network failure, non-JSON 5xx, or invalid successful receipt body | Retain original bytes, precondition, and idempotency key for explicit mutation retry                                       |
+| Valid receipt followed by failed current metadata GET             | Confirm the change, hide the unconfirmed portrait, offer metadata-only retry                                               |
+| Metadata retry returns the newer missing revision                 | Display the removal even if the roster's `useLoad.refresh()` catches another failure; do not resend the confirmed mutation |
+
+[Metadata recovery required](../../../.tim28/captures/correction-metadata-required.png) · [Newer removal reconciled](../../../.tim28/captures/correction-metadata-reconciled.png).
+
+### Correction verification
+
+```bash
+# Red-capable reproductions, run before their respective fixes:
+npx vitest run tests/agent-picture-api.test.ts
+npx playwright test --config .tim28/correction-playwright.config.ts --grep 'confirmed old receipt'
+
+# Passing verification:
+npx vitest run tests/client-api.test.ts tests/agent-picture-api.test.ts tests/succession-replay-data.test.ts
+npx playwright test --config .tim28/correction-playwright.config.ts
+npm run typecheck
+npm run lint
+npm run build
+```
+
+- **27 scoped Vitest tests passed:** the original 8 client API tests, 2 added ordinary-mutation boundary checks, 8 picture transport checks, and 9 existing replay-data tests. The picture tests use a native HTTP server on an OS-assigned local port, preserving raw binary PUT and bodyless DELETE request semantics.
+- **6 correction browser tests passed** through the actual dashboard/component, `useLoad`, local Worker, D1, and R2. They cover both non-JSON 4xx classifications, uncertain 503/malformed-200/wrong-shape-200 responses after real commits, same-key retries, and the exact lost-receipt → newer removal → failed GET → metadata-only retry case. The final case explicitly verifies exactly two PUTs and a reconciled removal while the real roster hook retains its previous data after a failed refresh.
+- Typecheck, lint, production build, formatting, and diff checks pass. Full red/green outputs are preserved in `.tim28/correction-*.log`; correction browser scripts/config are retained beside the original probes. Original screenshots and evidence remain intact.
+- Verification remains local on the existing isolated `8828` / `9228` pair and OS-assigned HTTP ports. The browser run printed a non-failing Miniflare/workerd Cap'n Proto diagnostic. This correction changes client response/recovery behavior; the parent's previously passing Worker/D1/R2 results remain the backend evidence.

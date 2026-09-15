@@ -1,7 +1,5 @@
-import { Option, Schema } from 'effect';
-import { ErrorResponseSchema } from '../shared/api';
 import { AgentPictureSchema } from '../shared/agent-picture';
-import { ApiError } from './api';
+import { decodeApiResponse } from './api-response';
 
 export interface PictureChange {
   requestId: string;
@@ -24,19 +22,7 @@ export async function changePicture(agentId: string, change: PictureChange) {
     body: change.file,
   });
 
-  const value: unknown = await response.json();
-
-  if (!response.ok) {
-    const decoded = Schema.decodeUnknownOption(ErrorResponseSchema)(value);
-    const problem = Option.getOrNull(decoded)?.error;
-
-    throw new ApiError(problem?.message ?? 'The picture could not be saved.', problem?.code, response.status);
-  }
-
-  const decoded = Schema.decodeUnknownOption(AgentPictureSchema)(value);
-
-  if (Option.isNone(decoded))
-    throw new ApiError('The server returned an unreadable picture response.', undefined, 502);
-
-  return decoded.value;
+  return decodeApiResponse(response, AgentPictureSchema, {
+    unreadableMessage: 'The server returned an unreadable picture response.',
+  });
 }
