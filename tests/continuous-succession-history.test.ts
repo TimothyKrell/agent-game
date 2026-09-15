@@ -263,6 +263,20 @@ it('does not turn observed head growth into delivery and completes the frozen wi
   expect(client.getQueryCache().getAll()).toHaveLength(0);
 });
 
+it('loads bounded history edges directly and rejects a failed edge replacement', async () => {
+  const state = transport();
+  const { reader: reading } = reader(400);
+  await ready(reading);
+  await reading.jumpEnd();
+  expect(reading.getSnapshot()).toMatchObject({ after: 272, delivered: 400, following: false });
+  expect(reading.getSnapshot().rows).toHaveLength(128);
+  await reading.jumpStart();
+  expect(reading.getSnapshot()).toMatchObject({ after: 0, delivered: 128, following: false });
+  state.malformed = true;
+  await expect(reading.jumpEnd()).rejects.toThrow('unreadable response');
+  expect(reading.getSnapshot()).toMatchObject({ status: 'error', after: 0, delivered: 128 });
+});
+
 it('preserves zero-event and unavailable baselines honestly, then follows new records without freezing at zero', async () => {
   const state = transport();
   state.head = 0;

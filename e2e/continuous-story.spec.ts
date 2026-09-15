@@ -269,6 +269,23 @@ test('reads 2,048 canonical messages forward/backward through eviction and revis
   });
 });
 
+test('jumps directly to bounded history edges without repeated boundary traversal', async ({ page }) => {
+  const { control, faults } = await harness(page, 900);
+  await ready(page);
+  const initialRequests = control.requests;
+  await page.getByRole('button', { name: 'End primary', exact: true }).click();
+  await expect(timeline(page)).toHaveAttribute('data-story-after', '772');
+  await expect(timeline(page)).toHaveAttribute('data-story-delivered', '900');
+  expect(control.requests - initialRequests).toBe(4);
+  await expect(timeline(page).locator('[data-story-key]')).toHaveCount(128);
+  await page.getByRole('button', { name: 'Start primary', exact: true }).click();
+  await expect(timeline(page)).toHaveAttribute('data-story-after', '0');
+  await expect(timeline(page)).toHaveAttribute('data-story-delivered', '128');
+  expect(control.requests - initialRequests).toBe(8);
+  await expect(timeline(page).locator('[data-story-key]')).toHaveCount(128);
+  expect(faults).toEqual([]);
+});
+
 test('holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading', async ({
   page,
 }) => {

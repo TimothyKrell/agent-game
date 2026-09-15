@@ -64,6 +64,8 @@ export function useSuccessionStory(
     ...snapshot,
     loadEarlier: reader.loadEarlier,
     loadLater: reader.loadLater,
+    jumpStart: reader.jumpStart,
+    jumpEnd: reader.jumpEnd,
     follow: reader.follow,
     detach: reader.detach,
     retry: reader.retry,

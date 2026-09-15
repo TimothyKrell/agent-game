@@ -46,6 +46,18 @@
   color: var(--replay-accent);
 }
 
+.replay-ui .dossier-chapter-navigation button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.replay-ui .dossier-reader-error {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--replay-destructive);
+  color: var(--replay-destructive);
+  font-size: 12px;
+}
+
 .replay-ui .dossier-chapter-end {
   height: 1px;
   scroll-margin-bottom: 12px;

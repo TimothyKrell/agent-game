@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { RefCallback } from 'react';
 import { dossierTraversalDirection } from './dossier-navigation-intent';
 
@@ -7,8 +7,8 @@ export type DossierAct = 1 | 2;
 export type DossierActEdge = 'start' | 'end';
 
 export interface DossierActNavigation {
-  /** Optional bounded-reader integration. The dossier still performs the visible document jump. */
-  onNavigate?: (edge: DossierActEdge) => void | Promise<void>;
+  /** Resolves only after the requested bounded edge window has been committed. */
+  onNavigate: (edge: DossierActEdge) => Promise<void>;
 }
 
 interface DossierReaderOptions {
@@ -27,6 +27,10 @@ interface PendingJump {
   edge: DossierActEdge;
 }
 
+function nextFrame() {
+  return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
 function instantScrollBy(top: number) {
   if (!dossierTraversalDirection(0, top)) return;
   window.scrollBy({ top, behavior: 'instant' });
@@ -41,7 +45,13 @@ export function useSuccessionDossierReader({ open, setOpen, navigation }: Dossie
   const headings = useRef<Record<DossierAct, HTMLElement | null>>({ 1: null, 2: null });
   const endings = useRef<Record<DossierAct, HTMLElement | null>>({ 1: null, 2: null });
   const pendingAnchor = useRef<PendingAnchor | null>(null);
-  const pendingJump = useRef<PendingJump | null>(null);
+  const navigationTicket = useRef(0);
+  const latestNavigation = useRef(navigation);
+  const latestSetOpen = useRef(setOpen);
+  latestNavigation.current = navigation;
+  latestSetOpen.current = setOpen;
+  const [pendingJump, setPendingJump] = useState<PendingJump | null>(null);
+  const [navigationError, setNavigationError] = useState('');
 
   const sectionRef = useCallback(
     (act: DossierAct): RefCallback<HTMLElement> =>
@@ -84,21 +94,10 @@ export function useSuccessionDossierReader({ open, setOpen, navigation }: Dossie
     target.scrollIntoView({ block: edge === 'start' ? 'start' : 'end', behavior: 'instant' });
   }, []);
 
-  const jump = useCallback(
-    (act: DossierAct, edge: DossierActEdge) => {
-      void navigation?.[act]?.onNavigate?.(edge);
-
-      if (!open[act]) {
-        pendingJump.current = { act, edge };
-        setOpen(act, true);
-
-        return;
-      }
-
-      performJump(act, edge);
-    },
-    [navigation, open, performJump, setOpen],
-  );
+  const jump = useCallback((act: DossierAct, edge: DossierActEdge) => {
+    setNavigationError('');
+    setPendingJump({ act, edge });
+  }, []);
 
   useLayoutEffect(() => {
     const anchor = pendingAnchor.current;
@@ -109,14 +108,40 @@ export function useSuccessionDossierReader({ open, setOpen, navigation }: Dossie
 
       if (heading) instantScrollBy(heading.getBoundingClientRect().top - anchor.top);
     }
+  }, [open[1], open[2]]);
 
-    const requested = pendingJump.current;
+  useLayoutEffect(() => {
+    if (!pendingJump) return;
+    const { act, edge } = pendingJump;
 
-    if (requested && open[requested.act]) {
-      pendingJump.current = null;
-      performJump(requested.act, requested.edge);
+    if (!open[act]) {
+      latestSetOpen.current(act, true);
+
+      return;
     }
-  }, [open[1], open[2], performJump]);
 
-  return { sectionRef, headingRef, endingRef, toggle, jump };
+    const ticket = ++navigationTicket.current;
+
+    const navigate = async () => {
+      // Opening a chapter enables its history reader in a passive effect. Wait
+      // through the next frame before asking that reader to replace its window.
+      await nextFrame();
+      await latestNavigation.current?.[act]?.onNavigate(edge);
+      // The external-store publication resolves before React is required to
+      // commit its replacement rows. Position only after that commit frame.
+      await nextFrame();
+
+      if (ticket !== navigationTicket.current) return;
+      performJump(act, edge);
+      setPendingJump(null);
+    };
+
+    navigate().catch(() => {
+      if (ticket !== navigationTicket.current) return;
+      setPendingJump(null);
+      setNavigationError('The record edge could not be loaded. Retry from this chapter.');
+    });
+  }, [open[1], open[2], pendingJump, performJump]);
+
+  return { sectionRef, headingRef, endingRef, toggle, jump, pendingJump, navigationError };
 }

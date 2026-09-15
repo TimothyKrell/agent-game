@@ -177,14 +177,27 @@ function DossierContent({
                     className="dossier-chapter-navigation"
                     aria-label={`Act ${chapter === 1 ? 'I' : 'II'} navigation`}
                   >
-                    <button type="button" onClick={() => reader.jump(chapter, 'start')}>
+                    <button
+                      type="button"
+                      disabled={reader.pendingJump?.act === chapter}
+                      onClick={() => reader.jump(chapter, 'start')}
+                    >
                       Start
                     </button>
-                    <button type="button" onClick={() => reader.jump(chapter, 'end')}>
+                    <button
+                      type="button"
+                      disabled={reader.pendingJump?.act === chapter}
+                      onClick={() => reader.jump(chapter, 'end')}
+                    >
                       {status === 'active' && act === chapter ? 'Latest' : 'End'}
                     </button>
                   </span>
                 </h2>
+                {reader.navigationError && (
+                  <div className="dossier-reader-error" role="alert">
+                    {reader.navigationError}
+                  </div>
+                )}
                 <CollapsibleContent>
                   {open &&
                     (renderChapter ? (
