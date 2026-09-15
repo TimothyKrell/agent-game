@@ -5,7 +5,7 @@ import { HistoryPage2Schema } from '../shared/succession';
 import { api } from './api';
 import { HistoryReset, matchReadKey } from './succession-replay-data';
 import type { MatchReadScope } from './succession-replay-data';
-import { historyPath, SuccessionHistory } from './succession-stream';
+import { readAuthorizedHistory } from './succession-history-data';
 
 export const STORY_WINDOW_EVENTS = 128;
 
@@ -37,7 +37,13 @@ export function storyWindowOptions(scope: MatchReadScope, after: number, through
           { signal: shared },
         );
 
-        if ('reset' in result) throw new HistoryReset(scope);
+        if (result.matchId !== scope.matchId)
+          throw new Error('The historical baseline belongs to a different match.');
+
+        if ('reset' in result) {
+          if (result.reset) throw new HistoryReset(scope);
+          throw new Error('The checkpoint endpoint returned an unexpected history page.');
+        }
 
         if (
           result.matchId !== scope.matchId ||
@@ -49,38 +55,12 @@ export function storyWindowOptions(scope: MatchReadScope, after: number, through
         return result.baseline ?? undefined;
       };
 
-      const records = async () => {
-        const reader = new SuccessionHistory();
-        reader.observe({ visibilityEpoch: scope.epoch, streamHead: through });
-        reader.seek(after, through);
-
-        // Even a maximum-byte event must make progress. Never walk beyond this selected window.
-        for (let requests = 0; reader.cursor < through && requests < STORY_WINDOW_EVENTS; requests++) {
-          shared.throwIfAborted();
-          const walk = { epoch: scope.epoch, after: reader.cursor, through };
-
-          const page = await api(historyPath(scope.matchId, walk), HistoryPage2Schema, undefined, {
-            signal: shared,
-          });
-
-          if (page.reset) throw new HistoryReset(scope);
-
-          if (
-            page.matchId !== scope.matchId ||
-            page.events.length > 32 ||
-            new TextEncoder().encode(JSON.stringify(page)).byteLength > 16_384 ||
-            !reader.accept(page, walk)
-          )
-            throw new Error('The history page is incomplete or out of order. Retry this window.');
-        }
-
-        if (reader.cursor !== through) throw new Error('The history window did not complete.');
-
-        return reader.events;
-      };
-
       try {
-        const [baseline, events] = await Promise.all([checkpoint(), records()]);
+        const [baseline, events] = await Promise.all([
+          checkpoint(),
+          readAuthorizedHistory(scope, { after, through }, shared, STORY_WINDOW_EVENTS),
+        ]);
+
         shared.throwIfAborted();
 
         return {

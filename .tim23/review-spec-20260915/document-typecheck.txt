@@ -1,0 +1,6 @@
+
+> agent-game@0.2.0 typecheck
+> tsc --noEmit && tsc --noEmit -p tsconfig.infra.json && tsc --noEmit -p tsconfig.oxlint.json
+
+e2e/continuous-story.spec.ts(416,98): error TS2551: Property 'click' does not exist on type 'HTMLElement | SVGElement'. Did you mean 'onclick'?
+  Property 'click' does not exist on type 'SVGElement'.

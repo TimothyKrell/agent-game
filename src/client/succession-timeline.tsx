@@ -26,6 +26,8 @@ export function SuccessionTimeline({
   const previousScroll = useRef(0);
   const direction = useRef<'earlier' | 'later'>('later');
   const boundaryCheck = useRef(() => {});
+  const ownsPosition = useRef(false);
+  const wasEnabled = useRef(false);
 
   const top = () => (scrollRoot === 'self' ? (root.current?.getBoundingClientRect().top ?? 0) : 0);
 
@@ -39,10 +41,34 @@ export function SuccessionTimeline({
     else window.scrollBy({ top: delta, behavior: 'instant' });
   };
 
+  const ownsViewport = () => {
+    // Document readers share a scroller. The first visible reader owns it, unless a
+    // visible row in another reader has focus; offscreen anchors never claim it.
+    if (scrollRoot === 'self') return true;
+
+    const visible = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-story-scroll-root="document"]'),
+    ).filter((element) => {
+      const rect = element.getBoundingClientRect();
+
+      return rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight;
+    });
+
+    const focused = document.activeElement;
+    const focusRect = focused?.getBoundingClientRect();
+
+    const focusedReader =
+      focusRect && focusRect.bottom > 0 && focusRect.top < window.innerHeight
+        ? visible.find((element) => focused !== element && element.contains(focused))
+        : undefined;
+
+    return (focusedReader ?? visible[0]) === root.current;
+  };
+
   const remember = () => {
     const container = root.current;
 
-    if (!container || !latest.current.enabled) return;
+    if (!container || !latest.current.enabled || !ownsPosition.current) return;
     const elements = Array.from(container.querySelectorAll<HTMLElement>('[data-story-key]'));
     const focused = elements.find((element) => element.contains(document.activeElement));
 
@@ -63,7 +89,7 @@ export function SuccessionTimeline({
   };
 
   const restore = () => {
-    if (!latest.current.enabled || !root.current) return;
+    if (!latest.current.enabled || !root.current || !ownsPosition.current || !ownsViewport()) return;
     adjusting.current = true;
 
     if (latest.current.following) {
@@ -88,8 +114,12 @@ export function SuccessionTimeline({
   };
 
   useLayoutEffect(() => {
+    if (!reader.enabled) ownsPosition.current = false;
+    else if (!wasEnabled.current) ownsPosition.current = ownsViewport();
+    wasEnabled.current = reader.enabled;
+    // Status/follow/head-only snapshots do not replace rows or move the reading anchor.
     restore();
-  });
+  }, [reader.version, reader.enabled, scrollRoot]);
 
   useEffect(() => {
     boundaryCheck.current();
@@ -107,6 +137,9 @@ export function SuccessionTimeline({
       const current = latest.current;
 
       if (!current.enabled || current.status !== 'ready') return;
+
+      if (!ownsViewport()) return;
+      ownsPosition.current = true;
       const first = start.current?.getBoundingClientRect();
       const last = end.current?.getBoundingClientRect();
 
@@ -139,6 +172,9 @@ export function SuccessionTimeline({
 
     const intent = (delta: number) => {
       if (!delta) return;
+      ownsPosition.current = ownsViewport();
+
+      if (!ownsPosition.current) return;
       direction.current = delta < 0 ? 'earlier' : 'later';
 
       if (delta < 0) latest.current.detach();
@@ -162,7 +198,15 @@ export function SuccessionTimeline({
 
     const scroll = () => {
       if (adjusting.current) return;
+      ownsPosition.current = ownsViewport();
       const currentPosition = position();
+
+      if (!ownsPosition.current) {
+        previousScroll.current = currentPosition;
+
+        return;
+      }
+
       const edge = end.current?.getBoundingClientRect().bottom ?? Infinity;
 
       if (Math.abs(currentPosition - previousScroll.current) > 2)
@@ -191,6 +235,9 @@ export function SuccessionTimeline({
         !event.target.closest('[data-story-key]')
       )
         return;
+      ownsPosition.current = ownsViewport();
+
+      if (!ownsPosition.current) return;
 
       if (event.target instanceof HTMLElement) {
         const row = event.target.closest<HTMLElement>('[data-story-cursor]');
@@ -267,6 +314,7 @@ export function SuccessionTimeline({
 
         if (distance === undefined) return;
         event.preventDefault();
+        ownsPosition.current = ownsViewport();
         direction.current = distance < 0 ? 'earlier' : 'later';
         latest.current.detach();
         move(distance);
@@ -275,6 +323,7 @@ export function SuccessionTimeline({
       }}
       aria-busy={reader.status === 'loading'}
       data-story-window=""
+      data-story-scroll-root={scrollRoot}
       data-story-after={reader.after}
       data-story-delivered={reader.delivered}
     >
@@ -292,9 +341,11 @@ export function SuccessionTimeline({
       <div role="status" aria-live="polite">
         {reader.status === 'loading'
           ? 'Loading record…'
-          : reader.status === 'ready' && reader.rows.length === 0
-            ? 'No records yet.'
-            : ''}
+          : reader.status === 'paused'
+            ? 'Offline. Waiting for connection to load the record.'
+            : reader.status === 'ready' && reader.rows.length === 0
+              ? 'No records yet.'
+              : ''}
       </div>
       {reader.error && (
         <div role="alert">

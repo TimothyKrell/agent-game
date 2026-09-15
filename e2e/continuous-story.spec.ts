@@ -47,6 +47,7 @@ async function harness(
   documentRoot = false,
   commands = false,
   sparse = false,
+  offline = false,
 ) {
   const pending: (() => Promise<void>)[] = [];
 
@@ -146,7 +147,7 @@ async function harness(
     return route.fulfill({ status: 404 });
   });
   await page.goto(
-    `http://127.0.0.1:6283/${commands ? '?commands' : documentRoot ? '?document' : sparse ? '?sparse' : ''}`,
+    `http://127.0.0.1:6283/${commands ? '?commands' : documentRoot ? '?document' : sparse ? '?sparse' : offline ? '?offline' : ''}`,
   );
 
   return { control, faults };
@@ -155,6 +156,40 @@ async function harness(
 const metrics = (page: Page, name = 'primary') => page.getByLabel(`${name} metrics`, { exact: true });
 
 const timeline = (page: Page, name = 'primary') => page.getByLabel(`${name} timeline`, { exact: true });
+
+test('announces paused Query reads as offline waiting, keeps delivered rows and cancels hidden or unmounted pauses', async ({
+  page,
+}) => {
+  const { control, faults } = await harness(page, 400, false, false, false, true);
+  await expect(metrics(page)).toContainText('"status":"paused"');
+  await expect(timeline(page)).toHaveAttribute('aria-busy', 'false');
+  await expect(timeline(page).getByRole('status')).toHaveText(
+    'Offline. Waiting for connection to load the record.',
+  );
+  expect(control.requests).toBe(0);
+  await page.getByRole('button', { name: 'Go online', exact: true }).click();
+  await ready(page);
+  expect(control.requests).toBe(4);
+  await page.getByRole('button', { name: 'Go offline', exact: true }).click();
+  await page.getByRole('button', { name: 'Follow primary', exact: true }).click();
+  await expect(metrics(page)).toContainText('"status":"paused"');
+  await expect(timeline(page)).toHaveAttribute('data-story-delivered', '128');
+  await expect(timeline(page).locator('[data-story-key]')).toHaveCount(128);
+  await expect(timeline(page)).toHaveAttribute('aria-busy', 'false');
+  await page.getByRole('button', { name: 'Toggle second reader', exact: true }).click();
+  await expect(metrics(page, 'secondary')).toContainText('"status":"paused"');
+  await page.getByRole('button', { name: 'Toggle second reader', exact: true }).click();
+  await page.getByRole('button', { name: 'Toggle chapter', exact: true }).click();
+  await expect(page.getByLabel('cache entries', { exact: true })).toHaveText('0');
+  await page.getByRole('button', { name: 'Go online', exact: true }).click();
+  await expect(metrics(page)).toContainText('"delivered":128');
+  expect(control.requests).toBe(4);
+  await page.getByRole('button', { name: 'Toggle chapter', exact: true }).click();
+  await expect(timeline(page)).toHaveAttribute('data-story-delivered', '400');
+  await ready(page);
+  expect(control.requests).toBe(8);
+  expect(faults).toEqual([]);
+});
 
 async function ready(page: Page, name = 'primary') {
   await expect(metrics(page, name)).toContainText('"status":"ready"');
@@ -329,6 +364,90 @@ test('pauses hidden reading, follows successive frozen live heads, and recovers 
   control.fail = false;
   await timeline(page).getByRole('button', { name: 'Retry', exact: true }).click();
   await expect(timeline(page)).toHaveAttribute('data-story-delivered', '400');
+  expect(faults).toEqual([]);
+});
+
+test('keeps two open document chapters independently reachable through scrolling, focus and window replacement', async ({
+  page,
+}) => {
+  const { control, faults } = await harness(page, 900, true);
+  await ready(page);
+  await page.getByRole('button', { name: 'Toggle second reader', exact: true }).click();
+  await ready(page, 'secondary');
+
+  const target = await timeline(page, 'secondary').evaluate(
+    (root) => window.scrollY + root.getBoundingClientRect().top + 300,
+  );
+
+  await page.evaluate((y) => window.scrollTo(0, y), target);
+
+  const settled = await page.evaluate(
+    () =>
+      new Promise<number>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve(window.scrollY))),
+      ),
+  );
+
+  expect(Math.abs(settled - target)).toBeLessThanOrEqual(1);
+  await timeline(page, 'secondary').focus();
+  const beforeKey = await page.evaluate(() => window.scrollY);
+  await page.keyboard.press('PageDown');
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(beforeKey);
+
+  for (let index = 0; index < 3; index++) {
+    const before = Number(await timeline(page, 'secondary').getAttribute('data-story-delivered'));
+    await timeline(page, 'secondary').evaluate((root) =>
+      window.scrollTo(0, window.scrollY + root.getBoundingClientRect().bottom - window.innerHeight + 80),
+    );
+    await expect
+      .poll(async () => Number(await timeline(page, 'secondary').getAttribute('data-story-delivered')))
+      .toBeGreaterThan(before);
+    await ready(page, 'secondary');
+  }
+
+  for (let index = 0; index < 3; index++) {
+    const before = Number(await timeline(page, 'secondary').getAttribute('data-story-after'));
+    await timeline(page, 'secondary').evaluate((root) =>
+      window.scrollTo(0, window.scrollY + root.getBoundingClientRect().top + 80),
+    );
+    await expect
+      .poll(async () => Number(await timeline(page, 'secondary').getAttribute('data-story-after')))
+      .toBeLessThan(before);
+    await ready(page, 'secondary');
+  }
+
+  const secondFocus = timeline(page, 'secondary').locator('[data-story-key]').nth(25).getByRole('button');
+  await secondFocus.focus();
+  const focusedTop = await secondFocus.evaluate((node) => node.getBoundingClientRect().top);
+  control.head = 950;
+  await page.getByRole('button', { name: 'Refresh A', exact: true }).evaluate((button) => {
+    if (!(button instanceof HTMLButtonElement)) throw new Error('Expected fixture refresh button');
+    button.click();
+  });
+
+  await expect(metrics(page, 'secondary')).toContainText('"head":950');
+  await expect(secondFocus).toBeFocused();
+  expect(await secondFocus.evaluate((node) => node.getBoundingClientRect().top)).toBeCloseTo(focusedTop, 0);
+
+  const firstTarget = await timeline(page).evaluate(
+    (root) => window.scrollY + root.getBoundingClientRect().top + 200,
+  );
+
+  await page.evaluate((y) => window.scrollTo(0, y), firstTarget);
+  await timeline(page).focus();
+  await page.keyboard.press('PageDown');
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(firstTarget);
+  const before = Number(await timeline(page).getAttribute('data-story-delivered'));
+  await timeline(page).evaluate((root) =>
+    window.scrollTo(0, window.scrollY + root.getBoundingClientRect().bottom - window.innerHeight + 80),
+  );
+  await expect
+    .poll(async () => Number(await timeline(page).getAttribute('data-story-delivered')))
+    .toBeGreaterThan(before);
+  await ready(page);
+  await expect(timeline(page).locator('[data-story-key]')).toHaveCount(128);
+  await expect(timeline(page, 'secondary').locator('[data-story-key]')).toHaveCount(128);
+  expect(control.requests).toBeLessThan(48);
   expect(faults).toEqual([]);
 });
 

@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
-import { QueryClient } from '@tanstack/react-query';
+import { onlineManager, QueryClient } from '@tanstack/react-query';
 import { ContinuousSuccessionHistory } from '../src/client/continuous-succession-history';
 import { storyWindowOptions } from '../src/client/succession-story-data';
 import { matchReadScope } from '../src/client/succession-replay-data';
@@ -12,12 +12,16 @@ let fixture: Awaited<ReturnType<typeof continuousStoryFixture>>;
 
 const readers: ContinuousSuccessionHistory[] = [];
 
+const clients: QueryClient[] = [];
+
 beforeAll(async () => {
   fixture = await continuousStoryFixture(500);
 });
 
 afterEach(() => {
   readers.splice(0).forEach((reader) => reader.dispose());
+  clients.splice(0).forEach((client) => client.unmount());
+  onlineManager.setOnline(true);
   vi.unstubAllGlobals();
 });
 
@@ -32,6 +36,8 @@ function transport() {
     denied: false,
     malformed: false,
     hold: false,
+    holdAnchor: false,
+    anchors: 0,
     pending,
     walks,
   };
@@ -44,6 +50,21 @@ function transport() {
       const through = Number(url.searchParams.get('through'));
       const epoch = url.searchParams.get('epoch')!;
       const matchId = url.pathname.split('/')[3];
+
+      if (url.pathname.endsWith('/history-anchor')) {
+        state.anchors++;
+
+        if (state.holdAnchor) await new Promise<void>((resolve) => state.pending.push(resolve));
+
+        return Response.json({
+          protocolVersion: '2',
+          gameId: 'succession',
+          matchId,
+          visibilityEpoch: epoch,
+          cursor:
+            fixture.events.find((event) => event.eventKey === url.searchParams.get('eventKey'))?.id ?? null,
+        });
+      }
 
       if (state.denied)
         return Response.json(
@@ -103,6 +124,8 @@ function transport() {
 
 function reader(head: number, following = false) {
   const client = new QueryClient();
+  client.mount();
+  clients.push(client);
   const reset = vi.fn();
 
   const result = new ContinuousSuccessionHistory(
@@ -122,6 +145,82 @@ function reader(head: number, following = false) {
 async function ready(reader: ContinuousSuccessionHistory) {
   await vi.waitFor(() => expect(reader.getSnapshot().status).toBe('ready'));
 }
+
+it('exposes an offline initial Query read as paused, then resumes exactly once without advancing quiet-table delivery', async () => {
+  const state = transport();
+  onlineManager.setOnline(false);
+  const { reader: reading, client } = reader(400);
+  expect(client.getQueryCache().getAll()[0].state.fetchStatus).toBe('paused');
+  expect(reading.getSnapshot()).toMatchObject({ status: 'paused', delivered: 0, head: 400 });
+  expect(state.walks).toHaveLength(0);
+  onlineManager.setOnline(true);
+  await ready(reading);
+  expect(reading.getSnapshot().delivered).toBe(128);
+  expect(state.walks).toHaveLength(4);
+  onlineManager.setOnline(false);
+  onlineManager.setOnline(true);
+  expect(reading.getSnapshot()).toMatchObject({ status: 'ready', delivered: 128, head: 400 });
+  expect(state.walks).toHaveLength(4);
+});
+
+it('pauses the window after an in-flight anchor read goes offline, retaining delivered rows until one reconnect', async () => {
+  const state = transport();
+  const { reader: reading, client } = reader(400);
+  await ready(reading);
+  const rows = reading.getSnapshot().rows;
+  state.holdAnchor = true;
+  const seeking = reading.seek(fixture.events[300].eventKey);
+  await vi.waitFor(() => expect(state.pending.length).toBe(1));
+  onlineManager.setOnline(false);
+  state.holdAnchor = false;
+  state.pending.splice(0).forEach((resolve) => resolve());
+  await vi.waitFor(() => expect(reading.getSnapshot().status).toBe('paused'));
+  expect(reading.getSnapshot().rows).toBe(rows);
+  expect(reading.getSnapshot().delivered).toBe(128);
+  expect(client.getQueryCache().getAll()).toHaveLength(1);
+  expect(state.walks).toHaveLength(4);
+  onlineManager.setOnline(true);
+  await seeking;
+  await ready(reading);
+  expect(state.anchors).toBe(1);
+  expect(state.walks).toHaveLength(8);
+  expect(reading.getSnapshot().rows.some((row) => row.source.eventKey === fixture.events[300].eventKey)).toBe(
+    true,
+  );
+});
+
+it('hides and disposes paused readers without zombie resumes or affecting another reader in the same Query cache', async () => {
+  const state = transport();
+  const first = reader(400);
+  await ready(first.reader);
+  const second = new ContinuousSuccessionHistory(first.client, fixture.current(400));
+  readers.push(second);
+  onlineManager.setOnline(false);
+  const pending = first.reader.loadLater();
+  second.setEnabled(true);
+  expect(first.reader.getSnapshot().status).toBe('paused');
+  expect(second.getSnapshot().status).toBe('paused');
+  expect(first.client.getQueryCache().getAll()).toHaveLength(2);
+  first.reader.setEnabled(false);
+  await pending;
+  expect(first.reader.getSnapshot()).toMatchObject({ status: 'ready', delivered: 128, enabled: false });
+  expect(first.client.getQueryCache().getAll()).toHaveLength(1);
+  onlineManager.setOnline(true);
+  await ready(second);
+  expect(state.walks).toHaveLength(8);
+  expect(first.reader.getSnapshot().delivered).toBe(128);
+  first.reader.setEnabled(true);
+  await vi.waitFor(() => expect(first.reader.getSnapshot().delivered).toBe(192));
+  onlineManager.setOnline(false);
+  const abandoned = second.loadLater();
+  second.dispose();
+  await abandoned;
+  onlineManager.setOnline(true);
+  expect(state.walks).toHaveLength(12);
+  expect(second.getSnapshot()).toMatchObject({ enabled: false, status: 'ready', delivered: 128 });
+  expect(first.reader.getSnapshot()).toMatchObject({ status: 'ready', delivered: 192 });
+  expect(first.client.getQueryCache().getAll()).toHaveLength(0);
+});
 
 it('uses exact pre-window engine checkpoints across a long chat gap and Tax resource changes', async () => {
   const state = transport();
@@ -252,84 +351,118 @@ it('keeps a newly visible opposite-edge anchor when an older scroll request comp
   expect(client.getQueryCache().getAll()).toHaveLength(0);
 });
 
-it('uses canonical return landmarks for independent act windows and freezes the completed first act on live head growth', async () => {
-  const { initial, transition } = await storyAct2(8);
-  const events = projected([transition], 'public');
-  const start = events.find((event) => event.type === 'act-started')!;
-  const scope = { visibilityEpoch: 'return-public', streamHead: events.length };
-  const current = observeSuccession(transition.state, null, scope);
-  const queries: string[] = [];
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async (path: string) => {
-      queries.push(path);
-      const url = new URL(path, 'http://fixture');
+it.each(['steady', 'in-flight-transition', 'in-flight-head'] as const)(
+  'uses canonical return landmarks for independent act windows with %s and freezes completed Act I on live head growth',
+  async (timing) => {
+    const { created, initial, transition } = await storyAct2(8);
+    const events = projected([created, transition], 'public');
+    const start = events.find((event) => event.type === 'act-started')!;
+    const scope = { visibilityEpoch: 'return-public', streamHead: events.length };
+    const current = observeSuccession(transition.state, null, scope);
+    const queries: string[] = [];
+    const pending: (() => void)[] = [];
+    let transitioned = timing !== 'in-flight-transition';
+    let hold = timing !== 'steady';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string) => {
+        queries.push(path);
+        const url = new URL(path, 'http://fixture');
 
-      const common = {
-        protocolVersion: '2',
-        gameId: 'succession',
-        matchId: initial.id,
-        visibilityEpoch: scope.visibilityEpoch,
-      };
+        const common = {
+          protocolVersion: '2',
+          gameId: 'succession',
+          matchId: initial.id,
+          visibilityEpoch: scope.visibilityEpoch,
+        };
 
-      if (url.pathname.endsWith('/rounds'))
+        if (url.pathname.endsWith('/rounds')) {
+          const result = {
+            ...common,
+            rounds: (transitioned ? [events[0], start] : [events[0]]).map((event) => ({
+              key: `${event.act}:${event.round}`,
+              act: event.act,
+              round: event.round,
+              through: event.id,
+              eventKey: event.eventKey,
+            })),
+          };
+
+          if (hold) await new Promise<void>((resolve) => pending.push(resolve));
+
+          return Response.json(result);
+        }
+
+        const through = Number(url.searchParams.get('through'));
+
+        if (url.pathname.endsWith('/checkpoint')) {
+          const source = events[through - 1];
+
+          const saved =
+            transition.replayFrames.find((frame) => frame.eventKey === source?.eventKey)?.state ?? initial;
+
+          const baseline = observeSuccession(saved, null, { ...scope, streamHead: through });
+          baseline.decision = null;
+          baseline.chat = { ...baseline.chat, open: false, nextSpeakAt: null };
+
+          return Response.json({ ...common, through, baseline });
+        }
+
+        const after = Number(url.searchParams.get('after'));
+
         return Response.json({
           ...common,
-          rounds: [events[0], start].map((event) => ({
-            key: `${event.act}:${event.round}`,
-            act: event.act,
-            round: event.round,
-            through: event.id,
-            eventKey: event.eventKey,
-          })),
+          streamHead: events.length,
+          after,
+          through,
+          cursor: through,
+          events: events.slice(after, through),
+          hasMore: false,
+          reset: false,
         });
-      const through = Number(url.searchParams.get('through'));
+      }),
+    );
+    const client = new QueryClient();
 
-      if (url.pathname.endsWith('/checkpoint')) {
-        const source = events[through - 1];
+    const before =
+      timing === 'in-flight-head'
+        ? { ...current, history: { ...scope, streamHead: start.id } }
+        : transitioned
+          ? current
+          : observeSuccession(initial, null, { ...scope, streamHead: projected([created], 'public').length });
 
-        const saved =
-          transition.replayFrames.find((frame) => frame.eventKey === source?.eventKey)?.state ?? initial;
+    const first = new ContinuousSuccessionHistory(client, before, { act: 1 });
+    const second = new ContinuousSuccessionHistory(client, before, { act: 2 });
+    readers.push(first, second);
+    first.setEnabled(true);
+    second.setEnabled(true);
 
-        const baseline = observeSuccession(saved, null, { ...scope, streamHead: through });
-        baseline.decision = null;
-        baseline.chat = { ...baseline.chat, open: false, nextSpeakAt: null };
+    if (hold) {
+      await vi.waitFor(() => expect(pending.length).toBe(2));
+      transitioned = true;
+      hold = false;
+      first.observe(current);
+      second.observe(current);
+      pending.splice(0).forEach((resolve) => resolve());
+    }
 
-        return Response.json({ ...common, through, baseline });
-      }
-
-      const after = Number(url.searchParams.get('after'));
-
-      return Response.json({
-        ...common,
-        streamHead: events.length,
-        after,
-        through,
-        cursor: through,
-        events: events.slice(after, through),
-        hasMore: false,
-        reset: false,
-      });
-    }),
-  );
-  const client = new QueryClient();
-  const first = new ContinuousSuccessionHistory(client, current, { act: 1 });
-  const second = new ContinuousSuccessionHistory(client, current, { act: 2 });
-  readers.push(first, second);
-  first.setEnabled(true);
-  second.setEnabled(true);
-  await ready(first);
-  await ready(second);
-  expect(first.getSnapshot().rows.every((row) => row.position.act === 1)).toBe(true);
-  expect(first.getSnapshot().delivered).toBe(start.id - 1);
-  expect(second.getSnapshot().rows[0].fact.kind).toBe('act-started');
-  expect(
-    second.getSnapshot().model.end.every((seat) => seat.alive.status !== 'unavailable' && seat.alive.value),
-  ).toBe(true);
-  const requests = queries.length;
-  first.observe({ ...current, history: { ...scope, streamHead: events.length + 100 } });
-  await first.loadLater();
-  expect(queries).toHaveLength(requests);
-  expect(first.getSnapshot().head).toBe(start.id - 1);
-  expect(client.getQueryCache().getAll()).toHaveLength(0);
-});
+    await ready(first);
+    await ready(second);
+    expect(first.getSnapshot().rows.every((row) => row.position.act === 1)).toBe(true);
+    expect(first.getSnapshot().delivered).toBe(start.id - 1);
+    expect(start.id).toBe(6);
+    expect(second.getSnapshot().after).toBe(5);
+    expect(second.getSnapshot().rows[0].fact.kind).toBe('act-started');
+    expect(
+      second.getSnapshot().model.end.every((seat) => seat.alive.status !== 'unavailable' && seat.alive.value),
+    ).toBe(true);
+    const requests = queries.length;
+    const indexes = queries.filter((path) => path.endsWith('/rounds?epoch=return-public')).length;
+    expect(indexes).toBe(timing === 'in-flight-transition' ? 4 : 2);
+    first.observe({ ...current, history: { ...scope, streamHead: events.length + 100 } });
+    await first.loadLater();
+    expect(queries).toHaveLength(requests);
+    expect(first.getSnapshot().head).toBe(start.id - 1);
+    expect(client.getQueryCache().getAll()).toHaveLength(0);
+  },
+);

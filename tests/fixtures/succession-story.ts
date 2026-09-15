@@ -89,7 +89,7 @@ export async function storyAct2(seed = 1) {
     random,
   );
 
-  return { state: advanced.state, random, initial, transition };
+  return { created, state: advanced.state, random, initial, transition };
 }
 
 export function board2(state: SuccessionState) {
