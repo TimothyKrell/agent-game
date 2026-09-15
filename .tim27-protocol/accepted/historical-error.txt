@@ -1,0 +1,25 @@
+[31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mAssertionError[22m: expected undefined to be '1,2' // Object.is equality[39m
+[36m [2m❯[22m Server.<anonymous> tests/cli-succession.test.ts:[2m610:55[22m[39m
+    [90m608|[39m
+    [90m609|[39m   [35mconst[39m server [33m=[39m [34mcreateServer[39m([35masync[39m (request[33m,[39m response) [33m=>[39m {
+    [90m610|[39m     [34mexpect[39m(request[33m.[39mheaders[[32m'x-agent-game-protocols'[39m])[33m.[39m[34mtoBe[39m([32m'1,2'[39m)[33m;[39m
+    [90m   |[39m                                                       [31m^[39m
+    [90m611|[39m     [35mlet[39m body [33m=[39m [32m''[39m[33m;[39m
+    [90m612|[39m
+[90m [2m❯[22m Server.emit node:events:[2m514:28[22m[39m
+[90m [2m❯[22m parserOnIncoming node:_http_server:[2m1293:12[22m[39m
+[90m [2m❯[22m HTTPParser.parserOnHeadersComplete node:_http_common:[2m125:17[22m[39m
+
+[31mThis error originated in "[1mtests/cli-succession.test.ts[22m" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.[39m
+[31mThe latest test that might've caused the error is "[1mpreserves selected game through first pairing and start recursion, then copies the exact action envelope[22m". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.[39m
+[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+
+
+[2m Test Files [22m [1m[32m11 passed[39m[22m[90m (11)[39m
+[2m      Tests [22m [1m[32m92 passed[39m[22m[90m (92)[39m
+[2m     Errors [22m [1m[31m1 error[39m[22m
+[2m   Start at [22m 23:15:17
+[2m   Duration [22m 66.31s[2m (transform 3.00s, setup 0ms, import 5.30s, tests 60.05s, environment 1ms)[22m

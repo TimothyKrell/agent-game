@@ -1,0 +1,56 @@
+{
+  "source": "854eeae7e335b2d1423ec99440bfe0db87af34a3",
+  "current": "508bbef73cbe8726829752baea3aaab0d78b1905",
+  "probes": [
+    {
+      "name": "deliberately omitted header; detector control, not original incident reproduction",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": null,
+          "headerNames": [
+            "host",
+            "connection",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": null,
+          "bodyKeys": []
+        }
+      ],
+      "errors": [
+        {
+          "name": "AssertionError",
+          "code": "ERR_ASSERTION",
+          "actual": null,
+          "expected": "1,2",
+          "request": {
+            "method": "GET",
+            "path": "/api/queue",
+            "protocols": null,
+            "headerNames": [
+              "host",
+              "connection",
+              "accept",
+              "accept-language",
+              "sec-fetch-mode",
+              "user-agent",
+              "accept-encoding"
+            ],
+            "userAgent": "node",
+            "upgrade": null,
+            "authorization": null,
+            "bodyKeys": []
+          }
+        }
+      ]
+    }
+  ],
+  "paidCalls": 0
+}

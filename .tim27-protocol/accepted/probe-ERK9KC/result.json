@@ -1,0 +1,792 @@
+{
+  "source": "854eeae7e335b2d1423ec99440bfe0db87af34a3",
+  "current": "508bbef73cbe8726829752baea3aaab0d78b1905",
+  "probes": [
+    {
+      "name": "success",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/released-0.2.0/package",
+      "revision": "released-0.2.0",
+      "archiveSha256": "47bf567f9609a47c2b5267a11a697a2181b614b022591ec9d13351733cc0056f",
+      "cliSha256": "1041e74a319fc79e99df237261120f42f80fec1c6d9f0ddd31174c7264f03701",
+      "outcome": {
+        "status": "returned"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "503 retry",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/released-0.2.0/package",
+      "revision": "released-0.2.0",
+      "archiveSha256": "47bf567f9609a47c2b5267a11a697a2181b614b022591ec9d13351733cc0056f",
+      "cliSha256": "1041e74a319fc79e99df237261120f42f80fec1c6d9f0ddd31174c7264f03701",
+      "outcome": {
+        "status": "returned"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "JSON 401",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/released-0.2.0/package",
+      "revision": "released-0.2.0",
+      "archiveSha256": "47bf567f9609a47c2b5267a11a697a2181b614b022591ec9d13351733cc0056f",
+      "cliSha256": "1041e74a319fc79e99df237261120f42f80fec1c6d9f0ddd31174c7264f03701",
+      "outcome": {
+        "status": "threw",
+        "name": "Error",
+        "httpStatus": 401,
+        "code": "unauthorized"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "malformed 401",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/released-0.2.0/package",
+      "revision": "released-0.2.0",
+      "archiveSha256": "47bf567f9609a47c2b5267a11a697a2181b614b022591ec9d13351733cc0056f",
+      "cliSha256": "1041e74a319fc79e99df237261120f42f80fec1c6d9f0ddd31174c7264f03701",
+      "outcome": {
+        "status": "threw",
+        "name": "SyntaxError",
+        "httpStatus": null,
+        "code": null
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "protocols": null,
+          "headerNames": [
+            "host",
+            "user-agent",
+            "connection",
+            "accept-encoding"
+          ],
+          "userAgent": "Go-http-client/1.1",
+          "upgrade": null,
+          "authorization": null,
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "protocols": null,
+          "headerNames": [
+            "host",
+            "user-agent",
+            "connection",
+            "accept-encoding"
+          ],
+          "userAgent": "Go-http-client/1.1",
+          "upgrade": null,
+          "authorization": null,
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": [
+        {
+          "name": "AssertionError",
+          "code": "ERR_ASSERTION",
+          "actual": null,
+          "expected": "1,2",
+          "request": {
+            "method": "GET",
+            "path": "/",
+            "protocols": null,
+            "headerNames": [
+              "host",
+              "user-agent",
+              "connection",
+              "accept-encoding"
+            ],
+            "userAgent": "Go-http-client/1.1",
+            "upgrade": null,
+            "authorization": null,
+            "bodyKeys": []
+          }
+        },
+        {
+          "name": "AssertionError",
+          "code": "ERR_ASSERTION",
+          "actual": null,
+          "expected": "1,2",
+          "request": {
+            "method": "GET",
+            "path": "/",
+            "protocols": null,
+            "headerNames": [
+              "host",
+              "user-agent",
+              "connection",
+              "accept-encoding"
+            ],
+            "userAgent": "Go-http-client/1.1",
+            "upgrade": null,
+            "authorization": null,
+            "bodyKeys": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "success",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/854eeae",
+      "revision": "854eeae7e335b2d1423ec99440bfe0db87af34a3",
+      "archiveSha256": "c51380fe2e82d9a5024d8b03439996b2842b4ba6ed970cec6f5b7d365baa2f09",
+      "cliSha256": "4d3255a826bdf36ac28f7a264b99d221006127e9822dc50d5d930d61337e3155",
+      "outcome": {
+        "status": "returned"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "503 retry",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/854eeae",
+      "revision": "854eeae7e335b2d1423ec99440bfe0db87af34a3",
+      "archiveSha256": "c51380fe2e82d9a5024d8b03439996b2842b4ba6ed970cec6f5b7d365baa2f09",
+      "cliSha256": "4d3255a826bdf36ac28f7a264b99d221006127e9822dc50d5d930d61337e3155",
+      "outcome": {
+        "status": "returned"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "JSON 401",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/854eeae",
+      "revision": "854eeae7e335b2d1423ec99440bfe0db87af34a3",
+      "archiveSha256": "c51380fe2e82d9a5024d8b03439996b2842b4ba6ed970cec6f5b7d365baa2f09",
+      "cliSha256": "4d3255a826bdf36ac28f7a264b99d221006127e9822dc50d5d930d61337e3155",
+      "outcome": {
+        "status": "threw",
+        "name": "Error",
+        "httpStatus": 401,
+        "code": "unauthorized"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "malformed 401",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/854eeae",
+      "revision": "854eeae7e335b2d1423ec99440bfe0db87af34a3",
+      "archiveSha256": "c51380fe2e82d9a5024d8b03439996b2842b4ba6ed970cec6f5b7d365baa2f09",
+      "cliSha256": "4d3255a826bdf36ac28f7a264b99d221006127e9822dc50d5d930d61337e3155",
+      "outcome": {
+        "status": "threw",
+        "name": "SyntaxError",
+        "httpStatus": null,
+        "code": null
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "success",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/f932a0e",
+      "revision": "f932a0e9a42400cef3ced5157bca542a4426ef6b",
+      "archiveSha256": "c9c4a5e8c00b1e923b2ef9c6326e2f68b85a69fa43a3d408deee4aa0bfeeeb2c",
+      "cliSha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+      "outcome": {
+        "status": "returned"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "503 retry",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/f932a0e",
+      "revision": "f932a0e9a42400cef3ced5157bca542a4426ef6b",
+      "archiveSha256": "c9c4a5e8c00b1e923b2ef9c6326e2f68b85a69fa43a3d408deee4aa0bfeeeb2c",
+      "cliSha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+      "outcome": {
+        "status": "returned"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "JSON 401",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/f932a0e",
+      "revision": "f932a0e9a42400cef3ced5157bca542a4426ef6b",
+      "archiveSha256": "c9c4a5e8c00b1e923b2ef9c6326e2f68b85a69fa43a3d408deee4aa0bfeeeb2c",
+      "cliSha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+      "outcome": {
+        "status": "threw",
+        "name": "Error",
+        "httpStatus": 401,
+        "code": "unauthorized"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "malformed 401",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/f932a0e",
+      "revision": "f932a0e9a42400cef3ced5157bca542a4426ef6b",
+      "archiveSha256": "c9c4a5e8c00b1e923b2ef9c6326e2f68b85a69fa43a3d408deee4aa0bfeeeb2c",
+      "cliSha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+      "outcome": {
+        "status": "threw",
+        "name": "Error",
+        "httpStatus": 401,
+        "code": "http-error"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "success",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/508bbef",
+      "revision": "508bbef73cbe8726829752baea3aaab0d78b1905",
+      "archiveSha256": "8679e04f2d6220cef3f949da26a3a8cf310484c3469325ba2479340d0e32a987",
+      "cliSha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+      "outcome": {
+        "status": "returned"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "503 retry",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/508bbef",
+      "revision": "508bbef73cbe8726829752baea3aaab0d78b1905",
+      "archiveSha256": "8679e04f2d6220cef3f949da26a3a8cf310484c3469325ba2479340d0e32a987",
+      "cliSha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+      "outcome": {
+        "status": "returned"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        },
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "JSON 401",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/508bbef",
+      "revision": "508bbef73cbe8726829752baea3aaab0d78b1905",
+      "archiveSha256": "8679e04f2d6220cef3f949da26a3a8cf310484c3469325ba2479340d0e32a987",
+      "cliSha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+      "outcome": {
+        "status": "threw",
+        "name": "Error",
+        "httpStatus": 401,
+        "code": "unauthorized"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "malformed 401",
+      "root": "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/probe-ERK9KC/508bbef",
+      "revision": "508bbef73cbe8726829752baea3aaab0d78b1905",
+      "archiveSha256": "8679e04f2d6220cef3f949da26a3a8cf310484c3469325ba2479340d0e32a987",
+      "cliSha256": "b28dd164748644c8437562fc4cf119eb7457825e83ec7abbc0cb60c81882dc1f",
+      "outcome": {
+        "status": "threw",
+        "name": "Error",
+        "httpStatus": 401,
+        "code": "http-error"
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/queue",
+          "protocols": "1,2",
+          "headerNames": [
+            "host",
+            "connection",
+            "x-agent-game-protocols",
+            "authorization",
+            "accept",
+            "accept-language",
+            "sec-fetch-mode",
+            "user-agent",
+            "accept-encoding"
+          ],
+          "userAgent": "node",
+          "upgrade": null,
+          "authorization": "<REDACTED>",
+          "bodyKeys": []
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "paidCalls": 0
+}
