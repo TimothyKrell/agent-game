@@ -17,3 +17,4 @@ public/downloads/*.tgz
 .tim27/runs/
 .tim27-broker/runs/
 .tim27-broker/tim26-baseline/trace.json
+.tim27-broker/correction-tim26-20260915-01/trace.json
