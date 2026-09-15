@@ -1,0 +1,17 @@
+/* Keep the font request top-level: nested @imports inside a layer are invalid. */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Poiret+One&display=swap');
+
+@layer theme, legacy, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme) prefix(tw);
+
+/* One layer, original source order: legacy selectors still compete by specificity. */
+@import './styles.css' layer(legacy);
+@import './luminous.css' layer(legacy);
+@import './sitewide.css' layer(legacy);
+@import './motion.css' layer(legacy);
+@import './succession.css' layer(legacy);
+@import './local-game-controls.css' layer(legacy);
+
+/* No Preflight. Add sources only when their consumers migrate. */
+@import 'tailwindcss/utilities.css' layer(utilities) prefix(tw) source(none);
+@source '../../.tim11/cascade.html';
