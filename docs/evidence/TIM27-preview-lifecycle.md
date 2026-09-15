@@ -208,13 +208,18 @@ its decrypted key, and target broker settings.
   A transient recheck failure preserves the registered incarnation/key for retry.
   Workflow `failure()` schedules a finalizer but grants no retirement authority;
   `PREVIEW_DELIVERY_COMPLETED` is ignored and removed from workflow wiring.
-  Trusted smoke assertions on valid observed data or a valid conflicting source
+  Explicitly classified smoke checks on schema-decoded observations or a valid conflicting source
   tuple produce `preview-failure.json`, bound to repository/PR, CI run/attempt,
   commit/head/incarnation and this controller run/attempt. Malformed/absent
   markers grant nothing. Otherwise the finalizer rechecks GitHub and retires
   only an observed closed PR, changed head or newer tested run/attempt. GitHub
   503, source 503/timeout/malformed data and comment transport failure preserve
   even a completed healthy deployment. Missing readback remains not ready.
+  The [smoke schema correction](../../.tim27-lifecycle/smoke-schema.md) replaces
+  the prior global `AssertionError` rule with `PreviewSmokeInvalid`, produced only
+  after typed observation decoding. Health, socket, assignment, match and archive
+  shapes are checked before semantic assertions; setup/transport/JSON/schema and
+  fatal UTF-8 failures cannot create a marker.
   The fixed Node publication path uses Node-safe settings/target modules to avoid
   importing server code or a top-level-await controller cycle.
 - Cleanup uses retained state, not a PR artifact or release configuration. It

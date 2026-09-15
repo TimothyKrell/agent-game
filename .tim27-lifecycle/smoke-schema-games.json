@@ -1,0 +1,41 @@
+{
+  "at": "2026-09-15T07:17:15.547Z",
+  "sourceCommit": "1111111111111111111111111111111111111111",
+  "server": "https://agent-game-pr-27.test.workers.dev",
+  "matches": [
+    {
+      "gameId": "secret-overlord",
+      "matchId": "match_07b8a92b-8435-47a1-95fc-5e7344e2b0e4",
+      "status": "finished",
+      "winner": "rogue",
+      "socket": {
+        "packets": 450,
+        "maxBytes": 95111,
+        "acts": []
+      }
+    },
+    {
+      "gameId": "succession",
+      "matchId": "match_c10e08c1-6947-4a2f-93ca-bed23875c091",
+      "status": "finished",
+      "winnerSeat": 2,
+      "maxCurrentBytes": 3876,
+      "archiveHead": 3136,
+      "archive": {
+        "pages": 65,
+        "events": 3136,
+        "maxPageBytes": 12278,
+        "maxEventBytes": 5865
+      },
+      "rounds": 22,
+      "socket": {
+        "packets": 1709,
+        "maxBytes": 3913,
+        "acts": [
+          1,
+          2
+        ]
+      }
+    }
+  ]
+}

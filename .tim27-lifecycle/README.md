@@ -1,5 +1,9 @@
 # TIM-27 lifecycle working evidence
 
+**Smoke schema correction:** [typed smoke invalidation](smoke-schema.md) addresses
+the residual health-readback P2 found against `87dda38`. It preserves the generation
+implementation and all original evidence reports below.
+
 **Current follow-up:** [durable generation fencing and classified finalization](generation.md)
 supersede the [earlier blocker](followup.md). The approved additive 0008/helper
 extension is implemented; activation remains default-off pending independent

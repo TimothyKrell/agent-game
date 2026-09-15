@@ -1,0 +1,89 @@
+
+ RUN  v4.1.11 /tmp/opencode/agent-game-preview-lifecycle
+
+stdout | tests/preview-smoke.test.ts > preserves a healthy completed preview after protocol-bearing health {} smoke data
+Plan: 5 to create
+[AgentPictures] create
+[Arena] create
+[Arena/AGENT_PICTURES] create
+[Arena/APP_URL] create
+[Arena/BETTER_AUTH_SECRET] create
+[Arena/DB] create
+[Arena/ENVIRONMENT] create
+[Arena/HOUSE_DAILY_BUDGET_USD] create
+[Arena/HOUSE_MATCH_RESERVATION_USD] create
+[Arena/HOUSE_MODEL] create
+[Arena/HOUSE_PROVIDER] create
+[Arena/HOUSE_SEATS] create
+[Arena/HOUSE_SUCCESSION_MATCH_RESERVATION_USD] create
+[Arena/MATCHES] create
+[Arena/MATCHMAKING] create
+[Arena/MAX_CONCURRENT_MATCHES] create
+[Arena/OPENAI_BASE_URL] create
+[Arena/PREVIEW_SOURCE_URL] create
+[Arena/QUEUE_WAIT_SECONDS] create
+[Arena/TIME_SCALE] create
+[Identity] create
+[PreviewAuth] create
+[PreviewIdentity] create
+
+[Identity] pending
+[Identity] creating
+[AgentPictures] pending
+[AgentPictures] creating
+[AgentPictures] created
+[PreviewAuth] pending
+[PreviewAuth] creating
+[PreviewAuth] created
+[PreviewIdentity] pending
+[Arena] pending
+
+stdout | tests/preview-smoke.test.ts > preserves a healthy completed preview after protocol-bearing health {} smoke data
+[PreviewIdentity] creating
+[Identity] created
+
+stdout | tests/preview-smoke.test.ts > preserves a healthy completed preview after protocol-bearing health {} smoke data
+[Arena] creating
+[PreviewIdentity] created
+
+stdout | tests/preview-smoke.test.ts > preserves a healthy completed preview after protocol-bearing health {} smoke data
+[Arena] created
+[AgentPictures] created
+[PreviewAuth] created
+[Identity] created
+[PreviewIdentity] created
+[Arena] created
+
+Done: 10 succeeded
+
+ × tests/preview-smoke.test.ts > preserves a healthy completed preview after protocol-bearing health {} smoke data 13795ms
+   → expected true to be false // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/preview-smoke.test.ts > preserves a healthy completed preview after protocol-bearing health {} smoke data
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/preview-smoke.test.ts:30:25
+     28|   expect(healthBefore).toEqual({ ok: true, protocolVersion: '1' });
+     29|   expect(healthAfter).toEqual(healthBefore);
+     30|   expect(after.retired).toBe(false);
+       |                         ^
+     31|   await expect(fixture.failure()).rejects.toThrow('ENOENT');
+     32|   await verifySourcePublicationReadback(fixture.publication!, fixture.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  02:55:22
+   Duration  16.15s (transform 183ms, setup 0ms, import 2.27s, tests 13.80s, environment 0ms)
+
+JSON report written to /tmp/opencode/agent-game-preview-lifecycle/.tim27-lifecycle/smoke-schema-red.json
