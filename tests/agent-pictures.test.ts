@@ -1,10 +1,12 @@
 import { execFile } from 'node:child_process';
 import { randomBytes, createHash, randomUUID } from 'node:crypto';
-import { mkdir, mkdtemp, readFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { setTimeout as pause } from 'node:timers/promises';
 import { promisify } from 'node:util';
 import { crc32 } from 'node:zlib';
 import { Schema } from 'effect';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { unstable_dev } from 'wrangler';
 import {
   AgentProfileSchema,
@@ -23,6 +25,16 @@ const png = Buffer.from(
 const origin = 'http://127.0.0.1:8828';
 
 let runtime: Awaited<ReturnType<typeof unstable_dev>>;
+
+let persistTo: string;
+
+let captureTakeoverFailure: (() => Promise<void>) | undefined;
+
+interface TakeoverProgress {
+  stage: string;
+  queue?: typeof QueueStatusSchema.Type;
+  match?: Pick<typeof ObservationSchema.Type, 'matchId' | 'status' | 'phase' | 'cursor' | 'seats'>;
+}
 
 const worker = {
   fetch(path: string, options?: RequestInit) {
@@ -104,11 +116,13 @@ async function picture(response: Response) {
   return Schema.decodeUnknownSync(AgentPictureSchema)(await response.json());
 }
 
-beforeAll(async () => {
-  await mkdir('.tim28/runs', { recursive: true });
-  const persistTo = await mkdtemp(`${process.cwd()}/.tim28/runs/api-`);
-  await promisify(execFile)('npx', [
-    'wrangler',
+beforeEach(async () => {
+  captureTakeoverFailure = undefined;
+  const root = resolve(process.env.GAME_FIXTURE_EVIDENCE_DIR ?? '.tim28/runs');
+  await mkdir(root, { recursive: true });
+  persistTo = await mkdtemp(`${root}/agent-pictures-`);
+  await promisify(execFile)(process.execPath, [
+    'node_modules/wrangler/bin/wrangler.js',
     'd1',
     'migrations',
     'apply',
@@ -131,8 +145,12 @@ beforeAll(async () => {
   });
 }, 60_000);
 
-afterAll(async () => {
-  await runtime?.stop();
+afterEach(async ({ task }) => {
+  try {
+    if (task.result?.state === 'fail') await captureTakeoverFailure?.();
+  } finally {
+    await runtime?.stop();
+  }
 });
 
 describe('local Worker / D1 / R2 stable agent pictures', () => {
@@ -388,17 +406,29 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
     expect(await picture(await worker.fetch(`/api/agents/${profile.id}/picture`))).toEqual(original);
   });
 
-  it('keeps the entrant portrait through an actual house takeover and uses current identity metadata for final games', async () => {
+  it('keeps the entrant portrait through an actual house takeover and uses current identity metadata for final games', async ({
+    signal,
+  }) => {
+    const progress: TakeoverProgress = { stage: 'owner setup' };
+
+    captureTakeoverFailure = async () => {
+      const record = JSON.stringify({ at: Date.now(), ...progress }, null, 2) + '\n';
+      console.error('Agent portrait takeover first failure:', record);
+      await writeFile(`${persistTo}/takeover-failure.json`, record);
+    };
+
     const cookie = await owner();
     const profile = await agent(cookie);
     const original = await picture(await change(profile.id, cookie, 0));
     const token = await pair(cookie, profile.id);
     const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
+    progress.stage = 'queue admission';
     expect(
       (
         await worker.fetch('/api/queue', {
           method: 'POST',
           headers,
+          signal,
           body: JSON.stringify({ requestId: randomUUID() }),
         })
       ).status,
@@ -407,28 +437,39 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
 
     for (let attempt = 0; attempt < 100; attempt++) {
       const queue = Schema.decodeUnknownSync(QueueStatusSchema)(
-        await (await worker.fetch('/api/queue', { headers })).json(),
+        await (await worker.fetch('/api/queue', { headers, signal })).json(),
       );
 
+      progress.queue = queue;
       matchId = queue.matchId;
 
       if (matchId) break;
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await pause(100, undefined, { signal });
     }
 
     expect(matchId).toBeTruthy();
+    progress.stage = 'takeover and game completion';
     let view;
 
     for (let attempt = 0; attempt < 400; attempt++) {
       view = Schema.decodeUnknownSync(ObservationSchema)(
-        await (await worker.fetch(`/api/matches/${matchId}`)).json(),
+        await (await worker.fetch(`/api/matches/${matchId}`, { signal })).json(),
       );
 
+      progress.match = {
+        matchId: view.matchId,
+        status: view.status,
+        phase: view.phase,
+        cursor: view.cursor,
+        seats: view.seats,
+      };
+
       if (view.status === 'finished') break;
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await pause(100, undefined, { signal });
     }
 
     expect(view?.status).toBe('finished');
+    progress.stage = 'finished entrant identity and portrait replacement';
     const seat = view?.seats.find((candidate) => candidate.agentId === profile.id);
     expect(seat).toMatchObject({ house: true, originalHouse: false, forfeited: true, agentId: profile.id });
 
@@ -452,9 +493,9 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
     const profile = await agent(cookie);
     const original = await picture(await change(profile.id, cookie, 0));
     const token = await pair(cookie, profile.id);
-    const persistTo = await mkdtemp(`${process.cwd()}/.tim28/runs/isolation-`);
-    await promisify(execFile)('npx', [
-      'wrangler',
+    const isolatedStorage = await mkdtemp(`${persistTo}/isolation-`);
+    await promisify(execFile)(process.execPath, [
+      'node_modules/wrangler/bin/wrangler.js',
       'd1',
       'migrations',
       'apply',
@@ -463,14 +504,14 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
       '--config',
       '.tim28/wrangler.jsonc',
       '--persist-to',
-      persistTo,
+      isolatedStorage,
     ]);
 
     const isolated = await unstable_dev('.tim28/worker.ts', {
       config: '.tim28/wrangler.jsonc',
       local: true,
       persist: true,
-      persistTo,
+      persistTo: isolatedStorage,
       port: 0,
       inspectorPort: 0,
       logLevel: 'error',
