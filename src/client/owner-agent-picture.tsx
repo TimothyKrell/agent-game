@@ -1,46 +1,95 @@
 import { useId, useRef, useState } from 'react';
 import type { AgentProfile } from '../shared/api';
-import { missingAgentPicture, PICTURE_MAX_BYTES, type AgentPicture } from '../shared/agent-picture';
+import {
+  AgentPictureSchema,
+  missingAgentPicture,
+  PICTURE_MAX_BYTES,
+  type AgentPicture,
+} from '../shared/agent-picture';
 import { changePicture, type PictureChange } from './agent-picture-api';
-import { ApiError } from './api';
+import { api, ApiError } from './api';
+
+type PictureMetadata =
+  { state: 'initial' } | { state: 'required' } | { state: 'loaded'; picture: AgentPicture };
 
 export function OwnerAgentPicture({ agent, refresh }: { agent: AgentProfile; refresh: () => Promise<void> }) {
   const helpId = useId();
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [saved, setSaved] = useState<AgentPicture | null>(null);
+  const [metadata, setMetadata] = useState<PictureMetadata>({ state: 'initial' });
   const [retry, setRetry] = useState<PictureChange | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const profilePicture = agent.picture ?? missingAgentPicture;
-  const picture = saved && saved.revision > profilePicture.revision ? saved : profilePicture;
+
+  const picture =
+    metadata.state === 'loaded' && metadata.picture.revision > profilePicture.revision
+      ? metadata.picture
+      : profilePicture;
+
+  const needsMetadata = metadata.state === 'required';
+
+  async function reconcilePicture() {
+    setPending(true);
+    setMetadata({ state: 'required' });
+    setError('');
+    setStatus('Picture change confirmed. Refreshing current picture…');
+    let current: AgentPicture;
+
+    try {
+      // A receipt can describe an older successful operation. Only a current, result-bearing read
+      // can supply display metadata; the dashboard's useLoad refresh catches its own failures.
+      current = await api(`/api/agents/${encodeURIComponent(agent.id)}/picture`, AgentPictureSchema);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The current picture could not be loaded.');
+      setStatus('Picture change confirmed. Current picture is unavailable until refreshed.');
+      setPending(false);
+
+      return;
+    }
+
+    setMetadata({ state: 'loaded', picture: current });
+    setStatus(current.state === 'present' ? 'Picture saved.' : 'Picture removed.');
+
+    try {
+      await refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The roster could not be refreshed.');
+    } finally {
+      setPending(false);
+    }
+  }
 
   async function submit(change: PictureChange) {
-    if (pending) return;
+    if (pending || needsMetadata) return;
     setPending(true);
     setError('');
     setStatus('Saving picture…');
 
     try {
-      const result = await changePicture(agent.id, change);
-      setSaved(result);
-      setRetry(null);
-      setFile(null);
-
-      if (input.current) input.current.value = '';
-      setStatus(result.state === 'present' ? 'Picture saved.' : 'Picture removed.');
-      await refresh();
+      await changePicture(agent.id, change);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'The picture could not be saved.');
       setStatus('');
       const conflict = cause instanceof ApiError && cause.status >= 400 && cause.status < 500;
       setRetry(conflict ? null : change);
 
-      if (conflict) await refresh();
-    } finally {
-      setPending(false);
+      try {
+        if (conflict) await refresh();
+      } finally {
+        setPending(false);
+      }
+
+      return;
     }
+
+    // Confirmation retires the mutation retry permanently. Metadata recovery never resends it.
+    setRetry(null);
+    setFile(null);
+
+    if (input.current) input.current.value = '';
+    await reconcilePicture();
   }
 
   const change = (next: File | null) =>
@@ -48,9 +97,14 @@ export function OwnerAgentPicture({ agent, refresh }: { agent: AgentProfile; ref
 
   return (
     <details className="roster-setup" aria-label={`Picture for ${agent.name}`}>
-      <summary>Profile picture · {picture.state === 'present' ? 'Uploaded' : 'Optional'}</summary>
+      <summary>
+        Profile picture ·{' '}
+        {needsMetadata ? 'Refresh needed' : picture.state === 'present' ? 'Uploaded' : 'Optional'}
+      </summary>
       <div aria-busy={pending}>
-        {picture.state === 'present' ? (
+        {needsMetadata ? (
+          <p>Refresh metadata to see the current picture.</p>
+        ) : picture.state === 'present' ? (
           <a
             href={picture.url}
             target="_blank"
@@ -79,7 +133,7 @@ export function OwnerAgentPicture({ agent, refresh }: { agent: AgentProfile; ref
               ref={input}
               type="file"
               accept="image/png,image/jpeg"
-              disabled={pending}
+              disabled={pending || needsMetadata}
               aria-describedby={helpId}
               onChange={(event) => {
                 const selected = event.target.files?.[0] ?? null;
@@ -97,13 +151,13 @@ export function OwnerAgentPicture({ agent, refresh }: { agent: AgentProfile; ref
             <button
               className="button ghost small"
               type="button"
-              disabled={pending || !file || !!retry}
+              disabled={pending || needsMetadata || !file || !!retry}
               onClick={() => change(file)}
             >
               {picture.state === 'present' ? 'Replace picture' : 'Upload picture'}
             </button>
           )}
-          {picture.state === 'present' && (
+          {!needsMetadata && picture.state === 'present' && (
             <button
               className="button ghost small"
               type="button"
@@ -121,6 +175,16 @@ export function OwnerAgentPicture({ agent, refresh }: { agent: AgentProfile; ref
               onClick={() => submit(retry)}
             >
               Retry picture change
+            </button>
+          )}
+          {needsMetadata && (
+            <button
+              className="button ghost small"
+              type="button"
+              disabled={pending}
+              onClick={reconcilePicture}
+            >
+              Retry picture metadata
             </button>
           )}
         </div>

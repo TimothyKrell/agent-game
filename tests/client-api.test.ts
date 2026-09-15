@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { afterAll, afterEach, beforeAll, expect, it, vi } from 'vitest';
 import { Schema } from 'effect';
-import { api, ApiError } from '../src/client/api';
+import { api, ApiError, mutate } from '../src/client/api';
 
 const responseSchema = Schema.Struct({ ok: Schema.Boolean });
 
@@ -123,4 +123,20 @@ it('keeps non-JSON and structured HTTP error decoding', async () => {
       message: 'Expired request.',
     }),
   );
+});
+
+it('uses the same structured and non-JSON error boundary for ordinary mutations', async () => {
+  await expect(mutate(`${origin}/error`, {})).rejects.toEqual(
+    new ApiError('The request failed (502). Please try again.', undefined, 502),
+  );
+  await expect(mutate(`${origin}/structured`, {})).rejects.toEqual(
+    new ApiError('Expired request.', 'pairing-expired', 404, {
+      code: 'pairing-expired',
+      message: 'Expired request.',
+    }),
+  );
+});
+
+it('preserves successful mutations that do not consume a response body', async () => {
+  await expect(mutate(`${origin}/malformed`, {})).resolves.toBeUndefined();
 });
