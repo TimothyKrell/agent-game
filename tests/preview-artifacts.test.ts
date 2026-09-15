@@ -39,6 +39,7 @@ beforeAll(async () => {
     '0003_agent_pictures.sql',
     '0004_preview_identity.sql',
     '0006_preview_artifacts.sql',
+    '0007_preview_retirement.sql',
   ]);
 });
 
@@ -193,6 +194,33 @@ it('fences unpublished, stale-commit and retired-incarnation writes and reads', 
     code: 'preview-artifacts-pending',
   });
   await expect(registerPreviewArtifacts(env, input)).rejects.toMatchObject({ code: 'preview-target' });
+});
+
+it('recreates a closed origin with a fresh incarnation without reviving old artifacts or authority', async () => {
+  const first = manifest();
+  await registerArena(first);
+  await registerPreviewArtifacts(env, first);
+  await closePreviewTarget(env, first.targetOrigin, first.incarnation);
+  await closePreviewTarget(env, first.targetOrigin, first.incarnation);
+  const next = { ...first, incarnation: 'incarnation_next' };
+
+  await registerArena(next);
+  await registerArena(next);
+  await expect(readPreviewArtifacts(env, next.targetOrigin, commit)).rejects.toMatchObject({
+    code: 'preview-artifacts-pending',
+  });
+  await registerPreviewArtifacts(env, next);
+  await expect(registerArena(first)).rejects.toThrow('Retired preview incarnation');
+  await expect(registerPreviewArtifacts(env, first)).rejects.toMatchObject({ status: 409 });
+  await closePreviewTarget(env, first.targetOrigin, first.incarnation);
+  expect(await readPreviewArtifacts(env, next.targetOrigin, commit)).toEqual(next);
+  expect(
+    await env.DB.prepare(
+      'SELECT count(*) AS count FROM preview_retired_arenas WHERE origin=? AND incarnation=?',
+    )
+      .bind(first.targetOrigin, first.incarnation)
+      .first('count'),
+  ).toBe(1);
 });
 
 it('rejects target executables, redirected origins, traversal, wrong game paths and unbounded metadata', async () => {

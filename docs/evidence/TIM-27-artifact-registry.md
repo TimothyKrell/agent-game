@@ -45,3 +45,13 @@ The initial test setup exposed that the existing migration helper recognized onl
 Primary reference: [D1 database API](https://developers.cloudflare.com/d1/worker-api/d1-database/) (retrieved 2026-09-15), which documents atomic batched statements and primary reads without the Sessions API. Existing locked Workers types are retained under the repository release-age policy.
 
 CLI consumption, content-addressed archive production and trusted controller publication are coordinated follow-up integration against these exact exports. No hosted registration, deployment, source credential change or paid inference is part of these local checks.
+
+## Independent review and recreation correction
+
+Independent review of `16b83cb...dc60060` found **Standards 0 / Spec 0 new findings** in the artifact seam and independently reran all 16 registry/repository tests. Extra same-commit incarnation-replacement and 64-character-commit/reordered-JSON checks passed.
+
+The reviewer also reproduced a pre-existing identity lifecycle bug: closing incarnation A and then registering fresh B at the same origin failed on A's duplicate tombstone. SQLite applies the outer registry UPSERT conflict policy to trigger writes, overriding `INSERT OR IGNORE` inside migration0004's retirement trigger. Parent independently reproduced the exact real-D1 uniqueness failure (`/tmp/opencode/TIM-27-recreation-red.log`).
+
+Additive migration **0007_preview_retirement.sql** replaces the retirement/delete trigger bodies with explicit `WHERE NOT EXISTS` inserts. Original migration0004 is preserved. The new regression covers repeated close, fresh-incarnation registration and retry, old-artifact invisibility, rejection of retired authority, late old-incarnation cleanup and the single durable tombstone. **17 registry/repository tests pass**, with typecheck/lint/diff checks; green log `/tmp/opencode/TIM-27-recreation-green.log`. Independent correction review follows separately.
+
+Reviewer source/probes are retained at `/tmp/opencode/TIM27-artifact-registry-review/dc60060-8nbn418y/`. The original failed recreation is distinguished from the artifact seam's passing cases.
