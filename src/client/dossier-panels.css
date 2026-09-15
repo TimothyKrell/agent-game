@@ -1,0 +1,94 @@
+/* Succession transition and event panels, kept separate from shared Dossier styling. */
+.replay-ui .dossier-return-heading {
+  margin-bottom: 16px;
+}
+
+.replay-ui .dossier-return-heading small {
+  color: var(--replay-neutral);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.replay-ui .dossier-return-heading h3 {
+  margin: 6px 0;
+  color: var(--replay-accent);
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.replay-ui .dossier-return-heading p {
+  margin: 0;
+  color: var(--replay-muted-foreground);
+  line-height: 1.7;
+}
+
+.replay-ui .dossier-award .dossier-bonus-agents article {
+  align-items: center;
+  text-align: center;
+}
+
+.replay-ui .dossier-award .dossier-bonus-agents .dossier-identity {
+  align-items: center;
+}
+
+.replay-ui .dossier-event-panel {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid transparent;
+  border-image: var(--replay-frame) 16 / 16px;
+  background: var(--replay-surface);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.replay-ui .dossier-event-panel-eliminated {
+  background: var(--replay-departure-background);
+}
+
+.replay-ui .dossier-event-changes {
+  display: grid;
+  gap: 10px;
+}
+
+.replay-ui .dossier-event-change {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.replay-ui .dossier-event-change > strong {
+  font-size: 13px;
+}
+
+.replay-ui .dossier-event-change .dossier-status {
+  margin: 0;
+}
+
+.replay-ui .dossier-event-card-detail {
+  display: grid;
+  gap: 9px;
+  padding-top: 12px;
+  border-top: 1px solid var(--replay-border);
+}
+
+.replay-ui .dossier-event-card-detail > small {
+  color: var(--replay-muted-foreground);
+}
+
+.replay-ui .dossier-event-card-detail > p {
+  margin: 0;
+  color: var(--replay-departure);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .replay-ui .dossier-return-heading h3 {
+    font-size: 19px;
+  }
+
+  .replay-ui .dossier-event-panel {
+    padding: 12px;
+  }
+}
