@@ -410,3 +410,263 @@ describe('one physical coordinator with game-scoped candidates', () => {
     ).toBe(false);
   });
 });
+
+describe('required capacity and bounded dialogue funding', () => {
+  function budget() {
+    const h = harness();
+
+    for (const [id, grants] of [
+      ['house', '{}'],
+      ['other', '{}'],
+      ['mixed', '{"external":"grant"}'],
+    ])
+      h.db
+        .prepare(
+          'INSERT INTO allocations(id,state,entries,grants,created_at,reservation) VALUES (?,?,?,?,?,?)',
+        )
+        .run(id, 'active', '[]', grants, Date.now(), 2);
+
+    const request = (
+      id: string,
+      estimate: number,
+      kind: 'required' | 'initial' | 'followup' = 'required',
+      matchId = 'house',
+    ) => ({
+      id,
+      matchId,
+      estimate,
+      mandatory: kind === 'required',
+      optionalKind: kind === 'followup' ? ('followup' as const) : ('initial' as const),
+      deadline: Date.now() + 90_000,
+    });
+
+    return { ...h, request };
+  }
+
+  it('protects half the allocation for required work and limits follow-ups to a quarter of optional funding', () => {
+    const h = budget();
+    expect(h.queue.reserveInference(h.request('first', 0.6, 'initial')).allowed).toBe(true);
+    h.queue.recordInference('first', 0.1);
+    expect(h.queue.reserveInference(h.request('reply', 0.2, 'followup')).allowed).toBe(true);
+    h.queue.recordInference('reply', 0.2);
+    expect(h.queue.reserveInference(h.request('reply-too-much', 0.1, 'followup'))).toMatchObject({
+      allowed: false,
+      reason: 'followup-budget',
+      retryable: false,
+    });
+    expect(h.queue.reserveInference(h.request('later-first', 0.7, 'initial')).allowed).toBe(true);
+    expect(h.queue.reserveInference(h.request('first-too-much', 0.2, 'initial'))).toMatchObject({
+      allowed: false,
+      reason: 'optional-budget',
+    });
+    expect(h.queue.reserveInference(h.request('required', 0.9)).allowed).toBe(true);
+  });
+
+  it('retries transient required pressure after restart, preserving released funds and idempotent usage IDs', () => {
+    const h = budget();
+    expect(h.queue.reserveInference(h.request('running', 1.7)).allowed).toBe(true);
+    const waiting = h.request('waiting', 0.4);
+    expect(h.queue.reserveInference(waiting)).toMatchObject({
+      allowed: false,
+      reason: 'match-budget',
+      retryable: true,
+      retryAt: expect.any(Number),
+    });
+    const cold: MatchmakingObject = Reflect.construct(MatchmakingObject, [h.ctx, h.env]);
+    cold.recordInference('running', 0.2);
+    cold.recordInference('running', null);
+    expect(cold.reserveInference(h.request('opportunistic', 0.05, 'initial'))).toMatchObject({
+      allowed: false,
+      reason: 'required-priority',
+      retryable: true,
+    });
+    expect(cold.reserveInference(waiting).allowed).toBe(true);
+    expect(cold.reserveInference(waiting).allowed).toBe(true);
+    expect(cold.inferenceSummary('house').calls).toBe(2);
+    cold.recordInference('waiting', 0.1);
+    expect(cold.reserveInference(waiting)).toMatchObject({
+      allowed: false,
+      reason: 'already-recorded',
+      retryable: false,
+    });
+    expect(cold.inferenceSummary('house').accountedUsd).toBeCloseTo(0.3);
+  });
+
+  it('serves waiting initial opportunities ahead of follow-ups after estimates settle', () => {
+    const h = budget();
+    h.queue.reserveInference(h.request('running-first', 0.9, 'initial'));
+    const initial = h.request('waiting-first', 0.2, 'initial');
+    expect(h.queue.reserveInference(initial)).toMatchObject({
+      allowed: false,
+      reason: 'optional-budget',
+      retryable: true,
+    });
+    h.queue.recordInference('running-first', 0.1);
+    expect(h.queue.reserveInference(h.request('reply', 0.05, 'followup'))).toMatchObject({
+      allowed: false,
+      reason: 'initial-priority',
+    });
+    expect(h.queue.reserveInference(initial).allowed).toBe(true);
+    expect(h.queue.reserveInference(h.request('reply', 0.05, 'followup')).allowed).toBe(true);
+  });
+
+  it('treats unknown completed usage and expired unfinished usage as irreversible, and bounds retries by the deadline', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+
+    try {
+      vi.setSystemTime(new Date('2026-09-14T12:00:00Z'));
+      const h = budget();
+      h.queue.reserveInference(h.request('unknown', 1.7));
+      h.queue.recordInference('unknown', null);
+      expect(h.queue.reserveInference(h.request('cannot-fit', 0.4))).toMatchObject({
+        allowed: false,
+        reason: 'match-budget',
+        retryable: false,
+      });
+      h.queue.reserveInference({
+        ...h.request('expired', 1.7, 'required', 'other'),
+        deadline: Date.now() + 2000,
+      });
+      expect(
+        h.queue.reserveInference({
+          ...h.request('too-late', 0.4, 'required', 'other'),
+          deadline: Date.now() + 800,
+        }),
+      ).toMatchObject({ allowed: false, retryable: false });
+      vi.setSystemTime(Date.now() + 3000);
+      expect(
+        h.queue.reserveInference(h.request('expired-is-not-free', 0.4, 'required', 'other')),
+      ).toMatchObject({ allowed: false, reason: 'match-budget', retryable: false });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps the daily ceiling global while preserving mixed-match mandatory budget bypass', () => {
+    const h = budget();
+    h.env.HOUSE_DAILY_BUDGET_USD = '0.3';
+    h.queue.reserveInference(h.request('one', 0.2, 'initial'));
+    h.queue.recordInference('one', 0.2);
+    expect(h.queue.reserveInference(h.request('two', 0.2, 'initial', 'other'))).toMatchObject({
+      allowed: false,
+      reason: 'daily-budget',
+      retryable: false,
+    });
+    expect(h.queue.reserveInference(h.request('mixed-required', 3, 'required', 'mixed')).allowed).toBe(true);
+    expect(h.queue.reserveInference(h.request('mixed-optional', 0.1, 'initial', 'mixed'))).toMatchObject({
+      allowed: false,
+      reason: 'daily-budget',
+    });
+    h.env.HOUSE_DAILY_BUDGET_USD = '10';
+    expect(
+      h.queue.reserveInference(h.request('mixed-still-no-match-cap', 3, 'initial', 'mixed')).allowed,
+    ).toBe(true);
+    h.env.HOUSE_DAILY_BUDGET_USD = '0';
+    expect(h.queue.reserveInference(h.request('house-required-still-reserved', 0.1)).allowed).toBe(true);
+  });
+
+  it('classifies legacy usage on cold migration and never releases completed unknown optional charges', () => {
+    const h = budget();
+    h.db.exec('ALTER TABLE usage DROP COLUMN kind');
+
+    for (const [id, reserved] of [
+      ['old:action:attempt:1', 0.5],
+      ['old:chat:0:attempt:1', 0.2],
+      ['old:chat:1:attempt:1', 0.2],
+    ] as const)
+      h.db
+        .prepare(
+          'INSERT INTO usage(id,match_id,day,created_at,expires_at,reserved,done) VALUES (?,?,?,?,?,?,1)',
+        )
+        .run(id, 'house', new Date().toISOString().slice(0, 10), Date.now(), Date.now() + 60_000, reserved);
+    const cold: MatchmakingObject = Reflect.construct(MatchmakingObject, [h.ctx, h.env]);
+    expect(cold.inferenceSummary('house').unknownUsageCalls).toBe(3);
+    expect(cold.inferenceSummary('house').accountedUsd).toBeCloseTo(0.9);
+    expect(cold.reserveInference(h.request('followup', 0.1, 'followup'))).toMatchObject({
+      allowed: false,
+      reason: 'followup-budget',
+      retryable: false,
+    });
+    expect(cold.reserveInference(h.request('initial', 0.7, 'initial'))).toMatchObject({
+      allowed: false,
+      reason: 'optional-budget',
+      retryable: false,
+    });
+    expect(cold.reserveInference(h.request('required', 0.9)).allowed).toBe(true);
+    expect(
+      cold.inferenceSummary('house').funding.find((row) => row.kind === 'followup')?.irreversibleUsd,
+    ).toBe(0.2);
+  });
+
+  it('retries daily pressure only while live, and expires priority waiters without removing their usage', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+
+    try {
+      vi.setSystemTime(new Date('2026-09-14T12:00:00Z'));
+      const h = budget();
+      h.env.HOUSE_DAILY_BUDGET_USD = '0.3';
+      h.queue.reserveInference(h.request('running', 0.5, 'required', 'mixed'));
+      expect(h.queue.reserveInference(h.request('initial', 0.1, 'initial'))).toMatchObject({
+        allowed: false,
+        reason: 'daily-budget',
+        retryable: true,
+      });
+      h.queue.recordInference('running', 0.1);
+      expect(h.queue.reserveInference(h.request('initial', 0.1, 'initial')).allowed).toBe(true);
+      h.queue.reserveInference(h.request('held', 1.8));
+      expect(
+        h.queue.reserveInference({ ...h.request('abandoned', 0.2), deadline: Date.now() + 3000 }),
+      ).toMatchObject({ allowed: false, retryable: true });
+      h.queue.recordInference('held', 0);
+      expect(h.queue.reserveInference(h.request('deferred', 0.05, 'initial', 'other'))).toMatchObject({
+        allowed: false,
+        reason: 'required-priority',
+      });
+      vi.setSystemTime(Date.now() + 3000);
+      expect(h.queue.reserveInference(h.request('deferred', 0.05, 'initial', 'other')).allowed).toBe(true);
+      expect(h.queue.inferenceSummary('house').calls).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('retains shared rolling rate limits and higher mandatory priority across allocations', () => {
+    const h = budget();
+
+    for (let i = 0; i < 180; i++) h.queue.reserveInference(h.request(`r-${i}`, 0.001, 'required', 'mixed'));
+    expect(h.queue.reserveInference(h.request('optional', 0.001, 'initial', 'other'))).toMatchObject({
+      allowed: false,
+      reason: 'rate-limit',
+      retryable: true,
+    });
+
+    for (let i = 180; i < 250; i++)
+      expect(h.queue.reserveInference(h.request(`r-${i}`, 0.001, 'required', 'mixed')).allowed).toBe(true);
+    expect(h.queue.reserveInference(h.request('required-rate', 0.001, 'required', 'other'))).toMatchObject({
+      allowed: false,
+      reason: 'rate-limit',
+      retryable: true,
+    });
+  });
+
+  it('does not retry a permanently exhausted ceiling just because another ceiling is transiently blocked', () => {
+    const h = budget();
+    h.queue.reserveInference(h.request('settled-reply', 0.2, 'followup'));
+    h.queue.recordInference('settled-reply', null);
+    h.queue.reserveInference(h.request('held-required', 1.7));
+    expect(h.queue.reserveInference(h.request('reply', 0.2, 'followup'))).toMatchObject({
+      allowed: false,
+      reason: 'followup-budget',
+      retryable: false,
+    });
+
+    for (let i = 0; i < 180; i++)
+      h.queue.reserveInference(h.request(`rate-${i}`, 0.001, 'required', 'mixed'));
+    h.env.HOUSE_DAILY_BUDGET_USD = '0.1';
+    expect(h.queue.reserveInference(h.request('rate-and-spend', 0.01, 'initial', 'other'))).toMatchObject({
+      allowed: false,
+      reason: 'daily-budget',
+      retryable: false,
+    });
+  });
+});

@@ -9,6 +9,7 @@ import type { RepositoryGameId } from './repository';
 import type { MatchSnapshot } from '../game/contracts';
 import { gameDescriptor } from '../game/descriptors';
 import { fault, opaqueId } from './http';
+import { HOUSE_CHAT_MIN_REMAINING_MS } from './house-contract';
 
 type Ticket = {
   game_id: RepositoryGameId;
@@ -42,10 +43,58 @@ export interface MatchInitialization {
   reservationUsd?: number;
 }
 
-interface InferenceReservation {
-  allowed: boolean;
-  retryAt: number;
+type InferenceKind = 'required' | 'initial' | 'followup';
+
+export interface InferenceRequest {
+  id: string;
+  matchId: string;
+  estimate: number;
+  deadline: number;
+  mandatory: boolean;
+  optionalKind?: 'initial' | 'followup';
 }
+
+export type InferenceDenial =
+  | 'allocation-closed'
+  | 'already-recorded'
+  | 'request-conflict'
+  | 'expired'
+  | 'match-budget'
+  | 'optional-budget'
+  | 'followup-budget'
+  | 'daily-budget'
+  | 'rate-limit'
+  | 'required-priority'
+  | 'initial-priority';
+
+export type InferenceReservation =
+  | { allowed: true; retryAt: number }
+  | {
+      allowed: false;
+      retryAt: number;
+      reason: InferenceDenial;
+      retryable: boolean;
+    };
+
+// Allocation assumptions, not predictions of a game's future decisions:
+// retain half for required work; follow-ups can use only a quarter of optional funding.
+const OPTIONAL_SHARE = 0.5;
+
+const FOLLOWUP_SHARE = 0.25;
+
+const INFERENCE_RETRY_MS = 1000;
+
+type Funding = {
+  kind: InferenceKind;
+  calls: number;
+  estimatedUsd: number;
+  measuredUsd: number;
+  accountedUsd: number;
+  irreversibleUsd: number;
+};
+
+const LEGACY_INFERENCE_KIND =
+  "coalesce(kind, CASE WHEN id LIKE '%:action:attempt:%' THEN 'required' WHEN id LIKE '%:chat:1:attempt:%' THEN 'followup' ELSE 'initial' END)";
 
 export type PlatformQueueStatus = QueueStatus & {
   requestId: string | null;
@@ -83,6 +132,13 @@ export class PlatformQueue {
     );
     ctx.storage.sql.exec(
       `CREATE TABLE IF NOT EXISTS usage (id TEXT PRIMARY KEY, match_id TEXT NOT NULL, day TEXT NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, reserved REAL NOT NULL, actual REAL, done INTEGER NOT NULL DEFAULT 0)`,
+    );
+    const usageColumns = ctx.storage.sql.exec<{ name: string }>('PRAGMA table_info(usage)').toArray();
+
+    if (!usageColumns.some((column) => column.name === 'kind'))
+      ctx.storage.sql.exec('ALTER TABLE usage ADD COLUMN kind TEXT');
+    ctx.storage.sql.exec(
+      'CREATE TABLE IF NOT EXISTS inference_waiters (id TEXT PRIMARY KEY, match_id TEXT NOT NULL, kind TEXT NOT NULL, expires_at INTEGER NOT NULL)',
     );
     ctx.storage.transactionSync(() => {
       for (const table of ['tickets', 'joins', 'allocations']) {
@@ -468,6 +524,7 @@ export class PlatformQueue {
     this.ctx.storage.transactionSync(() => {
       this.ctx.storage.sql.exec("UPDATE allocations SET state = 'settled' WHERE id = ?", matchId);
       this.ctx.storage.sql.exec('DELETE FROM tickets WHERE match_id = ?', matchId);
+      this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id = ?', matchId);
     });
     await this.ctx.storage.setAlarm(Date.now() + 1);
   }
@@ -483,18 +540,76 @@ export class PlatformQueue {
     }
   }
 
-  reserveInference(input: {
-    id: string;
-    matchId: string;
-    estimate: number;
-    deadline: number;
-    mandatory: boolean;
-  }): InferenceReservation {
+  private funding(scope: 'match_id' | 'day', value: string): Funding[] {
+    return this.ctx.storage.sql
+      .exec<Funding>(
+        `SELECT ${LEGACY_INFERENCE_KIND} AS kind, count(*) AS calls,
+       sum(reserved) AS estimatedUsd, coalesce(sum(actual),0) AS measuredUsd,
+       sum(coalesce(actual,reserved)) AS accountedUsd,
+       sum(CASE WHEN done=1 OR expires_at<=? THEN coalesce(actual,reserved) ELSE 0 END) AS irreversibleUsd
+       FROM usage WHERE ${scope}=? GROUP BY 1`,
+        Date.now(),
+        value,
+      )
+      .toArray();
+  }
+
+  reserveInference(input: InferenceRequest): InferenceReservation {
+    const now = Date.now();
+
+    const kind: InferenceKind = input.mandatory
+      ? 'required'
+      : (input.optionalKind ?? (input.id.includes(':chat:1:attempt:') ? 'followup' : 'initial'));
+
+    const minimum = input.mandatory ? 500 : HOUSE_CHAT_MIN_REMAINING_MS;
+    this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE expires_at<=?', now);
+
+    const deny = (
+      reason: InferenceDenial,
+      retryAt = input.deadline,
+      transient = false,
+    ): InferenceReservation => {
+      const retryable = transient && retryAt > now && retryAt + minimum < input.deadline;
+
+      if (retryable && kind !== 'followup')
+        this.ctx.storage.sql.exec(
+          'INSERT INTO inference_waiters(id,match_id,kind,expires_at) VALUES (?,?,?,?) ON CONFLICT(id) DO UPDATE SET expires_at=excluded.expires_at',
+          input.id,
+          input.matchId,
+          kind,
+          input.deadline - minimum,
+        );
+      else this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE id=?', input.id);
+
+      return { allowed: false, reason, retryable, retryAt: retryable ? retryAt : input.deadline };
+    };
+
+    if (!Number.isFinite(input.estimate) || input.estimate < 0) throw new Error('Invalid inference estimate');
+
+    if (now >= input.deadline) return deny('expired');
+
     const existing = this.ctx.storage.sql
-      .exec<{ done: number }>('SELECT done FROM usage WHERE id = ?', input.id)
+      .exec<{ done: number; match_id: string; kind: InferenceKind; reserved: number; expires_at: number }>(
+        `SELECT done,match_id,${LEGACY_INFERENCE_KIND} AS kind,reserved,expires_at FROM usage WHERE id = ?`,
+        input.id,
+      )
       .toArray()[0];
 
-    if (existing) return { allowed: existing.done === 0, retryAt: Date.now() + 1000 };
+    if (existing) {
+      if (
+        existing.match_id !== input.matchId ||
+        existing.kind !== kind ||
+        existing.reserved < input.estimate ||
+        existing.expires_at !== input.deadline
+      )
+        return deny('request-conflict');
+
+      if (existing.done) return deny('already-recorded');
+
+      if (existing.expires_at <= now) return deny('expired');
+
+      return { allowed: true, retryAt: now };
+    }
 
     const allocation = this.ctx.storage.sql
       .exec<{ state: string; grants: string; reservation: number; snapshot: string | null }>(
@@ -503,20 +618,59 @@ export class PlatformQueue {
       )
       .toArray()[0];
 
-    if (!allocation || allocation.state === 'settled') return { allowed: false, retryAt: input.deadline };
+    if (!allocation || allocation.state === 'settled') return deny('allocation-closed');
 
     const snapshot: MatchSnapshot | null = allocation.snapshot ? JSON.parse(allocation.snapshot) : null;
+
+    const ceilings: { rows: Funding[]; limit: number; reason: InferenceDenial }[] = [];
 
     if (
       allocation.grants === '{}' &&
       (snapshot?.houseModel.provider ?? this.env.HOUSE_PROVIDER) !== 'preview'
     ) {
-      const used = this.inferenceSummary(input.matchId).accountedUsd;
+      const funds = this.funding('match_id', input.matchId);
+      ceilings.push({ rows: funds, limit: allocation.reservation, reason: 'match-budget' });
 
-      if (used + input.estimate > allocation.reservation) return { allowed: false, retryAt: input.deadline };
+      if (!input.mandatory) {
+        const optionalLimit = allocation.reservation * OPTIONAL_SHARE;
+
+        if (kind === 'followup') {
+          ceilings.push({
+            rows: funds.filter((row) => row.kind === 'followup'),
+            limit: optionalLimit * FOLLOWUP_SHARE,
+            reason: 'followup-budget',
+          });
+        }
+
+        ceilings.push({
+          rows: funds.filter((row) => row.kind !== 'required'),
+          limit: optionalLimit,
+          reason: 'optional-budget',
+        });
+      }
     }
 
-    const now = Date.now();
+    if (!input.mandatory)
+      ceilings.push({
+        rows: this.funding('day', this.day()),
+        limit: Number(this.env.HOUSE_DAILY_BUDGET_USD),
+        reason: 'daily-budget',
+      });
+
+    // Waiting only helps if every applicable ceiling fits irreversible usage.
+    // Prefer a permanent denial over transient pressure in another envelope.
+    let pressure: InferenceDenial | null = null;
+
+    for (const { rows, limit, reason } of ceilings) {
+      const irreversible = rows.reduce((sum, row) => sum + row.irreversibleUsd, 0);
+
+      if (irreversible + input.estimate > limit) return deny(reason);
+      const accounted = rows.reduce((sum, row) => sum + row.accountedUsd, 0);
+
+      if (accounted + input.estimate > limit) pressure ??= reason;
+    }
+
+    if (pressure) return deny(pressure, now + INFERENCE_RETRY_MS, true);
 
     const recent = this.ctx.storage.sql
       .exec<{ count: number; oldest: number | null }>(
@@ -527,31 +681,46 @@ export class PlatformQueue {
 
     const limit = input.mandatory ? 250 : 180;
 
-    if (recent.count >= limit) return { allowed: false, retryAt: (recent.oldest ?? now) + 60_001 };
+    if (recent.count >= limit) return deny('rate-limit', (recent.oldest ?? now) + 60_001, true);
 
     if (!input.mandatory) {
-      const spent = this.ctx.storage.sql
-        .exec<{ total: number }>(
-          'SELECT coalesce(sum(coalesce(actual,reserved)),0) AS total FROM usage WHERE day = ?',
-          this.day(),
-        )
-        .one().total;
+      if (
+        this.ctx.storage.sql.exec("SELECT id FROM inference_waiters WHERE kind='required' LIMIT 1").toArray()
+          .length
+      )
+        return deny('required-priority', now + INFERENCE_RETRY_MS, true);
 
-      if (spent + input.estimate > Number(this.env.HOUSE_DAILY_BUDGET_USD))
-        return { allowed: false, retryAt: input.deadline };
+      if (
+        kind === 'followup' &&
+        this.ctx.storage.sql
+          .exec("SELECT id FROM inference_waiters WHERE kind='initial' AND match_id=? LIMIT 1", input.matchId)
+          .toArray().length
+      )
+        return deny('initial-priority', now + INFERENCE_RETRY_MS, true);
     }
 
+    this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE id=?', input.id);
     this.ctx.storage.sql.exec(
-      'INSERT INTO usage (id, match_id, day, created_at, expires_at, reserved) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO usage (id, match_id, day, created_at, expires_at, reserved, kind) VALUES (?, ?, ?, ?, ?, ?, ?)',
       input.id,
       input.matchId,
       this.day(),
       now,
       input.deadline,
       input.estimate,
+      kind,
     );
 
     return { allowed: true, retryAt: now };
+  }
+
+  /** Retire priority only. Usage (including unknown or live reservations) is untouched. */
+  retireInferenceWaiter(input: Pick<InferenceRequest, 'id' | 'matchId'>): void {
+    this.ctx.storage.sql.exec(
+      'DELETE FROM inference_waiters WHERE id=? AND match_id=?',
+      input.id,
+      input.matchId,
+    );
   }
 
   recordInference(id: string, actual: number | null): void {
@@ -581,6 +750,7 @@ export class PlatformQueue {
       measuredUsd: rows.reduce((sum, row) => sum + (row.actual ?? 0), 0),
       accountedUsd: rows.reduce((sum, row) => sum + (row.actual ?? row.reserved), 0),
       peakRollingRpm,
+      funding: this.funding('match_id', matchId),
     };
   }
 

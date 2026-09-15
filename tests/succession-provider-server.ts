@@ -56,6 +56,7 @@ const ProviderBody = Schema.Struct({
 });
 
 export interface CapturedProviderRequest {
+  activation: { seat: number; at: number } | null;
   body: typeof ProviderBody.Type;
   route: string;
   method: string;
@@ -185,7 +186,10 @@ export async function startSuccessionProvider(
   options: {
     failFirstAction?: boolean;
     mode?: 'play' | 'invalid' | 'timeout';
-    dialogue?: 'reply' | 'silent';
+    dialogue?: 'reply' | 'silent' | 'silent-first';
+    controlled?: boolean;
+    usage?: 'fixture' | 'estimated' | 'ceiling';
+    chatPerAct?: boolean;
   } = {},
 ): Promise<{
   url: string;
@@ -197,20 +201,63 @@ export async function startSuccessionProvider(
   const requests: CapturedProviderRequest[] = [];
   const errors: string[] = [];
   const held = new Map<ServerResponse, () => void>();
+  const completions = new Map<string, () => void>();
   let failedAction = false;
   let released = false;
   let closing: Promise<void> | undefined;
 
   const server = createServer((request, response) => {
     const handle = async () => {
-      // Local runtime/port discovery may probe this diagnostic server; this is not inference.
-      if (options.dialogue && request.method === 'GET' && request.url === '/') {
+      const url = new URL(request.url ?? '/', 'http://fixture');
+
+      if (options.controlled && url.pathname === '/__tim26/pending') {
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.end(
+          JSON.stringify(
+            requests.flatMap((entry) =>
+              entry.status === null
+                ? [
+                    {
+                      id: entry.responseId,
+                      ...entry.activation,
+                    },
+                  ]
+                : [],
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      if (options.controlled && url.pathname === '/__tim26/release') {
+        const ids = url.searchParams.getAll('id');
+
+        for (const id of ids) {
+          const send = completions.get(id);
+
+          if (!send) throw new Error(`No pending completion ${id}`);
+          send();
+          completions.delete(id);
+        }
+
         response.writeHead(204).end();
 
         return;
       }
 
-      if (request.method !== 'POST' || request.url !== '/v1/responses') {
+      // Local runtime/port discovery may probe this diagnostic server; this is not inference.
+      if (request.method === 'GET' && request.url === '/') {
+        response.writeHead(204).end();
+
+        return;
+      }
+
+      const activationPath = options.dialogue
+        ? request.url?.match(/^\/v1\/seat\/(\d+)\/at\/([\d.]+)\/responses$/)
+        : null;
+
+      if (request.method !== 'POST' || (request.url !== '/v1/responses' && !activationPath)) {
         errors.push(`Unexpected provider route: ${request.method} ${request.url}`);
         response.writeHead(404).end();
 
@@ -230,17 +277,24 @@ export async function startSuccessionProvider(
       const prompt = Schema.decodeUnknownSync(SuccessionProviderPrompt)(JSON.parse(text));
       const choice = prompt.task === 'action' ? selectChoice(prompt) : null;
       const responseId = `resp_succession_fixture_${requests.length + 1}`;
-      const seatMarker = `provider-chat-seat${prompt.you?.seat ?? 'none'}`;
+      const seatMarker = `provider-chat-seat${prompt.you?.seat ?? 'none'}${options.chatPerAct ? `-act${prompt.act}` : ''}`;
+      const chatNote = options.chatPerAct ? `public-chat-sent-act${prompt.act}` : 'public-chat-sent';
 
       const alreadySpoke =
-        prompt.notes.includes('public-chat-sent') || prompt.chat.some((entry) => entry.text === seatMarker);
+        prompt.notes.includes(chatNote) || prompt.chat.some((entry) => entry.text === seatMarker);
 
       const previous = prompt.chat.findLast((entry) => entry.seat !== prompt.you?.seat);
 
+      const initialSilence =
+        options.dialogue === 'silent-first' &&
+        !requests.some(
+          (entry) => entry.prompt.task === 'chat' && entry.prompt.you?.seat === prompt.you?.seat,
+        );
+
       const message =
-        prompt.task !== 'chat' || options.dialogue === 'silent'
+        prompt.task !== 'chat' || options.dialogue === 'silent' || initialSilence
           ? null
-          : options.dialogue === 'reply'
+          : options.dialogue === 'reply' || options.dialogue === 'silent-first'
             ? `TIM-7 seat${prompt.you?.seat}: ${previous ? `reply to seat${previous.seat}: ${previous.text.slice(0, 90)}` : 'Who will respond?'}`
             : !alreadySpoke
               ? seatMarker
@@ -249,7 +303,7 @@ export async function startSuccessionProvider(
       const notes = [
         `provider-note-seat${prompt.you?.seat ?? 'none'}-generation${prompt.you?.generation ?? 0}`,
         `act${prompt.act}-${prompt.phase}-round${prompt.round}-${responseId}`,
-        ...(alreadySpoke || message ? ['public-chat-sent'] : []),
+        ...(alreadySpoke || message ? [chatNote] : []),
       ].join(' ');
 
       const selectedIndex =
@@ -258,8 +312,11 @@ export async function startSuccessionProvider(
           : (choice?.index ?? -1);
 
       const capture: CapturedProviderRequest = {
+        activation: activationPath
+          ? { seat: Number(activationPath[1]), at: Number(activationPath[2]) }
+          : null,
         body,
-        route: request.url,
+        route: request.url!,
         method: request.method,
         system: systemMessages[0].content.map((part) => part.text).join(''),
         prompt,
@@ -291,6 +348,19 @@ export async function startSuccessionProvider(
         return;
       }
 
+      let inputTokens = 100;
+      let outputTokens = 20;
+
+      if (options.usage === 'ceiling') {
+        inputTokens = Buffer.byteLength(capture.system + text);
+        outputTokens = 512;
+      } else if (options.usage === 'estimated') {
+        inputTokens = Math.ceil(Buffer.byteLength(capture.system + text) / 4);
+        outputTokens = Math.ceil(
+          Buffer.byteLength(JSON.stringify({ choice: selectedIndex, message, notes })) / 4,
+        );
+      }
+
       const result = {
         id: responseId,
         object: 'response',
@@ -312,9 +382,9 @@ export async function startSuccessionProvider(
           },
         ],
         usage: {
-          input_tokens: 100,
-          output_tokens: 20,
-          total_tokens: 120,
+          input_tokens: inputTokens,
+          output_tokens: outputTokens,
+          total_tokens: inputTokens + outputTokens,
           input_tokens_details: { cached_tokens: 0 },
           output_tokens_details: { reasoning_tokens: 0 },
         },
@@ -327,7 +397,8 @@ export async function startSuccessionProvider(
         response.end(JSON.stringify(result));
       };
 
-      if (options.mode === 'timeout' && prompt.task === 'action' && !released) held.set(response, send);
+      if (options.controlled) completions.set(responseId, send);
+      else if (options.mode === 'timeout' && prompt.task === 'action' && !released) held.set(response, send);
       else send();
     };
 

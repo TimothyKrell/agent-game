@@ -49,6 +49,8 @@ type Ticket = { seat: number; grant_id: string; grant_expires: number; expires_a
 
 type Current = Observation | Observation2;
 
+type SilentChatCompletion = { at: number; observedChat: { seat: number; at: number } | null };
+
 function modelConfig(snapshot: MatchSnapshot): HouseModelConfig {
   const { provider, model, policyVersion } = snapshot.houseModel;
 
@@ -115,6 +117,10 @@ export class MatchObject extends DurableObject<Env> {
     ctx.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS outbox (id TEXT PRIMARY KEY, data TEXT NOT NULL, delivered INTEGER NOT NULL DEFAULT 0)',
     );
+    const outboxColumns = ctx.storage.sql.exec<{ name: string }>('PRAGMA table_info(outbox)').toArray();
+
+    if (!outboxColumns.some((column) => column.name === 'silent_completion'))
+      ctx.storage.sql.exec('ALTER TABLE outbox ADD COLUMN silent_completion TEXT');
     ctx.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS socket_tickets (hash TEXT PRIMARY KEY, seat INTEGER NOT NULL, grant_id TEXT NOT NULL, grant_expires INTEGER NOT NULL, expires_at INTEGER NOT NULL)',
     );
@@ -575,6 +581,7 @@ export class MatchObject extends DurableObject<Env> {
 
     return {
       observation: this.current(state, seat, 0, true),
+      lastChat: inspectGame(state).lastChat,
       recent:
         state.gameId === 'succession' ? this.history.recent({ seat, house: true, terminal: false }) : [],
       persona: entry.forfeited
@@ -583,6 +590,61 @@ export class MatchObject extends DurableObject<Env> {
           : 'A composed substitute. Reconstruct the permitted game history and pursue your assigned team’s victory.'
         : (entry.entrant.persona ?? 'A careful, concise strategist.'),
     };
+  }
+
+  /** Private completion acknowledgement: silence does not mutate the game or public history. */
+  async completeHouseSilence(
+    job: HouseJob,
+    observedChat: SilentChatCompletion['observedChat'],
+  ): Promise<RpcResult<{ accepted: true }>> {
+    try {
+      const state = this.reconcile();
+      const seat = state.seats[job.seat];
+
+      const row = this.ctx.storage.sql
+        .exec<{ data: string; silent_completion: string | null }>(
+          'SELECT data,silent_completion FROM outbox WHERE id=?',
+          job.id,
+        )
+        .toArray()[0];
+
+      if (!row || job.kind !== 'chat' || !job.id.endsWith(':chat:0') || row.data !== JSON.stringify(job))
+        throw new GameError('obsolete-job', 'This optional activation is not scheduled.');
+
+      if (row.silent_completion) {
+        const existing: SilentChatCompletion = JSON.parse(row.silent_completion);
+
+        if (
+          existing.observedChat?.seat !== observedChat?.seat ||
+          existing.observedChat?.at !== observedChat?.at
+        )
+          throw new GameError('action-id-conflict', 'House completion input changed.');
+      } else {
+        if (
+          !seat?.alive ||
+          !seat.houseProfile ||
+          seat.generation !== job.generation ||
+          state.phase.id !== job.phaseId ||
+          Date.now() >= job.deadline ||
+          inspectGame(state).status !== 'active'
+        )
+          throw new GameError('obsolete-job', 'This house activation is no longer current.');
+        this.ctx.storage.sql.exec(
+          'UPDATE outbox SET silent_completion=? WHERE id=?',
+          JSON.stringify({ at: Date.now(), observedChat } satisfies SilentChatCompletion),
+          job.id,
+        );
+      }
+
+      this.enqueueWork(state);
+      await this.arm();
+
+      return { ok: true, value: { accepted: true } };
+    } catch (error) {
+      await this.arm();
+
+      return { ok: false, error: fault(error) };
+    }
   }
 
   async submitHouse(job: HouseJob, request: TransportActionRequest): Promise<RpcResult<{ accepted: true }>> {
@@ -961,6 +1023,14 @@ export class MatchObject extends DurableObject<Env> {
     if (runtime.status !== 'active') return;
     const model = modelConfig(state.snapshot);
     const now = Date.now();
+    const ringSize = runtime.participants.length;
+    const anchor = runtime.discussion?.anchor ?? 0;
+
+    // Compact living-participant order keeps dead holes and absolute seat numbers
+    // out of pacing. The initial pass fits inside the first second at normal speed.
+    const speakers = [...(runtime.discussion?.seats ?? [])].sort(
+      (a, b) => ((a - anchor + ringSize) % ringSize) - ((b - anchor + ringSize) % ringSize),
+    );
 
     for (const seat of runtime.participants) {
       if (!seat.alive || !seat.houseProfile) continue;
@@ -999,35 +1069,60 @@ export class MatchObject extends DurableObject<Env> {
         runtime.phase.deadline !== null &&
         runtime.discussion.seats.includes(seat.number)
       ) {
-        const distance = (seat.number - runtime.discussion.anchor + 10) % 10;
         const deadline = runtime.phase.deadline - Math.min(500, runtime.timing.nomination / 10);
         const chatBase = { ...base, kind: 'chat' as const, deadline };
-
-        if (distance < 4)
-          jobs.push({
-            ...chatBase,
-            id: `${state.gameId}:${runtime.phaseId}:${seat.number}:${seat.generation}:chat:0`,
-            dueAt: runtime.phase.startedAt + seat.number * Math.min(500, runtime.timing.nomination / 30),
-          });
         const lastChatAt = state.seats[seat.number].lastChatAt;
+        const initialId = `${state.gameId}:${runtime.phaseId}:${seat.number}:${seat.generation}:chat:0`;
 
-        if (
-          distance < 2 &&
+        const completion = this.ctx.storage.sql
+          .exec<{ silent_completion: string | null }>(
+            'SELECT silent_completion FROM outbox WHERE id=?',
+            initialId,
+          )
+          .toArray()[0]?.silent_completion;
+
+        const silent: SilentChatCompletion | null = completion ? JSON.parse(completion) : null;
+        jobs.push({
+          ...chatBase,
+          id: initialId,
+          dueAt: Math.max(
+            now,
+            runtime.phase.startedAt +
+              speakers.indexOf(seat.number) * Math.min(100, runtime.timing.nomination / 200),
+            lastChatAt === null ? 0 : lastChatAt + runtime.timing.chatCooldown,
+          ),
+        });
+
+        const peer = runtime.lastChat;
+
+        const spokeThenPeer =
           lastChatAt !== null &&
           lastChatAt >= runtime.phase.startedAt &&
-          runtime.lastChat &&
-          runtime.lastChat.seat !== seat.number &&
-          runtime.lastChat.at >= lastChatAt
-        )
+          peer &&
+          peer.seat !== seat.number &&
+          peer.at >= lastChatAt;
+
+        const silentThenPeer =
+          silent &&
+          peer &&
+          peer.seat !== seat.number &&
+          peer.at >= runtime.phase.startedAt &&
+          (peer.at !== silent.observedChat?.at || peer.seat !== silent.observedChat?.seat);
+
+        if (spokeThenPeer || silentThenPeer)
           jobs.push({
             ...chatBase,
             id: `${state.gameId}:${runtime.phaseId}:${seat.number}:${seat.generation}:chat:1`,
-            dueAt: Math.max(now, lastChatAt + runtime.timing.chatCooldown),
+            dueAt: Math.max(
+              now,
+              (lastChatAt ?? 0) + runtime.timing.chatCooldown,
+              silent ? silent.at + runtime.timing.chatCooldown : 0,
+            ),
           });
       }
 
       for (const job of jobs)
-        if (job.dueAt < job.deadline)
+        if (job.kind === 'chat' || job.dueAt < job.deadline)
           this.ctx.storage.sql.exec(
             'INSERT OR IGNORE INTO outbox (id, data) VALUES (?, ?)',
             job.id,
@@ -1116,7 +1211,9 @@ export class MatchObject extends DurableObject<Env> {
           rows.map(async (row) => {
             const job: HouseJob = JSON.parse(row.data);
 
-            if (job.deadline > Date.now() && job.phaseId === this.load().phase.id)
+            // Optional jobs must reach the runner even when late: it records a bounded
+            // skip instead of silently dropping a seat's opportunity in the outbox.
+            if (job.kind === 'chat' || (job.deadline > Date.now() && job.phaseId === this.load().phase.id))
               await this.env.HOUSE_SEATS.getByName(`${job.matchId}:${job.seat}`).enqueue(job);
             this.ctx.storage.sql.exec('UPDATE outbox SET delivered = 1 WHERE id = ?', row.id);
           }),

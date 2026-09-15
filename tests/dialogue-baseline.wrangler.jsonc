@@ -16,6 +16,8 @@
   ],
   "vars": {
     "ENVIRONMENT": "development",
+    "HOUSE_DAILY_BUDGET_USD": "5",
+    "HOUSE_MATCH_RESERVATION_USD": "1.5",
     "OPENAI_BASE_URL": "http://127.0.0.1:1/v1",
     "OPENAI_API_KEY": "fixture-only-never-a-real-key",
   },

@@ -8,9 +8,14 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
   const jobs = trace.houseJobs
     .map((row) => {
       const job: HouseJob = JSON.parse(row.data);
-      const saved: { request: unknown } | null = row.response ? JSON.parse(row.response) : null;
 
-      return { ...row, job, silent: saved !== null && saved.request === null };
+      const saved: {
+        request: unknown;
+        notes: string;
+        observedChat?: { seat: number; at: number } | null;
+      } | null = row.response ? JSON.parse(row.response) : null;
+
+      return { ...row, job, saved, silent: saved !== null && saved.request === null };
     })
     .filter((row) => completed.has(row.job.phaseId));
 
@@ -31,24 +36,57 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
       const activated = [...new Set(generated.map((row) => row.job.seat))];
       const speakers = [...new Set(accepted.map((entry) => entry.job.seat))];
 
-      const followupWanted = speakers.filter((seat) => {
-        const first = accepted.find((entry) => entry.job.seat === seat)!;
+      const publicChats = trace.events.filter(
+        (event) => event.type === 'chat' && event.at >= phase.start && event.at < phase.deadline!,
+      );
+
+      const followupWanted = activated.filter((seat) => {
+        const initial = generated.find((row) => row.job.seat === seat && row.job.id.endsWith(':chat:0'));
+
+        if (!initial) return false;
+
+        if (initial.silent) {
+          const observed = initial.saved?.observedChat;
+
+          const lastSeen = publicChats.findIndex(
+            (event) => event.seat === observed?.seat && event.at === observed?.at,
+          );
+
+          return publicChats.some(
+            (entry, index) =>
+              index > lastSeen &&
+              entry.seat !== seat &&
+              Math.max(entry.at, initial.completedAt! + 5000) + 500 < phase.deadline!,
+          );
+        }
+
+        const first = accepted.find((entry) => entry.job.id === initial.job.id);
+
+        if (!first) return false;
 
         // Behavioral opportunity: a peer spoke after me, and my cooldown plus a 500ms
         // response budget fit before the actual engine phase closes (not a scheduler formula).
-        return accepted.some(
+        const firstEvent = publicChats.find(
+          (event) => event.seat === seat && event.at === first.at && event.text === first.text,
+        )!;
+
+        return publicChats.some(
           (entry) =>
-            entry.job.seat !== seat &&
-            entry.at > first.at &&
+            entry.seat !== seat &&
+            entry.id > firstEvent.id &&
             Math.max(entry.at, first.at + 5000) + 500 < phase.deadline!,
         );
       });
 
-      const followupReceived = speakers.filter(
-        (seat) => accepted.filter((entry) => entry.job.seat === seat).length > 1,
-      );
+      const followupReceived = generated
+        .filter((row) => row.job.id.endsWith(':chat:1'))
+        .map((row) => row.job.seat);
 
-      const furtherReplyPossible = followupReceived.filter((seat) => {
+      const acceptedFollowup = accepted
+        .filter((entry) => entry.job.id.endsWith(':chat:1'))
+        .map((entry) => entry.job.seat);
+
+      const furtherReplyPossible = acceptedFollowup.filter((seat) => {
         const last = accepted.findLast((entry) => entry.job.seat === seat)!;
 
         return accepted.some(
@@ -63,6 +101,8 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
         ...phase,
         initial: scheduled.filter((job) => job.id.endsWith(':chat:0')).map((job) => job.seat),
         followup: scheduled.filter((job) => job.id.endsWith(':chat:1')).map((job) => job.seat),
+        acceptedFollowup,
+        followupActivated: followupReceived,
         activated,
         speakers,
         followupWanted,
@@ -75,8 +115,16 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
       };
     });
 
-  const reads = trace.reads.map((read, index) => {
-    const request = provider[index];
+  const generatedReads = provider.map((request, index) =>
+    request.activation
+      ? trace.reads.findLast(
+          (read) => read.seat === request.activation!.seat && read.at === request.activation!.at,
+        )!
+      : trace.reads[index],
+  );
+
+  const reads = provider.map((request, index) => {
+    const read = generatedReads[index];
     const latest = read.chat.at(-1);
 
     return {
@@ -87,8 +135,11 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
       recentChats: read.chat.length,
       promptChats: request?.prompt.chat.length ?? 0,
       latestAvailable: !!read.latestChat,
+      latestAgedOut: read.latestChatSequence !== null && read.latestChatSequence <= read.head - 64,
       recentHasLatest:
-        !read.latestChat || (latest?.seat === read.latestChat.seat && latest.at === read.latestChat.at),
+        !read.latestChat ||
+        (read.latestChatSequence !== null && read.latestChatSequence <= read.head - 64) ||
+        (latest?.seat === read.latestChat.seat && latest.at === read.latestChat.at),
       promptHasRecentLatest:
         !latest ||
         request?.prompt.chat.some((entry) => entry.text === latest.text && entry.seat === latest.seat),
@@ -98,7 +149,7 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
   const chatJobs = jobs.filter((row) => row.job.kind === 'chat');
 
   const samples = coverage.map((phase) => {
-    const starts = trace.reads.filter((read) => read.phaseId === phase.phaseId);
+    const starts = generatedReads.filter((read) => read.phaseId === phase.phaseId);
 
     const sends = trace.submissions.filter(
       (entry) => entry.job.phaseId === phase.phaseId && entry.type === 'chat',
@@ -144,6 +195,7 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
       activatedSeatWindows: phases.reduce((n, phase) => n + phase.activated.length, 0),
       accepted: phases.reduce((n, phase) => n + phase.accepted, 0),
       followups: phases.reduce((n, phase) => n + phase.followup.length, 0),
+      acceptedFollowups: phases.reduce((n, phase) => n + phase.acceptedFollowup.length, 0),
       seats: Array.from({ length: 10 }, (_, seat) => ({
         seat,
         eligible: phases.filter((phase) => phase.eligible.includes(seat)).length,
@@ -155,8 +207,17 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
 
   return {
     phases: trace.phases.length,
+    status: trace.observation.status,
     virtualMs: trace.virtualMs,
     calls: provider.length,
+    inference: {
+      ...trace.inference.summary,
+      peakConcurrent: trace.inference.peakConcurrent,
+      denied: trace.inference.reservations.filter((entry) => !entry.allowed).length,
+      estimatedUsd: trace.inference.reservations
+        .filter((entry) => entry.allowed)
+        .reduce((sum, entry) => sum + entry.estimate, 0),
+    },
     chatCalls: provider.filter((request) => request.prompt.task === 'chat').length,
     acceptedChat: trace.submissions.filter((entry) => entry.type === 'chat' && entry.ok).length,
     rejected: trace.submissions.filter((entry) => !entry.ok).length,
@@ -173,10 +234,13 @@ export function dialogueReport(trace: DialogueTrace, provider: CapturedProviderR
         completedAt: row.completedAt,
         attempts: row.attempts,
         expired: row.completedAt !== null && row.completedAt >= row.job.deadline,
+        outcome: row.outcome ?? null,
+        admissionReason: row.admission_reason ?? null,
       })),
     context: {
       reads: reads.length,
       recentMissingLatest: reads.filter((read) => !read.recentHasLatest).length,
+      latestAgedOut: reads.filter((read) => read.latestAgedOut).length,
       promptMissingRecentLatest: reads.filter((read) => !read.promptHasRecentLatest).length,
       maxPromptBytes: Math.max(0, ...provider.map((request) => request.promptBytes)),
     },

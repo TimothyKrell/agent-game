@@ -1,5 +1,12 @@
 import type { GameId } from '../game/contracts';
 
+/** One second of generation plus generateHouse's 150ms timeout allowance. */
+export const HOUSE_CHAT_MIN_REMAINING_MS = 1150;
+
+export function houseChatBudget(model: HouseModelConfig): number {
+  return model.provider === 'preview' ? 0 : HOUSE_CHAT_MIN_REMAINING_MS;
+}
+
 export interface HouseModelConfig {
   provider: 'preview' | 'workers-ai' | 'openai';
   model: string;
