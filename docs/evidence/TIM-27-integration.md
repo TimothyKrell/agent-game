@@ -98,6 +98,12 @@ The completed broker worktree and merged local branch were retired after a final
 
 Trusted lifecycle work at **e49507f** has121 passing local cases and an independently retained source/target A→B→A generation failure. Parent reserved additive **0008_preview_generation.sql** and approved the narrow control-plane generation helper to fence delayed configure/register/publication/retirement batches. That lane remains active and activation default-off. The installed-CLI/broker integration and established browser migration have separate verification owners.
 
+### Complete combined unit/Worker inventory
+
+The full combined inventory at988580d passes **769 tests across88 suites**, with0 failed and0 pending. It includes accepted broker closure/alarm corrections, CLI wake/authority/cancellation changes, original-entrant summary pictures and the initial ending-intent integration. Typecheck, repository lint and formatting also pass. This inventory predates the upcoming reader-owned cancellation and lifecycle generation helper; it does not close their separately reproduced findings.
+
+Reports: `/tmp/opencode/TIM-integrated-final-unit-results.json` and `/tmp/opencode/TIM-integrated-final-unit.log`; native broker/identity/CLI captures use separate `TIM-integrated-final-unit-*` directories. CLI fixtures ran serially on6361–6364 and did not overwrite original committed evidence. During execution only documentation and the isolated browser-selector correction advanced; production source and package/lock bytes remained unchanged.
+
 ### Actual API and restart regression
 
 The unchanged API inventory also passes **six tests** against a clean1c43b1b checkout and real local Worker/D1/DO processes. It covers full externally controlled completion, retry receipts, reconnect/private isolation, actual CLI pairing/queue/revocation, same-owner matchmaking and a real Worker restart during a required decision without downtime forfeiture.
