@@ -16,6 +16,7 @@ import {
   ObservationSchema,
 } from '../src/shared/api';
 import { AgentPictureSchema, AgentPicturesSchema } from '../src/shared/agent-picture';
+import { DEFAULT_TIMING } from '../src/game/types';
 
 const png = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=',
@@ -23,6 +24,9 @@ const png = Buffer.from(
 );
 
 const origin = 'http://127.0.0.1:8828';
+
+const takeoverCase =
+  'keeps the entrant portrait through an actual house takeover and uses current identity metadata for final games';
 
 let runtime: Awaited<ReturnType<typeof unstable_dev>>;
 
@@ -38,6 +42,7 @@ interface TakeoverProgress {
     'matchId' | 'status' | 'phase' | 'cursor' | 'seats' | 'winReason'
   >;
   lastEvents?: typeof ObservationSchema.Type.events;
+  clockSteps?: { advanced: boolean; reason: string }[];
 }
 
 const worker = {
@@ -120,7 +125,7 @@ async function picture(response: Response) {
   return Schema.decodeUnknownSync(AgentPictureSchema)(await response.json());
 }
 
-beforeEach(async () => {
+beforeEach(async ({ task }) => {
   captureTakeoverFailure = undefined;
   const root = resolve(process.env.GAME_FIXTURE_EVIDENCE_DIR ?? '.tim28/runs');
   await mkdir(root, { recursive: true });
@@ -137,7 +142,8 @@ beforeEach(async () => {
     '--persist-to',
     persistTo,
   ]);
-  runtime = await unstable_dev('.tim28/worker.ts', {
+  const takeover = task.name === takeoverCase;
+  runtime = await unstable_dev(takeover ? '.tim28/portrait-worker.ts' : '.tim28/worker.ts', {
     config: '.tim28/wrangler.jsonc',
     local: true,
     persist: true,
@@ -145,6 +151,7 @@ beforeEach(async () => {
     port: 0,
     inspectorPort: 0,
     logLevel: 'error',
+    vars: takeover ? { TIME_SCALE: '1' } : undefined,
     experimental: { forceLocal: true, disableExperimentalWarning: true, watch: false },
   });
 }, 60_000);
@@ -410,91 +417,127 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
     expect(await picture(await worker.fetch(`/api/agents/${profile.id}/picture`))).toEqual(original);
   });
 
-  it('keeps the entrant portrait through an actual house takeover and uses current identity metadata for final games', async ({
-    signal,
-  }) => {
-    const progress: TakeoverProgress = { stage: 'owner setup' };
+  it(
+    takeoverCase,
+    async ({ signal }) => {
+      const clockSteps: { advanced: boolean; reason: string }[] = [];
+      const progress: TakeoverProgress = { stage: 'owner setup', clockSteps };
 
-    captureTakeoverFailure = async () => {
-      const record = JSON.stringify({ at: Date.now(), ...progress }, null, 2) + '\n';
-      console.error('Agent portrait takeover first failure:', record);
-      await writeFile(`${persistTo}/takeover-failure.json`, record);
-    };
-
-    const cookie = await owner();
-    const profile = await agent(cookie);
-    const original = await picture(await change(profile.id, cookie, 0));
-    const token = await pair(cookie, profile.id);
-    const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
-    progress.stage = 'queue admission';
-    expect(
-      (
-        await worker.fetch('/api/queue', {
-          method: 'POST',
-          headers,
-          signal,
-          body: JSON.stringify({ requestId: randomUUID() }),
-        })
-      ).status,
-    ).toBe(200);
-    let matchId: string | null = null;
-
-    for (let attempt = 0; attempt < 100; attempt++) {
-      const queue = Schema.decodeUnknownSync(QueueStatusSchema)(
-        await (await worker.fetch('/api/queue', { headers, signal })).json(),
-      );
-
-      progress.queue = queue;
-      matchId = queue.matchId;
-
-      if (matchId) break;
-      await pause(100, undefined, { signal });
-    }
-
-    expect(matchId).toBeTruthy();
-    progress.stage = 'takeover and game completion';
-    let view;
-
-    for (let attempt = 0; attempt < 400; attempt++) {
-      view = Schema.decodeUnknownSync(ObservationSchema)(
-        await (await worker.fetch(`/api/matches/${matchId}`, { signal })).json(),
-      );
-
-      progress.match = {
-        matchId: view.matchId,
-        status: view.status,
-        phase: view.phase,
-        cursor: view.cursor,
-        seats: view.seats,
-        winReason: view.winReason,
+      captureTakeoverFailure = async () => {
+        const record = JSON.stringify({ at: Date.now(), ...progress }, null, 2) + '\n';
+        console.error('Agent portrait takeover first failure:', record);
+        await writeFile(`${persistTo}/takeover-failure.json`, record);
       };
-      progress.lastEvents = view.events.slice(-16);
 
-      expect(view.status, view.winReason ?? 'Portrait fixture interrupted').not.toBe('interrupted');
+      const cookie = await owner();
+      const profile = await agent(cookie);
+      const original = await picture(await change(profile.id, cookie, 0));
+      const token = await pair(cookie, profile.id);
+      const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
+      progress.stage = 'queue admission';
+      expect(
+        (
+          await worker.fetch('/api/queue', {
+            method: 'POST',
+            headers,
+            signal,
+            body: JSON.stringify({ requestId: randomUUID() }),
+          })
+        ).status,
+      ).toBe(200);
+      let matchId: string | null = null;
 
-      if (view.status === 'finished') break;
-      await pause(100, undefined, { signal });
-    }
+      for (let attempt = 0; attempt < 100; attempt++) {
+        const queue = Schema.decodeUnknownSync(QueueStatusSchema)(
+          await (await worker.fetch('/api/queue', { headers, signal })).json(),
+        );
 
-    expect(view?.status).toBe('finished');
-    progress.stage = 'finished entrant identity and portrait replacement';
-    const seat = view?.seats.find((candidate) => candidate.agentId === profile.id);
-    expect(seat).toMatchObject({ house: true, originalHouse: false, forfeited: true, agentId: profile.id });
+        progress.queue = queue;
+        matchId = queue.matchId;
 
-    const displayed = Schema.decodeUnknownSync(AgentPicturesSchema)(
-      await (await worker.fetch(`/api/agent-pictures?agentId=${seat?.agentId}`)).json(),
-    );
+        if (matchId) break;
+        await pause(100, undefined, { signal });
+      }
 
-    expect(displayed[0].picture).toEqual(original);
-    const replacement = await picture(await change(profile.id, cookie, 1));
-    expect(replacement.revision).toBe(2);
-    expect(
-      Schema.decodeUnknownSync(ObservationSchema)(
-        await (await worker.fetch(`/api/matches/${matchId}`)).json(),
-      ),
-    ).toEqual(view);
-    expect(await picture(await worker.fetch(`/api/agents/${seat?.agentId}/picture`))).toEqual(replacement);
-  }, 60_000);
+      expect(matchId).toBeTruthy();
+      progress.stage = 'takeover and game completion';
+      let view;
+
+      for (let attempt = 0; attempt < 400; attempt++) {
+        view = Schema.decodeUnknownSync(ObservationSchema)(
+          await (await worker.fetch(`/api/matches/${matchId}`, { signal })).json(),
+        );
+
+        progress.match = {
+          matchId: view.matchId,
+          status: view.status,
+          phase: view.phase,
+          cursor: view.cursor,
+          seats: view.seats,
+          winReason: view.winReason,
+        };
+        progress.lastEvents = view.events.slice(-16);
+
+        expect(view.status, view.winReason ?? 'Portrait fixture interrupted').not.toBe('interrupted');
+
+        if (view.status === 'finished') break;
+
+        const step = Schema.decodeUnknownSync(
+          Schema.Struct({ advanced: Schema.Boolean, reason: Schema.String }),
+        )(
+          await (
+            await worker.fetch(`/__probe/portrait/${matchId}/clock`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ phaseId: view.phase.id, agentId: profile.id }),
+              signal,
+            })
+          ).json(),
+        );
+
+        clockSteps.push(step);
+        await pause(100, undefined, { signal });
+      }
+
+      expect(view?.status).toBe('finished');
+      progress.stage = 'finished entrant identity and portrait replacement';
+      const seat = view?.seats.find((candidate) => candidate.agentId === profile.id);
+      expect(seat).toMatchObject({ house: true, originalHouse: false, forfeited: true, agentId: profile.id });
+
+      const displayed = Schema.decodeUnknownSync(AgentPicturesSchema)(
+        await (await worker.fetch(`/api/agent-pictures?agentId=${seat?.agentId}`)).json(),
+      );
+
+      expect(displayed[0].picture).toEqual(original);
+      const replacement = await picture(await change(profile.id, cookie, 1));
+      expect(replacement.revision).toBe(2);
+      expect(
+        Schema.decodeUnknownSync(ObservationSchema)(
+          await (await worker.fetch(`/api/matches/${matchId}`)).json(),
+        ),
+      ).toEqual(view);
+      expect(await picture(await worker.fetch(`/api/agents/${seat?.agentId}/picture`))).toEqual(replacement);
+
+      const proof = await (await worker.fetch(`/__probe/portrait/${matchId}/progress`)).json();
+      expect(proof).toMatchObject({ timing: DEFAULT_TIMING, accepted: true });
+
+      const measured = Schema.decodeUnknownSync(
+        Schema.Struct({
+          elapsedMs: Schema.Number,
+          delay: Schema.Struct({ completedAt: Schema.Number, deadline: Schema.Number }),
+        }),
+      )(proof);
+
+      expect(measured.elapsedMs).toBeGreaterThanOrEqual(1000);
+      expect(measured.delay.completedAt).toBeLessThan(measured.delay.deadline);
+      expect(clockSteps.filter((step) => step.advanced && step.reason === 'human-grace')).toHaveLength(1);
+      await writeFile(
+        `${persistTo}/takeover-completed.json`,
+        JSON.stringify({ ...progress, proof }, null, 2),
+      );
+    },
+    60_000,
+  );
 
   it('isolates same stable IDs and version URLs in an independent local arena', async () => {
     const cookie = await owner();

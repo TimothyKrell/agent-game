@@ -10,7 +10,7 @@ import { readJson } from '../src/server/http';
 export { MatchObject, MatchmakingObject, HouseSeatObject } from '../src/server/worker';
 
 export default {
-  async fetch(request: Request, env: Env) {
+  async fetch(request: Request<unknown, IncomingRequestCfProperties>, env: Env) {
     const url = new URL(request.url);
 
     if (url.pathname === '/__probe/identity') {
@@ -58,7 +58,10 @@ export default {
         { highWaterMark: 0 },
       );
 
-      return worker.fetch(new Request(request, { method: request.method, body }), env);
+      const forwarded = new Request(request, { method: request.method, body });
+
+      // SAFETY: the Request-copy constructor retains the incoming cf metadata; only method/body change.
+      return worker.fetch(forwarded as Request<unknown, IncomingRequestCfProperties>, env);
     }
 
     if (url.pathname === '/__probe/bounded') {
