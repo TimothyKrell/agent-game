@@ -361,6 +361,14 @@ export class MatchObject extends DurableObject<Env> {
     await this.arm();
   }
 
+  /** Read-only recovery receipt. Initialization commits the game and immutable admission fields together. */
+  initializationReceipt(input: MatchInitialization): boolean {
+    if (!this.exists()) return false;
+    this.validateInitialization(input);
+
+    return true;
+  }
+
   identity() {
     const state = this.load();
 

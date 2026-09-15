@@ -3,6 +3,17 @@ import type { GameId } from '../game/contracts';
 import type { AgentPrincipal } from './auth';
 import { PlatformQueue } from './coordinator';
 import type { InferenceRequest } from './coordinator';
+import type { RpcResult } from '../shared/api';
+import { fault } from './http';
+import type { PreviewBrokerIntent, PreviewInference, PreviewInferenceResult } from '../shared/preview-broker';
+
+function brokerResult<T>(fn: () => T): RpcResult<T> {
+  try {
+    return { ok: true, value: fn() };
+  } catch (error) {
+    return { ok: false, error: fault(error) };
+  }
+}
 
 export type { MatchInitialization, PlatformQueueStatus } from './coordinator';
 
@@ -65,6 +76,51 @@ export class MatchmakingObject extends DurableObject<Env> {
 
   inferenceSummary(matchId: string) {
     return this.queue.inferenceSummary(matchId);
+  }
+
+  previewBudget(gameId: GameId = 'secret-overlord') {
+    return this.queue.preview.status(gameId);
+  }
+
+  allocatePreview(intent: PreviewBrokerIntent, fingerprint: string, sourceRevision: string) {
+    const result = brokerResult(() => this.queue.preview.allocate(intent, fingerprint, sourceRevision));
+
+    if (result.ok) this.ctx.waitUntil(this.ctx.storage.setAlarm(Date.now() + 30000));
+
+    return result;
+  }
+
+  previewAllocation(id: string) {
+    return this.queue.preview.receipt(id);
+  }
+
+  beginPreviewInference(input: PreviewInference, fingerprint: string) {
+    return brokerResult(() => this.queue.preview.begin(input, fingerprint));
+  }
+
+  finishPreviewInference(
+    input: Pick<PreviewInference, 'allocationId' | 'jobId' | 'attempt'>,
+    fingerprint: string,
+    result: Extract<PreviewInferenceResult, { state: 'completed' }> | { state: 'failed' },
+    actual: number | null,
+  ) {
+    return this.queue.preview.finish(input, fingerprint, result, actual);
+  }
+
+  retirePreviewInference(input: Pick<PreviewInference, 'allocationId' | 'jobId' | 'attempt'>) {
+    return this.queue.preview.retire(input);
+  }
+
+  completePreview(id: string, target: { origin: string; incarnation: string }) {
+    return this.queue.preview.close(id, target);
+  }
+
+  reconcilePreviewTargets() {
+    return this.queue.preview.reconcileTargets();
+  }
+
+  targetPreviewReceipt(matchId: string) {
+    return brokerResult(() => this.queue.previewTarget.receipt(matchId));
   }
 
   alarm() {

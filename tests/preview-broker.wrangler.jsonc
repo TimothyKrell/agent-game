@@ -1,0 +1,38 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "preview-broker-integration",
+  "main": "fixtures/preview-broker-worker.ts",
+  "compatibility_date": "2026-09-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "preview-broker-test",
+      "database_id": "00000000-0000-0000-0000-000000000005",
+      "migrations_dir": "../migrations",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "MATCHES", "class_name": "BrokerTestMatch" },
+      { "name": "MATCHMAKING", "class_name": "BrokerTestCoordinator" },
+      { "name": "HOUSE_SEATS", "class_name": "HouseSeatObject" },
+    ],
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["BrokerTestMatch", "BrokerTestCoordinator", "HouseSeatObject"] },
+  ],
+  "vars": {
+    "ENVIRONMENT": "development",
+    "APP_URL": "http://127.0.0.1:6341",
+    "PREVIEW_SOURCE_URL": "",
+    "HOUSE_PROVIDER": "preview",
+    "HOUSE_MODEL": "scripted",
+    "TIME_SCALE": "0.1",
+    "QUEUE_WAIT_SECONDS": "30",
+    "MAX_CONCURRENT_MATCHES": "3",
+    "HOUSE_DAILY_BUDGET_USD": "5",
+    "HOUSE_MATCH_RESERVATION_USD": "1.5",
+    "HOUSE_SUCCESSION_MATCH_RESERVATION_USD": "",
+  },
+}

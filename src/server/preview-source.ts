@@ -9,6 +9,7 @@ import type { PreviewIntent, PreviewReceipt } from '../shared/preview';
 import { agentSession, createAuth, ownerSession } from './auth';
 import { hashSecret, json, randomSecret, readJson } from './http';
 import { openPreview, previewEnabled, sealPreview } from './preview-config';
+import { houseConfigured } from './house-model';
 import {
   decodePreview,
   verifyPreviewRequest,
@@ -75,6 +76,33 @@ async function active(env: Env, row: Handoff): Promise<void> {
 
   if (!arena || !authority)
     throw new GameError('preview-revoked', 'Source authority is no longer active.', 401);
+}
+
+/** Shared narrow authority seam for identity introspection and source broker admission. */
+export async function authorizePreviewCompetitor(
+  env: Env,
+  target: { origin: string; incarnation: string },
+  requestId: string,
+  agentId?: string,
+) {
+  const row = await handoff(env, requestId);
+
+  if (row.arena !== target.origin || row.incarnation !== target.incarnation || row.redeemed_at === null)
+    throw new GameError('preview-target', 'Wrong or unredeemed source authority.', 401);
+  await active(env, row);
+
+  if (row.scope === 'agent' && agentId !== undefined && agentId !== row.agent_id)
+    throw new GameError('preview-scope', 'Source authorization is for a different competitor.', 401);
+
+  if (
+    agentId !== undefined &&
+    !(await env.DB.prepare('SELECT id FROM agents WHERE id=? AND owner_id=? AND retired_at IS NULL')
+      .bind(agentId, row.owner_id)
+      .first())
+  )
+    throw new GameError('preview-retired', 'Source competitor is retired or unavailable.', 401);
+
+  return { ownerId: row.owner_id!, expiresAt: row.authority_expires! };
 }
 
 async function start(env: Env, input: PreviewIntent, scope: 'owner' | 'agent'): Promise<Handoff> {
@@ -185,6 +213,12 @@ export async function sourcePreviewRoute(request: Request, env: Env): Promise<Re
   const path = new URL(request.url).pathname;
 
   if (path === '/api/preview/arenas' && request.method === 'GET') {
+    const broker = await env.DB.prepare('SELECT enabled FROM preview_broker_settings WHERE id=1').first<{
+      enabled: number;
+    }>();
+
+    const livePlay = !!broker?.enabled && env.HOUSE_PROVIDER !== 'preview' && houseConfigured(env);
+
     const arenas = (
       await env.DB.prepare(
         'SELECT origin,incarnation,commit_id AS "commit" FROM preview_arenas WHERE closed_at IS NULL ORDER BY origin LIMIT 100',
@@ -196,7 +230,7 @@ export async function sourcePreviewRoute(request: Request, env: Env): Promise<Re
         ...arena,
         identityVersion: 1,
         ownerEntryUrl: `${arena.origin}/preview`,
-        livePlay: false,
+        livePlay,
       })),
     );
   }
@@ -325,17 +359,7 @@ export async function sourcePreviewRoute(request: Request, env: Env): Promise<Re
 
   if (path === '/api/preview/introspect') {
     const { agentId } = decodePreview(PreviewIntrospectionSchema, proof.payload);
-
-    if (row.scope === 'agent' && agentId !== undefined && agentId !== row.agent_id)
-      throw new GameError('preview-scope', 'Source authorization is for a different competitor.', 401);
-
-    if (
-      agentId !== undefined &&
-      !(await env.DB.prepare('SELECT id FROM agents WHERE id=? AND owner_id=? AND retired_at IS NULL')
-        .bind(agentId, row.owner_id)
-        .first())
-    )
-      throw new GameError('preview-retired', 'Source competitor is retired or unavailable.', 401);
+    await authorizePreviewCompetitor(env, proof, row.id, agentId);
 
     return json({ active: true, expiresAt: row.authority_expires });
   }

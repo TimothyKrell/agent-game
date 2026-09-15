@@ -1,4 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
+import { GameError } from '../game/types';
 import { Effect, Schema } from 'effect';
 import { previewAction, previewSpeech } from '../game/preview';
 import { previewSuccessionAction, previewSuccessionSpeech } from '../game/succession/preview';
@@ -10,6 +11,9 @@ import type { HouseJob } from './house-contract';
 import { houseChatBudget } from './house-contract';
 import { generateHouse, housePrompt, houseSystem, inferenceCost } from './house-model';
 import { platformCoordinator } from './coordinator';
+import { previewEnabled } from './preview-config';
+import { previewInference, retirePreviewInference } from './preview-broker-client';
+import type { PreviewInference } from '../shared/preview-broker';
 
 type JobRow = {
   id: string;
@@ -19,6 +23,7 @@ type JobRow = {
   deadline: number;
   attempts: number;
   response: string | null;
+  broker_input: string | null;
 };
 
 interface SavedResponse {
@@ -54,6 +59,9 @@ export class HouseSeatObject extends DurableObject<Env> {
       'CREATE TABLE IF NOT EXISTS notes (generation INTEGER PRIMARY KEY, text TEXT NOT NULL)',
     );
     const columns = ctx.storage.sql.exec<{ name: string }>('PRAGMA table_info(jobs)').toArray();
+
+    if (!columns.some((column) => column.name === 'broker_input'))
+      ctx.storage.sql.exec('ALTER TABLE jobs ADD COLUMN broker_input TEXT');
 
     if (!columns.some((column) => column.name === 'outcome'))
       ctx.storage.sql.exec('ALTER TABLE jobs ADD COLUMN outcome TEXT');
@@ -141,8 +149,8 @@ export class HouseSeatObject extends DurableObject<Env> {
     const row = this.cleanupRunning
       ? undefined
       : this.ctx.storage.sql
-          .exec<{ id: string; data: string; waiter_id: string }>(
-            "SELECT id,data,waiter_id FROM jobs WHERE status='done' AND waiter_id IS NOT NULL AND due_at<=? ORDER BY due_at,id LIMIT 1",
+          .exec<{ id: string; data: string; waiter_id: string; broker_input: string | null }>(
+            "SELECT id,data,waiter_id,broker_input FROM jobs WHERE status='done' AND waiter_id IS NOT NULL AND due_at<=? ORDER BY due_at,id LIMIT 1",
             Date.now(),
           )
           .toArray()[0];
@@ -174,10 +182,23 @@ export class HouseSeatObject extends DurableObject<Env> {
       );
   }
 
-  private async retireTerminalWaiter(row: { id: string; data: string; waiter_id: string }): Promise<void> {
+  private async retireTerminalWaiter(row: {
+    id: string;
+    data: string;
+    waiter_id: string;
+    broker_input: string | null;
+  }): Promise<void> {
     try {
       const job: HouseJob = JSON.parse(row.data);
-      await platformCoordinator(this.env).retireInferenceWaiter({ id: row.waiter_id, matchId: job.matchId });
+
+      if (row.broker_input) {
+        const input: PreviewInference = JSON.parse(row.broker_input);
+        await retirePreviewInference(this.env, input);
+      } else
+        await platformCoordinator(this.env).retireInferenceWaiter({
+          id: row.waiter_id,
+          matchId: job.matchId,
+        });
       this.ctx.storage.sql.exec(
         "UPDATE jobs SET waiter_id=NULL WHERE id=? AND status='done' AND waiter_id=?",
         row.id,
@@ -198,6 +219,121 @@ export class HouseSeatObject extends DurableObject<Env> {
       // The alarm is already armed. A late acknowledgement must not overwrite a newer wakeup.
       this.cleanupRunning = false;
     }
+  }
+
+  private async brokerGeneration(
+    job: HouseJob,
+    row: JobRow,
+    prompt: string,
+    system: string,
+    choices: string[],
+  ) {
+    let input: PreviewInference;
+
+    if (row.broker_input) {
+      input = JSON.parse(row.broker_input);
+
+      if (JSON.stringify(input.choices) !== JSON.stringify(choices)) {
+        this.done(row.id, 'obsolete');
+
+        return null;
+      }
+
+      if (row.attempts >= input.attempt) {
+        if (input.attempt === 2) {
+          this.done(row.id, 'provider-error');
+
+          return null;
+        }
+
+        input = { ...input, attempt: 2 };
+      }
+    } else {
+      const saved = await platformCoordinator(this.env).targetPreviewReceipt(job.matchId);
+
+      if (!saved.ok) {
+        if (saved.error.status >= 500) throw new Error(saved.error.message);
+        this.done(row.id, 'admission-denied');
+
+        return null;
+      }
+
+      const receipt = saved.value;
+      input = {
+        allocationId: receipt.allocationId,
+        commit: receipt.intent.commit,
+        jobId: job.id,
+        attempt: 1,
+        phaseId: job.phaseId,
+        seat: job.seat,
+        generation: job.generation,
+        deadline: job.deadline,
+        kind: job.kind === 'action' ? 'required' : job.id.endsWith(':chat:1') ? 'followup' : 'initial',
+        policyVersion: receipt.intent.policyVersion,
+        system,
+        prompt,
+        choices,
+      };
+    }
+
+    // A retry after an uncertain HTTP response uses exactly this input/attempt, never a new billed attempt.
+    this.ctx.storage.sql.exec(
+      'UPDATE jobs SET broker_input=?,waiter_id=? WHERE id=?',
+      JSON.stringify(input),
+      `${job.id}:attempt:${input.attempt}`,
+      row.id,
+    );
+    let result;
+
+    try {
+      result = await previewInference(this.env, input);
+    } catch (error) {
+      if (error instanceof GameError && error.status < 500) {
+        this.done(row.id, 'admission-denied');
+
+        return null;
+      }
+
+      throw error;
+    }
+
+    if (result.state === 'pending') {
+      this.ctx.storage.sql.exec(
+        'UPDATE jobs SET due_at=? WHERE id=?',
+        Math.max(Date.now() + 250, result.retryAt),
+        row.id,
+      );
+
+      return null;
+    }
+
+    if (result.state === 'denied') {
+      this.ctx.storage.sql.exec('UPDATE jobs SET admission_reason=? WHERE id=?', result.reason, row.id);
+
+      if (!result.retryable) this.ctx.storage.sql.exec('UPDATE jobs SET waiter_id=NULL WHERE id=?', row.id);
+
+      if (
+        result.retryable &&
+        result.retryAt + (job.kind === 'chat' ? houseChatBudget(job.model) : 500) < job.deadline
+      )
+        this.ctx.storage.sql.exec('UPDATE jobs SET due_at=? WHERE id=?', result.retryAt, row.id);
+      else this.done(row.id, 'admission-denied');
+
+      return null;
+    }
+
+    if (result.state !== 'completed') {
+      this.ctx.storage.sql.exec(
+        'UPDATE jobs SET attempts=?,waiter_id=NULL WHERE id=?',
+        input.attempt,
+        row.id,
+      );
+      throw new Error('Source provider attempt failed or has unknown usage');
+    }
+
+    this.ctx.storage.sql.exec('UPDATE jobs SET waiter_id=NULL WHERE id=?', row.id);
+
+    return { value: result.value, inputTokens: result.inputTokens, outputTokens: result.outputTokens };
   }
 
   async alarm(): Promise<void> {
@@ -295,77 +431,95 @@ export class HouseSeatObject extends DurableObject<Env> {
         } else {
           const prompt = housePrompt(view, input.persona, notes, job.kind, input.recent);
           const system = houseSystem(view);
+          const startedAt = Date.now();
+          let generated;
 
-          const estimate = inferenceCost(
-            job.model.model,
-            new TextEncoder().encode(system + prompt).byteLength,
-            512,
-          );
+          if (previewEnabled(this.env)) {
+            generated = await this.brokerGeneration(
+              job,
+              row,
+              prompt,
+              system,
+              job.kind === 'action'
+                ? view.decision!.actions.map((option) => JSON.stringify(option.action))
+                : [],
+            );
 
-          usageId = `${job.id}:attempt:${row.attempts + 1}`;
-          // Persist before RPC so an uncertain admission acknowledgement can be retired too.
-          this.ctx.storage.sql.exec('UPDATE jobs SET waiter_id=? WHERE id=?', usageId, row.id);
+            if (!generated) return;
+          } else {
+            const estimate = inferenceCost(
+              job.model.model,
+              new TextEncoder().encode(system + prompt).byteLength,
+              512,
+            );
 
-          const reserved = await platformCoordinator(this.env).reserveInference({
-            id: usageId,
-            matchId: job.matchId,
-            estimate,
-            deadline: job.deadline,
-            mandatory: job.kind === 'action',
-            optionalKind: job.id.endsWith(':chat:1') ? 'followup' : 'initial',
-          });
+            usageId = `${job.id}:attempt:${row.attempts + 1}`;
+            // Persist before RPC so an uncertain admission acknowledgement can be retired too.
+            this.ctx.storage.sql.exec('UPDATE jobs SET waiter_id=? WHERE id=?', usageId, row.id);
 
-          if (reserved.allowed || !reserved.retryable)
-            this.ctx.storage.sql.exec('UPDATE jobs SET waiter_id=NULL WHERE id=?', row.id);
+            const reserved = await platformCoordinator(this.env).reserveInference({
+              id: usageId,
+              matchId: job.matchId,
+              estimate,
+              deadline: job.deadline,
+              mandatory: job.kind === 'action',
+              optionalKind: job.id.endsWith(':chat:1') ? 'followup' : 'initial',
+            });
 
-          if (!reserved.allowed) {
+            if (reserved.allowed || !reserved.retryable)
+              this.ctx.storage.sql.exec('UPDATE jobs SET waiter_id=NULL WHERE id=?', row.id);
+
+            if (!reserved.allowed) {
+              this.ctx.storage.sql.exec(
+                'UPDATE jobs SET admission_reason=? WHERE id=?',
+                reserved.reason,
+                row.id,
+              );
+              console.log(
+                JSON.stringify({
+                  event: 'house_admission_denied',
+                  job: job.id,
+                  reason: reserved.reason,
+                  retryable: reserved.retryable,
+                  retryAt: reserved.retryAt,
+                  deadline: job.deadline,
+                }),
+              );
+              const budget = job.kind === 'chat' ? houseChatBudget(job.model) : 500;
+
+              if (reserved.retryable && reserved.retryAt + budget < job.deadline)
+                this.ctx.storage.sql.exec(
+                  'UPDATE jobs SET due_at = ? WHERE id = ?',
+                  reserved.retryAt,
+                  row.id,
+                );
+              else this.done(row.id, 'admission-denied');
+
+              return;
+            }
+
+            if (job.kind === 'chat' && Date.now() + houseChatBudget(job.model) > job.deadline) {
+              await platformCoordinator(this.env).recordInference(usageId, 0);
+              this.done(row.id, 'insufficient-time');
+
+              return;
+            }
+
             this.ctx.storage.sql.exec(
-              'UPDATE jobs SET admission_reason=? WHERE id=?',
-              reserved.reason,
+              "UPDATE jobs SET attempts = attempts + 1, status = 'running' WHERE id = ?",
               row.id,
             );
-            console.log(
-              JSON.stringify({
-                event: 'house_admission_denied',
-                job: job.id,
-                reason: reserved.reason,
-                retryable: reserved.retryable,
-                retryAt: reserved.retryAt,
-                deadline: job.deadline,
-              }),
+            generated = await Effect.runPromise(
+              generateHouse(
+                this.env,
+                job.model,
+                prompt,
+                job.deadline,
+                job.kind === 'action' ? view.decision!.actions.length : 0,
+                system,
+              ),
             );
-            const budget = job.kind === 'chat' ? houseChatBudget(job.model) : 500;
-
-            if (reserved.retryable && reserved.retryAt + budget < job.deadline)
-              this.ctx.storage.sql.exec('UPDATE jobs SET due_at = ? WHERE id = ?', reserved.retryAt, row.id);
-            else this.done(row.id, 'admission-denied');
-
-            return;
           }
-
-          if (job.kind === 'chat' && Date.now() + houseChatBudget(job.model) > job.deadline) {
-            await platformCoordinator(this.env).recordInference(usageId, 0);
-            this.done(row.id, 'insufficient-time');
-
-            return;
-          }
-
-          this.ctx.storage.sql.exec(
-            "UPDATE jobs SET attempts = attempts + 1, status = 'running' WHERE id = ?",
-            row.id,
-          );
-          const startedAt = Date.now();
-
-          const generated = await Effect.runPromise(
-            generateHouse(
-              this.env,
-              job.model,
-              prompt,
-              job.deadline,
-              job.kind === 'action' ? view.decision!.actions.length : 0,
-              system,
-            ),
-          );
 
           cost =
             generated.inputTokens !== null && generated.outputTokens !== null
@@ -420,7 +574,7 @@ export class HouseSeatObject extends DurableObject<Env> {
           observedChat: job.kind === 'chat' ? input.lastChat : undefined,
         };
         this.ctx.storage.sql.exec(
-          "UPDATE jobs SET response = ?, status = 'result' WHERE id = ?",
+          "UPDATE jobs SET response = ?, status = 'result', attempts=CASE WHEN broker_input IS NOT NULL THEN json_extract(broker_input,'$.attempt') ELSE attempts END WHERE id = ?",
           JSON.stringify(response),
           row.id,
         );
