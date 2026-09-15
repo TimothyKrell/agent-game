@@ -62,6 +62,42 @@ The parent subsequently ran the **complete unit/Worker inventory at64876e6**: **
 
 That run overwrote the CLI fixture's tracked scripted-results file. Parent preserved the fresh result separately at `/tmp/opencode/TIM-integrated-cli-scripted-results.json`, then restored the original committed artifact exactly. The CLI owner is adding a unique per-run evidence directory so filtered and failed runs cannot overwrite the original evidence. The earlier unidentified protocol-header rejection remains preserved and is not attributed to the separately proven timeout defect.
 
+### CLI correction integration
+
+**b79bb46 / f932a0e** are integrated at **aa88233**. Parent independently passed **138 cases serially:27 preview and111 CLI/supervisor cases**. Build, all application/fixture typechecks and lint, scoped formatting, packaged file assertions and whitespace checks pass. Fresh output is isolated under `/tmp/opencode/TIM-27-lead-cli-corrections/`; original committed evidence remains intact. The prepared0.3.0 package is now53,775 bytes, including the shared HTTP response boundary.
+
+The corrected transport drains coalesced public wakes within the original wait deadline. Exact authoritative cancellation retires only the matching pending participation pin; its history/accounting remain. Native subprocess timeouts are finite bounded integers without extending the absolute deadline. The dependency-free HTTP decoder preserves status before attempting to interpret failure bodies. Standards review independently closes the HTTP-authority finding and reports no adjacent findings. Final Spec replay is pending.
+
+Final CLI review now reports **Standards 0 / Spec 0 outstanding**. The reviewer replayed both-protocol wake/401 cases at54–75ms versus baseline801–808ms, exact Worker/D1 cancellation/reselection, native fractional/deadline cases and19 direct edge checks. Independent22 runtime and11 selected installed-package cases pass, with all17 original evidence hashes verified. Evidence: `/tmp/opencode/TIM27-cli-correction-review/f932a0e-4dj1p25q/review-evidence/REVIEW.md`. This accepts the local CLI implementation; the historical missing-header rejection remains recorded and unattributed, and hosted playable acceptance remains separate.
+
+The accepted CLI is archived at `/home/timothykrell/Code/agent-games-archive/TIM-27-cli-2026-09-15/`: **1,510 source/evidence and8,716 parent/reviewer entries**. All member hashes, unchanged source, Git bundle and independent source recovery verified.
+
+- Source snapshot:101,136,546 bytes; SHA-256 `57af8bbf5a3490492728b67920bee76c4caf9bbf871ea3e69382f317d33bbd21`.
+- Parent/reviewer archive:SHA-256 `f4e43fca9a143edd6e942ef16855e07e97cf0f9314dc46f297432b8cff3eb2ae`.
+- Git bundle:SHA-256 `fa0ae10d9aadf9af3a011a11c0ec011878064c8a4d698f5d7f95c24e070b1b50`.
+
+The completed CLI worktree/branch were retired after a final clean audit. Its implementation owner moved to `/tmp/opencode/agent-game-playable-integration`, based on1c43b1b, for test-only integration of installed CLI/native harnesses with actual broker admission, provider transport and shared accounting. The lifecycle and broker production owners remain separate.
+
+## Broker review checkpoint
+
+Source **a953a3c** delivers source-executed inference and allocation recovery through the existing coordinator ledger, migration0005 and D1-only enablement, with no new target bindings. Standards review reports0 findings; Spec review reproduced twoP2s affecting production waiters/alarms and oneP3 live fill-time mismatch. Corrections are assigned before broker integration acceptance.
+
+The source recorded93 tests, including16 native broker,56 ledger/regression,18 identity/Worker, two scripted-game and the full TIM-26 gate. That gate retains392 required calls and$1.2804700 accounted. The independent reviewer reran16+56 and preserved actual signed-HTTP/SQLite/production-scheduler probes under `/tmp/opencode/TIM27-broker-spec-review/`. The trusted lifecycle adapter continues against the handed-over D1-only interfaces; hosted activation remains gated.
+
+Initial broker integration **1c43b1b** preserves the source artifact GET alongside broker-aware discovery, exact checkpoint/history code and additive migrations0005/0006/0007. Parent passed **88 native/identity/Worker/queue/repository/summary/cleanup cases**, then **11 ledger/registry cases**, and **27 installed CLI preview cases** against the combined server. The first command named a nonexistent `preview-ledger.test.ts`; parent explicitly ran the actual five-case `preview-broker-ledger.test.ts` in the subsequent11-case command. Typecheck/lint/build and whitespace checks pass. These establish integration compatibility and do not close the three assigned broker findings.
+
+## Combined unprivileged artifact verification
+
+The parent ran the actual artifact producer against a clean detached **aa88233** checkout, with a fresh explicit environment and empty HOME. The checkout contains the production Dossier, complete portrait/summary adoption and corrected CLI. No account or deployment credential was supplied. GitHub identity fields were synthetic local fixture data, not a claimed successful hosted workflow.
+
+The locked Wrangler4.129.1 `deploy --dry-run --outdir --no-autoconfig` path compiled the real Worker; the producer validated its static module inventory, production assets, migrations and content-addressed branch archive. Parent independently re-read and verified every declared payload size/hash: **27 payloads /4,531,688 bytes**. Manifest SHA-256: `f07ddb592f6a3b66a70432acdf54734a7ee939c2121ee015e09c95afa3a5b85a`.
+
+Evidence: `/tmp/opencode/TIM-integrated-prebuilt/verification.json`, retained manifest/payloads/build logs, and `/tmp/opencode/verify-integrated-prebuilt.py`. Current command semantics were checked against [Wrangler Workers commands](https://developers.cloudflare.com/workers/wrangler/commands/workers/#deploy), retrieved2026-09-15. The standalone `/commands/deploy/` URL returned404; the current Workers command reference explicitly documents dry-run compilation without deployment.
+
+The disposable checkout and emitted bytes are preserved in `/home/timothykrell/Code/agent-games-archive/TIM-integrated-prebuilt-2026-09-15/`:2,055 source/evidence and2,863 output entries, with all hashes and independent bundle recovery verified. Snapshot SHA-256 `a1b55af5a38ae5db7f594208a1012b4fc467f63cf74d3524c68bf866cae93c3a`; output archive `3d57d9c1736ed644c74b4cd18753e2f9233a0c2bdb855b6625de24cad24a818d`; bundle `f92918cae92fabe96fdff8d3a26214c2e2d30bbc2c6412b595cc647b27e23857`.
+
+The detached prebuilt checkout was retired after a final clean audit and removal of its disposable dependency link.
+
 ## Identity/source-registry recovery archive
 
 The completed original identity worktree is archived at `/home/timothykrell/Code/agent-games-archive/TIM-27-identity-2026-09-15/`: **692 source/evidence entries and 1,511 parent/reviewer entries**, all member hashes verified. The bundle preserves both the original identity branch through4c2a97f and integration through54fc037, including parent artifact metadata and retirement corrections. Unchanged-source inventory, bundle verification and independent source recovery passed.

@@ -29,3 +29,15 @@ The implementation owner is correcting:
 TIM-23 separately owns the remaining pre-replacement scroll-ownership correction. TIM-29 owns the remaining non-Dossier portrait consumers. Final acceptance requires corrected actual-route checks and the established application browser suite. A separate test-only lane is updating obsolete playback/tab expectations to the approved reading behavior while preserving their underlying authority/history assertions.
 
 The retained development guide still contains all20 scenarios and36 terms, with the approved baseline comparison available. This local integration is not hosted owner acceptance.
+
+## Composed focus, vocabulary and terminal-entry corrections
+
+Source **54a3abd** fixes closing-trigger focus retargeting; **a59fbbc** consolidates canonical return facts and action vocabulary; **ab8706c** restores bounded terminal-first entry and the source-backed Final move control. Both Standards P3s are closed. RuleHelp's final Spec review reports0 outstanding, independently exercising physical pointer/modal ordering at1440/390/320 and preserving227 checksum-verified probe files.
+
+Parent independently passed **73 tests**, **nine original plus four focused RuleHelp cases**, **212 component assertions**, **138 retained-guide assertions**, and **87 development /90 production actual-route assertions** against the combined picture/summary/CLI integration. Production graph/direct-entry exclusion and typecheck/lint/build also pass. Evidence is isolated under `/tmp/opencode/Dossier-lead-corrections/`; the original failed route evidence remains unchanged.
+
+The final whitespace check flagged literal trailing spaces/blank lines in captured red-run tool output. `.gitattributes` marks only those captured output classes as whitespace-preserved, retaining original evidence bytes. Application source and authored prose remain subject to normal checks.
+
+The terminal-entry Spec reviewer closed the missing-entry finding but found a new **P2 pending navigation lifetime**: a held Final move request can scroll/focus its eventual row after the viewer opens a portrait modal or navigates to Act I. The implementation owner is fencing that deferred action against subsequent user intent and active modality. Exact evidence: `/tmp/opencode/Dossier-terminal-review/pending-results.json`. Passing ordinary navigation assertions does not close that additional interleaving.
+
+**TIM-19, TIM-20, TIM-22 and TIM-31 are locally accepted and Done** through92ce34f. Their action/card/rule/status/guide contracts are verified. **TIM-21 remains In Progress** for the deferred ending-navigation lifetime; its shared worktree and evidence remain active. Established application browser-suite alignment and TIM-24 hosted review are separate acceptance work.
