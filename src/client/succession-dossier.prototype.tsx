@@ -1,4 +1,4 @@
-/** TIM-6 owner revision: a linear dossier with real recorded speech and mechanical facts. */
+/** Owner-approved Dossier. Retain Action & UI examples as a dev-only style guide through integration. */
 import { Fragment, useEffect, useState } from 'react';
 import { ArrowRight, Check, ChevronDown, ChevronLeft, Eye, Skull, Trophy, X } from 'lucide-react';
 import { InfluenceBack } from './deco';

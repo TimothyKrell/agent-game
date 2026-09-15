@@ -1,4 +1,4 @@
-/** TIM-6 throwaway: inline rule vocabulary and small, anchored explanations. */
+/** Retained dev style-guide reference: inline rule vocabulary and small, anchored explanations. */
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';

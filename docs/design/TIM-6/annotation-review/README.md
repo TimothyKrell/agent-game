@@ -1,6 +1,6 @@
 # First Agentation review · C / Dossier
 
-The owner submitted ten annotations on the recorded-match preview. This revision implements a proposed response to each and awaits their visual review. The notes are acknowledged with replies; they remain open until the owner accepts the changes.
+The owner submitted ten annotations on the recorded-match preview. This revision implemented a proposed response to each; the [second annotation pass](../annotation-review-2/README.md) refined it further. **The owner has since accepted the final design and requested production implementation.** The original annotation responses and evidence are preserved below.
 
 **Preview:** [Recorded match](http://localhost:5177/matches/tim-6-replay-prototype?variant=C&sample=match) · [Exchange example](http://localhost:5177/matches/tim-6-replay-prototype?variant=C&sample=examples#dp-example-exchange).
 

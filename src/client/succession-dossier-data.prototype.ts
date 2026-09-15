@@ -1,4 +1,4 @@
-/** TIM-6 throwaway adapter for one captured, completed archive. Not a production history cache. */
+/** Retained dev style-guide fixtures for one completed archive; production uses its own history cache. */
 import { Match, Schema } from 'effect';
 import record from './succession-replay-record.prototype.json';
 

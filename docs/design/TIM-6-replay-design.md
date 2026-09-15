@@ -1,6 +1,8 @@
 # TIM-6 · A readable two-act replay
 
-**Owner choice: C / Dossier · Revised preview ready for review.**
+**C / Dossier approved for implementation · Owner design review complete.**
+
+The owner accepted the refined second annotation pass, asked to wrap the design review and send it to the coordinator for implementation. **Action & UI examples must remain in the code as a dev-only style guide.** The [retained guide](succession-style-guide.md) documents how to reopen it and maintain its production exclusion. The [final coordinator handoff](TIM-6/owner-review/HANDOFF.md) records approval and implementation requirements.
 
 ## Owner direction · 14 September 2026
 
@@ -17,9 +19,9 @@ The owner explicitly chose **C / Dossier** for its linear, straightforward readi
 
 **Visual feedback:** [Agentation is connected](TIM-6/owner-review/AGENTATION.md). Open the bottom-right feedback toolbar, click an element and add a note, then ask the replay-design session to review the annotations.
 
-**Latest revision:** [First ten-annotation review](TIM-6/annotation-review/README.md): integrated resource counts, cut-square frames, tighter discussion, Thief/Exchange/Challenge icons, clearer system-phase wording and illustrative profile pictures with enlargement. Includes the requested production profile-upload/onboarding handoff. **85 browser checks pass**; this visual pass is ready for owner review.
+**First revision:** [First ten-annotation review](TIM-6/annotation-review/README.md): integrated resource counts, cut-square frames, tighter discussion, Thief/Exchange/Challenge icons, clearer system-phase wording and illustrative profile pictures with enlargement. Includes the requested production profile-upload/onboarding handoff. **85 browser checks passed** at that revision.
 
-**Second annotation pass:** [Five new notes + complete icon audit](TIM-6/annotation-review-2/README.md). Named Act I bonus recipients; larger left-aligned speaker/action portraits; dramatic eliminations and executions with historical remaining-agent rosters; all **36 rule terms** have intentional icons and explanations, including Executor. **138 browser checks pass**, with separate evidence and the latest preview awaiting owner acceptance.
+**Approved second annotation pass:** [Five new notes + complete icon audit](TIM-6/annotation-review-2/README.md). Named Act I bonus recipients; larger left-aligned speaker/action portraits; dramatic eliminations and executions with historical remaining-agent rosters; all **36 rule terms** have intentional icons and explanations, including Executor. **138 browser checks pass**, with separate evidence.
 
 The captured match is [`match_e65fb846-c804-4d8b-ba78-e303119e1847`](https://agent-game.tk-d86.workers.dev/matches/match_e65fb846-c804-4d8b-ba78-e303119e1847): **Patch wins**, 2 influence / 3 coins, table round 9. Rogue wins Act I by six Overrides; four agents start Act II with 3 coins and six with 2. No Act I execution occurred. The record contains all six Act II actions, all five capabilities, challenge proof/disproof, Guard/Thief/Envoy blocks, a failed block, exchange, payments and eliminations.
 
@@ -36,7 +38,7 @@ The example view contains **12 recorded excerpts + 8 clearly labeled independent
 - Implementation sources: `src/client/succession-dossier.prototype.tsx`, `succession-dossier-data.prototype.ts`, `succession-dossier-rules.prototype.tsx`, `succession-dossier.prototype.css`, and `succession-replay-record.prototype.json`.
 - Reproduce the new inspection with `node scripts/capture-tim-6-dossier.prototype.mjs` while `npm run prototype:replay` runs. `scripts/capture-tim-6-record.prototype.mjs` is the read-only archive capture utility.
 
-The new C route is a completed-record fixture, fully local after capture. Production bounded windowing, archive authority transitions and live following still belong to integration. The owner has chosen the reading direction; this revised rendering awaits their feedback. The original 24 screenshots, original inspection and A/B comparison remain preserved as earlier design evidence.
+The C route is a completed-record fixture, fully local after capture, retained as an approved development reference. Production bounded windowing, archive authority transitions and live following belong to the queued implementation. The original 24 screenshots, original inspection and A/B comparison remain preserved as earlier design evidence.
 
 ---
 

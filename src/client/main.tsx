@@ -61,7 +61,7 @@ import './local-game-controls.css';
 
 type SiteBootstrap = Bootstrap | GameBootstrap;
 
-// TIM-6 throwaway fixture: dev-only, on the existing match route, inside the real site shell.
+// Retained dev-only Succession style guide; keep both the import and route excluded from production.
 const ReplayDesignPrototype = import.meta.env.DEV
   ? lazy(() => import('./succession-replay.prototype'))
   : () => null;

@@ -1,7 +1,8 @@
 /**
- * TIM-6 THROWAWAY: Three structurally different two-act replays on the existing
+ * TIM-6 retained development reference: three two-act replays on the existing
  * /matches/tim-6-replay-prototype?variant=A|B|C route. A/B retain the original storyboard.
- * Owner chose C; its revised recorded-match dossier is in succession-dossier.prototype.tsx.
+ * Owner approved C and requires its Action & UI examples to remain as a dev-only style guide.
+ * See docs/design/succession-style-guide.md before moving or retiring these fixtures.
  */
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {

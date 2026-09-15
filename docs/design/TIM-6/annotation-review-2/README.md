@@ -1,6 +1,6 @@
 # Second Agentation review · milestones, portraits and complete rule icons
 
-Five new owner annotations requested a clearer Act I bonus summary, larger left-aligned portraits, an Executor explanation and more dramatic departures with a historical remaining-agent roster. The owner also requested an audit of the remaining icon gaps. This proposed visual pass awaits owner acceptance; all five notes are acknowledged with replies.
+Five new owner annotations requested a clearer Act I bonus summary, larger left-aligned portraits, an Executor explanation and more dramatic departures with a historical remaining-agent roster. The owner also requested an audit of the remaining icon gaps. **The owner has now accepted this visual pass and requested production implementation.** All five notes are resolved. Action & UI examples are retained as a [dev-only style guide](../../succession-style-guide.md).
 
 ## Review
 
