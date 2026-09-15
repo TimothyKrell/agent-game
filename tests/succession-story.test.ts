@@ -195,6 +195,109 @@ describe('canonical Succession story windows', () => {
     expect(get(after(row(model, 'influence-lost'), actor).influence)).toBe(1);
   });
 
+  it('links the canonical final Tax pass to its completed action while the board advances, and expires that tail', async () => {
+    const { state, random } = await storyAct2(5);
+    const actor = board2(state).activeSeat;
+    const declared = choose(state, random, actor, { type: 'tax' });
+    const responses = collect(declared.state, random);
+    const full = storyWindow(state, [declared, ...responses.evolutions], 'archive');
+    const model = buildSuccessionStory(full);
+    const ended = row(model, 'turn-ended');
+    const finalPass = model.rows.findLast((entry) => entry.fact.kind === 'reaction')!;
+    expect(finalPass.source.cursor).toBeGreaterThan(ended.source.cursor);
+    expect(get(finalPass.actor)).toBe(9);
+    expect(get(finalPass.turnOwner)).toBe(actor);
+    expect(finalPass.action).toEqual(ended.action);
+    expect(get(finalPass.resolution)).toBe('applied');
+
+    const nextPhase = model.rows.find(
+      (entry) => entry.fact.kind === 'phase' && entry.source.cursor > ended.source.cursor,
+    )!;
+
+    expect(get(nextPhase.turnOwner)).toBe(board2(responses.state).activeSeat);
+    expect(nextPhase.action.status).toBe('unavailable');
+
+    const gap = buildSuccessionStory({
+      ...full,
+      events: full.events.filter((event) => event.id !== nextPhase.source.cursor),
+    });
+
+    expect(gap.rows.findLast((entry) => entry.fact.kind === 'reaction')!.action.status).toBe('unavailable');
+
+    const advanced = evolveSuccession(
+      responses.state,
+      { type: 'advance', now: responses.state.phase.deadline! },
+      random,
+    );
+
+    const next = choose(advanced.state, random, board2(advanced.state).activeSeat, { type: 'exchange' });
+    const nextResponses = collect(next.state, random);
+
+    const twoTurns = buildSuccessionStory(
+      storyWindow(
+        state,
+        [declared, ...responses.evolutions, advanced, next, ...nextResponses.evolutions],
+        'archive',
+      ),
+    );
+
+    const nextDeclaration = twoTurns.rows.findLast((entry) => entry.fact.kind === 'declaration')!;
+
+    for (const reaction of twoTurns.rows.filter(
+      (entry) => entry.fact.kind === 'reaction' && entry.source.cursor > nextDeclaration.source.cursor,
+    )) {
+      expect(get(get(reaction.action).declaration)).toEqual(nextDeclaration.source);
+      expect(get(reaction.turnOwner)).toBe(board2(advanced.state).activeSeat);
+    }
+  });
+
+  it('links canonical post-resolution Exchange hand updates without retaining the completed action on next-turn rows', async () => {
+    const { state, random } = await storyAct2(6);
+    const actor = board2(state).activeSeat;
+    const declared = choose(state, random, actor, { type: 'exchange' });
+    const responses = collect(declared.state, random);
+
+    const returned = choose(responses.state, random, actor, {
+      type: 'return-influence',
+      cardIds: [
+        board2(responses.state).resources[actor].hand[0].id,
+        board2(responses.state).pending!.exchange![0].id,
+      ],
+    });
+
+    const full = storyWindow(state, [declared, ...responses.evolutions, returned], actor);
+    const model = buildSuccessionStory(full);
+    const ended = row(model, 'turn-ended');
+
+    const updated = model.rows.findLast(
+      (entry) => entry.fact.kind === 'private-cards' && entry.fact.operation === 'hand-updated',
+    )!;
+
+    expect(updated.source.cursor).toBeGreaterThan(ended.source.cursor);
+    expect(updated.action).toEqual(ended.action);
+    expect(get(updated.turnOwner)).toBe(actor);
+    expect(get(updated.resolution)).toBe('applied');
+    expect(get(after(updated, actor).hand).cards).toEqual(
+      board2(returned.state).resources[actor].hand.map(({ id, capability }) => ({ id, capability })),
+    );
+
+    const nextPhase = model.rows.find(
+      (entry) => entry.fact.kind === 'phase' && entry.source.cursor > ended.source.cursor,
+    )!;
+
+    expect(get(nextPhase.turnOwner)).toBe(board2(returned.state).activeSeat);
+    expect(nextPhase.action.status).toBe('unavailable');
+
+    const gap = buildSuccessionStory({
+      ...full,
+      events: full.events.filter((event) => event.id !== nextPhase.source.cursor),
+    });
+
+    expect(gap.rows.findLast((entry) => entry.fact.kind === 'private-cards')!.action.status).toBe(
+      'unavailable',
+    );
+  });
+
   it.each(['nomination', 'investigation', 'special-election', 'veto-accepted', 'veto-rejected'] as const)(
     'uses canonical %s payloads, with private evidence separate from public claims',
     async (scenario) => {

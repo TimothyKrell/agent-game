@@ -351,11 +351,17 @@ export default {
     }
 
     const match = url.pathname.match(
-      /^\/__fixture\/matches\/(match_[\w-]+)(?:\/(clock|settlement|metrics|populate|alarm|house-context))?$/,
+      /^\/__fixture\/matches\/(match_[\w-]+)(?:\/(clock|settlement|metrics|populate|alarm|house-context|revoke))?$/,
     );
 
     if (match) {
       const stub = env.TEST_MATCHES.getByName(match[1]);
+
+      if (match[2] === 'revoke') {
+        await stub.revokeGrant(url.searchParams.get('grantId') ?? '');
+
+        return Response.json({ revoked: true });
+      }
 
       if (match[2] === 'metrics')
         return Response.json(await stub.fixtureMetrics(url.searchParams.has('reset')));

@@ -293,6 +293,44 @@ export class MatchHistory {
     return this.read(audience, Math.max(0, metadata.streamHead - 64), metadata.streamHead, 64);
   }
 
+  /** Exact indexed entitlement cursor -> canonical checkpoint position. No hidden-prefix scan. */
+  checkpointPosition(audience: HistoryAudience, cursor: number) {
+    const metadata = this.metadata(audience);
+
+    if (!Number.isSafeInteger(cursor) || cursor < 0 || cursor > metadata.streamHead)
+      throw new GameError(
+        'invalid-history-range',
+        'Checkpoint cursor is outside this authorized record.',
+        400,
+      );
+
+    if (audience.terminal) return { eventId: cursor, privateEntitled: true };
+    const cutoff = audience.seat === null || audience.house ? null : this.cutoff(audience.seat);
+    const privateEntitled = audience.seat !== null && (!cutoff || cursor <= cutoff.seat_head);
+
+    if (cursor === 0) return { eventId: 0, privateEntitled };
+    const tail = cutoff !== null && cursor > cutoff.seat_head;
+    const stream = audience.seat === null || tail ? 'public' : `seat:${audience.seat}`;
+    const sequence = tail ? cursor - cutoff.seat_head + cutoff.public_head : cursor;
+
+    const row = this.sql
+      .exec<{ event_id: number }>(
+        'SELECT event_id FROM history_streams WHERE stream = ? AND seq = ?',
+        stream,
+        sequence,
+      )
+      .toArray()[0];
+
+    if (!row)
+      throw new GameError(
+        'history-checkpoint-unavailable',
+        'The authorized checkpoint index is unavailable.',
+        409,
+      );
+
+    return { eventId: row.event_id, privateEntitled };
+  }
+
   anchor(audience: HistoryAudience, eventKey: string): number | null {
     if (!eventKey || eventKey.length > 256)
       throw new GameError('invalid-history-anchor', 'A bounded event key is required.', 400);
