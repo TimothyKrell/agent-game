@@ -17,12 +17,14 @@ release. The exact retained deployed 0.2.0 archive remains separate.
 
 ## Authority and ordering
 
-**Follow-up status:** the fixed runner's full resource graph and transient-read
-recovery now have additional local coverage. A separate real-D1 probe has exposed
-a remaining A→B→A generation-fencing gap; see
-[the follow-up evidence](../../.tim27-lifecycle/followup.md). The earlier statement
-that tuple guards fence every delayed write is superseded by the limitation below.
-Hosted activation remains blocked on an approved durable generation helper/schema.
+**Generation/finalizer follow-up:** the parent approved additive migration
+`0008_preview_generation.sql` and the source-owned `preview-generation.ts` helper.
+All trusted lifecycle writes now use durable operation fences. Completed-delivery
+failures are classified explicitly before retirement. See
+[generation evidence](../../.tim27-lifecycle/generation.md); the frozen original
+tuple-only red probes and earlier reports remain historical evidence.
+Hosted activation stays default-off pending independent integration review,
+deployed source capability/generation probes and the protected release cutover.
 
 The existing default-off deployment activation, immutable GitHub-tested merge
 identity, seven required checks, three unit shards, 15-minute job deadlines,
@@ -49,17 +51,18 @@ The bridge-enabled sequence is:
 1. Verify immutable CI identity, current PR, exact manifest and retained proof.
 2. Load `agent-game/prod` outputs and protected source release configuration.
 3. Persist independent `PreviewAuth` and `PreviewIdentity` resources; verify the
-   source release bytes, dispatcher and required retirement schema.
+   source release bytes, dispatcher and required retirement/generation schema.
 4. Apply the prebuilt Worker/assets/migrations with the retained auth binding and
    exact `PREVIEW_SOURCE_URL`. Both production and targets route `/preview` and
    `/preview/*` Worker-first, alongside existing API/rules routes.
-5. Read target `agent-game/pr-N` outputs, decrypt the retained signing key only in
-   the trusted process, then invoke accepted `configurePreviewTarget`.
-6. Recheck GitHub/generation; configure the broker's target revision (disabled by
-   default); recheck again; invoke accepted `registerPreviewTarget`.
+5. Check target `agent-game/pr-N` database output against retained identity, decrypt
+   the signing key only in the trusted process, and persist the complete operation
+   plan in encrypted Alchemy state before any lifecycle D1 write.
+6. Recheck GitHub/generation; configure target key and broker revision (disabled by
+   default) in one fenced batch; recheck again; register the source in its next batch.
 7. Read back the exact source tuple, verify the independently released executable
    bytes, and call `parsePreviewArtifactManifest` / `registerPreviewArtifacts`.
-   The latter retains its actual conditional atomic D1 batch.
+   Publication has its own reserved source generation and atomic manifest guard.
 8. Write only the public registration manifest to
    `.agent-game/preview-registration.json`. Complete the existing scripted smoke.
 9. In a credential-free step, verify actual source GET artifact and arena tuple
@@ -73,13 +76,17 @@ Readiness never claims an allocation or an additional budget.
 
 ## Narrow D1 transport
 
-Only type signatures changed in the accepted identity/artifact modules. Worker
+The original adapter narrowed type signatures in the accepted identity/artifact modules. Worker
 `Env` remains assignable to `PreviewEnvironment`/`PreviewSourceEnvironment` and
 the minimal `prepare`/`bind`/`first`/`run`/`batch` contract. Broker configuration's
 DB type is narrowed in the same way; its behavior remains the accepted handoff.
 Infrastructure type checking includes existing Worker and secret declarations
 because these accepted modules share production types; no implementation copy
 or fabricated full Worker environment is used.
+The generation extension adds only `previewArtifactGuard` and the opt-in
+`{atomicGuard:true}` publication option to those accepted modules. It changes no
+accepted AES-GCM/P-256 validation and has **zero additional diff** in
+`preview-config.ts` or `preview-broker-config.ts`.
 
 `scripts/preview-d1.ts` uses the documented fixed endpoint:
 
@@ -97,6 +104,16 @@ top-level/member failures, missing metadata, malformed/oversize payloads, or a
 result count different from the statement count reject without quoting SQL
 parameters or provider response bodies. Native metadata is preserved, not
 fabricated.
+
+The parent separately verified actual hosted D1 REST ingress in one disposable
+database on 2026-09-15: numeric/null/Unicode bindings, ordered real metadata,
+rollback of both data and DDL on a later guard failure, and stale-generation
+rejection. Its `assessment.json` and `final-hashes.json` are under
+`/tmp/opencode/TIM-27-hosted-d1-contract/`. Whole JSON numbers bind as SQLite REAL
+before column affinity, with numeric values preserved. The original probe's two
+incorrect assertions and raw packets remain preserved. Database deletion was
+confirmed by REST 404/code 7404. This lane made no hosted call; that ingress
+experiment is not hosted playable/source-activation acceptance.
 
 Sources consulted and locked implementation checked:
 
@@ -133,23 +150,38 @@ artifact deletion. Source environment objects never receive target auth or
 private key material. Stack outputs, CLI arguments, proofs and GitHub artifacts
 contain none of these secrets.
 
-The existing GitHub per-PR noncancelling queue serializes controllers. Before
-writes, retained generation and live eligibility are checked again. Fixed SQL
-**read guards** inside the same D1 transaction compare the observed predecessor
-or exact desired tuple. An invalid predecessor deliberately aborts the whole
-transaction. A delayed write is rejected when the current tuple differs from
-both its observed predecessor and its desired tuple; same-desired retries can
-succeed after a lost acknowledgement. **These guards do not fence A→B→A cycles.**
-When the predecessor recurs, the old request can overwrite a newer generation.
-Both source registration and target configuration reproduce this on real D1.
-These guards do not rewrite accepted helper SQL or interpolate parameters.
+The shared GitHub noncancelling per-PR queue serializes controllers and trusted
+Alchemy state updates. `0008` adds a schema marker, per-origin current generation
+and immutable operation receipts, without a registry foreign-key cascade.
+No-delete triggers retain counters/receipts; updates advance exactly once, bounded
+by JavaScript's maximum safe integer. The target counter survives while its DB
+identity is unchanged. Source counters survive closure, registry deletion and
+target recreation. A changed trusted target DB requires retirement and a fresh key.
 
-Closing that gap requires a durable per-origin generation fence, advanced and
-checked atomically with the accepted helper writes. The source needs to retain
-its fence across close/recreation. The target must reject delayed older
-configuration. The parent must reserve/own a migration and approve the narrow
-helper contract before this lane can integrate it. No additional migration or
-production-helper SQL change has been made here.
+`preparePreviewGeneration` performs no I/O. `preview-operations.ts` reserves a
+stable UUID, expected and assigned generation, and SHA-256 semantic payload
+identity for target configure, source register and source publish. The entire
+plan is persisted in encrypted trusted state before its first D1 write. Object
+key order is immaterial; randomized ciphertext never defines identity. Public
+key, source/broker settings and immutable manifest all participate in the hash.
+No predecessor is accepted from the PR artifact.
+
+`executePreviewGeneration` prepends three statements to one native batch: strict
+expected-generation/no-existing-ID guard, immutable receipt INSERT, and current
+counter advance. Business writes and artifact conflict/retirement guards follow
+in that same transaction. All lifecycle batches remain within 16 statements and
+the adapter's validated 128 KiB bound. `previewTransaction` composes ordered helper
+slots without recursively queueing a helper onto its own unresolved result.
+
+A lost acknowledgement propagates as failure. Exact retries read the receipt and
+succeed without writes only if that exact operation is still current. Same ID
+with different semantics conflicts; older applied receipts never grant current
+readiness or reapply, even after A→B→A. Stale unapplied operations never rebase on
+normal/cold retries. Missing schema or malformed generation readback fails closed
+with 503, with no runtime table creation or tuple-only fallback. Legacy tuple
+guards remain additional preimage checks, but are not the generation fence.
+The two original unfenced red probes remain unchanged; new source/target green
+tests exercise the mandatory generation wrapper.
 
 `previewTransaction` gives each accepted helper an ordered slot. A helper's
 `run`/`batch` promise resolves only after the complete native transaction returns
@@ -160,9 +192,11 @@ intermediate open row, but the exact incarnation obtains the existing durable
 tombstone. A different live incarnation fails closed. Existing tombstones make
 close retries idempotent and prevent a late old cleanup from retiring a new one.
 
-No migration was authored in this lane. Parent 0004/0006/0007 and broker-owned
-0005 supply all required tables/triggers. Source activation checks the actual
-retirement triggers and table availability, not just an environment flag.
+This lane authors only reserved additive `0008`; migrations 0003–0007 are unchanged.
+Activation checks deployed generation schema plus actual retirement triggers/table
+availability. Final privileged readiness verifies current source/target operation
+IDs, exact source manifest/tuple/public key, target tuple, the SPKI derived from
+its decrypted key, and target broker settings.
 
 ## Failure and cleanup boundaries
 
@@ -172,10 +206,17 @@ retirement triggers and table availability, not just an environment flag.
   `PreviewEligibilityChanged` distinguishes independently observed closed/head/
   run changes from transport, malformed-response and failed-verification errors.
   A transient recheck failure preserves the registered incarnation/key for retry.
-  A workflow failure finalizer also retires a completed delivery whose smoke or
-  readback failed, or an observed closed/changed-head pending delivery. A failed
-  GitHub read alone does not authorize destruction. Partial current deliveries
-  retain identity for recovery rather than minting a new key on every retry.
+  Workflow `failure()` schedules a finalizer but grants no retirement authority;
+  `PREVIEW_DELIVERY_COMPLETED` is ignored and removed from workflow wiring.
+  Trusted smoke assertions on valid observed data or a valid conflicting source
+  tuple produce `preview-failure.json`, bound to repository/PR, CI run/attempt,
+  commit/head/incarnation and this controller run/attempt. Malformed/absent
+  markers grant nothing. Otherwise the finalizer rechecks GitHub and retires
+  only an observed closed PR, changed head or newer tested run/attempt. GitHub
+  503, source 503/timeout/malformed data and comment transport failure preserve
+  even a completed healthy deployment. Missing readback remains not ready.
+  The fixed Node publication path uses Node-safe settings/target modules to avoid
+  importing server code or a top-level-await controller cycle.
 - Cleanup uses retained state, not a PR artifact or release configuration. It
   acknowledges source retirement **before planning any target destruction** and
   keeps retry identity on source failure. Its Alchemy identity delete handler
@@ -184,6 +225,17 @@ retirement triggers and table availability, not just an environment flag.
   Cleanup works with both deployment and identity flags disabled. R2 deletion
   still uses persisted `forceDestroy:true`; the historical legacy-bucket caveat
   remains as recorded in the trusted-delivery evidence.
+- Cleanup verifies full retained owner and delivery-owned source/target generations;
+  it cannot adopt an unrelated newer generation just because the tuple matches.
+  Source retirement commits first, target retirement disables its broker second,
+  and exact generations/owner are checked again after destroy planning, before apply.
+  If an owned delayed delivery wins after retirement reservation, normal/cold retry
+  preserves the stale fence and fails closed. The existing manual **closed-PR**
+  recovery path may reserve a distinct operation only for a stale **unapplied**
+  fence whose winner is an operation of that retained delivery. Applied receipts
+  and unrelated winners cannot be superseded. Original fences remain in encrypted
+  retirement history (bounded at 16); valid/applied-current fences are reused.
+  Every manual invocation repeats canonical closed-PR authority checks.
 - Public source readback is after the privileged process exits. A mismatch,
   pending tuple, closure, changed head, missing cache policy, or missing source
   dispatcher prevents the ready comment. Broker capacity remains checked at
@@ -191,8 +243,8 @@ retirement triggers and table availability, not just an environment flag.
 - The remote Alchemy state service has no compare-and-swap API. Controller
   exclusivity therefore depends on the shared GitHub per-PR queue; unrelated
   manual concurrent writers to that stage are outside the controller contract.
-  D1 preimage guards additionally reject delayed requests whose predecessor no
-  longer matches; the revision-cycle limitation above still needs a durable fence.
+  D1 generation guards additionally reject requests delayed beyond runner lifetime,
+  including revision cycles. Alchemy state still requires that shared queue.
 
 ## Broker handoff and activation
 
@@ -203,8 +255,8 @@ funding remain source-owned as described in
 [`TIM-27-preview-broker.md`](TIM-27-preview-broker.md).
 
 `configureTargetPreviewBroker` calls the accepted helper using the same adapter,
-guards the exact `preview_runtime` incarnation/commit and settings predecessor,
-and checks its actual result. It enables only when the independently deployed
+guards the exact `preview_runtime` incarnation/commit inside the outer fenced
+target configure batch. It enables only when the independently deployed
 source revision is already enabled in source D1. Per-PR delivery never toggles
 the shared source switch.
 
@@ -222,6 +274,12 @@ await configureSourcePreviewBroker(
 This verifies the `agent-game/prod` `sourceCommit`/database/origin output,
 protected activation and released executable/dispatcher, then uses the accepted
 `configurePreviewBroker` helper in a guarded atomic transaction with readback.
+Its exact operation is persisted in the separate fixed encrypted control-state
+output `{stack:'agent-game-preview-control',stage:'source-broker'}`; production
+resource graph/output is not overwritten. The parent must serialize source
+operator invocations as it serializes updates to that control state. Same current
+semantic request reuses its operation; a changed mode/revision reserves the next
+source-origin generation. Per-PR origin counters are independent of this switch.
 It changes no budget, allowance, reservation, pricing, ledger, provider or
 credential. Parent invokes it only after hosted operating-ledger reconciliation.
 Disabling retains all broker reservations/charges until accepted settlement;
@@ -233,7 +291,7 @@ External configuration remains deliberately default-off:
 1. Complete the previously documented default-branch environment restrictions and
    removal of PR-reachable broad credentials. Enable
    `TRUSTED_PREVIEW_DEPLOY_ENABLED` only after trusted code lands.
-2. Deploy the source protocol/dispatcher/identity/artifact/broker migrations and
+2. Deploy the source protocol/dispatcher/identity/artifact/broker/generation migrations and
    release the actual source CLI. Production outputs must now include
    `databaseId`, `sourceOrigin`, `sourceCommit`, `previewBridgeVersion:1`.
 3. In the protected `preview` environment, set

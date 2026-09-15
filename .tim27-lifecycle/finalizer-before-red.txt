@@ -1,0 +1,185 @@
+
+ RUN  v4.1.11 /tmp/opencode/agent-game-preview-lifecycle
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+Plan: 5 to create
+[AgentPictures] create
+[Arena] create
+[Arena/AGENT_PICTURES] create
+[Arena/APP_URL] create
+[Arena/BETTER_AUTH_SECRET] create
+[Arena/DB] create
+[Arena/ENVIRONMENT] create
+[Arena/HOUSE_DAILY_BUDGET_USD] create
+[Arena/HOUSE_MATCH_RESERVATION_USD] create
+[Arena/HOUSE_MODEL] create
+[Arena/HOUSE_PROVIDER] create
+[Arena/HOUSE_SEATS] create
+[Arena/HOUSE_SUCCESSION_MATCH_RESERVATION_USD] create
+[Arena/MATCHES] create
+[Arena/MATCHMAKING] create
+[Arena/MAX_CONCURRENT_MATCHES] create
+[Arena/OPENAI_BASE_URL] create
+[Arena/PREVIEW_SOURCE_URL] create
+[Arena/QUEUE_WAIT_SECONDS] create
+[Arena/TIME_SCALE] create
+[Identity] create
+[PreviewAuth] create
+[PreviewIdentity] create
+
+[Identity] pending
+[Identity] creating
+[AgentPictures] pending
+[AgentPictures] creating
+[AgentPictures] created
+[PreviewAuth] pending
+[PreviewAuth] creating
+[PreviewAuth] created
+[PreviewIdentity] pending
+[Arena] pending
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+[PreviewIdentity] creating
+[Identity] created
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+[Arena] creating
+[PreviewIdentity] created
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+[Arena] created
+[AgentPictures] created
+[PreviewAuth] created
+[Identity] created
+[PreviewIdentity] created
+[Arena] created
+
+Done: 10 succeeded
+
+ × tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization 3475ms
+   → expected true to be false // Object.is equality
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+Plan: 5 to create
+[AgentPictures] create
+[Arena] create
+[Arena/AGENT_PICTURES] create
+[Arena/APP_URL] create
+[Arena/BETTER_AUTH_SECRET] create
+[Arena/DB] create
+[Arena/ENVIRONMENT] create
+[Arena/HOUSE_DAILY_BUDGET_USD] create
+[Arena/HOUSE_MATCH_RESERVATION_USD] create
+[Arena/HOUSE_MODEL] create
+[Arena/HOUSE_PROVIDER] create
+[Arena/HOUSE_SEATS] create
+[Arena/HOUSE_SUCCESSION_MATCH_RESERVATION_USD] create
+[Arena/MATCHES] create
+[Arena/MATCHMAKING] create
+[Arena/MAX_CONCURRENT_MATCHES] create
+[Arena/OPENAI_BASE_URL] create
+[Arena/PREVIEW_SOURCE_URL] create
+[Arena/QUEUE_WAIT_SECONDS] create
+[Arena/TIME_SCALE] create
+[Identity] create
+[PreviewAuth] create
+[PreviewIdentity] create
+
+[Identity] pending
+[Identity] creating
+[AgentPictures] pending
+[AgentPictures] creating
+[AgentPictures] created
+[PreviewAuth] pending
+[PreviewAuth] creating
+[PreviewAuth] created
+[PreviewIdentity] pending
+[Arena] pending
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+[PreviewIdentity] creating
+[Identity] created
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+[Arena] creating
+[PreviewIdentity] created
+
+stdout | tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+[Arena] created
+[AgentPictures] created
+[PreviewAuth] created
+[Identity] created
+[PreviewIdentity] created
+[Arena] created
+
+Done: 10 succeeded
+
+ × tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization 3117ms
+   → expected 'node:internal/modules/esm/resolve:272…' to contain 'Comment API HTTP 503'
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller github-503 and finalization
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/preview-finalizer.test.ts:20:25
+     18|   await fixture.finalize().catch(() => {});
+     19|   const after = (await retainedIdentity(fixture.runner.state, 'pr-27')…
+     20|   expect(after.retired).toBe(false);
+       |                         ^
+     21|   expect(after.incarnation).toBe(before.incarnation);
+     22|   expect(after.delivery).toEqual(before.delivery);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/preview-finalizer.test.ts > preserves a completed healthy deployment after actual controller comment-503 and finalization
+AssertionError: expected 'node:internal/modules/esm/resolve:272…' to contain 'Comment API HTTP 503'
+
+- Expected
++ Received
+
+- Comment API HTTP 503
++ node:internal/modules/esm/resolve:272
++     throw new ERR_MODULE_NOT_FOUND(
++           ^
++
++ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/tmp/opencode/agent-game-preview-lifecycle/src/game/types' imported from /tmp/opencode/agent-game-preview-lifecycle/src/server/preview-config.ts
++     at finalizeResolution (node:internal/modules/esm/resolve:272:11)
++     at moduleResolve (node:internal/modules/esm/resolve:879:10)
++     at defaultResolve (node:internal/modules/esm/resolve:1006:11)
++     at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
++     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
++     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
++     at #resolve (node:internal/modules/esm/loader:687:17)
++     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
++     at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)
++     at ModuleJob.link (node:internal/modules/esm/module_job:381:17) {
++   code: 'ERR_MODULE_NOT_FOUND',
++   url: 'file:///tmp/opencode/agent-game-preview-lifecycle/src/game/types'
++ }
++
++ Node.js v24.21.0
++
+
+ ❯ tests/preview-finalizer.test.ts:16:30
+     14|   const publication = await fixture.publish();
+     15|   expect(publication.status).toBe(1);
+     16|   expect(publication.stderr).toContain(mode === 'github-503' ? 'GitHub…
+       |                              ^
+     17|   if (mode === 'comment-503') expect(fixture.commentCalls).toBeGreater…
+     18|   await fixture.finalize().catch(() => {});
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  01:59:43
+   Duration  9.12s (transform 342ms, setup 0ms, import 2.44s, tests 6.59s, environment 0ms)
+
+JSON report written to /tmp/opencode/agent-game-preview-lifecycle/.tim27-lifecycle/finalizer-before-red.json

@@ -1,5 +1,10 @@
 # TIM-27 lifecycle follow-up
 
+**Historical report:** the later approved 0008/helper implementation and completed-
+delivery failure-classification fix are documented in [generation.md](generation.md).
+The blocker below describes `3c7bf99`, not the current implementation. Its exact
+unfenced red tests/reports remain untouched; use a new output filename to rerun.
+
 Implementation: `3c7bf990a7ecfb8686d33a199a9ccdc37de8d949`.
 
 Passing checks: **121/121 tests across 11 files** (57.81 seconds), followed by
