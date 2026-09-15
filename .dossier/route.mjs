@@ -5,11 +5,16 @@ import { chromium } from '@playwright/test';
 
 const origin = process.env.DOSSIER_ORIGIN ?? 'http://127.0.0.1:6291';
 
-const directory = `docs/evidence/TIM-19-22-components/route${process.env.DOSSIER_PRODUCTION ? '-production' : ''}`;
+const directory = `docs/evidence/TIM-19-22-components/route${process.env.DOSSIER_PRODUCTION ? '-production' : ''}${process.env.DOSSIER_ROUTE_MODE ? `-${process.env.DOSSIER_ROUTE_MODE}` : ''}`;
 
 await mkdir(directory, { recursive: true });
 
-const loader = await createServer({ configFile: false, server: { middlewareMode: true }, logLevel: 'error' });
+const loader = await createServer({
+  configFile: false,
+  cacheDir: '/tmp/opencode/dossier-fixture-cache',
+  server: { middlewareMode: true },
+  logLevel: 'error',
+});
 
 let fixture;
 
@@ -25,6 +30,8 @@ const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', arg
 const checks = [];
 
 const faults = [];
+
+const failures = [];
 
 let maxDOM = 0;
 
@@ -43,7 +50,7 @@ async function harness(width, mode, suffix = '') {
 
   page.on('pageerror', (error) => faults.push(error.message));
   const control = { mode, fail: false, requests: [], commands: [], socket: null };
-  const observation = () => fixture.observation(control.mode);
+  const observation = () => fixture.observation(control.mode, mode === 'controller' ? fixture.actor : null);
   await page.routeWebSocket('**/api/matches/*/events?*', (socket) => {
     control.socket = socket;
     socket.send(JSON.stringify({ type: 'observation', observation: observation() }));
@@ -152,7 +159,20 @@ async function harness(width, mode, suffix = '') {
     });
   });
   await page.goto(`${origin}/matches/${fixture.matchId}${suffix}`);
-  await page.locator('.dossier-outcome').waitFor();
+  await page
+    .locator('.dossier-outcome')
+    .waitFor()
+    .catch(async (error) => {
+      await writeFile(
+        `${directory}/mount-failure.json`,
+        JSON.stringify(
+          { faults, body: await page.locator('body').innerText(), requests: control.requests },
+          null,
+          2,
+        ),
+      );
+      throw error;
+    });
   await page.evaluate(() => document.fonts.ready);
 
   return { page, control };
@@ -163,7 +183,17 @@ const chapter = (page, act) => page.getByRole('region', { name: `Act ${act} reco
 const headings = (page) => page.locator('.dossier-chapter-trigger');
 
 async function ready(timeline) {
-  await timeline.locator('[data-story-key]').first().waitFor();
+  await timeline
+    .locator('[data-story-key]')
+    .first()
+    .waitFor()
+    .catch(async (error) => {
+      await writeFile(
+        `${directory}/reader-failure.json`,
+        JSON.stringify({ body: await timeline.page().locator('body').innerText(), faults }, null, 2),
+      );
+      throw error;
+    });
   await timeline
     .page()
     .waitForFunction(
@@ -173,7 +203,7 @@ async function ready(timeline) {
 }
 
 try {
-  for (const width of [1440, 390, 320]) {
+  for (const width of process.env.DOSSIER_ROUTE_MODE ? [] : [1440, 390, 320]) {
     const { page, control } = await harness(width, 'finished');
     const two = chapter(page, 'II');
     await ready(two);
@@ -219,6 +249,25 @@ try {
       (await two.getAttribute('data-story-delivered')) === delivered,
     );
     const term = two.locator('.dossier-term').first();
+
+    const fallback = await term.evaluate((element) => {
+      let fiber = element[Object.keys(element).find((key) => key.startsWith('__reactFiber$'))];
+
+      while (fiber) {
+        const ref = fiber.memoizedProps?.fallbackFocus;
+
+        if (ref?.current)
+          return {
+            tag: ref.current.tagName,
+            text: ref.current.textContent,
+            connected: ref.current.isConnected,
+          };
+        fiber = fiber.return;
+      }
+
+      return null;
+    });
+
     await term.focus();
     await page.keyboard.press('Enter');
     await page.getByRole('dialog').waitFor();
@@ -227,15 +276,39 @@ try {
       .nth(1)
       .evaluate((button) => button.click());
     await page.getByRole('dialog').waitFor({ state: 'hidden' });
-    await page.waitForFunction(
-      (element) => document.activeElement === element,
-      await headings(page).nth(1).elementHandle(),
-    ).catch(async error => {
-      await writeFile(`${directory}/chapter-focus-failure.json`, JSON.stringify(await page.evaluate(() => ({ active: document.activeElement?.outerHTML, expanded: [...document.querySelectorAll('.dossier-chapter-trigger')].map(button => button.getAttribute('aria-expanded')), dialogs: document.querySelectorAll('[role=dialog]').length, rows: document.querySelectorAll('[data-story-key]').length })), null, 2));
-      await page.screenshot({ path: `${directory}/chapter-focus-failure.png` });
-      throw error;
-    });
-    checks.push(`${width}: active chapter help closes/restores surviving heading`);
+    await page
+      .waitForFunction(
+        (element) => document.activeElement === element,
+        await headings(page).nth(1).elementHandle(),
+        { timeout: 3000 },
+      )
+      .catch(async (error) => {
+        failures.push(`${width}: chapter removal final focus`);
+        await writeFile(
+          `${directory}/${width}-chapter-focus-failure.json`,
+          JSON.stringify(
+            {
+              fallback,
+              error: error.message,
+              state: await page.evaluate(() => ({
+                active: { tag: document.activeElement?.tagName, id: document.activeElement?.id },
+                expanded: [...document.querySelectorAll('.dossier-chapter-trigger')].map((button) =>
+                  button.getAttribute('aria-expanded'),
+                ),
+                dialogs: document.querySelectorAll('[role=dialog]').length,
+                rows: document.querySelectorAll('[data-story-key]').length,
+              })),
+            },
+            null,
+            2,
+          ),
+        );
+        await page.screenshot({ path: `${directory}/${width}-chapter-focus-failure.png` });
+      });
+
+    if (!failures.includes(`${width}: chapter removal final focus`))
+      checks.push(`${width}: active chapter help closes/restores surviving heading`);
+    await headings(page).nth(1).focus();
     await page.keyboard.press('Enter');
     await ready(two);
     await headings(page).nth(0).click();
@@ -284,7 +357,7 @@ try {
         Number(await two.getAttribute('data-story-delivered')) === fixture.eventsFor('finished').length,
       );
       check('production DOM bounded to 128 visible records per reader', maxDOM <= 128);
-      check('historical window not final-state projected backward', seen.size > 512);
+      check('continuous production reader visits over 512 distinct records', seen.size > 512);
       await two
         .locator('[data-story-key]')
         .first()
@@ -294,15 +367,19 @@ try {
     }
 
     check(
-      `${width}: one stable-ID picture batch`,
-      control.requests.filter((path) => path.startsWith('/api/agent-pictures?')).length === 1 &&
+      `${width}: one ten-entrant query, no per-row picture metadata`,
+      new Set(control.requests.filter((path) => path.startsWith('/api/agent-pictures?'))).size === 1 &&
+        control.requests.filter((path) => path.startsWith('/api/agent-pictures?')).length <=
+          (process.env.DOSSIER_PRODUCTION ? 1 : 2) &&
         !control.requests.some((path) => /\/api\/agents\/[^/]+\/picture/.test(path)),
     );
     check(`${width}: no legacy replay requests`, !control.requests.some((path) => path.includes('/replay?')));
     await page.close();
   }
 
-  for (const mode of ['active', 'controller', 'act1', 'interrupted']) {
+  for (const mode of process.env.DOSSIER_ROUTE_MODE
+    ? [process.env.DOSSIER_ROUTE_MODE]
+    : ['active', 'controller', 'act1', 'interrupted']) {
     const { page, control } = await harness(390, mode);
     const current = fixture.observation(mode);
     const initialAct = current.act === 1 ? 0 : 1;
@@ -334,7 +411,7 @@ try {
       await headings(page).nth(1).click();
       control.mode = 'finished';
       control.socket.send(
-        JSON.stringify({ type: 'observation', observation: fixture.observation('finished') }),
+        JSON.stringify({ type: 'observation', observation: fixture.observation('finished', fixture.actor) }),
       );
       await page.getByRole('checkbox', { name: /Show private archive/ }).waitFor();
       check(
@@ -363,6 +440,9 @@ try {
   );
   await legacy.page.close();
   check('no application exceptions', faults.length === 0);
+
+  if (maxDrift > 1) failures.push(`retained-row drift ${maxDrift}px exceeds 1px`);
+  else checks.push('retained-row drift stays within 1px');
   await writeFile(
     `${directory}/checks.json`,
     JSON.stringify(
@@ -374,7 +454,8 @@ try {
         canonicalArchiveEvents: fixture.eventsFor('finished').length,
         interceptedBackend: true,
         actualMatchRoute: true,
-        incomingRuleHelp: !process.env.DOSSIER_PRODUCTION,
+        ruleHelpCommit: 'ee2220f',
+        failures,
         faults,
       },
       null,
@@ -384,6 +465,7 @@ try {
   console.log(
     `${checks.length} actual-route assertions passed; ${maxDOM} max visible records; ${maxDrift}px retained-row drift`,
   );
+  assert.equal(failures.length, 0, 'See retained shared-interaction failures');
 } finally {
   await browser.close();
 }

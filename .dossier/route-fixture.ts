@@ -95,14 +95,27 @@ export async function routeFixture() {
     ...interrupted.replayFrames,
   ];
 
-  const states: Record<Mode, SuccessionState> = { finished: terminal, interrupted: interrupted.state, act1: initial, controller: liveEnd, active: liveEnd };
-  const records: Record<Mode, AuthorizedEvent2[]> = { finished: archive, interrupted: interruptedEvents, controller: privateEvents, act1: [], active: publicEvents };
+  const states: Record<Mode, SuccessionState> = {
+    finished: terminal,
+    interrupted: interrupted.state,
+    act1: initial,
+    controller: liveEnd,
+    active: liveEnd,
+  };
 
-  function observation(mode: Mode) {
+  const records: Record<Mode, AuthorizedEvent2[]> = {
+    finished: archive,
+    interrupted: interruptedEvents,
+    controller: privateEvents,
+    act1: [],
+    active: publicEvents,
+  };
+
+  function observation(mode: Mode, reader: number | null = mode === 'controller' ? actor : null) {
     const source = states[mode];
     const events = eventsFor(mode);
 
-    const view = observeSuccession(source, mode === 'controller' ? actor : null, {
+    const view = observeSuccession(source, reader, {
       visibilityEpoch: `route-${mode}`,
       streamHead: events.length,
     });
@@ -139,6 +152,7 @@ export async function routeFixture() {
             });
 
       if ('decision' in baseline) baseline.decision = null;
+      baseline.chat = { ...baseline.chat, open: false, nextSpeakAt: null };
 
       return {
         protocolVersion: '2',

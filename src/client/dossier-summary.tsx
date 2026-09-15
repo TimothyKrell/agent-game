@@ -180,7 +180,7 @@ export function DossierOutcome({
   }[status];
 
   const pending = {
-    interrupted: 'Partial record · no overall champion recorded.',
+    interrupted: 'Partial record · no overall champion recorded. No rated result.',
     finished: 'The recorded individual result is unavailable.',
     active: 'The overall victory is decided in Act II.',
   }[status];
@@ -205,6 +205,7 @@ export function DossierOutcome({
                 : 'Round cap · Table round 12'
               : (interruption ?? pending)}
           </p>
+          {!outcome && status === 'interrupted' && interruption && <p>{pending}</p>}
           {outcome && (
             <p>
               Original entrant: {dossierName(outcome.winner.entrant, outcome.winner.seat)} · {creditLabel}

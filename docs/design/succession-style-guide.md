@@ -26,7 +26,7 @@ The `sample=components` guide uses the actual `DossierRow`, rule icons/help, car
 
 The shared guide's data lives in `tests/fixtures/dossier-recorded.ts` and `tests/fixtures/dossier-engine.ts`. The captured adapter reads historical public life/resources forward from source; it does not supply unavailable historical hands or pretend to be an engine. The independent engine fixtures provide primary temporal/privacy evidence. These imports are reachable only through the existing development-only route. `src/client/dossier-controls.prototype.tsx` and `/.dossier/browser.html` provide additional development-only interaction stress cases.
 
-The actual production `SuccessionDossier` exposes a chapter render slot for TIM-23's bounded reader. Integrating that slot into the real match route is the remaining production integration boundary; the local composition fixture is not a whole-history implementation. [Interface and evidence](../evidence/TIM-19-22-components.md).
+The actual match route now composes `SuccessionDossier` with TIM-23's bounded reader through its chapter slot, while keeping the live decision composer authoritative. The local composition fixture is only a bounded presentation example. Shared interaction/history review corrections and final route acceptance are tracked in the [interface and evidence handoff](../evidence/TIM-19-22-components.md).
 
 ## Keep available through implementation
 

@@ -7,6 +7,7 @@ import { resolve } from 'node:path';
 const ruleHelp = process.env.DOSSIER_RULE_HELP_SOURCE;
 
 const server = await createServer({
+  cacheDir: '/tmp/opencode/dossier-vite-cache',
   server: { host: '127.0.0.1', port: 6291, strictPort: true },
   optimizeDeps: { entries: ['index.html', '.dossier/browser.html'] },
   plugins: ruleHelp

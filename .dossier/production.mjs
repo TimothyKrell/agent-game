@@ -24,6 +24,10 @@ const assets = await readdir('dist/client', { recursive: true, withFileTypes: tr
 
 let scanned = 0;
 
+let dossierIncluded = false;
+
+let readerIncluded = false;
+
 for (const asset of assets) {
   if (!asset.isFile()) continue;
   assert.ok(!/prototype|tim-6/i.test(asset.name));
@@ -31,12 +35,16 @@ for (const asset of assets) {
   if (!/\.(js|css|html|json)$/.test(asset.name)) continue;
   const text = await readFile(join(asset.parentPath, asset.name), 'utf8');
 
+  dossierIncluded ||= text.includes('dossier-outcome');
+  readerIncluded ||= text.includes('data-story-window');
+
   for (const marker of forbidden) assert.ok(!text.includes(marker), `${asset.name}: ${marker}`);
   scanned++;
 }
 
-// The actual match route is integrated by TIM-23's owner. Independently bundle this production
-// entry now to prove its complete import graph excludes guide/scenario/raw-capture modules.
+assert.ok(dossierIncluded && readerIncluded, 'Actual app graph contains the Dossier and bounded reader');
+
+// Also check the reusable production entry independently of the actual route's complete app graph.
 await build({
   configFile: false,
   logLevel: 'error',
@@ -89,14 +97,19 @@ try {
         directGuideExcluded: true,
         directFixtureExcluded: true,
         noPrototypeOrAgentationRequests: true,
-        integratedProductionRoute: false,
+        integratedProductionRoute: true,
+        dossierIncluded,
+        readerIncluded,
         integrationBoundary:
-          'Parent wires TIM-23 bounded historical reader to the Dossier chapter render slot.',
+          'Route browser acceptance is recorded separately in route-production/checks.json; parent owns pending TIM-23 review corrections.',
       },
       null,
       2,
     ),
   );
+  process.env.DOSSIER_ORIGIN = 'http://127.0.0.1:6292';
+  process.env.DOSSIER_PRODUCTION = '1';
+  await import('./route.mjs');
 } finally {
   await browser.close();
   await new Promise((resolve, reject) =>

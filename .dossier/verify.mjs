@@ -72,14 +72,19 @@ try {
 
     check(
       `${width}: captured source acts remain exact`,
-      capturedRows.every((row) => source.events.find((event) => event.id === row.sourceId)?.act === row.act),
+      capturedRows.length > 0 &&
+        capturedRows.every(
+          (row) => source.events.find((event) => event.id === row.sourceId)?.act === row.act,
+        ),
     );
     check(
       `${width}: every displayed captured quote is exact`,
-      capturedRows.every(
-        (row) =>
-          row.quote === null || source.events.find((event) => event.id === row.sourceId)?.text === row.quote,
-      ),
+      capturedRows.some((row) => row.quote !== null) &&
+        capturedRows.every(
+          (row) =>
+            row.quote === null ||
+            source.events.find((event) => event.id === row.sourceId)?.text === row.quote,
+        ),
     );
     const paidText = await page.locator('#dossier-example-failed-assassin').textContent();
     check(

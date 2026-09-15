@@ -1,63 +1,114 @@
 # TIM-19–22 / TIM-31 · Production Dossier presentation
 
-## Route assembly checkpoint
+## Delivered code and integration
 
-After component checkpoint `db34430`, TIM-23 `bba70f8` (including `4cba978`) was merged into this lane. `succession-match.tsx` now composes the actual route with two mounted `useSuccessionStory` hooks, chapter-owned enablement, and `SuccessionTimeline` under the Dossier panels. Its summary model contains zero history rows at the authoritative current cursor; historical row state comes only from each reader window. One optional stable-original-ID picture batch supplies all portraits. The existing phase/decision composer still receives authoritative current state and the original command hook. `/history` resolves to the same continuous presentation. Route acceptance is in progress below; earlier checkpoint claims are retained for provenance.
+- **`f9bc6f2`**: canonical production components and chapter slot; preserved approved-guide baseline.
+- **`db34430`**: all twenty retained scenario groups adopted as production-component consumers, exact source and independent engine fixtures, browser evidence.
+- **`e292a03`**: actual `/matches/:id` route assembly. Existing `/matches/:id/history` resolves to the same continuous Dossier.
+- **`49935cc`**: independently cherry-pickable `AgentPortrait` extraction for TIM-29. See [exact portrait contract](TIM-29-portrait-interface.md).
 
-## Integration interface (first component checkpoint)
+This lane merged isolated TIM-23 **`bba70f8`** (including TIM-18 **`4cba978`**) and TIM-11 **`ee2220f`** (including **`d1b2a9b`**). The final component/browser runs use normal local primitive source. Parent retains ownership of pending TIM-23 review corrections and final integrated acceptance.
 
-`src/client/succession-dossier.tsx` exports `SuccessionDossier` and its props. Supply a canonical bounded `StoryModel`, authoritative `status` (`active | finished | interrupted`) and current `act`. Optional `archiveAvailable` exposes a local disclosure for **already authorized** archive data. Optional `pictures` is a stable-original-entrant-ID `ReadonlyMap<string, AgentPicture>`; no row performs a metadata request.
+### Actual match route
 
-`renderChapter({ act, archive, renderRow })` is the TIM-23 integration slot. The reader owns act filtering, bounded retrieval, ordered list wrappers, continuous boundaries and reading anchors. `renderRow(StoryRow)` returns an **article**, not an `li`. The default local composition only iterates the bounded model's rows; it is useful for development fixtures. The production match route still needs TIM-23 integration.
+`src/client/succession-match.tsx` now composes:
 
-`DossierRow` in `dossier-row.tsx` accepts `{ row, entrants, archive, returns? }`. `entrants` contains immutable identity values only, never final resource/life/controller state. `returns` optionally supplies independently recorded faction bonus allocation to the Act I result. `dossierRowId(row)` is stable across epoch renumbering. The wrapper also emits event key, authorized source cursor and source act data attributes.
+```tsx
+const match = useSuccessionMatch(initial, { history: false });
+const chapters = useDossierChapters(match.view.status, match.view.act);
+// Both hooks remain mounted outside the conditional chapter panels.
+const actOne = useSuccessionStory(match.view, {
+  act: 1,
+  enabled: chapters.open[1],
+  initial: liveAct === 1 ? 'latest' : 'start',
+  onReset: match.refresh,
+});
+// Act II has the corresponding independent hook.
 
-Other shared exports:
+<SuccessionDossier
+  model={summary}
+  status={match.view.status}
+  act={match.view.act}
+  chapters={chapters}
+  pictures={pictureMap}
+  archiveAvailable={match.view.status !== 'active'}
+  currentState={/* existing authoritative live phase/decision composition */}
+  renderChapter={({ act, renderRow }) => (
+    <SuccessionTimeline
+      reader={act === 1 ? actOne : actTwo}
+      role="region"
+      aria-label={`Act ${act === 1 ? 'I' : 'II'} record`}
+      className="dossier-timeline"
+      renderRow={renderRow}
+    />
+  )}
+/>;
+```
 
-- `dossier-rules.tsx`: `DossierRule`, `DossierRuleIcon`, `DossierText`, `DossierRuleFocusProvider`; exhaustive production 36-rule icon map and lossless `storyText` segmentation. The focus provider threads a surviving chapter-heading ref through every nested rule term.
-- `dossier-identity.tsx`: `DossierPictureProvider`, `DossierPortrait`, `DossierIdentity`; optional picture/missing/broken fallbacks and shared Base UI Dialog. Controller authority never supplies a picture ID.
-- `dossier-cards.tsx`: `DossierCard`, `DossierSeatCards`, `DossierResources`, `dossierVisible`; independent nested hand/role visibility and card purpose.
-- `dossier-summary.tsx`: `DossierAward`, `DossierReturn`, `DossierOutcome`, `DossierCap`; faction advantage versus mechanical champion versus original entrant credit.
-- `dossier-facts.ts`: direct typed mechanical wording. Source dialogue is always rendered verbatim instead.
-- `dossier.css`: manifest-imported `components` layer, scoped semantic tokens. No dependencies/configuration changed.
+`liveAct` is fixed at route mount so a status update cannot reconstruct the readers or discard their anchors. The summary is a zero-event model at the authoritative current cursor. It supplies chapter/outcome and immutable original entrant identities; historical row life, resources, controllers and cards come exclusively from the reader's exact authorized checkpoint/window. Current/final resources are never used as earlier row baselines.
 
-The completed default is Act I closed / Act II open. An active/interrupted record defaults to its current act; explicit user chapter choices survive updates. Chapter interaction uses the shared controlled Base UI Collapsible. Rule help and portrait overlays use the existing scoped portals.
+The existing `SuccessionPhase`, `SuccessionControls`, current connection/error/receipt handling and original command hook remain authoritative. Current public seats/resources are available in a collapsed disclosure. There is one chronological reading surface, with no playback, scrubbing, tabs, round selector, permanent seat sidebar or manual page-by-page history controls. The tie commitment/reveal remains available.
 
-## Baseline preserved
+The route currently makes one optional ten-entrant picture query for the fixed original-ID roster and passes its map to the Dossier. React's development StrictMode may replay that mount request; it does not scale with rows or history windows. The production route check requires a single request. TIM-29 owns the shared batch lookup; this inline route batch can consume that handoff when available, keeping one metadata owner.
 
-Before guide adoption, the unchanged original 138 browser assertions passed on isolated port 6291. Captures and outputs are under `TIM-19-22-components/before/`; prior design/foundation evidence is untouched. `.tim11/verify-guide.mjs` now permits environment overrides for origin and output directory, retaining the original assertions and defaults.
+## Presentation API
 
-## Incoming shared interaction dependency
+`src/client/succession-dossier.tsx` exports `SuccessionDossier`, `SuccessionDossierProps`, `DossierChapterSlot`, `DossierChapterState` and `useDossierChapters(status, act)`.
 
-The chapter-ref wiring consumes the additive `RuleHelpTrigger.fallbackFocus` API from **TIM-11 correction `d1b2a9b`**. Each chapter has its own stable heading-button ref; all its row terms inherit that ref through `DossierRuleFocusProvider`. The shared `RuleHelpProvider` stays outside the chapters. The guide uses its surviving archive checkbox for removable archive rows. No consumer cleanup listener, focus trap or modal lifecycle is duplicated.
+- Required props: bounded canonical `model: StoryModel`, authoritative `status: 'active' | 'finished' | 'interrupted'`, current `act: 1 | 2`.
+- Optional `pictures: ReadonlyMap<string, AgentPicture>` is keyed by stable **original entrant** ID, never the replacement controller.
+- `archiveAvailable` exposes only a display preference for already-authorized archive data. It neither fetches nor authorizes secrets. Live entitled private facts remain readable; archive data is gated independently at row and nested hand/role values.
+- Optional `chapters` allows the route to share disclosure state with reader enablement. Without it, the composition owns the same defaults locally.
+- `currentState` is the authoritative live-controls slot below the compact overall summary.
+- `renderChapter({ act, archive, renderRow })` delegates act filtering, chronological wrappers, loading/error/retry, finite windows and scroll anchors to TIM-23. `renderRow(StoryRow)` returns an **article or null**, never an `li`. Audit and undisplayed rows return actual null to avoid empty anchor wrappers. The default local fixture renderer uses an ordered list over the supplied bounded model.
 
-The first browser runs reproduced the already-diagnosed delayed-hover pinning defect on the older primitive. The parent owns integration of the correction. Pending that merge, `.dossier/serve.mjs` can test the exact incoming first-party source using `DOSSIER_RULE_HELP_SOURCE`: a verification-only Vite load override preserves this worktree's normal module paths and installed dependencies. It changes no shared source or application config. This is explicit incoming-dependency verification, not a claim that the older primitive has been fixed on this branch.
+Completed records default to Act I closed / Act II open. Active/interrupted records default to their current act; explicit chapter choices survive current/terminal updates. Closing a panel removes its row UI but keeps the route's reader hook mounted with `enabled: false`.
 
-## Retained guide consumer
+Each chapter has a stable heading-button ref, threaded through every nested rule term by `DossierRuleFocusProvider`. Shared `RuleHelpProvider` stays outside both chapters. The gallery uses its surviving archive checkbox for removable archive rows. Consumer code contains no duplicate popup cleanup listener, focus trap or dismissal lifecycle.
 
-`?variant=C&sample=components` mounts the actual production row/components for all **20 retained scenario groups** and all **36 production terms/icons**. Twelve excerpts retain their original captured source ranges; eight independent illustrative groups now execute the canonical engine from explicit seeded arrangements. Every independent alternative is labeled. An additional exact-checkpoint proof sequence exercises replacement and nested card privacy.
+### Shared modules
 
-The original `sample=examples` comparison and `sample=match` archive remain usable. They preserve original names, illustrative art and scenario prose, all 974 public entries / 416 exact quotations, and the prior source capture. Their **138 original assertions** pass again in `TIM-19-22-components/guide-regression/`; only the new navigation link is added to their wrapper.
+| Module                                      | Exports / responsibility                                                                                                                                                                                                                      |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `agent-portrait.tsx` / `agent-portrait.css` | `AgentPortrait`, `AgentPortraitProps`: lookup-free shared graphics, optional/missing/broken fallback, accessible Base UI Dialog. Used by the Dossier adapter and available to TIM-29.                                                         |
+| `dossier-identity.tsx`                      | Picture-map provider, thin `DossierPortrait` adapter, `DossierIdentity`, typed value/name helpers.                                                                                                                                            |
+| `dossier-row.tsx`                           | `DossierRow({ row, entrants, archive, returns? })`, stable `dossierRowId(row)`. `entrants` is immutable identity only; `returns` is independent recorded starting-bonus allocation. Emits event key, authorized source cursor and source act. |
+| `dossier-rules.tsx`                         | Exhaustive production 36-rule icon map, `DossierRule`, `DossierRuleIcon`, lossless `DossierText`, chapter focus-ref context. Source speech is never normalized or name-substituted.                                                           |
+| `dossier-cards.tsx`                         | Card purpose (known/proved/lost/hidden), nested visibility, exact historical resource changes and honest unknowns.                                                                                                                            |
+| `dossier-summary.tsx`                       | Faction advantage/actual bonus recipients/ten-agent return versus mechanical champion/original entrant credit/house controller, cap criteria.                                                                                                 |
+| `dossier-facts.ts`                          | Typed mechanical wording; verbatim source speech remains separate.                                                                                                                                                                            |
+| `dossier.css`                               | Approved scoped presentation, semantic tokens, manifest-imported `components` layer.                                                                                                                                                          |
 
-`tests/fixtures/dossier-recorded.ts` is a **development/test source adapter**, not an engine or production checkpoint provider. It walks recorded public facts forward to seed life/resources and bounded model windows; it does not reuse final life, influence, balances or hands. Captured historical hands without a supplied in-window record stay unavailable. The canonical engine fixtures in `tests/fixtures/dossier-engine.ts` supply the primary exact-baseline temporal/privacy cases. The source adapter's auxiliary observation fields are fixture scaffolding and are not suitable as a production history endpoint.
+## Retained guide adoption
 
-## Verification
+`?variant=C&sample=components` mounts the actual production row/components for all **20 retained scenario groups** and all **36 terms/icons**. Twelve captured excerpts preserve their original source ranges. Eight independent illustrative groups execute the canonical engine from explicitly seeded arrangements. Additional proof/replacement coverage uses exact engine checkpoints. Every independent alternative is labeled.
 
-- **28 tests passed:** the existing 24 canonical story tests plus four substantive presentation tests. These exercise all twenty groups, paid cancellation, different acting challenger/turn owner, nested public-row archive hand/role gating, proof versus permanent loss, all nine captured elimination rosters, both execution rosters and ten-agent return, double loss, all three cap criteria and forfeit credit.
-- **203 browser assertions passed** at 1440, 390 and 320 CSS pixels with the incoming `d1b2a9b` RuleHelp source. The suite verifies all 36 rules with exact return focus, delayed hover-to-pin, touch, portal tokens, chapter preference retention, controlled row eviction restoring the surviving chapter heading, subsequent reopen/normal trigger focus, nested archive gating, exact speech, all twenty groups, source-act labels, two execution rosters, double loss, unknown baselines, long identities, reduced motion, missing/broken/current stable-ID pictures and enlargement. No application exceptions or per-row metadata requests. Captures and assertions are in `TIM-19-22-components/after/`.
-- `npm run typecheck` passes all three TypeScript projects. Repository lint and scoped formatting are checked for the final source set.
-- `npm run build` passes. The normal app build and an independent production component entry bundle exclude prototype/scenario/capture markers. Direct production requests for both the shared guide and the hidden browser fixture do not mount development content. See `TIM-19-22-components/production.json` and its direct-route capture. The independent entry bundle is needed because the parent still owns actual route integration.
+The original `sample=examples` comparison and `sample=match` archive remain usable, preserving original names, art, scenario prose, **974 public entries, 416 exact quotations and nine historical elimination counts**. Their original **138 browser assertions** passed before adoption and again afterward, with separate evidence in `before/` and `guide-regression/`.
 
-This remains a presentation and guide handoff, not production-route or bounded-history integration acceptance.
+`tests/fixtures/dossier-recorded.ts` is supplemental development/test source reconstruction, not an engine or production checkpoint provider. It walks public facts forward instead of projecting final resources/life backward. Missing historical hands stay unavailable. Primary temporal/privacy tests use canonical engine emissions/checkpoints from `tests/fixtures/dossier-engine.ts` and the inherited model fixtures.
 
-### Reproduce in the isolated worktree
+## Verification and open integration findings
+
+- **39 tests pass**: 26 canonical story tests, nine continuous-reader tests and four substantive presentation tests. Coverage includes all twenty groups, paid cancellation, challenger versus turn owner, nested archive privacy, proof/replacement versus permanent loss, all nine captured elimination rosters, executions/ten-agent return, double loss, all cap criteria and forfeit credit.
+- **212 component browser assertions pass** at 1440, 390 and 320 CSS pixels. Coverage includes all 36 keyboard rules and exact focus return, delayed hover-to-pin, touch, portal tokens, chapter preferences, controlled row eviction/fallback focus, archive privacy, exact source dialogue/acts, long identities, reduced motion, current stable-ID pictures, lazy loading, missing/broken fallbacks and enlargement. See `after/browser-checks.json` and responsive captures. The Dossier now delegates these same picture cases to `AgentPortrait`.
+- **Typecheck, lint, scoped formatting and app build pass.** No new dependencies/package/lock changes. Application configuration changes in ancestry are the consumed TIM-11 correction, not a new lane-specific config edit.
+- **Production graph/exclusion checks pass:** the actual app bundle contains both the Dossier and bounded reader. Normal app assets and an independent component-entry bundle exclude prototype/scenario/raw-capture markers. Direct production requests cannot mount the development gallery/hidden fixture. See `production.json`.
+- **53 actual-route browser assertions pass, with three retained focus failures**, in both development and the production build. Results are in `route/checks.json` and `route-production/checks.json`. The actual route reaches the terminal event with **128 maximum visible records per reader** and **0.421875px** retained-row drift during the measured forward walk. Checks cover chapter defaults/reopening, exact source-act filtering with both chapters open, archive gating, optional batched pictures, current authority/command IDs, terminal epoch/explicit closure, interrupted semantics and the `/history` alias. The test-only intercepted backend uses **1,306 canonical engine archive events**, exact authorized checkpoints, current snapshots and WebSocket/action responses. These are UI composition tests, not a deployed backend or server authorization certification.
+
+### Pending shared-owner acceptance
+
+The integrated chapter-removal test currently fails: with rule help pinned, programmatically closing its chapter removes the rows and closes the dialog, but final focus lands on **body**. This reproduces with normal **`ee2220f`** source in development and the production build, at all three widths. The retained failure JSON verifies the active trigger's supplied `fallbackFocus.current` is the connected Act II heading. Row-eviction restoration and normal trigger-return tests pass. See `route/*-chapter-focus-failure.json` and the corresponding production captures. The route verifier retains this as a failing assertion while continuing independent checks; production browser acceptance is therefore not claimed.
+
+Parent also reports pending TIM-23 **multi-document-reader scroll ownership (P1)**, **act-index race (P2)** and **offline-paused status** corrections. Both chapter hooks remain mounted; this composition does not substitute a one-reader workaround. Final integrated acceptance requires those owner corrections and a complete route-browser rerun. Build/exclusion success alone is not route interaction acceptance.
+
+## Reproduce
 
 ```sh
-# Use normal mode after the parent integrates d1b2a9b; the override is only for the incoming dependency.
-DOSSIER_RULE_HELP_SOURCE=/tmp/opencode/agent-game-TIM-11/src/client/ui/rule-help.tsx node .dossier/serve.mjs
+node .dossier/serve.mjs
 node .dossier/verify.mjs
+node .dossier/route.mjs
 TIM6_ORIGIN=http://127.0.0.1:6291 TIM6_CAPTURE_DIR=docs/evidence/TIM-19-22-components/guide-regression node .tim11/verify-guide.mjs
-node node_modules/vitest/vitest.mjs run tests/dossier-components.test.ts tests/succession-story.test.ts
+node node_modules/vitest/vitest.mjs run tests/dossier-components.test.ts tests/succession-story.test.ts tests/continuous-succession-history.test.ts
 npm run typecheck
 npm run lint
 npm run build
@@ -65,4 +116,4 @@ node .dossier/production.mjs
 git diff --check
 ```
 
-The verifier uses only 6291/6292. Browser coverage is Chromium/Linux; it includes reduced-motion rendering, not cross-browser or screen-reader certification. The independent source adapter is supplemental fixture evidence. Production acceptance still requires the parent's actual TIM-23 data/route composition, its authorized history pagination/eviction checks, and normal-source verification after the shared primitive correction is merged.
+The scripts use only **6291/6292**. The dev server and fixture compiler have separate `/tmp/opencode/dossier-*-cache` directories so a shared `node_modules` symlink cannot collide with another worktree's Vite optimizer. The prior incoming-primitive override remains available for reproducing checkpoint evidence, but final runs use normal merged source. Browser evidence is Chromium/Linux with reduced motion; no cross-browser or screen-reader certification is implied.

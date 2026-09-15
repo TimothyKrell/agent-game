@@ -121,14 +121,13 @@ export function DossierRule({
   before?: number | null;
 }) {
   const [title, description] = storyRules[rule];
-  // Additive RuleHelpTrigger API from TIM-11 correction d1b2a9b. The provider owns all lifecycle behavior.
-  const focusProps = { fallbackFocus: useContext(ChapterFocus) };
+  const fallbackFocus = useContext(ChapterFocus);
   const resource = value !== undefined;
   const changed = before !== undefined && before !== value;
 
   return (
     <RuleHelpTrigger
-      {...focusProps}
+      fallbackFocus={fallbackFocus}
       help={{ title, summary: title, description, icon: <DossierRuleIcon rule={rule} /> }}
       className={`dossier-term ${rule === 'coins' ? 'dossier-coins' : ''} ${resource ? 'dossier-resource' : ''}`}
       data-rule-term={title}

@@ -1,10 +1,12 @@
 {
   "scannedAssets": 3,
-  "entryBundleBytes": 250891,
+  "entryBundleBytes": 253264,
   "productionComponentImportGraphClean": true,
   "directGuideExcluded": true,
   "directFixtureExcluded": true,
   "noPrototypeOrAgentationRequests": true,
-  "integratedProductionRoute": false,
-  "integrationBoundary": "Parent wires TIM-23 bounded historical reader to the Dossier chapter render slot."
+  "integratedProductionRoute": true,
+  "dossierIncluded": true,
+  "readerIncluded": true,
+  "integrationBoundary": "Route browser acceptance is recorded separately in route-production/checks.json; parent owns pending TIM-23 review corrections."
 }
