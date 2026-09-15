@@ -367,6 +367,90 @@ test('pauses hidden reading, follows successive frozen live heads, and recovers 
   expect(faults).toEqual([]);
 });
 
+test('keeps two open document chapters independently reachable through scrolling, focus and window replacement', async ({
+  page,
+}) => {
+  const { control, faults } = await harness(page, 900, true);
+  await ready(page);
+  await page.getByRole('button', { name: 'Toggle second reader', exact: true }).click();
+  await ready(page, 'secondary');
+
+  const target = await timeline(page, 'secondary').evaluate(
+    (root) => window.scrollY + root.getBoundingClientRect().top + 300,
+  );
+
+  await page.evaluate((y) => window.scrollTo(0, y), target);
+
+  const settled = await page.evaluate(
+    () =>
+      new Promise<number>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve(window.scrollY))),
+      ),
+  );
+
+  expect(Math.abs(settled - target)).toBeLessThanOrEqual(1);
+  await timeline(page, 'secondary').focus();
+  const beforeKey = await page.evaluate(() => window.scrollY);
+  await page.keyboard.press('PageDown');
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(beforeKey);
+
+  for (let index = 0; index < 3; index++) {
+    const before = Number(await timeline(page, 'secondary').getAttribute('data-story-delivered'));
+    await timeline(page, 'secondary').evaluate((root) =>
+      window.scrollTo(0, window.scrollY + root.getBoundingClientRect().bottom - window.innerHeight + 80),
+    );
+    await expect
+      .poll(async () => Number(await timeline(page, 'secondary').getAttribute('data-story-delivered')))
+      .toBeGreaterThan(before);
+    await ready(page, 'secondary');
+  }
+
+  for (let index = 0; index < 3; index++) {
+    const before = Number(await timeline(page, 'secondary').getAttribute('data-story-after'));
+    await timeline(page, 'secondary').evaluate((root) =>
+      window.scrollTo(0, window.scrollY + root.getBoundingClientRect().top + 80),
+    );
+    await expect
+      .poll(async () => Number(await timeline(page, 'secondary').getAttribute('data-story-after')))
+      .toBeLessThan(before);
+    await ready(page, 'secondary');
+  }
+
+  const secondFocus = timeline(page, 'secondary').locator('[data-story-key]').nth(25).getByRole('button');
+  await secondFocus.focus();
+  const focusedTop = await secondFocus.evaluate((node) => node.getBoundingClientRect().top);
+  control.head = 950;
+  await page.getByRole('button', { name: 'Refresh A', exact: true }).evaluate((button) => {
+    if (!(button instanceof HTMLButtonElement)) throw new Error('Expected fixture refresh button');
+    button.click();
+  });
+
+  await expect(metrics(page, 'secondary')).toContainText('"head":950');
+  await expect(secondFocus).toBeFocused();
+  expect(await secondFocus.evaluate((node) => node.getBoundingClientRect().top)).toBeCloseTo(focusedTop, 0);
+
+  const firstTarget = await timeline(page).evaluate(
+    (root) => window.scrollY + root.getBoundingClientRect().top + 200,
+  );
+
+  await page.evaluate((y) => window.scrollTo(0, y), firstTarget);
+  await timeline(page).focus();
+  await page.keyboard.press('PageDown');
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(firstTarget);
+  const before = Number(await timeline(page).getAttribute('data-story-delivered'));
+  await timeline(page).evaluate((root) =>
+    window.scrollTo(0, window.scrollY + root.getBoundingClientRect().bottom - window.innerHeight + 80),
+  );
+  await expect
+    .poll(async () => Number(await timeline(page).getAttribute('data-story-delivered')))
+    .toBeGreaterThan(before);
+  await ready(page);
+  await expect(timeline(page).locator('[data-story-key]')).toHaveCount(128);
+  await expect(timeline(page, 'secondary').locator('[data-story-key]')).toHaveCount(128);
+  expect(control.requests).toBeLessThan(48);
+  expect(faults).toEqual([]);
+});
+
 test('uses document scrolling and retains a focused row across automatic prepending', async ({ page }) => {
   const { faults } = await harness(page, 600, true);
   await ready(page);
