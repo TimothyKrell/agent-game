@@ -111,3 +111,61 @@ Every run uses a unique `.tim27-protocol/runs/` directory. Selected raw JSON/log
 Dependencies are existing root packages linked individually into a worktree-local `node_modules` directory with local cache locations; no install or root package/lock change was made. Native commands receive fresh homes and an allowlisted environment. Captures redact authorization values. All network probes bind loopback OS-assigned ports; no assigned CLI/playable/browser port is used. Provider calls and paid inference calls are **zero**.
 
 Validation is limited to these diagnostic probes, scoped lint/format, syntax checks, and production-scope diff verification. No broad test-suite rerun is used as evidence for a historical fix.
+
+## Approved follow-up: deterministic fixture correction after `da59be3`
+
+The preceding sections describe the original diagnostic handoff. This follow-up corrects the maintained **test fixture**, while retaining the historical packet's permanently unattributed status. The original 22 selected capture files and all three old log copies were byte-verified before editing and again at handoff; their original paths and hashes are preserved.
+
+### Changed boundary
+
+Only `tests/cli-succession.test.ts` changes test behavior. The named pairing/start/action fixture is a local `successionPairingFixture` helper in that file:
+
+- Its explicit method/path allowlist returns `404 / fixture-route-not-found` for root, health, probe, and unknown API routes before reading JSON, recording an API request, asserting headers, or changing queue state. Unrelated request bodies are drained. Known API requests still require the exact **`X-Agent-Game-Protocols: 1,2`** header.
+- A synchronous Node request listener starts a tracked promise. Handler failures are caught, retain their original assertion/parser error as `cause`, and record method, path, and header names without authorization values. They produce an immediate `500 / fixture-handler-failed` response, or close an already-started response.
+- Every test awaits `fixture.close()`. It waits for outstanding handler work and throws an `AggregateError` containing captured failures into the test's awaited control flow. The bad-header controls assert that this awaited rejection contains the original expected/actual protocol assertion. A passing test count can no longer conceal those handler failures as unrelated global rejections.
+- An explicit Node `upgrade` listener returns `501 / fixture-upgrade-unsupported` and closes the socket. The pairing fixture has no WebSocket service; a headerless `?protocol=2` upgrade is handled separately from ordinary API headers and never increments API request counts.
+
+The existing selected-game, first-pairing/start-recursion, participation identity, private observation, exact action envelope, and conflicting-game assertions remain in the named test. Its deterministic injected probes run between the first pairing call and resumed `start`:
+
+| Injected request                                      | Result                     | Recorded API requests before / after |
+| ----------------------------------------------------- | -------------------------- | ------------------------------------ |
+| Headerless `GET /`                                    | 404                        | 1 / 1                                |
+| Headerless `POST /health` with malformed JSON         | 404                        | 1 / 1                                |
+| Headerless `POST /probe` with an unrelated request ID | 404                        | 1 / 1                                |
+| Valid-header `GET /api/unknown`                       | Distinct fixture-route 404 | 1 / 1                                |
+
+The CLI then completes the original journey with its seven actual API requests. These controls do not depend on an ambient request, user-agent identity, host-discovery timing, or PID.
+
+### Red → green evidence
+
+Unique source run: `.tim27-protocol/runs/correction-vH1ge5XP/`. The copied handoff is `.tim27-protocol/correction-accepted/`.
+
+1. **Red before correction:** the old listener behavior was extracted without changing its header assertion, routing, or async rejection behavior. The injected root and two API omission/wrong-header regressions produced **3 failed tests**, with **4 unhandled errors**. Three errors were the deterministic injected `GET /`, headerless `POST /api/queue`, and header-`1` `POST /api/queue`; an additional ambient root request also arrived. The red log records method/path/header names, and `red/test.patch` preserves the exact pre-correction test changes. The controls also failed because old teardown resolved instead of delivering an awaited failure. The original historical logs were not rewritten.
+2. **Focused green:** those same three tests passed after the fixture correction, with no unhandled error.
+3. **Full focused file:** **15/15 tests passed**, with no unhandled error, in **6.19 seconds**. This is the original 11-case Succession file plus four deterministic cases: missing header, wrong header, asynchronous JSON parsing, and unsupported WebSocket upgrade. The existing complete two-act CLI/engine test also passed. No broader 138-case rerun was needed because the helper is local to this file.
+
+The negative controls send completed HTTP request bytes through real loopback TCP sockets, including explicit content lengths. Their captured responses end promptly rather than waiting for a child deadline:
+
+- Missing and wrong API headers: complete HTTP 500 responses, original `AssertionError` delivered through awaited teardown, and **zero** recorded API bodies.
+- Valid `1,2` header with malformed API JSON: complete HTTP 500 response and awaited `SyntaxError`; an earlier unrelated probe does not absorb the failure. A subsequent valid queue read still returns `idle` and is the only recorded API request.
+- Headerless WebSocket upgrade: complete HTTP 501 response, zero recorded API bodies, and clean awaited teardown.
+
+Raw request/response and awaited-rejection controls are in `green-serial/api-header-missing.json`, `api-header-1.json`, `async-body-parse.json`, and `unsupported-upgrade.json`. `pairing-journey-controls.json` records the probe isolation and original CLI API paths. The bad-header/body controls each completed in approximately 1–3 ms in this run.
+
+### No-install reproduction and checks
+
+`.tim27-protocol/correction.config.mjs` runs the actual `tests/cli-succession.test.ts` file with one disclosed bootstrap adapter: it extracts the preserved local 0.3.0 archive instead of calling `npm pack/install`. Before execution it verifies the archive SHA-256 `a0d4f7b0199efa6144c2fa84f51116820d747d575643afc63edf2b13cf24e635` and byte-compares all **10 CLI modules** with this worktree. The original bootstrap in the test source remains intact. Each run records its original/replacement bootstrap, tested source hash, module hashes, and **zero npm invocations**. This does not consume the parent's package-script correction or change package/release bytes.
+
+```sh
+mkdir -p .tim27-protocol/runs
+RUN=$(mktemp -d .tim27-protocol/runs/correction-check-XXXXXXXX)
+env -i PATH="$PATH" HOME="$PWD/$RUN/home" \
+  PROTOCOL_CORRECTION_DIR="$PWD/$RUN" \
+  node node_modules/vitest/vitest.mjs run \
+  --config .tim27-protocol/correction.config.mjs \
+  --reporter=default --reporter=json --outputFile.json="$RUN/vitest.json"
+```
+
+The ambient diagnostic under its separate old configuration remains intentionally available outside normal CI; its findings and limitations are unchanged. The maintained regression cases are deterministic and use OS-assigned loopback ports. No listener process was stopped or modified. Provider calls, paid calls, package installs, and production implementation edits are zero.
+
+Root TypeScript checking, scoped lint/format, and source/package-scope diff verification passed. The follow-up changes one normal test file, adds the no-install diagnostic configuration, and appends correction evidence/documentation.

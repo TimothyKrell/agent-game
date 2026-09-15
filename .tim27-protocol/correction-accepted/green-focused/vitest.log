@@ -1,0 +1,12 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/tmp/opencode/agent-game-protocol-diagnostic[39m
+
+ [32m✓[39m tests/cli-succession.test.ts [2m([22m[2m13 tests[22m[2m | [22m[33m10 skipped[39m[2m)[22m[33m 406[2mms[22m[39m
+   [33m[2m✓[22m[39m preserves selected game through first pairing and start recursion, then copies the exact action envelope [33m 396[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[2m | [22m[33m10 skipped[39m[90m (13)[39m
+[2m   Start at [22m 02:55:23
+[2m   Duration [22m 796ms[2m (transform 143ms, setup 0ms, import 300ms, tests 406ms, environment 0ms)[22m
+
+JSON report written to /tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/correction-vH1ge5XP/green-focused/vitest.json
