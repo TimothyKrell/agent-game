@@ -11,6 +11,7 @@ import { verifyRecords } from '../../scripts/preview-github';
 import { deliveryProof } from '../../scripts/preview-controller';
 import { retainedIdentity } from '../../scripts/preview-lifecycle-state';
 import { lifecycleSourceOrigin, lifecycleTargetOrigin } from './preview-lifecycle';
+import { WebSocketServer } from 'ws';
 
 type FailureMode =
   | 'healthy'
@@ -38,6 +39,9 @@ export async function controllerFixture() {
   let githubReads = 0;
   let commentCalls = 0;
   let disposed = false;
+  let smokeReadback: { path: string; body: string | Uint8Array<ArrayBuffer>; status?: number } | undefined;
+  let socketReadback: string | undefined;
+  let smokeSubstitutions = 0;
   const record = records();
   record.mergeCommit = runner.worker.artifact.manifest.builtCommit;
   record.jobs = record.jobs.map((job) => ({
@@ -163,6 +167,15 @@ export async function controllerFixture() {
 
         if (url.pathname === '/api/bootstrap' && mode === 'smoke-503')
           result = Response.json({ error: 'unavailable' }, { status: 503 });
+
+        if (
+          (smokeReadback?.path === url.pathname ||
+            (smokeReadback?.path === '/api/matches/*' && url.pathname.startsWith('/api/matches/'))) &&
+          input.headers['x-agent-game-protocols']
+        ) {
+          smokeSubstitutions++;
+          result = new Response(smokeReadback.body, { status: smokeReadback.status ?? 200 });
+        }
       } else throw new Error('Unexpected controller fixture egress');
       response.setHeader('content-type', 'application/json');
       response.end(
@@ -177,6 +190,38 @@ export async function controllerFixture() {
     }
   });
 
+  // Only the socket transport is substituted: frames come from the actual
+  // target Worker and DO, through a local OS-assigned WebSocket server.
+  const websocketServer = new WebSocketServer({ noServer: true });
+  server.on('upgrade', async (request, socket, head) => {
+    try {
+      const path = request.url ?? '';
+
+      if (!/^\/api\/matches\/match_[A-Za-z0-9_-]+\/events\?protocol=[12]$/.test(path))
+        throw new Error('Unexpected socket path');
+
+      const response = await runner.worker.target.dispatchFetch(lifecycleTargetOrigin + path, {
+        headers: { Upgrade: 'websocket' },
+      });
+
+      const peer = response.webSocket;
+
+      if (!peer || response.status !== 101) throw new Error('Local target socket unavailable');
+      websocketServer.handleUpgrade(request, socket, head, (client) => {
+        peer.addEventListener('message', (message) => {
+          if (socketReadback !== undefined) smokeSubstitutions++;
+          client.send(socketReadback ?? message.data);
+        });
+        peer.addEventListener('close', () => client.close());
+        client.on('close', () => peer.close());
+        client.on('error', () => peer.close());
+        peer.accept();
+      });
+    } catch {
+      socket.destroy();
+    }
+  });
+
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
   const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Int }))(server.address());
   const origin = `http://127.0.0.1:${address.port}`;
@@ -188,8 +233,16 @@ globalThis.fetch=async (url,init)=>{
   const request=new Request(url,init);
   const response=await network(${JSON.stringify(origin)}, {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:request.url,method:request.method,headers:Object.fromEntries(request.headers),body:request.method==='GET'?null:Buffer.from(await request.arrayBuffer()).toString('base64')})});
   if(!response.ok) throw new Error('Local transport unavailable');
-  const result=await response.json();
+const result=await response.json();
   return new Response(Buffer.from(result.body,'base64'),{status:result.status,headers:result.headers});
+};
+const NativeWebSocket=globalThis.WebSocket;
+globalThis.WebSocket=class extends NativeWebSocket {
+  constructor(url) {
+    const parsed=new URL(url);
+    if(parsed.origin!==${JSON.stringify(lifecycleTargetOrigin.replace('https:', 'wss:'))}) throw new Error('Unexpected socket origin');
+    super(${JSON.stringify(origin.replace('http:', 'ws:'))}+parsed.pathname+parsed.search);
+  }
 };
 `,
   );
@@ -224,12 +277,12 @@ console.log(process.argv.includes('--paginate')?'[[]]':'{}');
     PATH: `${directory}/bin:${process.env.PATH}`,
   };
 
-  const child = async (args: string[]) => {
+  const child = async (args: string[], timeout = 30_000) => {
     try {
       const output = await promisify(execFile)(process.execPath, ['--import', preload, ...args], {
         cwd: directory,
         env,
-        timeout: 30_000,
+        timeout,
         maxBuffer: 1024 * 1024,
       });
 
@@ -292,11 +345,24 @@ console.log(process.argv.includes('--paginate')?'[[]]':'{}');
       return commentCalls;
     },
     publish: () => child([resolve('scripts/preview-controller.ts'), 'publish']),
-    smoke: () => child([resolve('scripts/verify-preview.mjs'), lifecycleTargetOrigin]),
+    smoke: (url = lifecycleTargetOrigin, timeout = 30_000) =>
+      child([resolve('scripts/verify-preview.mjs'), url], timeout),
+    set smokeReadback(value: typeof smokeReadback) {
+      smokeReadback = value;
+    },
+    set socketReadback(value: typeof socketReadback) {
+      socketReadback = value;
+    },
+    get smokeSubstitutions() {
+      return smokeSubstitutions;
+    },
     failure: () => readFile(resolve(directory, '.agent-game/preview-failure.json'), 'utf8'),
     dispose: async () => {
       if (disposed) return;
       disposed = true;
+
+      for (const socket of websocketServer.clients) socket.terminate();
+      await new Promise<void>((done) => websocketServer.close(() => done()));
       await new Promise<void>((done) => server.close(() => done()));
       await runner.dispose();
     },
