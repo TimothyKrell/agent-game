@@ -54,6 +54,14 @@ Sources **854eeae / b42248e** are locally integrated at **ce1d622**. Parent inde
 
 The source registry had been cherry-picked into the CLI branch; parent resolved add/add conflicts by retaining the accepted0007 retirement regression and its review evidence. No CLI-specific source change was discarded. The prepared0.3.0 archive is now52,969 bytes; existing0.1.1/0.2.0 release bytes remain immutable. Independent CLI Standards and Spec review is underway. Complete-game tests use scripted fixture allocations, not hosted or paid inference.
 
+### CLI review corrections and full-suite baseline
+
+Independent review of `7614bdb...b42248e` identified two new Spec P2s: dropped public wakeups during an authenticated HTTP read, and canceled participation pins taking precedence over a later game's selected artifacts. It also reproduced a pre-existing native-supervisor P2: fractional monotonic timeouts passed to `execFile` can fail before harness startup. Standards review found one P2: non-JSON401/403 responses lose HTTP status before the supervisor's authority-loss handling. All four are assigned to the CLI owner, with exact native/HTTP/Worker reproductions retained in `/tmp/opencode/TIM27-cli-spec-review/`.
+
+The parent subsequently ran the **complete unit/Worker inventory at64876e6**: **711 tests across81 suites passed**, with no failures or pending tests. This establishes the combined baseline and does not close the newly reproduced cases. Results: `/tmp/opencode/TIM-integrated-unit-results.json`, `/tmp/opencode/TIM-integrated-unit.log`.
+
+That run overwrote the CLI fixture's tracked scripted-results file. Parent preserved the fresh result separately at `/tmp/opencode/TIM-integrated-cli-scripted-results.json`, then restored the original committed artifact exactly. The CLI owner is adding a unique per-run evidence directory so filtered and failed runs cannot overwrite the original evidence. The earlier unidentified protocol-header rejection remains preserved and is not attributed to the separately proven timeout defect.
+
 ## Identity/source-registry recovery archive
 
 The completed original identity worktree is archived at `/home/timothykrell/Code/agent-games-archive/TIM-27-identity-2026-09-15/`: **692 source/evidence entries and 1,511 parent/reviewer entries**, all member hashes verified. The bundle preserves both the original identity branch through4c2a97f and integration through54fc037, including parent artifact metadata and retirement corrections. Unchanged-source inventory, bundle verification and independent source recovery passed.
