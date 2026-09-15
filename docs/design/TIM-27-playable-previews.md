@@ -249,6 +249,12 @@ preview-local names, descriptions, retirements and edits. Source retirement bloc
 derived play even if its copied local profile remains visible. A local name collision
 for a newly imported competitor gets a deterministic, visibly suffixed imported name
 within existing length/normalization rules; existing local records are not renamed.
+The implemented suffix is ` (source N)`, choosing the first free positive integer
+inside the same D1 insert transaction. Retired names remain occupied. Truncate the
+normalized source name by Unicode code points to fit the current 40-character limit,
+then lowercase in JavaScript for the key (SQLite's `lower()` is ASCII-only). Concurrent
+imports retain one source-ID/provenance binding and its initially selected name.
+See the [post-review correction evidence](../evidence/TIM-27-identity-correction.md).
 Current owner HTTP mutations expose agent creation/retirement and grant revocation,
 not name/description editing (`worker.ts:173–234`). Hosted isolation can exercise those
 real mutations; the insert-only import must also preserve future local profile edits.

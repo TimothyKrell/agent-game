@@ -5,6 +5,11 @@ Implementation baseline remains `73ca5627bfcd1a699650cd77d9c4e887a475ab06`; pare
 TIM-28/TIM-11/TIM-18 integration at `7233eb6` has not been rebased into this worktree.
 This is local implementation evidence, not hosted acceptance or paid-game evidence.
 
+**Post-review correction:** [name collisions, exact-agent scope and immutable test
+captures](TIM-27-identity-correction.md) documents the follow-up on `7f7e447`. The
+current suite has 16 tests; the original 14-test results and screenshot below remain
+immutable evidence of that first implementation.
+
 ## Delivered boundary
 
 - Source registry, signed target transport, narrow owner/agent handoffs, durable
@@ -90,18 +95,18 @@ code must also match its originally authorized commit.
 
 All bodies are JSON. Request/response schemas are in `src/shared/preview.ts`.
 
-| Endpoint                                  | Caller and contract                                                                                                                                                                                                                                  |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Source `GET /api/preview/arenas`          | Public bounded discovery array (max 100): origin, incarnation, commit, `identityVersion: 1`, `ownerEntryUrl`, `livePlay: false`. Owner entry is `/preview`.                                                                                          |
-| Target `POST /api/preview/owner-start`    | Exact Origin; `{requestId, browserProof}`. Browser writes both to session storage before I/O. Target persists encrypted verifier/token before contacting source; returns `{requestId, continueUrl}` and host-only HttpOnly/Lax browser-proof cookie. |
-| Source `POST /api/preview/requests`       | Target-signed `PreviewIntent`, owner scope, no token hash. Creates a ten-minute authorization request.                                                                                                                                               |
-| Source `POST /api/preview/owner-handoffs` | Source owner cookie + exact source Origin; `{requestId}`. Binds the exact current source session and returns `{requestId, code, returnUrl}`. GET navigation alone grants nothing.                                                                    |
-| Source `POST /api/preview/agent-handoffs` | Existing source bearer; `PreviewIntent` with independent verifier challenge and target token hash. Binds the exact source grant/owner/competitor.                                                                                                    |
-| Source `POST /api/preview/redeem`         | Target-signed `{requestId, code, verifier, commit}`. Returns version-1 receipt: owner public metadata, scope (`owner` or `agent`), optional bound agent ID, authority expiry and bound target token hash.                                            |
-| Source `POST /api/preview/metadata`       | Target-signed `{requestId, after?}` for a redeemed, currently active authority. Version-1 pages of at most 25 competitors plus next cursor; agent scope exposes only its bound competitor.                                                           |
-| Source `POST /api/preview/introspect`     | Target-signed `{requestId, agentId?}`. Requires consumed receipt and active registry/source session or grant. Optional imported competitor must still belong to that source owner and be active. Returns `{active: true, expiresAt}` or rejects.     |
-| Target `POST /api/auth/preview/complete`  | Exact Origin, initiating-browser cookie, `{requestId, code}`. Worker bounds body to 4 KiB; Better Auth plugin redeems, imports and commits lineage before setting the session cookie. Response contains no bearer token.                             |
-| Target `POST /api/preview/agent-exchange` | New target bearer in Authorization, `{requestId, code, verifier}`. Raw target credential is checked against the source-bound hash; source sees only that hash. Returns local `{connectionId, agentId, expiresAt}`.                                   |
+| Endpoint                                  | Caller and contract                                                                                                                                                                                                                                                                     |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Source `GET /api/preview/arenas`          | Public bounded discovery array (max 100): origin, incarnation, commit, `identityVersion: 1`, `ownerEntryUrl`, `livePlay: false`. Owner entry is `/preview`.                                                                                                                             |
+| Target `POST /api/preview/owner-start`    | Exact Origin; `{requestId, browserProof}`. Browser writes both to session storage before I/O. Target persists encrypted verifier/token before contacting source; returns `{requestId, continueUrl}` and host-only HttpOnly/Lax browser-proof cookie.                                    |
+| Source `POST /api/preview/requests`       | Target-signed `PreviewIntent`, owner scope, no token hash. Creates a ten-minute authorization request.                                                                                                                                                                                  |
+| Source `POST /api/preview/owner-handoffs` | Source owner cookie + exact source Origin; `{requestId}`. Binds the exact current source session and returns `{requestId, code, returnUrl}`. GET navigation alone grants nothing.                                                                                                       |
+| Source `POST /api/preview/agent-handoffs` | Existing source bearer; `PreviewIntent` with independent verifier challenge and target token hash. Binds the exact source grant/owner/competitor.                                                                                                                                       |
+| Source `POST /api/preview/redeem`         | Target-signed `{requestId, code, verifier, commit}`. Returns version-1 receipt: owner public metadata, scope (`owner` or `agent`), optional bound agent ID, authority expiry and bound target token hash.                                                                               |
+| Source `POST /api/preview/metadata`       | Target-signed `{requestId, after?}` for a redeemed, currently active authority. Version-1 pages of at most 25 competitors plus next cursor; agent scope exposes only its bound competitor.                                                                                              |
+| Source `POST /api/preview/introspect`     | Target-signed `{requestId, agentId?}`. Requires consumed receipt and active registry/source session or grant. An agent-scoped handoff only authorizes its exact bound agent; owner scope permits active members of that owner's roster. Returns `{active: true, expiresAt}` or rejects. |
+| Target `POST /api/auth/preview/complete`  | Exact Origin, initiating-browser cookie, `{requestId, code}`. Worker bounds body to 4 KiB; Better Auth plugin redeems, imports and commits lineage before setting the session cookie. Response contains no bearer token.                                                                |
+| Target `POST /api/preview/agent-exchange` | New target bearer in Authorization, `{requestId, code, verifier}`. Raw target credential is checked against the source-bound hash; source sees only that hash. Returns local `{connectionId, agentId, expiresAt}`.                                                                      |
 
 Signed envelope: `{origin, incarnation, at, nonce, payload, signature}`. `payload` is
 the exact serialized JSON request. Signature is base64 IEEE-P1363 ECDSA/SHA-256 over
@@ -196,7 +201,7 @@ queued tickets; the target admission gate stays until this is implemented.
 Command (locked dependencies, no install):
 
 ```sh
-node node_modules/vitest/vitest.mjs run tests/preview-identity.test.ts --reporter=default --reporter=json --outputFile.json=.tim27/identity-vitest.json
+node node_modules/vitest/vitest.mjs run tests/preview-identity.test.ts
 ```
 
 The test starts **two actual local workerd Workers**, applies real migrations into
@@ -241,7 +246,10 @@ Artifacts: [`identity-result.json`](../../.tim27/identity-result.json),
 [`identity-browser.png`](../../.tim27/identity-browser.png), and
 [`identity-provenance.json`](../../.tim27/identity-provenance.json).
 The screenshot is deliberately a minimal continuation page, not an owner-dashboard
-visual review. Reruns write only new `identity-*` evidence, never the original probes.
+visual review. Current reruns default to a unique ignored `.tim27/runs/identity-*`
+directory, created before Chromium captures. `TIM27_IDENTITY_EVIDENCE_DIR` selects an
+explicit new capture directory; see the correction document for JSON-report commands.
+Do not point a rerun at the accepted root captures or regenerate their manifests.
 
 ### Runtime findings that changed the implementation
 
