@@ -110,3 +110,52 @@ git diff --check
 - **36 scoped tests pass:** the original 32 plus 4 lifecycle cases. These verify active-ID retention/release and independent clients, actual native request cancellation while old source data and an active lifetime remain, the exact successful `AgentPictureMap` return from a new request, and pre-retired calls producing no request/query. Cancellation leaves normal observer cache reversion intact while the explicit refresh rejects.
 - **10 browser tests pass:** the original 5 plus 5 actual React/provider/native HTTP cases. New coverage verifies held older responses versus provided removals, subsequent provided unmount and last-reader retirement, lookup-to-provided propagation, independent QueryClients, cached-destination refresh cancellation, A → B → A, and both switching and actual unmount of one same-ID reader while the remaining reader receives the shared response.
 - Typecheck, lint, production build, scoped formatting, and diff checks pass. New logs use `.tim29/correction-*.log`; the original `.tim29/lookup-*.log` evidence is unchanged. The Dossier component handoff and production consumer/image/dialog checks remain the next integration dependency.
+
+## Consumer adoption — shared portrait handoff
+
+The focused Dossier commits `49935cc` and `e2d98ca` were cherry-picked as `87d6a1c` and `795e195`. The first import conflict was resolved with the shared `agent-portrait.css` component-layer import; the unfinished Dossier sheet was only context in that patch. The second conflict retained the handed-over size and recovery-callback interface documentation. Consumers use the exact supplied `AgentPortrait` implementation and its existing Base UI dialog.
+
+### Adopted surfaces and metadata ownership
+
+| Surface                                          | Presentation                                                                                                                                 | Metadata owner                                                                                                      |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Public profile                                   | 96 px desktop / 72 px narrow portrait, with separate owner/history links                                                                     | One `provided` hook using the decoded profile's current `picture` field                                             |
+| Leaderboard, Home standings, public owner roster | 40 px portrait beside a separate profile-name link; the row is a noninteractive container so enlargement is never nested in an anchor        | One `provided` hook per `LeaderTable`, shared by every row                                                          |
+| Private owner roster and picture editor          | 56 px roster portrait and 64 px editor portrait; both enlarge through the shared dialog                                                      | One `provided` hook at the roster parent; every header/editor receives the map and same error-revalidation callback |
+| Legacy Secret Overlord live/archive seats        | 48 px portraits; explicit grid placement separates pictures from names, roles and takeover state on desktop and narrow scrollable seat lists | One current batch for the original ten `view.seats[].agentId` values at `SecretOverlordMatch`                       |
+| Legacy match result roster                       | 32 px portraits with original profile links and recorded forfeiture labels                                                                   | The same match-parent map                                                                                           |
+| Legacy discussion messages                       | 32 px speaker portraits; original seat attribution remains authoritative after takeover                                                      | The same map and recovery callback passed through `MatchFeed` and its events; no row-owned lookup                   |
+
+`portrait-consumers.css` contains local layout adapters and is imported in the existing `components` layer. `.replay-ui` is scoped to the individual portrait wrappers. The shared component's graphics, error fallback, and portal dialog remain its responsibility.
+
+The owner editor still retires a mutation retry only after receipt confirmation, then performs its result-bearing current metadata GET. That **current GET result** is now also published to the active-ID registry, updating the roster header even when `useLoad` retains a failed roster refresh. A failed current GET keeps the editor's metadata-only retry and hides its portrait. Binary responses, operation keys, preconditions, and uncertain retry classification retain their accepted behavior.
+
+### Explicit name-only summary limitation
+
+Home's selected-table summary contains names but no stable entrant IDs or already-loaded observation. Its decorative fallback stays name-only. No profile-by-name matching or extra per-summary match reads were added. The narrow backend prerequisite for full summary portraits is an optional ordered `seats: { number: number; agentId: string; name: string }[]` summary field carrying original entrant identity; that would let one selected-summary parent perform the existing batch lookup. Canonical Succession/Dossier composition remains with its assigned owner; `MatchFeed`'s picture-map props are optional for compatibility during that integration.
+
+### Adoption verification
+
+All checks use the production build and owned local ports: **6371** for the production preview, **6372 / 6373** for the local Worker/inspector, **6374** for the isolated production exclusion check, and OS-assigned native HTTP ports in the lookup tests.
+
+```bash
+npm run build
+npx playwright test --config .tim29/adoption-playwright.config.ts
+npx playwright test --config .tim29/owner-playwright.config.ts
+npx playwright test --config .tim29/legacy-playwright.config.ts
+npx playwright test --config .tim29/correction-playwright.config.ts
+npx vitest run tests/agent-picture-data.test.ts tests/client-api.test.ts tests/agent-picture-api.test.ts tests/agent-picture-lifecycle.test.ts
+node .tim29/check-production.mjs
+npm run typecheck
+npm run lint
+npm run format:check
+git diff --check
+```
+
+- **7 production consumer scenarios passed**, using real production components with routed protocol fixtures and browser-decoded PNG bytes. They cover profile/list metadata reuse without initial or per-row requests, retired agents and old omissions, historical-name/current-picture identity through takeover and rename, one ten-ID lookup shared by seats/chat/results, non-JSON image 404/removal and bad-PNG decode fallbacks, bounded recovery, Enter/Space activation, close/Escape, focus containment/restoration, long valid names, desktop/390/320 layouts, and live-role privacy. The layout checks assert both page bounds and portrait/text separation in archive seats.
+- **7 owner browser scenarios passed through the actual local Worker, D1, R2, dashboard and `useLoad`**. Five retain the accepted non-JSON 401/403 and uncertain 503/malformed-200/wrong-shape-200 receipt cases. The lost-receipt → newer removal → failed GET case still sends exactly two PUTs and then retries metadata only. The added case proves that a successful current GET updates both owner portraits despite a failed roster refresh, including decoded image enlargement and subsequent removal.
+- **13 existing feed/sitewide browser scenarios passed**, including chronology/folding, reading position, public compositions, long names, owner controls, routing/retry failures, and historical result fields.
+- **10 existing lookup/correction browser tests and 36 scoped Vitest tests passed** after adoption. Total browser coverage in these four runs is **37 passing scenarios**.
+- Typecheck, lint, build, formatting, and diff checks pass. `node .tim29/check-production.mjs` scanned 9 text assets, verified the five ordered cascade layers, one hoisted font import, no Preflight, excluded dev routes/data/Agentation, and byte-identical retained guide files against `6b83e92` (the verified **20 groups / 36 terms** baseline). The scan and source hashes are in [`.tim29/production.json`](../../.tim29/production.json).
+
+Representative captures: [profile at 390](../../.tim29/captures/profile-390.png), [leaderboard at 320](../../.tim29/captures/leaderboard-320.png), [owner editor at 320](../../.tim29/captures/owner-editor-320.png), [archive seats desktop](../../.tim29/captures/legacy-seats-1440.png), [archive seats at 320](../../.tim29/captures/legacy-seats-320.png), and [live seat at 320](../../.tim29/captures/live-seat-320.png). White thumbnails are the known test PNG's actual decoded pixels, not generated agent artwork. Original TIM-28 and independent TIM-29 evidence remains preserved; adoption commands and logs use separate names.

@@ -20,3 +20,13 @@ The Spec reviewer independently repeated both original failures against the corr
 The Dossier component's focused commits `49935cc` and `e2d98ca` provide lookup-free `AgentPortrait`, documented in `TIM-29-portrait-interface.md`. The production Dossier route consumes the picture map and shared image-error callback. The TIM-29 implementation owner is adopting the same component across remaining identity-backed profiles, rosters, seats, chat and results, retaining compact sizes and original entrant identity under controller takeover.
 
 Overall TIM-29 remains In Progress until those actual consumers, accessible enlargement, broken-image fallbacks and responsive behavior are verified. No picture identity is inferred from a display name in summary data that lacks stable competitor IDs.
+
+## Accepted non-Dossier consumer slice
+
+Source **c3bc4ef** passed independent **Standards 0 / Spec 0**. Parent merged both component-layer CSS imports, retaining the production Dossier and adding the local portrait-consumer styles. Parent independently passed **37 browser cases**: seven production consumers, seven real Worker/D1/R2 owner flows, thirteen feed/sitewide regressions and ten lookup/lifecycle cases. Typecheck, lint and build passed.
+
+The first consumer run passed six cases but waited for an off-screen `loading="lazy"` image to decode without bringing it into view. `toBeVisible` verifies rendered layout, not viewport intersection. The helper now scrolls each image into view before asserting real pixel decoding; all seven consumer cases then pass. The owner, legacy and lookup suites did not need repeating. This test-only correction preserves the original identity, exact image URL, one-roster-request, enlargement and layout assertions.
+
+Parent evidence: `/tmp/opencode/TIM-29-lead-adoption-v2/`, with separate first/final logs and captures. The test's original hard-coded screenshot directory overwrote18 tracked captures during the first run. Those fresh captures were preserved separately with hashes, then the exact original c3bc4ef images restored from the staged index. Consumer tests now accept `TIM29_CAPTURE_DIR` and otherwise choose a unique temporary evidence directory. A prior runner setup error (missing parent directory) is retained separately and occurred before any test ran.
+
+The optional summary-entrant follow-up **bd1acd9** is in independent review. Its bounded original-participant query and selected-roster lookup complete Home summary portraits without identity guessing or per-match observation requests.

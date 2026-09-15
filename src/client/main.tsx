@@ -37,6 +37,8 @@ import { Dashboard } from './owner-dashboard';
 import { SiteBootstrapSchema } from './site-bootstrap';
 import type { SiteBootstrap } from './site-bootstrap';
 import { Avatar, Badge } from './ui/identity';
+import { AgentPortrait } from './agent-portrait';
+import { useAgentPictures } from './use-agent-pictures';
 import { Link } from './ui/link';
 import { ErrorBox, ResourceState } from './ui/resource-state';
 import { useLoad } from './use-load';
@@ -195,6 +197,8 @@ function Footer() {
 }
 
 function LeaderTable({ agents, game }: { agents: AgentProfile[]; game: GameId }) {
+  const { pictures, revalidateUnavailable } = useAgentPictures(agents, { lookup: 'provided' });
+
   return (
     <div className="leader-table">
       <div className="leader-row leader-head">
@@ -205,15 +209,25 @@ function LeaderTable({ agents, game }: { agents: AgentProfile[]; game: GameId })
         <span>PLAYED</span>
       </div>
       {agents.length ? (
-        agents.map((agent, i) => (
-          <Link href={gamePath(`/agents/${agent.id}`, game)} className="leader-row" key={agent.id}>
+        agents.map((agent) => (
+          <div className="leader-row" key={agent.id}>
             <span className={`rank ${agent.rank === 1 ? 'gold' : ''}`}>
               {agent.rank ? String(agent.rank).padStart(2, '0') : '—'}
             </span>
             <span className="identity">
-              <Avatar name={agent.name} index={i} />
+              <span className="replay-ui portrait-inline">
+                <AgentPortrait
+                  agentId={agent.id}
+                  name={agent.name}
+                  picture={pictures.get(agent.id)}
+                  size={40}
+                  onImageError={revalidateUnavailable}
+                />
+              </span>
               <span>
-                <strong>{agent.name}</strong>
+                <Link href={gamePath(`/agents/${agent.id}`, game)}>
+                  <strong>{agent.name}</strong>
+                </Link>
                 <small>
                   {agent.ownerHandle ? `@${agent.ownerHandle}` : 'House agent'}
                   {agent.provisional && !agent.house && <Badge>Provisional · {agent.placements}/10</Badge>}
@@ -233,7 +247,7 @@ function LeaderTable({ agents, game }: { agents: AgentProfile[]; game: GameId })
               <small>Played</small>
               <b>{agent.games}</b>
             </span>
-          </Link>
+          </div>
         ))
       ) : (
         <div className="empty">
@@ -804,6 +818,7 @@ function Profile({ id }: { id: string }) {
   );
 
   const agent = useRecordIdentity(id, data?.agent ?? null);
+  const { pictures, revalidateUnavailable } = useAgentPictures(agent ? [agent] : [], { lookup: 'provided' });
   const history = data?.history ?? [];
 
   return (
@@ -813,8 +828,15 @@ function Profile({ id }: { id: string }) {
         All contenders
       </Link>
       {agent ? (
-        <div className="profile-heading">
-          <Avatar name={agent.name} size="big" />
+        <div className="profile-heading portrait-profile-heading">
+          <span className="replay-ui portrait-profile">
+            <AgentPortrait
+              agentId={agent.id}
+              name={agent.name}
+              picture={pictures.get(agent.id)}
+              onImageError={revalidateUnavailable}
+            />
+          </span>
           <div className="profile-identity">
             <div className="eyebrow">
               {agent.house

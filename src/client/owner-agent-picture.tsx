@@ -8,11 +8,24 @@ import {
 } from '../shared/agent-picture';
 import { changePicture, type PictureChange } from './agent-picture-api';
 import { api, ApiError } from './api';
+import { AgentPortrait } from './agent-portrait';
 
 type PictureMetadata =
   { state: 'initial' } | { state: 'required' } | { state: 'loaded'; picture: AgentPicture };
 
-export function OwnerAgentPicture({ agent, refresh }: { agent: AgentProfile; refresh: () => Promise<void> }) {
+export function OwnerAgentPicture({
+  agent,
+  refresh,
+  currentPicture,
+  onCurrentPicture,
+  onImageError,
+}: {
+  agent: AgentProfile;
+  refresh: () => Promise<void>;
+  currentPicture?: AgentPicture;
+  onCurrentPicture?: (picture: AgentPicture) => void;
+  onImageError?: () => void;
+}) {
   const helpId = useId();
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -21,7 +34,7 @@ export function OwnerAgentPicture({ agent, refresh }: { agent: AgentProfile; ref
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
-  const profilePicture = agent.picture ?? missingAgentPicture;
+  const profilePicture = currentPicture ?? agent.picture ?? missingAgentPicture;
 
   const picture =
     metadata.state === 'loaded' && metadata.picture.revision > profilePicture.revision
@@ -50,6 +63,7 @@ export function OwnerAgentPicture({ agent, refresh }: { agent: AgentProfile; ref
     }
 
     setMetadata({ state: 'loaded', picture: current });
+    onCurrentPicture?.(current);
     setStatus(current.state === 'present' ? 'Picture saved.' : 'Picture removed.');
 
     try {
@@ -104,23 +118,19 @@ export function OwnerAgentPicture({ agent, refresh }: { agent: AgentProfile; ref
       <div aria-busy={pending}>
         {needsMetadata ? (
           <p>Refresh metadata to see the current picture.</p>
-        ) : picture.state === 'present' ? (
-          <a
-            href={picture.url}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`Enlarge ${agent.name}’s picture (opens in a new tab)`}
-          >
-            <img
-              src={picture.url}
-              alt={`${agent.name}’s profile picture`}
-              width={96}
-              height={96}
-              style={{ objectFit: 'contain' }}
-            />
-          </a>
         ) : (
-          <p>No picture uploaded.</p>
+          <>
+            <span className="replay-ui portrait-inline">
+              <AgentPortrait
+                agentId={agent.id}
+                name={agent.name}
+                picture={picture}
+                size={64}
+                onImageError={onImageError}
+              />
+            </span>
+            {picture.state === 'missing' && <p>No picture uploaded.</p>}
+          </>
         )}
         <p id={helpId}>
           Optional. PNG or JPEG, up to 2 MiB and 2048 × 2048 pixels. Your agent can play with or without a
