@@ -388,11 +388,12 @@ follow-ups, and allocation settlement did not remove either kind.
   terminal status/outcome/completion time are committed first. Cleanup is outside
   the inference exception handler, so a lost acknowledgement cannot reopen the
   job, increment attempts, re-record usage or repeat a saved provider response.
-- A failed cleanup keeps the exact ID and schedules a durable alarm at **+1,000
-  ms**. A cold runner retries that cleanup; a successful acknowledgement clears
-  the local ID. At most one due cleanup is processed at each alarm entry/exit.
+- The exact ID and a **+1,000-ms** retry time are durable before cleanup dispatch.
+  A cold runner retries that cleanup; a successful acknowledgement clears the
+  local ID. The deadline follow-up below dispatches at most one cleanup RPC per
+  instance **after** ready work and alarm rearming, without awaiting that RPC.
   Existing live-job scheduling still uses the same `due_at` column; a terminal
-  row's `due_at` now means its cleanup retry time.
+  row's `due_at` means its cleanup retry time.
 - The transactional additive migration reconstructs the next possible waiting attempt ID for
   old response-less jobs, including already-terminal jobs with no recorded denial
   reason. Previously admitted attempts have already retired their priority; a
@@ -404,9 +405,11 @@ follow-ups, and allocation settlement did not remove either kind.
 Retirement starts when the runner recognizes a terminal/obsolete job or the
 coordinator settles its allocation; this change does not proactively walk every
 sleeping runner on each phase update. Until recognition, normal runner wakeups and
-the existing useful-deadline expiry still apply. A cleanup transport outage retries
-at one-second intervals without additional inference; expiry remains a fallback
-bound on stale priority while delivery is unavailable.
+the existing useful-deadline expiry still apply. Failed cleanup advances its retry
+time by one second without additional inference. One pending RPC occupies the
+instance's single cleanup slot until it settles or the instance restarts; required
+alarms continue independently. Expiry remains a fallback bound on stale priority
+while delivery is unavailable.
 
 ### Red/green evidence and final full-path check
 
@@ -460,6 +463,101 @@ lint, formatting and provider-receipt details are listed in the dialogue report.
 digest, funding totals and per-case cleanup/priority/accounting results. All new
 evidence uses `waiter-*` paths; the original budget and parent `lead-budget-*`
 artifacts are untouched.
+
+## P2 deadline follow-up: housekeeping must not hold an alarm
+
+Parent review found that `deb50bc` awaited terminal cleanup both before selecting
+ready work and in `finally`. A cleanup RPC delayed 1,200 ms could consume the entire
+1,000-ms deadline of an already-generated, paid required response. Merely moving
+the await to `finally` would still hold the single alarm and prevent future work
+from running on time.
+
+### Nonblocking, durable dispatch
+
+`HouseSeatObject.alarm()` now selects/serves ready work first. Its finalization:
+
+1. Selects at most one due terminal cleanup if no cleanup RPC is already in flight.
+2. Persists that exact ID's retry time before dispatch.
+3. **Awaits only local alarm storage**, scheduling the earliest live job or cleanup
+   retry. Due cleanup is floored to +1,000 ms while a cleanup RPC is in flight so
+   it cannot cause a one-millisecond alarm loop; live job times are not floored.
+4. Dispatches cleanup via `ctx.waitUntil` without awaiting the RPC. Background
+   failures are handled; storage failures retain the already-armed durable retry.
+
+Late success/failure updates only the matching terminal cleanup row and clears the
+in-memory single-flight guard. It **never rearms or deletes the alarm**, so it
+cannot overwrite a wakeup installed by newly enqueued required work. The guard
+bounds outstanding cleanup to one RPC per instance; the SQLite ID/retry time,
+not that guard, supplies durability across eviction. Retried exact-ID deletion is
+idempotent, including when an old remote call may already have succeeded.
+
+There is no cleanup await at either alarm entry or exit. Required generation,
+saved-response recording/submission, provider receipts, budget accounting and
+allocation settlement retain their existing paths. A persistently hung cleanup
+RPC does not get unlimited duplicate dispatches: live alarm work continues, and
+the durable retry resumes when the call settles or the object restarts. Cleanup
+success may leave one already-scheduled idle wakeup, which then clears the alarm.
+
+Platform references checked for this design:
+[Durable Object state / waitUntil](https://developers.cloudflare.com/durable-objects/api/state/#waituntil)
+explicitly says `waitUntil` has no effect on DO request/RPC completion, and pending
+I/O keeps the object active. [Alarms](https://developers.cloudflare.com/durable-objects/api/alarms/#alarm)
+guarantees one alarm invocation at a time. The test driver serializes actual
+runner alarm invocations while holding the real coordinator RPC unresolved.
+
+### Actual saved-response regressions
+
+Seven tests first fail on `deb50bc`: the only alarm remains running, the saved
+required job expires, and it records/submits **zero** times. Red evidence is
+`.tim7/cleanup-deadline-red/` and `.tim7/cleanup-deadline-red.log`.
+
+The isolated fixture advances the real match to a recovered ten-seat voting
+phase, reserves usage through the real coordinator, and seeds the runner's real
+SQLite saved-response state. It holds the actual cleanup RPC until virtual
+**+1,200 ms** while the runnable paid response has a **+1,000-ms** deadline.
+No new provider generation is requested. A different, valid voting seat retains
+its live required waiter throughout cleanup.
+
+| Cases | Fixed required submission time | Recordings / submissions / receipts |
+| --- | ---: | --- |
+| Ready result, delayed cleanup success and failure | +0 ms | 1 / 1 / 1 each |
+| Result already queued for +400 ms, delayed success and failure | +400 ms | 1 / 1 / 1 each |
+| Result enqueued at +200 ms for +400 ms while cleanup is held, success and failure | +400 ms | 1 / 1 / 1 each |
+| Cold restart at +600 ms during held cleanup, following future-due result | +400 ms | 1 / 1 / 1 |
+
+Every case verifies the handler has returned while cleanup is still pending,
+future required work is armed on time, the saved result remains at one attempt,
+and there are **zero extra context/inference reads**. Cleanup eventually retires
+only the old ID: one cleanup call after late success, two after failure/cold retry.
+The other live required waiter remains. The fixture explicitly waits for background
+completion only after releasing the held RPC, never to service the required job.
+
+The arriving-work probe was refined after its first green run: enqueuing exactly
+at the due time legitimately invokes the existing `now + 1` minimum alarm delay.
+It now enqueues at +200 ms for the unchanged +400-ms due time, directly verifying
+future-work rearming. Those intermediate artifacts are also retained.
+
+### Verification commands and results
+
+```sh
+TIM26_CLEANUP_NAME=cleanup-deadline-verified TIM26_WAITER_NAME=cleanup-lifecycle-verified npx vitest run tests/inference-cleanup-deadline.test.ts tests/inference-waiter-lifecycle.test.ts tests/dialogue-shared.test.ts tests/platform-queue.test.ts tests/house-model.test.ts tests/succession-ui-stream.test.ts tests/succession-long-path.test.ts
+TIM7_NAME=cleanup-full-gate TIM7_PHASES=200 TIM26_LATENCY=1000 TIM26_USAGE=estimated TIM26_BUDGET_GATE=1 npx vitest run --config vitest.dialogue-baseline.config.ts
+TIM7_NAME=cleanup-required-pressure TIM7_PHASES=3 TIM26_LATENCY=1000 TIM26_REQUIRED_PRESSURE=1 npx vitest run --config vitest.dialogue-baseline.config.ts
+npm run test:provider
+npm run typecheck
+npm run build
+```
+
+The combined focused suite passes **48/48** (9.62 seconds): seven deadline cases,
+all ten prior waiter-lifecycle cases and the 31 existing focused tests. The live
+required-pressure control passes with its same-ID cold retry and one provider
+attempt. The full path is unchanged: **finished phase 178, all 392 baseline-matching
+mandatory choices, zero required refusals, $1.2804700, 412/488 firsts, 154 follow-ups,
+958 calls, RPM 110/concurrency 10, 928,191 virtual ms**. Provider regression passes
+**3/3** (306.36 seconds); static/provider details are recorded in the dialogue report.
+`.tim7/cleanup-proof.mjs` regenerates the compact red/green and full-path proof in
+`cleanup-proof.json`. New evidence uses `.tim7/cleanup-*`; prior budget,
+waiter and parent lead evidence remains preserved.
 
 ## Evidence / handoff
 

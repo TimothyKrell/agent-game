@@ -84,6 +84,7 @@ export type WaiterState = {
   waiters: { id: string; match_id: string; kind: string; expires_at: number }[];
   usage: UsageRow[];
   cleanup: { id: string; matchId: string; fault: 'before' | 'after' | null; at: number }[];
+  heldCleanup: number;
 };
 
 export type DialogueTrace = {
@@ -141,10 +142,19 @@ export class DialogueHouse extends HouseSeatObject {
   private readonly seat: number;
   private running = false;
   private work: Promise<void> | null = null;
+  private readonly background: Set<Promise<unknown>>;
 
   constructor(ctx: DurableObjectState, env: Env) {
     const due = manualAlarm(ctx);
+    const background = new Set<Promise<unknown>>();
+    Object.defineProperty(ctx, 'waitUntil', {
+      value: (work: Promise<unknown>) => {
+        const tracked = work.finally(() => background.delete(tracked));
+        background.add(tracked);
+      },
+    });
     super(ctx, { ...env });
+    this.background = background;
     this.due = due;
     this.providerUrl = env.OPENAI_BASE_URL!;
     this.seat = Number(ctx.id.name!.split(':').at(-1));
@@ -154,6 +164,30 @@ export class DialogueHouse extends HouseSeatObject {
     const url = new URL(request.url);
 
     if (url.pathname === '/restart') this.ctx.abort('TIM-26 fixture cold house restart');
+
+    if (url.pathname === '/cleanup-idle') await Promise.all(this.background);
+
+    if (url.pathname === '/seed-cleanup-race') {
+      const old: HouseJob = await request.json();
+      await this.enqueue(old);
+      this.ctx.storage.sql.exec(
+        "UPDATE jobs SET status='done',outcome='obsolete',completed_at=?,due_at=?,waiter_id=? WHERE id=?",
+        now,
+        now,
+        `${old.id}:attempt:1`,
+        old.id,
+      );
+    }
+
+    if (url.pathname === '/save-cleanup-result') {
+      const input: { job: HouseJob; response: unknown } = await request.json();
+      await this.enqueue(input.job);
+      this.ctx.storage.sql.exec(
+        "UPDATE jobs SET response=?,status='result',attempts=1 WHERE id=? AND status!='done'",
+        JSON.stringify(input.response),
+        input.job.id,
+      );
+    }
 
     if (url.pathname === '/legacy-waiter-schema') {
       // An old uncertain admission acknowledgement may have no recorded denial reason.
@@ -207,11 +241,16 @@ export class DialogueCoordinator extends MatchmakingObject {
   private releasePressureAt: number | null = null;
   private cleanupFault: 'before' | 'after' | null = null;
   private readonly cleanup: WaiterState['cleanup'] = [];
+  private holdCleanup = false;
+  private heldCleanup: { resolve: () => void; reject: (error: Error) => void }[] = [];
 
-  override retireInferenceWaiter(input: Parameters<MatchmakingObject['retireInferenceWaiter']>[0]) {
+  override async retireInferenceWaiter(input: Parameters<MatchmakingObject['retireInferenceWaiter']>[0]) {
     const fault = this.cleanupFault;
     this.cleanupFault = null;
     this.cleanup.push({ ...input, fault, at: now });
+
+    if (this.holdCleanup)
+      await new Promise<void>((resolve, reject) => this.heldCleanup.push({ resolve, reject }));
 
     if (fault === 'before') throw new Error('Fixture cleanup delivery failed');
     super.retireInferenceWaiter(input);
@@ -295,6 +334,17 @@ export class DialogueCoordinator extends MatchmakingObject {
 
     if (url.pathname === '/required-pressure') this.injectRequiredPressure = true;
 
+    if (url.pathname === '/hold-cleanup') this.holdCleanup = true;
+
+    if (url.pathname === '/release-cleanup') {
+      this.holdCleanup = false;
+
+      for (const pending of this.heldCleanup.splice(0)) {
+        if (url.searchParams.has('fail')) pending.reject(new Error('Delayed cleanup failure'));
+        else pending.resolve();
+      }
+    }
+
     if (url.pathname === '/cleanup-fault')
       this.cleanupFault = url.searchParams.get('loss') === 'before' ? 'before' : 'after';
 
@@ -310,6 +360,7 @@ export class DialogueCoordinator extends MatchmakingObject {
           .toArray(),
         usage: this.ctx.storage.sql.exec<UsageRow>('SELECT * FROM usage ORDER BY id').toArray(),
         cleanup: this.cleanup,
+        heldCleanup: this.heldCleanup.length,
       } satisfies WaiterState);
 
     if (url.pathname === '/allocate') {
@@ -562,6 +613,213 @@ export class DialogueMatch extends MatchObject {
     return Response.json({ initial: initial.value, submissions: this.submissions });
   }
 
+  async slowCleanup(id: string, timing: 'ready' | 'future' | 'arriving', fail: boolean, cold: boolean) {
+    await this.prepare(id, 7, 10);
+    const queue = this.env.MATCHMAKING.getByName('secret-overlord');
+
+    const jobs = () =>
+      this.ctx.storage.sql
+        .exec<{ data: string }>('SELECT data FROM outbox ORDER BY rowid')
+        .toArray()
+        .map((row): HouseJob => JSON.parse(row.data));
+
+    const advance = async () => {
+      now = this.state().phase.deadline!;
+      this.ctx.storage.sql.exec("UPDATE meta SET value=? WHERE key='alarm-due'", String(now));
+      await this.observation(null, 0, '2');
+    };
+
+    await advance();
+    const nomination = jobs().find((job) => job.phaseId === this.state().phase.id && job.kind === 'action')!;
+
+    const nominationView = await this.houseObservation(
+      nomination.seat,
+      nomination.generation,
+      nomination.phaseId,
+    );
+
+    if (nominationView?.observation.protocolVersion !== '2') throw new Error('Missing nomination');
+    const action = previewSuccessionAction(nominationView.observation, () => 0)!;
+
+    const nominated = await this.submitHouse(nomination, {
+      gameId: 'succession',
+      actionId: nomination.id,
+      phaseId: nomination.phaseId,
+      decisionId: nominationView.observation.decision!.id,
+      action,
+    });
+
+    if (!nominated.ok) throw new Error('Failed to prepare voting');
+    await advance();
+    const old = jobs().find((job) => job.phaseId === this.state().phase.id && job.kind === 'action')!;
+    now += 6001;
+    await this.observation(null, 0, '2');
+
+    const replacements = jobs().filter(
+      (job) => job.phaseId === this.state().phase.id && job.kind === 'action',
+    );
+
+    if (replacements.length !== 10 || old.phaseId === this.state().phase.id)
+      throw new Error('Voting recovery did not replace the jobs');
+    const origin = now;
+
+    const job = {
+      ...replacements.find((job) => job.seat === old.seat)!,
+      dueAt: origin + (timing === 'ready' ? 0 : 400),
+      deadline: origin + 1000,
+    };
+
+    const live = replacements.find((entry) => entry.seat !== job.seat)!;
+    const paidId = `${job.id}:attempt:1`;
+
+    if (
+      !(
+        await queue.reserveInference({
+          id: paidId,
+          matchId: id,
+          estimate: 0.02,
+          mandatory: true,
+          deadline: job.deadline,
+        })
+      ).allowed
+    )
+      throw new Error('Saved generation not admitted');
+
+    if (
+      !(
+        await queue.reserveInference({
+          id: `${id}:held`,
+          matchId: id,
+          estimate: 1.4799,
+          mandatory: true,
+          deadline: origin + 60_000,
+        })
+      ).allowed
+    )
+      throw new Error('Pressure not admitted');
+
+    for (const waiting of [old, live]) {
+      const result = await queue.reserveInference({
+        id: `${waiting.id}:attempt:1`,
+        matchId: id,
+        estimate: 0.005,
+        mandatory: true,
+        deadline: waiting.deadline,
+      });
+
+      if (result.allowed || !result.retryable) throw new Error('Expected a live priority waiter');
+    }
+
+    await queue.recordInference(`${id}:held`, 0);
+    const view = await this.houseObservation(job.seat, job.generation, job.phaseId);
+
+    if (view?.observation.protocolVersion !== '2') throw new Error('Missing replacement observation');
+
+    const response = {
+      request: {
+        gameId: 'succession',
+        actionId: job.id,
+        phaseId: job.phaseId,
+        decisionId: view.observation.decision!.id,
+        action: view.observation.decision!.actions[0].action,
+      },
+      usageId: paidId,
+      cost: 0.001,
+      notes: 'previously generated paid vote',
+    };
+
+    let house = this.env.HOUSE_SEATS.getByName(`${id}:${job.seat}`);
+    await house.fetch(
+      new Request('http://fixture/seed-cleanup-race', { method: 'POST', body: JSON.stringify(old) }),
+    );
+
+    const save = () =>
+      house.fetch(
+        new Request('http://fixture/save-cleanup-result', {
+          method: 'POST',
+          body: JSON.stringify({ job, response }),
+        }),
+      );
+
+    if (timing !== 'arriving') await save();
+    await queue.fetch(new Request('http://fixture/hold-cleanup'));
+    const readsBefore = this.reads.length;
+    await house.fetch(new Request(`http://fixture/start?now=${origin}`));
+
+    const inspect = async (): Promise<WaiterState> =>
+      (await queue.fetch(new Request('http://fixture/waiter-state'))).json();
+
+    const local = async (): Promise<{ running: boolean; due: number | null; jobs: StoredJob[] }> =>
+      (await house.fetch(new Request('http://fixture/jobs'))).json();
+
+    for (let poll = 0; poll < 500; poll++) {
+      if ((await inspect()).heldCleanup) break;
+
+      if (poll === 499) throw new Error('Cleanup did not reach the held RPC');
+    }
+
+    const entry = await local();
+    now = origin + 200;
+
+    if (timing === 'arriving') await save();
+    const rearmed = await local();
+    now = origin + 400;
+
+    if (timing !== 'ready' && !rearmed.running)
+      await house.fetch(new Request(`http://fixture/tick?now=${now}`));
+    const servedWhileHeld = await local();
+    const held = await inspect();
+
+    if (cold && !servedWhileHeld.running) {
+      now = origin + 600;
+
+      try {
+        await house.fetch(new Request('http://fixture/restart'));
+      } catch {
+        /* Expected cold restart during cleanup I/O. */
+      }
+
+      house = this.env.HOUSE_SEATS.getByName(`${id}:${job.seat}`);
+      await house.enqueue(job);
+    }
+
+    now = origin + 1200;
+    await queue.fetch(new Request(`http://fixture/release-cleanup${fail ? '?fail=1' : ''}`));
+    await house.fetch(new Request('http://fixture/settle'));
+    await house.fetch(new Request('http://fixture/cleanup-idle'));
+    const afterRelease = await local();
+    now = origin + 2200;
+    await house.fetch(new Request(`http://fixture/tick?now=${now}`));
+    await house.fetch(new Request('http://fixture/cleanup-idle'));
+    const final = await local();
+    const ledger = await inspect();
+
+    const report: InferenceReport = await (
+      await queue.fetch(new Request(`http://fixture/usage?id=${id}`))
+    ).json();
+
+    return {
+      origin,
+      job,
+      old,
+      live,
+      entry,
+      rearmed,
+      servedWhileHeld,
+      held,
+      afterRelease,
+      final,
+      ledger,
+      extraReads: this.reads.length - readsBefore,
+      paid: ledger.usage.filter((row) => row.id === paidId),
+      recordings: report.recordings.filter((row) => row.id === paidId),
+      submissions: this.submissions.filter((row) => row.job.id === job.id),
+      receipts: this.ctx.storage.sql
+        .exec<{ count: number }>('SELECT count(*) AS count FROM receipts WHERE id=?', `house:${job.id}`)
+        .one().count,
+    };
+  }
+
   async waiterLifecycle(id: string, kind: 'required' | 'initial', settlement: boolean, loss = '') {
     await this.prepare(id, 7, 10);
     let queue = this.env.MATCHMAKING.getByName('secret-overlord');
@@ -684,6 +942,8 @@ export class DialogueMatch extends MatchObject {
       await house.fetch(new Request(`http://fixture/tick?now=${now}`));
     }
 
+    await house.fetch(new Request('http://fixture/cleanup-idle'));
+
     const terminal: { jobs: StoredJob[]; due: number | null } = await (
       await house.fetch(new Request('http://fixture/jobs'))
     ).json();
@@ -740,6 +1000,7 @@ export class DialogueMatch extends MatchObject {
       await cold.enqueue(old);
       now += 1000;
       await cold.fetch(new Request(`http://fixture/tick?now=${now}`));
+      await cold.fetch(new Request('http://fixture/cleanup-idle'));
       const afterReplay = await inspect();
       const blocked = await optional();
       replay = { before: beforeReplay, after: afterReplay, replacement, blocked };
@@ -794,6 +1055,22 @@ export class DialogueMatch extends MatchObject {
           url.searchParams.get('loss') ?? '',
         ),
       );
+
+    if (url.pathname === '/slow-cleanup') {
+      const timing = url.searchParams.get('timing');
+
+      if (timing !== 'ready' && timing !== 'future' && timing !== 'arriving')
+        throw new Error('Invalid cleanup timing probe');
+
+      return Response.json(
+        await this.slowCleanup(
+          url.searchParams.get('id')!,
+          timing,
+          url.searchParams.has('fail'),
+          url.searchParams.has('cold'),
+        ),
+      );
+    }
 
     if (url.pathname === '/history') {
       const result = await this.historyPage(

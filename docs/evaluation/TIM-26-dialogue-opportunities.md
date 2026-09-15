@@ -17,6 +17,12 @@ pass, including cleanup loss, cold replay, migration and live replacement contro
 The full-path gate remains at phase 178/392 matching choices/$1.2804700 with no
 required refusals. See [the lifecycle report](TIM-26-budget-review.md#p2-follow-up-terminal-waiter-lifecycle).
 
+**Deadline follow-up:** slow terminal housekeeping is now dispatched after ready
+work and durable rearming, outside the awaited alarm path. Seven real saved-response
+deadline regressions pass, including future arrivals and cold recovery; all ten
+previous lifecycle cases still pass. See
+[the deadline report](TIM-26-budget-review.md#p2-deadline-follow-up-housekeeping-must-not-hold-an-alarm).
+
 ### Original c38 measurement context
 
 The bounded scheduler correction is ready for review against baseline `f802335`
@@ -556,6 +562,45 @@ The original c38/73/b966 budget artifacts and parent lead evidence remain preser
 Original comparison and b966 evidence SHA-256 checksums were reverified; all match.
 All test servers stopped. No package changes, paid inference, Linear writes,
 pushes, deployment or worktree cleanup.
+
+## P2 slow-cleanup deadline correction checks
+
+The parent found that awaiting retirement before job selection or in `finally`
+could hold the only alarm past a paid saved response's deadline. Seven actual
+runner/coordinator regressions were red on `deb50bc`: expired required result,
+zero recordings and zero submissions with 1,000 ms remaining and cleanup held
+for 1,200 ms.
+
+Production changes only `src/server/house-seat.ts`: ready required/results are
+serviced first, a durable wakeup is installed before cleanup dispatch, one cleanup
+RPC is in flight per instance, and late callbacks never alter the alarm. Exact-ID
+retirement, saved response/receipt behavior, settlement and usage accounting remain.
+The fixture has explicit RPC hold/release and background-completion barriers so
+the required-work assertions execute **while cleanup is still unresolved**.
+
+- Combined command in the budget report — **48 passed**, 9.62 seconds: 7 new
+  deadline regressions, all 10 previous lifecycle cases and 31 focused controls.
+  Ready required results submit at +0 ms; future/enqueued-during-cleanup results
+  submit at +400 ms, all before the +1,000-ms deadline. Each records/submits once,
+  retains one receipt, and performs zero extra inference/context reads.
+- `TIM7_NAME=cleanup-full-gate TIM7_PHASES=200 TIM26_LATENCY=1000 TIM26_USAGE=estimated TIM26_BUDGET_GATE=1 npx vitest run --config vitest.dialogue-baseline.config.ts`
+  — **passed**, unchanged phase 178/392 baseline-matching choices, no required
+  refusals, $1.2804700, 412/488 firsts, 154 follow-ups, 958 calls, RPM 110/concurrency
+  10, 928,191 virtual ms.
+- `TIM7_NAME=cleanup-required-pressure TIM7_PHASES=3 TIM26_LATENCY=1000 TIM26_REQUIRED_PRESSURE=1 npx vitest run --config vitest.dialogue-baseline.config.ts`
+  — **passed**, preserving the live required waiter's same-ID cold retry and
+  single provider attempt.
+- `npm run test:provider` — **3 passed**, 306.36 seconds; both acts, 660 fixture
+  HTTP calls, 1,172 events/29 pages, RPM 217, one intentional unknown-usage failure,
+  $0.047448 synthetic measured usage. Retry, saved-response and receipt-idempotency
+  assertions remain green (`.tim7/cleanup-provider.log`).
+- `npm run typecheck`, `npx tsc --noEmit`, `npm run build`, scoped Oxlint and
+  Prettier — passed. All artifacts use the new `.tim7/cleanup-*` namespace.
+
+`cleanup-proof.mjs` regenerates `cleanup-proof.json`: it records all seven red/green
+deadline cases and verifies the complete normalized 392-choice baseline sequence.
+Original b966/deb evidence, comparison checksums and parent lead artifacts remain
+preserved. All test servers stopped; no package, Linear, push or deployment changes.
 
 Evidence is retained under `.tim7/budget-*`; `budget-report.mjs` regenerates
 `budget-results.json`, including full normalized mandatory-choice comparison.

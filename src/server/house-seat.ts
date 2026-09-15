@@ -43,6 +43,8 @@ type JobOutcome =
 
 /** Per-match, per-seat runner: slow inference never owns the authoritative match alarm. */
 export class HouseSeatObject extends DurableObject<Env> {
+  private cleanupRunning = false;
+
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     ctx.storage.sql.exec(
@@ -98,7 +100,8 @@ export class HouseSeatObject extends DurableObject<Env> {
   private async arm(): Promise<void> {
     const next = this.ctx.storage.sql
       .exec<{ due: number | null }>(
-        "SELECT min(due_at) AS due FROM jobs WHERE status != 'done' OR waiter_id IS NOT NULL",
+        "SELECT min(CASE WHEN status='done' THEN max(due_at,?) ELSE due_at END) AS due FROM jobs WHERE status != 'done' OR waiter_id IS NOT NULL",
+        this.cleanupRunning ? Date.now() + 1000 : 0,
       )
       .one().due;
 
@@ -134,18 +137,46 @@ export class HouseSeatObject extends DurableObject<Env> {
     }
   }
 
-  private async retireTerminalWaiter(): Promise<void> {
-    const row = this.ctx.storage.sql
-      .exec<{ id: string; data: string; waiter_id: string }>(
-        "SELECT id,data,waiter_id FROM jobs WHERE status='done' AND waiter_id IS NOT NULL AND due_at<=? ORDER BY due_at,id LIMIT 1",
-        Date.now(),
-      )
-      .toArray()[0];
+  private async finishAlarm(): Promise<void> {
+    const row = this.cleanupRunning
+      ? undefined
+      : this.ctx.storage.sql
+          .exec<{ id: string; data: string; waiter_id: string }>(
+            "SELECT id,data,waiter_id FROM jobs WHERE status='done' AND waiter_id IS NOT NULL AND due_at<=? ORDER BY due_at,id LIMIT 1",
+            Date.now(),
+          )
+          .toArray()[0];
 
-    if (!row) return;
-    const job: HouseJob = JSON.parse(row.data);
+    if (row) {
+      // Persist a retry before dispatch. The in-memory guard only bounds concurrent RPCs.
+      this.ctx.storage.sql.exec(
+        'UPDATE jobs SET due_at=? WHERE id=? AND waiter_id=?',
+        Date.now() + 1000,
+        row.id,
+        row.waiter_id,
+      );
+      this.cleanupRunning = true;
+    }
 
     try {
+      await this.arm();
+    } catch (error) {
+      if (row) this.cleanupRunning = false;
+      throw error;
+    }
+
+    // DO waitUntil does not delay alarm completion. Never await housekeeping from an alarm.
+    if (row)
+      this.ctx.waitUntil(
+        this.retireTerminalWaiter(row).catch(() => {
+          console.warn(JSON.stringify({ event: 'house_waiter_cleanup_storage_retry', job: row.id }));
+        }),
+      );
+  }
+
+  private async retireTerminalWaiter(row: { id: string; data: string; waiter_id: string }): Promise<void> {
+    try {
+      const job: HouseJob = JSON.parse(row.data);
       await platformCoordinator(this.env).retireInferenceWaiter({ id: row.waiter_id, matchId: job.matchId });
       this.ctx.storage.sql.exec(
         "UPDATE jobs SET waiter_id=NULL WHERE id=? AND status='done' AND waiter_id=?",
@@ -163,12 +194,13 @@ export class HouseSeatObject extends DurableObject<Env> {
       console.warn(
         JSON.stringify({ event: 'house_waiter_cleanup_retry', job: row.id, waiter: row.waiter_id }),
       );
+    } finally {
+      // The alarm is already armed. A late acknowledgement must not overwrite a newer wakeup.
+      this.cleanupRunning = false;
     }
   }
 
   async alarm(): Promise<void> {
-    await this.retireTerminalWaiter();
-
     const row = this.ctx.storage.sql
       .exec<JobRow>(
         "SELECT * FROM jobs WHERE status != 'done' AND due_at <= ? ORDER BY CASE WHEN id LIKE '%:action' THEN 0 ELSE 1 END, due_at LIMIT 1",
@@ -177,7 +209,7 @@ export class HouseSeatObject extends DurableObject<Env> {
       .toArray()[0];
 
     if (!row) {
-      await this.arm();
+      await this.finishAlarm();
 
       return;
     }
@@ -439,8 +471,7 @@ export class HouseSeatObject extends DurableObject<Env> {
         }),
       );
     } finally {
-      await this.retireTerminalWaiter();
-      await this.arm();
+      await this.finishAlarm();
     }
   }
 }
