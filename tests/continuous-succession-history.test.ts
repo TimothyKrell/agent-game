@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
-import { QueryClient } from '@tanstack/react-query';
+import { onlineManager, QueryClient } from '@tanstack/react-query';
 import { ContinuousSuccessionHistory } from '../src/client/continuous-succession-history';
 import { storyWindowOptions } from '../src/client/succession-story-data';
 import { matchReadScope } from '../src/client/succession-replay-data';
@@ -12,12 +12,16 @@ let fixture: Awaited<ReturnType<typeof continuousStoryFixture>>;
 
 const readers: ContinuousSuccessionHistory[] = [];
 
+const clients: QueryClient[] = [];
+
 beforeAll(async () => {
   fixture = await continuousStoryFixture(500);
 });
 
 afterEach(() => {
   readers.splice(0).forEach((reader) => reader.dispose());
+  clients.splice(0).forEach((client) => client.unmount());
+  onlineManager.setOnline(true);
   vi.unstubAllGlobals();
 });
 
@@ -32,6 +36,8 @@ function transport() {
     denied: false,
     malformed: false,
     hold: false,
+    holdAnchor: false,
+    anchors: 0,
     pending,
     walks,
   };
@@ -44,6 +50,21 @@ function transport() {
       const through = Number(url.searchParams.get('through'));
       const epoch = url.searchParams.get('epoch')!;
       const matchId = url.pathname.split('/')[3];
+
+      if (url.pathname.endsWith('/history-anchor')) {
+        state.anchors++;
+
+        if (state.holdAnchor) await new Promise<void>((resolve) => state.pending.push(resolve));
+
+        return Response.json({
+          protocolVersion: '2',
+          gameId: 'succession',
+          matchId,
+          visibilityEpoch: epoch,
+          cursor:
+            fixture.events.find((event) => event.eventKey === url.searchParams.get('eventKey'))?.id ?? null,
+        });
+      }
 
       if (state.denied)
         return Response.json(
@@ -103,6 +124,8 @@ function transport() {
 
 function reader(head: number, following = false) {
   const client = new QueryClient();
+  client.mount();
+  clients.push(client);
   const reset = vi.fn();
 
   const result = new ContinuousSuccessionHistory(
@@ -122,6 +145,82 @@ function reader(head: number, following = false) {
 async function ready(reader: ContinuousSuccessionHistory) {
   await vi.waitFor(() => expect(reader.getSnapshot().status).toBe('ready'));
 }
+
+it('exposes an offline initial Query read as paused, then resumes exactly once without advancing quiet-table delivery', async () => {
+  const state = transport();
+  onlineManager.setOnline(false);
+  const { reader: reading, client } = reader(400);
+  expect(client.getQueryCache().getAll()[0].state.fetchStatus).toBe('paused');
+  expect(reading.getSnapshot()).toMatchObject({ status: 'paused', delivered: 0, head: 400 });
+  expect(state.walks).toHaveLength(0);
+  onlineManager.setOnline(true);
+  await ready(reading);
+  expect(reading.getSnapshot().delivered).toBe(128);
+  expect(state.walks).toHaveLength(4);
+  onlineManager.setOnline(false);
+  onlineManager.setOnline(true);
+  expect(reading.getSnapshot()).toMatchObject({ status: 'ready', delivered: 128, head: 400 });
+  expect(state.walks).toHaveLength(4);
+});
+
+it('pauses the window after an in-flight anchor read goes offline, retaining delivered rows until one reconnect', async () => {
+  const state = transport();
+  const { reader: reading, client } = reader(400);
+  await ready(reading);
+  const rows = reading.getSnapshot().rows;
+  state.holdAnchor = true;
+  const seeking = reading.seek(fixture.events[300].eventKey);
+  await vi.waitFor(() => expect(state.pending.length).toBe(1));
+  onlineManager.setOnline(false);
+  state.holdAnchor = false;
+  state.pending.splice(0).forEach((resolve) => resolve());
+  await vi.waitFor(() => expect(reading.getSnapshot().status).toBe('paused'));
+  expect(reading.getSnapshot().rows).toBe(rows);
+  expect(reading.getSnapshot().delivered).toBe(128);
+  expect(client.getQueryCache().getAll()).toHaveLength(1);
+  expect(state.walks).toHaveLength(4);
+  onlineManager.setOnline(true);
+  await seeking;
+  await ready(reading);
+  expect(state.anchors).toBe(1);
+  expect(state.walks).toHaveLength(8);
+  expect(reading.getSnapshot().rows.some((row) => row.source.eventKey === fixture.events[300].eventKey)).toBe(
+    true,
+  );
+});
+
+it('hides and disposes paused readers without zombie resumes or affecting another reader in the same Query cache', async () => {
+  const state = transport();
+  const first = reader(400);
+  await ready(first.reader);
+  const second = new ContinuousSuccessionHistory(first.client, fixture.current(400));
+  readers.push(second);
+  onlineManager.setOnline(false);
+  const pending = first.reader.loadLater();
+  second.setEnabled(true);
+  expect(first.reader.getSnapshot().status).toBe('paused');
+  expect(second.getSnapshot().status).toBe('paused');
+  expect(first.client.getQueryCache().getAll()).toHaveLength(2);
+  first.reader.setEnabled(false);
+  await pending;
+  expect(first.reader.getSnapshot()).toMatchObject({ status: 'ready', delivered: 128, enabled: false });
+  expect(first.client.getQueryCache().getAll()).toHaveLength(1);
+  onlineManager.setOnline(true);
+  await ready(second);
+  expect(state.walks).toHaveLength(8);
+  expect(first.reader.getSnapshot().delivered).toBe(128);
+  first.reader.setEnabled(true);
+  await vi.waitFor(() => expect(first.reader.getSnapshot().delivered).toBe(192));
+  onlineManager.setOnline(false);
+  const abandoned = second.loadLater();
+  second.dispose();
+  await abandoned;
+  onlineManager.setOnline(true);
+  expect(state.walks).toHaveLength(12);
+  expect(second.getSnapshot()).toMatchObject({ enabled: false, status: 'ready', delivered: 128 });
+  expect(first.reader.getSnapshot()).toMatchObject({ status: 'ready', delivered: 192 });
+  expect(first.client.getQueryCache().getAll()).toHaveLength(0);
+});
 
 it('uses exact pre-window engine checkpoints across a long chat gap and Tax resource changes', async () => {
   const state = transport();

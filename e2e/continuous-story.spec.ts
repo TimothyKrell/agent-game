@@ -47,6 +47,7 @@ async function harness(
   documentRoot = false,
   commands = false,
   sparse = false,
+  offline = false,
 ) {
   const pending: (() => Promise<void>)[] = [];
 
@@ -146,7 +147,7 @@ async function harness(
     return route.fulfill({ status: 404 });
   });
   await page.goto(
-    `http://127.0.0.1:6283/${commands ? '?commands' : documentRoot ? '?document' : sparse ? '?sparse' : ''}`,
+    `http://127.0.0.1:6283/${commands ? '?commands' : documentRoot ? '?document' : sparse ? '?sparse' : offline ? '?offline' : ''}`,
   );
 
   return { control, faults };
@@ -155,6 +156,40 @@ async function harness(
 const metrics = (page: Page, name = 'primary') => page.getByLabel(`${name} metrics`, { exact: true });
 
 const timeline = (page: Page, name = 'primary') => page.getByLabel(`${name} timeline`, { exact: true });
+
+test('announces paused Query reads as offline waiting, keeps delivered rows and cancels hidden or unmounted pauses', async ({
+  page,
+}) => {
+  const { control, faults } = await harness(page, 400, false, false, false, true);
+  await expect(metrics(page)).toContainText('"status":"paused"');
+  await expect(timeline(page)).toHaveAttribute('aria-busy', 'false');
+  await expect(timeline(page).getByRole('status')).toHaveText(
+    'Offline. Waiting for connection to load the record.',
+  );
+  expect(control.requests).toBe(0);
+  await page.getByRole('button', { name: 'Go online', exact: true }).click();
+  await ready(page);
+  expect(control.requests).toBe(4);
+  await page.getByRole('button', { name: 'Go offline', exact: true }).click();
+  await page.getByRole('button', { name: 'Follow primary', exact: true }).click();
+  await expect(metrics(page)).toContainText('"status":"paused"');
+  await expect(timeline(page)).toHaveAttribute('data-story-delivered', '128');
+  await expect(timeline(page).locator('[data-story-key]')).toHaveCount(128);
+  await expect(timeline(page)).toHaveAttribute('aria-busy', 'false');
+  await page.getByRole('button', { name: 'Toggle second reader', exact: true }).click();
+  await expect(metrics(page, 'secondary')).toContainText('"status":"paused"');
+  await page.getByRole('button', { name: 'Toggle second reader', exact: true }).click();
+  await page.getByRole('button', { name: 'Toggle chapter', exact: true }).click();
+  await expect(page.getByLabel('cache entries', { exact: true })).toHaveText('0');
+  await page.getByRole('button', { name: 'Go online', exact: true }).click();
+  await expect(metrics(page)).toContainText('"delivered":128');
+  expect(control.requests).toBe(4);
+  await page.getByRole('button', { name: 'Toggle chapter', exact: true }).click();
+  await expect(timeline(page)).toHaveAttribute('data-story-delivered', '400');
+  await ready(page);
+  expect(control.requests).toBe(8);
+  expect(faults).toEqual([]);
+});
 
 async function ready(page: Page, name = 'primary') {
   await expect(metrics(page, name)).toContainText('"status":"ready"');

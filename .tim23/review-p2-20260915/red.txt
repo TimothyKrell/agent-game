@@ -1,0 +1,46 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/tmp/opencode/agent-game-TIM-23[39m
+
+ [31m❯[39m tests/continuous-succession-history.test.ts [2m([22m[2m10 tests[22m[2m | [22m[31m1 failed[39m[2m | [22m[33m9 skipped[39m[2m)[22m[32m 59[2mms[22m[39m
+[31m   [31m×[31m exposes an offline initial Query read as paused, then resumes exactly once without advancing quiet-table delivery[39m[32m 7[2mms[22m[39m
+   [2m[90m↓[39m[22m uses exact pre-window engine checkpoints across a long chat gap and Tax resource changes
+   [2m[90m↓[39m[22m does not turn observed head growth into delivery and completes the frozen window before following a newer head
+   [2m[90m↓[39m[22m preserves zero-event and unavailable baselines honestly, then follows new records without freezing at zero
+   [2m[90m↓[39m[22m retires previously delivered rows after a source reset and asks the authoritative owner to refresh
+   [2m[90m↓[39m[22m retires previously delivered rows after a source denied and asks the authoritative owner to refresh
+   [2m[90m↓[39m[22m rejects a skipped source cursor without discarding delivered history and retries the same bounded operation
+   [2m[90m↓[39m[22m cancels hidden/unmounted reads without accepting their late bodies or cancelling another reader
+   [2m[90m↓[39m[22m keeps a newly visible opposite-edge anchor when an older scroll request completes late
+   [2m[90m↓[39m[22m uses canonical return landmarks for independent act windows and freezes the completed first act on live head growth
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/continuous-succession-history.test.ts[2m > [22mexposes an offline initial Query read as paused, then resumes exactly once without advancing quiet-table delivery
+[31m[1mAssertionError[22m: expected { …(13) } to match object { status: 'paused', …(2) }
+(18 matching properties omitted from actual)[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[2m    "delivered": 0,[22m
+[2m    "head": 400,[22m
+[32m-   "status": "paused",[39m
+[31m+   "status": "loading",[39m
+[2m  }[22m
+
+[36m [2m❯[22m tests/continuous-succession-history.test.ts:[2m136:33[22m[39m
+    [90m134|[39m   [35mconst[39m { reader[33m:[39m reading[33m,[39m client } [33m=[39m [34mreader[39m([34m400[39m)[33m;[39m
+    [90m135|[39m   expect(client.getQueryCache().getAll()[0].state.fetchStatus).toBe('p…
+    [90m136|[39m   expect(reading.getSnapshot()).toMatchObject({ status: 'paused', deli…
+    [90m   |[39m                                 [31m^[39m
+    [90m137|[39m   [34mexpect[39m(state[33m.[39mwalks)[33m.[39m[34mtoHaveLength[39m([34m0[39m)[33m;[39m
+    [90m138|[39m   onlineManager[33m.[39m[34msetOnline[39m([35mtrue[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[33m9 skipped[39m[90m (10)[39m
+[2m   Start at [22m 22:39:37
+[2m   Duration [22m 508ms[2m (transform 227ms, setup 0ms, import 374ms, tests 59ms, environment 0ms)[22m

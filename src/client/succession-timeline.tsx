@@ -292,9 +292,11 @@ export function SuccessionTimeline({
       <div role="status" aria-live="polite">
         {reader.status === 'loading'
           ? 'Loading record…'
-          : reader.status === 'ready' && reader.rows.length === 0
-            ? 'No records yet.'
-            : ''}
+          : reader.status === 'paused'
+            ? 'Offline. Waiting for connection to load the record.'
+            : reader.status === 'ready' && reader.rows.length === 0
+              ? 'No records yet.'
+              : ''}
       </div>
       {reader.error && (
         <div role="alert">

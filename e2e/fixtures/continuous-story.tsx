@@ -1,6 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import { onlineManager, QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Schema } from 'effect';
 import { Observation2Schema } from '../../src/shared/succession';
 import type { Observation2 } from '../../src/shared/succession';
@@ -9,6 +9,8 @@ import { SuccessionTimeline } from '../../src/client/succession-timeline';
 import { useSuccessionMatch } from '../../src/client/use-succession-match';
 
 const client = new QueryClient();
+
+if (new URLSearchParams(location.search).has('offline')) onlineManager.setOnline(false);
 
 function Reading({ current, enabled, name }: { current: Observation2; enabled: boolean; name: string }) {
   const reader = useSuccessionStory(current, {
@@ -113,6 +115,8 @@ function Fixture() {
       <button onClick={() => void refresh('b')}>Match B</button>
       <button onClick={() => setEnabled(!enabled)}>Toggle chapter</button>
       <button onClick={() => setSecond(!second)}>Toggle second reader</button>
+      <button onClick={() => onlineManager.setOnline(false)}>Go offline</button>
+      <button onClick={() => onlineManager.setOnline(true)}>Go online</button>
       {current && new URLSearchParams(location.search).has('commands') ? (
         <Commands initial={current} enabled={enabled} />
       ) : (

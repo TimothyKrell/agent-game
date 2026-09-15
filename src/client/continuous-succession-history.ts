@@ -29,7 +29,7 @@ export interface ContinuousStoryOptions {
 export interface ContinuousStorySnapshot {
   model: StoryModel;
   rows: StoryModel['rows'];
-  status: 'idle' | 'loading' | 'ready' | 'error' | 'reset';
+  status: 'idle' | 'loading' | 'paused' | 'ready' | 'error' | 'reset';
   error: string;
   following: boolean;
   newEvents: number;
@@ -210,7 +210,7 @@ export class ContinuousSuccessionHistory {
   }
   retry = () => (this.snapshot.status === 'reset' ? this.onReset() : this.read(this.intent));
 
-  private fetch<T, Key extends readonly unknown[]>(
+  private async fetch<T, Key extends readonly unknown[]>(
     options: { queryKey: Key; queryFn?: QueryFunction<T, Key> | SkipToken },
     key: readonly unknown[],
   ) {
@@ -218,13 +218,38 @@ export class ContinuousSuccessionHistory {
 
     if (!fn || fn === skipToken) throw new Error('A selected story read requires a query function.');
 
-    return this.client.fetchQuery({
+    const ticket = this.ticket;
+    const cache = this.client.getQueryCache();
+
+    const pending = this.client.fetchQuery({
       queryKey: key,
       queryFn: (context) => fn({ ...context, queryKey: options.queryKey }),
       staleTime: Infinity,
       gcTime: 0,
       retry: false,
     });
+
+    const query = cache.find({ queryKey: key, exact: true });
+
+    const sync = () => {
+      if (!query || !this.active || ticket !== this.ticket || query.state.fetchStatus === 'idle') return;
+      const status = query.state.fetchStatus === 'paused' ? 'paused' : 'loading';
+
+      if (this.snapshot.status !== status) this.publish({ status });
+    };
+
+    const unsubscribe = cache.subscribe((event) => {
+      if (event.query === query) sync();
+    });
+
+    // fetchQuery can enter paused before the subscription is installed.
+    sync();
+
+    try {
+      return await pending;
+    } finally {
+      unsubscribe();
+    }
   }
 
   private async read(intent: string): Promise<void> {
