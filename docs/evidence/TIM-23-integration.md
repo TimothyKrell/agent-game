@@ -24,3 +24,11 @@ Spec review identified:
 - **P2, TIM-18:** the finished phase still clears completed-action context before a final-turn trailing private reaction. Preserve its causal link through terminal phase/result emissions and clear it on actual new activity/gaps.
 
 The implementation owner is correcting these cases with the original review probes in `/tmp/opencode/TIM23-spec-review/`. Existing passing tests and initial traversal bounds do not close these newly reproduced cases. TIM-18 and TIM-23 remain In Progress until the corrections and production composition are verified.
+
+## Correction checkpoint
+
+Sources `6c076d8`, `c1285c4`, `da987fd`, `fdc98b0` and `74592b8` are integrated through **7a938c8**. Parent independently passed **67 focused tests** and **32 browser cases**, plus typecheck/lint/build. The original 30-case parent report is preserved at `/tmp/opencode/TIM-23-lead-browser-initial.json`; the correction report is `/tmp/opencode/TIM-23-lead-correction-browser.json` with separate captures/logs.
+
+Final Standards review closes both paused-state and range-loader findings. Spec review closes the act-index race and the terminal Tax association. **TIM-18 is accepted and Done**; the pure model's ordinary and final-turn causal tails are verified using actual engine emissions.
+
+One TIM-23 **P1 remains**: after a replacement removes tall rows, the formerly visible reader can move above the viewport before its ownership check runs. The retained anchor then fails to restore. Independent reproduction at `74592b8` uses two document timelines and 300px first-window rows, measuring **15,299px drift**. The implementer is preserving pre-replacement ownership while fencing genuine user navigation into another chapter. Exact probe: `/tmp/opencode/TIM23-spec-rereview-74592b8/`. The original off-screen status/follow-only snap is closed; the new variable-height case remains an explicit acceptance gate.

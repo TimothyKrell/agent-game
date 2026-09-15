@@ -32,6 +32,28 @@ The exact consumer/controller interface is in `TIM-27-artifact-registry.md`. Bro
 
 This document records local integration, not hosted deployment, real-model gameplay or operating-budget reconciliation. Those remain coordinated acceptance work after the source/target, broker, CLI and trusted controller paths are combined and reviewed.
 
+## Accepted trusted delivery and active lifecycle adapter
+
+The corrections and content-publication mapping through **acf47b6** are integrated at **635894b**. Parent independently passed **89 tests**, typecheck, lint, build and whitespace checks. Both original reviewers confirmed **Standards 0 / Spec 0 outstanding**, closing the moving-merge provenance and automatic-activation findings above.
+
+The corrected verifier binds the historical merge/base/head to the exact successful attempt's GitHub-recorded identity step and trusted workflow/producer blobs. Default-off activation and a distinct protected-environment token are enforced before the fixed Alchemy subprocess. Artifact-independent cleanup checks the live closed same-repository PR. Branch content has a bounded regular-text inventory, while executable authority comes from an independently pinned source release. These local contracts do not imply hosted activation.
+
+The implementation owner has moved to `/tmp/opencode/agent-game-preview-lifecycle` from635894b to connect the trusted D1 resource/environment adapter, retained keys/incarnations, source registration/publication/readback, and source-first closure. The source broker continues separately; neither lane receives another allowance.
+
+The completed trusted-deploy source is archived at `/home/timothykrell/Code/agent-games-archive/TIM-27-deploy-2026-09-15/`, preserving **7,322 source/evidence entries and 1,299 parent/reviewer entries**. Every member hash, unchanged source inventory, bundle and independent source recovery was verified.
+
+- `worktree-evidence.tar.gz`: 298,985,294 bytes; SHA-256 `f70c90d449b043e40522629767864423e0b5168667f8d5c03229bd4f17176ff0`.
+- `lead-review-evidence.tar.gz`: SHA-256 `859450a24c6b231a54a7cd2d6b72e09e93d808f5a28a3f4b49b8d0f1555d6c50`.
+- `repository.bundle`: SHA-256 `e5bb891bcaa51846a0117d5cbf412625d3e3dbbc896dff298d1b4c311b6f80af`.
+
+The completed worktree/local branch were retired. Git removed the worktree registration but could not delete read-only quarantined snapshots. All6,336 remaining files were reverified against the archive before making only those snapshot directories removable and deleting the remnants; `metadata/retirement.json` records this final disposition.
+
+## Reusable CLI integration checkpoint
+
+Sources **854eeae / b42248e** are locally integrated at **ce1d622**. Parent independently passed **113 tests serially**: 21 installed-preview cases and 92 existing CLI/picture/supervisor cases. Application and dedicated fixture types/lint, build, package-content and whitespace checks pass. Logs: `/tmp/opencode/TIM-27-lead-cli-tests.log` and `/tmp/opencode/TIM-27-lead-cli-package.txt`.
+
+The source registry had been cherry-picked into the CLI branch; parent resolved add/add conflicts by retaining the accepted0007 retirement regression and its review evidence. No CLI-specific source change was discarded. The prepared0.3.0 archive is now52,969 bytes; existing0.1.1/0.2.0 release bytes remain immutable. Independent CLI Standards and Spec review is underway. Complete-game tests use scripted fixture allocations, not hosted or paid inference.
+
 ## Identity/source-registry recovery archive
 
 The completed original identity worktree is archived at `/home/timothykrell/Code/agent-games-archive/TIM-27-identity-2026-09-15/`: **692 source/evidence entries and 1,511 parent/reviewer entries**, all member hashes verified. The bundle preserves both the original identity branch through4c2a97f and integration through54fc037, including parent artifact metadata and retirement corrections. Unchanged-source inventory, bundle verification and independent source recovery passed.
