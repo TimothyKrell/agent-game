@@ -15,7 +15,14 @@ import {
   QueueCancelSchema,
   GameSelectionSchema,
 } from '../shared/api';
-import { agentSession, authProviders, createAuth, developmentLogin, ownerSession } from './auth';
+import {
+  agentSession,
+  authProviders,
+  createAuth,
+  developmentLogin,
+  ownerSession,
+  ownerPreviewAuthority,
+} from './auth';
 import {
   checkOrigin,
   fault,
@@ -27,6 +34,12 @@ import {
   rpcResponse,
 } from './http';
 import { houseConfigured } from './house-model';
+import { sourcePreviewRoute } from './preview-source';
+import { targetPreviewRoute } from './preview-target';
+import { previewEnabled } from './preview-config';
+import { previewPage } from './preview-pages';
+import { PreviewOwnerCompleteSchema } from '../shared/preview';
+import { previewBrowserOrigin } from './preview-transport';
 import { approvePairing, pairingDetails, pollPairing, startPairing } from './pairing';
 import {
   agentHistory,
@@ -54,6 +67,12 @@ export default {
     const method = request.method;
 
     try {
+      if (path === '/preview' || path.startsWith('/preview/')) {
+        const page = await previewPage(request, env);
+
+        if (page) return page;
+      }
+
       if (path === '/agents.md' && (method === 'GET' || method === 'HEAD')) {
         // This is a bounded, build-owned Markdown asset, rendered for the requested arena.
         const asset = await env.ASSETS.fetch(new Request(new URL('/agents.md', url), { method: 'GET' }));
@@ -68,6 +87,21 @@ export default {
           {
             headers: { 'content-type': 'text/markdown; charset=utf-8', 'cache-control': 'no-cache' },
           },
+        );
+      }
+
+      if (path.startsWith('/api/preview/')) {
+        const preview = (await targetPreviewRoute(request, env)) ?? (await sourcePreviewRoute(request, env));
+
+        if (preview) return preview;
+      }
+
+      if (path === '/api/auth/preview/complete' && method === 'POST' && previewEnabled(env)) {
+        previewBrowserOrigin(request, env);
+        const input = await readJson(request, PreviewOwnerCompleteSchema, 4096);
+
+        return await createAuth(env).handler(
+          new Request(request, { method: 'POST', body: JSON.stringify(input) }),
         );
       }
 
@@ -140,7 +174,7 @@ export default {
           leaderboard,
           queueCount,
           authProviders: authProviders(env),
-          localLogin: env.ENVIRONMENT === 'development' && isLoopback(request.url),
+          localLogin: !previewEnabled(env) && env.ENVIRONMENT === 'development' && isLoopback(request.url),
           houseAvailable: houseConfigured(env),
         });
       }
@@ -276,7 +310,15 @@ export default {
         if (path === '/api/owner/pairing/approve' && method === 'POST') {
           const input = await readJson(request, PairApproveSchema);
 
-          return json(await approvePairing(env, owner.id, input.code, input.agentId));
+          return json(
+            await approvePairing(
+              env,
+              owner.id,
+              input.code,
+              input.agentId,
+              await ownerPreviewAuthority(request, env, input.agentId),
+            ),
+          );
         }
       }
 
@@ -323,6 +365,13 @@ export default {
         }
 
         if (method === 'POST') {
+          if (previewEnabled(env))
+            throw new GameError(
+              'preview-allocation-pending',
+              'Preview identity is connected. Shared allocation support is not enabled yet.',
+              503,
+            );
+
           if (!houseConfigured(env))
             throw new GameError(
               'house-unavailable',
@@ -358,10 +407,29 @@ export default {
         const match = env.MATCHES.getByName(matchRoute[1]);
         const operation = matchRoute[2];
 
-        if (operation === 'events' && method === 'GET') return await match.fetch(request);
+        if (operation === 'events' && method === 'GET') {
+          if (previewEnabled(env) && url.searchParams.has('ticket'))
+            throw new GameError(
+              'preview-public-wakeup',
+              'Use public event wakeups and authenticated HTTP observations.',
+              403,
+            );
 
-        if (operation === 'ticket' && method === 'POST')
-          return rpcResponse(await match.socketTicket(await agentSession(request, env), protocols));
+          return await match.fetch(request);
+        }
+
+        if (operation === 'ticket' && method === 'POST') {
+          const principal = await agentSession(request, env);
+
+          if (previewEnabled(env))
+            throw new GameError(
+              'preview-public-wakeup',
+              'Use public event wakeups and authenticated HTTP observations.',
+              403,
+            );
+
+          return rpcResponse(await match.socketTicket(principal, protocols));
+        }
 
         if (['history', 'history-anchor', 'replay', 'rounds'].includes(operation) && method === 'GET') {
           const principal = request.headers.has('authorization') ? await agentSession(request, env) : null;

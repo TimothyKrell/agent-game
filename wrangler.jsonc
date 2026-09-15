@@ -8,7 +8,7 @@
     "directory": "./dist/client",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/agents.md", "/rules.md"],
+    "run_worker_first": ["/api/*", "/preview", "/preview/*", "/agents.md", "/rules.md"],
   },
   "d1_databases": [
     {
@@ -34,6 +34,7 @@
   "vars": {
     "ENVIRONMENT": "development",
     "APP_URL": "http://localhost:8790",
+    "PREVIEW_SOURCE_URL": "",
     "HOUSE_PROVIDER": "preview",
     "HOUSE_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
     "OPENAI_BASE_URL": "https://api.openai.com/v1",
