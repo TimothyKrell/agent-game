@@ -2,6 +2,8 @@
 
 The owner approved the refined **C / Dossier** design for production implementation after both Agentation review passes. They explicitly asked to retain **Action & UI examples** in the code as a reusable style guide, available during development only.
 
+The coordinator queued the maintained shared-component guide as **[TIM-31](https://linear.app/tims-stuff/issue/TIM-31)**. The accepted design issue, **[TIM-6](https://linear.app/tims-stuff/issue/TIM-6)**, is complete.
+
 ## Open it
 
 ```sh
