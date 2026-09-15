@@ -54,6 +54,10 @@ let lose = '';
 
 let corruptManifest = false;
 
+let delayedObservation = '';
+
+let completedObservationDelays = 0;
+
 let cancelMode: 'normal' | 'denied' | 'lost' = 'normal';
 
 const assignments = new Map<
@@ -89,6 +93,12 @@ export default {
     }
 
     if (url.pathname === '/fixture/traffic') return json(traffic);
+
+    if (url.pathname === '/fixture/observation-delay') {
+      if (request.method === 'POST') delayedObservation = await readJson(request, Schema.String);
+
+      return json({ pending: delayedObservation, completed: completedObservationDelays });
+    }
 
     if (url.pathname === '/fixture/cancel-mode') {
       cancelMode = await readJson(request, Schema.Literals(['normal', 'denied', 'lost']));
@@ -230,6 +240,12 @@ export default {
       return json({ error: { code: 'fixture-denied', message: 'Cancellation not authorized.' } }, 403);
 
     const response = await identity.fetch(request, env);
+
+    if (request.method === 'GET' && url.pathname === delayedObservation) {
+      delayedObservation = '';
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+      completedObservationDelays++;
+    }
 
     if (url.pathname === '/api/queue' && request.method === 'DELETE' && cancelMode === 'lost' && response.ok)
       return json({ error: { code: 'fixture-lost-ack' } }, 503);

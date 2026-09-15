@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { mkdtemp, mkdir, readFile, writeFile, readdir, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import { generateKeyPairSync, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
@@ -176,7 +177,7 @@ async function select(harness = 'opencode', origin = target, game = 'secret-over
 }
 
 beforeAll(async () => {
-  directory = await mkdtemp('/tmp/opencode/tim27-cli-');
+  directory = await mkdtemp(resolve(tmpdir(), 'tim27-cli-'));
   await run(process.execPath, ['scripts/package-cli.mjs']);
   executable = await readFile('public/downloads/agent-game-cli-0.3.0.tgz');
   await run('npm', [
@@ -576,15 +577,28 @@ it.each(['secret-overlord', 'succession'])(
     });
     socket.close();
 
+    const delaysBefore = Schema.decodeUnknownSync(Schema.Struct({ completed: Schema.Number }))(
+      await (await fetch(`${other}/fixture/observation-delay`)).json(),
+    );
+
     for (let step = 0; step < 30 && !view.decision; step++) {
       await post(
         other,
         `/fixture/clock/${assignment.matchId}?${new URLSearchParams({ phase: view.phase.id })}`,
         {},
       );
-      view = await cli(selected.configPath, 'wait', '--timeout', '1');
+      // The clock RPC has completed. Read authoritative state rather than making a one-second
+      // wait deadline double as an HTTP response budget. Exercise the slow-read CI boundary once.
+
+      if (step === 0) await post(other, '/fixture/observation-delay', `/api/matches/${assignment.matchId}`);
+      view = await cli(selected.configPath, 'observe');
       expect(view.error, JSON.stringify(view)).toBeUndefined();
     }
+
+    expect(await (await fetch(`${other}/fixture/observation-delay`)).json()).toEqual({
+      pending: '',
+      completed: delaysBefore.completed + 1,
+    });
 
     expect(view.decision, JSON.stringify(view)).not.toBeNull();
     expect(await cli(selected.configPath, 'act', '--choice', '0')).toMatchObject({ accepted: true });
