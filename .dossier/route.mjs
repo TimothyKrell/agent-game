@@ -5,14 +5,16 @@ import { chromium } from '@playwright/test';
 
 const origin = process.env.DOSSIER_ORIGIN ?? 'http://127.0.0.1:6291';
 
-const directory = `docs/evidence/TIM-19-22-components/route${process.env.DOSSIER_PRODUCTION ? '-production' : ''}${process.env.DOSSIER_ROUTE_MODE ? `-${process.env.DOSSIER_ROUTE_MODE}` : ''}`;
+const directory =
+  process.env.DOSSIER_EVIDENCE_DIR ??
+  `docs/evidence/TIM-19-22-components/route${process.env.DOSSIER_PRODUCTION ? '-production' : ''}${process.env.DOSSIER_ROUTE_MODE ? `-${process.env.DOSSIER_ROUTE_MODE}` : ''}`;
 
 await mkdir(directory, { recursive: true });
 
 const loader = await createServer({
   configFile: false,
   cacheDir: '/tmp/opencode/dossier-fixture-cache',
-  server: { middlewareMode: true },
+  server: { middlewareMode: true, hmr: false },
   logLevel: 'error',
 });
 
@@ -524,7 +526,7 @@ try {
         canonicalArchiveEvents: fixture.eventsFor('finished').length,
         interceptedBackend: true,
         actualMatchRoute: true,
-        ruleHelpCommit: 'ee2220f',
+        ruleHelpBaseline: 'ee2220f',
         failures,
         faults,
       },
