@@ -3,7 +3,9 @@ import { fileURLToPath } from 'node:url';
 import established from '../playwright.config';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const run = process.env.DOSSIER_RUN ?? 'baseline';
+
+const run = process.env.DOSSIER_RUN ?? `run-${Date.now()}`;
+
 const baseURL = 'http://127.0.0.1:6401';
 
 export default defineConfig({

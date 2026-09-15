@@ -1,5 +1,7 @@
 # Dossier integrated browser regressions
 
+**Final result: 153 passed, 0 failed, 0 skipped, 0 flaky** in 493.3 seconds on the actual local Worker and one system-Chromium worker. The final integrated app base is `acd7f30` plus the scoped test/fixture changes. Reports and Worker evidence are in `.dossier-e2e/results/full-5/`.
+
 ## Scope and environment
 
 - Starting app/source: `13d96bf` (`test/dossier-integrated-browser`).
@@ -14,20 +16,37 @@
 
 ```bash
 node node_modules/wrangler/bin/wrangler.js --version
-node node_modules/@playwright/test/cli.js test --config .dossier-e2e/playwright.config.ts --list
+node node_modules/@playwright/test/cli.js test --config .dossier-e2e/playwright.config.ts --list --reporter=list
 tar -czf .dossier-e2e/original-e2e.tar.gz e2e
-node node_modules/@playwright/test/cli.js test --config .dossier-e2e/playwright.config.ts > .dossier-e2e/results/baseline/console.log 2>&1
+DOSSIER_RUN=baseline node node_modules/@playwright/test/cli.js test --config .dossier-e2e/playwright.config.ts > .dossier-e2e/results/baseline/console.log 2>&1
 ```
 
-`.dossier-e2e/playwright.config.ts` copies the established suite settings, selects `/usr/bin/chromium`, uses the worktree's absolute `e2e` directory and an isolated output directory, and refuses to reuse an existing server. The baseline directory retains its JSON/HTML report, failure screenshots, and traces. `original-e2e.tar.gz` preserves the pre-migration sources; these are also recoverable from `13d96bf:e2e`.
+The original baseline invocation omitted `DOSSIER_RUN` because the config then defaulted to `baseline`; the explicit variable above expresses the equivalent invocation with the corrected timestamped default. Preserve existing run directories when reproducing.
 
-The suite includes other owners' `continuous-story`, `query-lifecycle`, and `agent-pictures*` tests. Those files are exercised without edits.
+`.dossier-e2e/playwright.config.ts` copies the established suite settings, selects `/usr/bin/chromium`, uses the worktree's absolute `e2e` directory and an isolated output directory, and refuses to reuse an existing server. `original-e2e.tar.gz` preserves the pre-migration sources; these are also recoverable from `13d96bf:e2e`.
+
+**Baseline retention exception:** later `--list` collection commands reused the old default `baseline` run name and overwrote its JSON/HTML reports. This was discovered while preparing the final evidence. The original console (including all 140 cases and its 112/28 totals), all 28 failure trace archives, failure screenshots, error contexts and original test-source archive remain intact. `baseline/console-summary.json` is explicitly derived from that original console; `baseline/report.json` is a later collection-only report and must not be cited as an executed run. Subsequent executed runs have distinct names and intact reports. The config now defaults to a timestamped run, collection commands explicitly use the list reporter, and the summary utility rejects collection-only reports.
+
+- Original source archive SHA-256: `1fd1f923b37080b599aaf431f0497f528a13ad6e9238aa84f564abeab75e4475`.
+- Original baseline console SHA-256: `645e78de0efb5e6486bc80acc336d65dcd7f09c1f1a99b54c6029ed4d9038930`.
+- A second preserved copy of all original failure artifacts plus the console/console-derived summary is `baseline/preserved-failure-artifacts.tar.gz`, SHA-256 `2837609d7aa4cb99578df4dd608c4ae2d2bc266390334de3bd48515ef0765186`.
+
+The suite includes other owners' `continuous-story`, `query-lifecycle`, `agent-pictures*`, and supplied `agent-portrait-consumers` tests. Those files are exercised without local edits. Parent-approved source commits were consumed only after prior runs completed:
+
+```bash
+git cherry-pick 0fb03f8
+git merge --no-edit fdb51bb
+git merge --no-edit ab8706c
+```
+
+The first maps to local `f828bfe`; the merged app base is `acd7f30`. Test migration was saved as `41cf9a1` before those merges. Only the two scoped test commits are needed when integrating into a parent that already contains the supplied app changes.
 
 ## Assertion migration ledger
 
 | Existing purpose                                                                        | Equivalent check / fixture correction                                                                                                                                                                                                                                                                          |
 | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Roster setup stays expanded while statistics change; draft and participation persist    | Select the installation disclosure by its own heading. The optional picture editor also now has a `.roster-setup` disclosure; broad selectors are ambiguous. All draft, selected-game, pending-response and participation assertions remain.                                                                   |
+| Selected standings and stale-request fencing survive A–B–A navigation                   | Use `.leader-row:not(.leader-head)` after the approved portrait adoption changes rows into containers. Check the agent link inside the row for its exact selected-game URL. All ratings, empty/loading states, and stale failures remain asserted.                                                             |
 | Long match ID and final policy metadata survive live→archive transition                 | Use the same long match ID from initial observation through terminal observation. The prior fixture changed identity inside an existing socket; the accepted scope fence correctly rejects that foreign packet. All timer, result, historical policy and playback checks remain for Secret Overlord.           |
 | Speech stays readable across both games, modes, eight viewport/motion combinations      | Read Succession's Dossier blockquotes and Secret Overlord's retained speech bubbles. Keep the three-message count, per-message internal bounds and whole-page bounds. Supply Succession's exact chat-only checkpoint at the requested cursor.                                                                  |
 | Real Worker runs both acts, keeps spectator secrets, exposes a bounded terminal archive | Inspect the authoritative Act I/II and completed outcome, disclose current public resources, read chronological Act I history, explicitly enable private archive disclosure, and retain actual Worker current packets plus bounded history response sizes/counts.                                              |
@@ -36,12 +55,15 @@ The suite includes other owners' `continuous-story`, `query-lifecycle`, and `age
 | Cap criteria and interruption semantics                                                 | Expand the outcome's cap comparison; check every score cell and the decisive criterion, distinguish a forfeited mechanical champion, and retain per-act interruption source/reason with no overall winner.                                                                                                     |
 | Outcome motion does not restart during historical navigation                            | The approved Dossier outcome is static under both motion preferences. Preserve native keyboard picker cues, repeat/no-op/hash/scroll coverage, exercise keyboard chapter disclosure and focus, and assert no outcome animation or restoration burst across reduced-motion and simulated-visibility boundaries. |
 | In-flight history remains truthful while current advances                               | Hold an actual canonical early-Act-II page, advance the authoritative current independently, require delivered cursor to remain zero until response completion, then require automatic bounded catch-up and chronological back-reading while current phase stays fixed.                                        |
+| Completed entry and the terminal action stay reachable                                  | Require the initial Act II reader to deliver the terminal head; activate Final move from earlier historical reading and require focus/viewport on the exact last declaration. Reload the actual Worker archive and validate its historical checkpoint at the exclusive-start cursor.                           |
 
 Every Succession history window now obtains `/checkpoint?through=<exclusive-start>` from the fixture's recorded engine frames. A missing frame remains explicitly null; current state is used only for entitlement. The round index is limited to the selected live/archive audience and actual stream head. Page budgets are checked against four 32-event responses per 128-event window and the 16,384-byte response envelope, rather than the retired manual pagination controls.
 
+The controller-cutoff case retains its private-hand/legal-action assertions before and after forfeiture and after a delayed old private packet. Its screenshot now waits for the actual record to settle and uses the test's isolated output path. The eight live viewport/motion captures explicitly open the new current-table disclosure and verify the Act II board is visible before capturing its public resources. Existing Secret Overlord playback, scoped navigation, observer authority, and shared motion assertions remain in their established UI.
+
 ## Results
 
-- **Baseline (`13d96bf`): 112 passed, 28 failed, 0 skipped, 0 flaky; 140 total; 553.1 seconds.** Retained JSON: `.dossier-e2e/results/baseline/report.json`; HTML: `.dossier-e2e/results/baseline/html/index.html`.
+- **Baseline (`13d96bf`): 112 passed, 28 failed, 0 skipped, 0 flaky; 140 total; 553.1 seconds.** Source: `.dossier-e2e/results/baseline/console.log`, with the original JSON statistics also captured in the conversation before the later collection overwrite. See the retention exception above.
 - Failure distribution: roster disclosure selector (1), Succession speech/checkpoint migration (8), invalid cross-match fixture packet (1), real Worker obsolete heading (1), Succession reading/presentation migration (16), Chromium full-page screenshot capture failure in the controller case (1).
 - Consumed parent-approved reader source `0fb03f8` after baseline completion. This brings six additional established continuous-reader cases; subsequent full collection is **146 cases**, including 15 continuous-reader and 23 existing Query cases. No locally authored test case was added or skipped.
 - Initial `tsc --noEmit` after test migrations: passed (`.dossier-e2e/results/typecheck-1.log`).
@@ -50,7 +72,74 @@ Every Succession history window now obtains `/checkpoint?through=<exclusive-star
 - `reading-3`: **3 passed, 1 failed, 0 skipped** (four selected cases; 41.8 seconds). Both desktop/narrow live-growth cases and exact historical resources pass. The remaining archive-transition failure is described below.
 - Full `full-1` on `13d96bf` + approved TIM-23 `0fb03f8`: **144 passed, 2 failed, 0 skipped** (146 cases; 431.0 seconds). One failure was an observer attempting to retrieve a canceled native response body; completed requests are now measured at `requestfinished`, and canceled requests are recorded and checked separately. The other was the test-driver anchor issue below.
 - `worker-anchor-4`: **2 passed, 0 failed, 0 skipped** (40.9 seconds), covering the corrected native-response observer and genuine production-control anchor focus. Actual Worker archive: **2,902 events**; completed history reads **299**, canceled reads **1**; largest response **16,350 bytes / 32 events**; peak rendered rows **128**, no duplicates or out-of-order rows.
-- The parent has supplied additional approved portrait, RuleHelp, vocabulary and terminal-entry changes for consumption before final full verification.
+- Consumed parent-approved `fdb51bb` (portrait adoption and original-entrant summary identity) and `ab8706c` (includes RuleHelp `54a3abd`, vocabulary `a59fbbc`, terminal default and Final move). Integrated source base is `acd7f30`, with test-only follow-up changes. Seven supplied portrait-consumer cases bring collection to **153 cases in 19 files**.
+- `full-2`: **146 passed, 7 failed, 0 skipped, 0 flaky** (503.3 seconds). Four assertions assumed that each standings row was itself an anchor; two motion snapshots captured the asynchronous Terminal record → Final move label before history completed. Those test assumptions were corrected. The seventh case is the old speech-tail visual baseline described below.
+- `full-3`: **151 passed, 2 failed, 0 skipped, 0 flaky** (486.6 seconds). All 26 Succession fixture cases and all 22 local-control cases pass. The remaining visual baseline is unchanged; the newly added manual checkpoint probe omitted `X-Agent-Game-Protocols` and correctly received HTTP **426**. Its request now supplies the same `1,2` protocol header as the existing current-state probes.
+- `full-4`: **152 passed, 1 failed, 0 skipped, 0 flaky** (481.1 seconds). The only failure is the reviewed contour fixture. The actual Worker historical checkpoint now passes: terminal head **2,749**, requested checkpoint **2,621**, **4,647 bytes**, baseline still `active` while authoritative current is `finished`, and historical chat closed. Completed history responses **208**, canceled **1**, largest response **16,202 bytes / 32 events**, peak rendered rows **128**.
+- After `full-4` completed, the one reviewed contour fixture was updated. Final `full-5`: **153 passed, 0 failed, 0 skipped, 0 flaky** (493.3 seconds), with all source assertions unchanged from `full-4`.
+
+### Final per-file results
+
+All 153 case results are actual `passed` results, not expected failures. No test is marked skipped, fixme, or expected-failure.
+
+| File under `e2e/`                  |  Passed | Failed |
+| ---------------------------------- | ------: | -----: |
+| `agent-pictures-data.spec.ts`      |       5 |      0 |
+| `agent-pictures-lifecycle.spec.ts` |       5 |      0 |
+| `agent-portrait-consumers.spec.ts` |       7 |      0 |
+| `arena.spec.ts`                    |       5 |      0 |
+| `continuous-story.spec.ts`         |      15 |      0 |
+| `feed.spec.ts`                     |       3 |      0 |
+| `local-game-controls.spec.ts`      |      22 |      0 |
+| `luminous-nav-focus.spec.ts`       |       4 |      0 |
+| `luminous-shapes-matrix.spec.ts`   |       8 |      0 |
+| `luminous-shapes.spec.ts`          |       1 |      0 |
+| `luminous.spec.ts`                 |       3 |      0 |
+| `motion.spec.ts`                   |       6 |      0 |
+| `query-lifecycle.spec.ts`          |      23 |      0 |
+| `runtime-states.spec.ts`           |       2 |      0 |
+| `sitewide.spec.ts`                 |      10 |      0 |
+| `succession-flourish.spec.ts`      |       1 |      0 |
+| `succession-scope.spec.ts`         |       6 |      0 |
+| `succession-worker.spec.ts`        |       1 |      0 |
+| `succession.spec.ts`               |      26 |      0 |
+| **Total**                          | **153** |  **0** |
+
+### Final actual Worker evidence
+
+- Match `match_88955931-20de-45c3-8a5b-09670917cbd7` ran both acts and finished with an individual round-cap result, decisive criterion **priority**. Terminal archive head: **2,559**.
+- At the ending window's exclusive start **2,431**, the actual checkpoint endpoint returned a **4,565-byte** schema-valid historical snapshot, still `active` while current was `finished`, with historical chat closed. The snapshot matches the exact match, epoch, and requested cursor.
+- **173** completed history responses, **0** canceled; maximum **32 events / 16,296 bytes** per response. No capture errors or browser page errors.
+- Mutation-observed maximum **128 rendered rows** per reader across the live run and completed reload; no duplicate or out-of-order cursors.
+- The exact canonical archive anchor remained within **0.453125px**, with its opaque source key preserved while cursor **351** became **1202**. The Final move fixture assertion focused the engine's exact final declaration after historical back-reading.
+- JSON attachments are extracted under `full-5/evidence/`: `worker-act1-current.json`, `worker-terminal-current.json`, `worker-archive-checkpoint.json`, `worker-history-requests.json`, `worker-reader-bounds.json`, and `canonical-anchor.json`. Native screenshots/videos remain under `full-5/artifacts/` and the supplied portrait captures under `full-5/portrait-captures/`.
+- JSON report: `full-5/report.json`; HTML: `full-5/html/index.html`; per-file summary: `full-5/summary.json`. Report SHA-256: `1e27ad91f177668fffac4d4c62d8c003e5ece50bfb90acd16c9b7a65f8fd1d01`.
+
+## Reviewed contour-fixture migration for accepted portraits
+
+`e2e/luminous-shapes.spec.ts` retains its original 24×28px capture and `maxDiffPixels: 0` assertion. With accepted portraits, the adjacent missing-picture fallback's border/icon now enters the capture. `full-2` and `full-3` report **26 differing pixels** under Playwright's existing comparison. A raw RGB comparison finds 187 changes, all in columns **0–10**; **zero pixels change at the join (column 12) or anywhere inside the speech bubble**. Full speech captures confirm that the new pixels belong to the neighboring approved portrait.
+
+The expected image is a focused fixture belonging to this owned spec; the earlier classification as outside the fixture scope was overly restrictive. The reviewed replacement is byte-identical across `full-2` and `full-3`, SHA-256 `8b274b36beb950b1c1865ea2155c8f324387b0011f7c80442a17841be523e467`. The original expected image, SHA-256 `5c6933535bb42a72bdbd250f8a93b2a579accfb762a1233becfee5507ce14fc0`, remains in the original source archive and preserved failure artifacts. Only `e2e/luminous-shapes.spec.ts-snapshots/speech-tail-join-linux.png` was updated, after `full-4` completed.
+
+Expected, actual, diff and full speech captures: `.dossier-e2e/results/full-2/artifacts/luminous-shapes-original-c-6bbf6-d-leave-no-speech-join-seam/`. The assertion, capture geometry, comparison tolerance, speech fixture and portrait rendering are preserved; no screenshot mask or hidden fixture element is introduced.
+
+The separately owned pending-Final-move navigation/modal race was reported by the parent and is outside this migration's pass claim; its corrective commit had not been supplied when `full-5` began.
+
+## Final-run reproduction and static checks
+
+```bash
+mkdir -p .dossier-e2e/results/full-5
+DOSSIER_RUN=full-5 TIM29_CAPTURE_DIR=/tmp/opencode/agent-game-dossier-e2e/.dossier-e2e/results/full-5/portrait-captures node node_modules/@playwright/test/cli.js test --config .dossier-e2e/playwright.config.ts > .dossier-e2e/results/full-5/console.log 2>&1
+node .dossier-e2e/summarize.mjs full-5
+node node_modules/typescript/bin/tsc --noEmit
+node node_modules/oxlint/bin/oxlint e2e/local-game-controls.spec.ts e2e/luminous.spec.ts e2e/luminous-shapes-matrix.spec.ts e2e/luminous-shapes-fixture.ts e2e/succession.spec.ts e2e/succession-worker.spec.ts e2e/fixtures/dossier-browser.ts e2e/fixtures/dossier-checkpoint.ts .dossier-e2e/playwright.config.ts .dossier-e2e/summarize.mjs
+node node_modules/prettier/bin/prettier.cjs --check e2e/local-game-controls.spec.ts e2e/luminous.spec.ts e2e/luminous-shapes-matrix.spec.ts e2e/luminous-shapes-fixture.ts e2e/succession.spec.ts e2e/succession-worker.spec.ts e2e/fixtures/dossier-browser.ts e2e/fixtures/dossier-checkpoint.ts .dossier-e2e/playwright.config.ts .dossier-e2e/summarize.mjs docs/evidence/Dossier-browser-regressions.md
+git diff --check
+```
+
+Choose a fresh run name and capture directory for any repetition. The full browser command runs in the background with completion notification, one worker, and a fresh actual server; progress is not polled. An event-driven filesystem subscription also waited for the final JSON close-write notification without timers or progress reads. Static checks passed: TypeScript (`typecheck-final-adoption.log`), scoped Oxlint (zero warnings/errors, `lint-final-adoption.log`), Prettier (`format-final-adoption.log`), and whitespace validation. Logs are under `.dossier-e2e/results/`. After completion, `ss -ltnp '( sport = :6401 or sport = :6801 )'` confirmed the owned server and inspector ports were released (`final-port-check.txt`).
+
+The summary utility records each final report's SHA-256, per-file counts and failures, and extracts the allowlisted current/checkpoint/history/bounds/anchor JSON attachments into that run's `evidence/` directory. It does not treat collection-only output as an executed suite.
 
 ## Investigated test-driver issue: canonical anchor drift at archive transition
 
@@ -66,4 +155,4 @@ That intermediate driver added `tabIndex` to a nonfocusable article. The final d
 DOSSIER_RUN=anchor-repro node node_modules/@playwright/test/cli.js test --config .dossier-e2e/playwright.config.ts e2e/succession.spec.ts --grep 'archive expansion'
 ```
 
-The full-suite version also attaches `canonical-anchor.json` with both cursor IDs, source key, epochs, document/scroll geometry and exact checkpoint/history URLs. Delayed live-packet rejection and bounded-reader assertions execute before the geometric assertion so their results remain exercised even when the anchor regression is present.
+The full-suite version also attaches `canonical-anchor.json` with both cursor IDs, source key, epochs, document/scroll geometry and exact checkpoint/history URLs. Delayed live-packet rejection and bounded-reader assertions execute before the geometric assertion so they remain exercised even if geometry fails.

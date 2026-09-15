@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { Schema } from 'effect';
 import { HistoryPage2Schema, Observation2Schema } from '../src/shared/succession';
+import { HistoryCheckpoint2Schema } from '../src/shared/history-checkpoint';
 import {
   expectBoundedRecord,
   expectReadingControls,
   openChapter,
+  record,
   observeDossierBounds,
   expectObservedDossierBounds,
 } from './fixtures/dossier-browser';
@@ -88,6 +90,36 @@ test('real Worker exhibition plays both acts and opens the bounded archive in th
     body: JSON.stringify(terminal, null, 2),
     contentType: 'application/json',
   });
+  await Promise.all(reads);
+  const liveBounds = await expectObservedDossierBounds(page);
+  await page.reload();
+  await expect(record(page, 2)).toHaveAttribute('data-story-delivered', String(terminal.history.streamHead));
+  await expect(page.getByRole('button', { name: /^(Final move|Terminal record)$/ })).toBeEnabled();
+  const through = Number(await record(page, 2).getAttribute('data-story-after'));
+  expect(through).toBeGreaterThan(0);
+  expect(through).toBeLessThan(terminal.history.streamHead);
+
+  const checkpointResponse = await page.request.get(
+    `/api/matches/${matchId}/checkpoint?epoch=${encodeURIComponent(terminal.history.visibilityEpoch)}&through=${through}`,
+    { headers: { 'X-Agent-Game-Protocols': '1,2' } },
+  );
+
+  expect(checkpointResponse.ok()).toBe(true);
+  const checkpointBytes = await checkpointResponse.body();
+
+  const checkpoint = Schema.decodeUnknownSync(HistoryCheckpoint2Schema)(
+    JSON.parse(checkpointBytes.toString()),
+  );
+
+  expect(checkpoint.matchId).toBe(matchId);
+  expect(checkpoint.through).toBe(through);
+  expect(checkpoint.visibilityEpoch).toBe(terminal.history.visibilityEpoch);
+  expect(checkpoint.baseline).not.toBeNull();
+  expect(checkpointBytes.length).toBeLessThanOrEqual(34_816);
+  await testInfo.attach('worker-archive-checkpoint.json', {
+    body: checkpointBytes,
+    contentType: 'application/json',
+  });
   const outcome = await page.locator('.dossier-outcome').innerText();
   await expectReadingControls(page);
   const actOne = await openChapter(page, 1);
@@ -107,7 +139,11 @@ test('real Worker exhibition plays both acts and opens the bounded archive in th
   expect(errors).toEqual([]);
   const bounds = await expectObservedDossierBounds(page);
   await testInfo.attach('worker-reader-bounds.json', {
-    body: JSON.stringify(bounds, null, 2),
+    body: JSON.stringify(
+      { live: liveBounds, archive: bounds, maxRows: Math.max(liveBounds.maxRows, bounds.maxRows) },
+      null,
+      2,
+    ),
     contentType: 'application/json',
   });
   await testInfo.attach('worker-history-requests.json', {

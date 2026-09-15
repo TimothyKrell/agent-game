@@ -349,6 +349,9 @@ test('one terminal champion remains fixed during two-act reading with exact hist
   await page.setViewportSize({ width: 1600, height: 1120 });
   await page.goto('/matches/succession-ui');
   await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · COMPLETED');
+  await expect(record(page, 2)).toHaveAttribute('data-story-delivered', String(fixture.events(true).length));
+  const ending = page.getByRole('button', { name: 'Final move', exact: true });
+  await expect(ending).toBeEnabled();
   const outcome = await page.locator('.dossier-outcome').innerText();
   const winner = fixture.terminal.result!.winnerSeat;
   await expect(page.locator('.dossier-outcome h1')).toHaveText(
@@ -383,6 +386,12 @@ test('one terminal champion remains fixed during two-act reading with exact hist
   await expect(coinRow.locator('.dossier-card-known')).toHaveCount(
     saved.stage.board.resources[facts.seat].hand.length,
   );
+  expect(await page.locator('.dossier-outcome').innerText()).toBe(outcome);
+  await ending.click();
+  const lastDeclaration = fixture.events(true).findLast((event) => event.type === 'declaration')!;
+  const finalMove = record(page, 2).locator(`[data-event-key="${lastDeclaration.eventKey}"]`);
+  await expect(finalMove).toBeFocused();
+  await expect(finalMove).toBeInViewport();
   expect(await page.locator('.dossier-outcome').innerText()).toBe(outcome);
   await page.screenshot({ path: test.info().outputPath('reading-1600.png'), fullPage: true });
   await transport.assertBounded();
@@ -972,6 +981,7 @@ for (const width of [1600, 768, 390, 320]) {
             await routes(page, viewOf(fixture.terminal, true));
             await page.goto('/matches/succession-ui');
             await expect(page.locator('.dossier-outcome')).toContainText('SUCCESSION · COMPLETED');
+            await expect(page.getByRole('button', { name: 'Final move', exact: true })).toBeEnabled();
             const beforeBoundary = await page.locator('.dossier-outcome').innerText();
             await motionMark(page, `SM03 static Dossier result before ${boundary}`);
 
