@@ -1,0 +1,35 @@
+{
+  "computedStylesIdentical": true,
+  "differences": [
+    {
+      "file": "cascade-connect-1440.png",
+      "changedPixels": 0,
+      "changedOutsideToolbar": 0
+    },
+    {
+      "file": "cascade-connect-390.png",
+      "changedPixels": 0,
+      "changedOutsideToolbar": 0
+    },
+    {
+      "file": "cascade-dossier-1440.png",
+      "changedPixels": 3788,
+      "changedOutsideToolbar": 0
+    },
+    {
+      "file": "cascade-dossier-390.png",
+      "changedPixels": 0,
+      "changedOutsideToolbar": 0
+    },
+    {
+      "file": "cascade-rules-1440.png",
+      "changedPixels": 3788,
+      "changedOutsideToolbar": 0
+    },
+    {
+      "file": "cascade-rules-390.png",
+      "changedPixels": 0,
+      "changedOutsideToolbar": 0
+    }
+  ]
+}

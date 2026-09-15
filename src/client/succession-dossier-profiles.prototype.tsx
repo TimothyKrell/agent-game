@@ -1,8 +1,14 @@
 /** Illustrative owner-picture previews only. Real profile storage/upload belongs to production integration. */
-import { createContext, useContext, useLayoutEffect, useRef, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+  createDialogHandle,
+} from './ui/dialog';
 
 const names = [
   'Velvet',
@@ -51,21 +57,23 @@ const portraits = new Map(names.map((name, index) => [name, name === 'Vesper' ? 
 
 const namePattern = new RegExp(`\\b(${[...names].sort((a, b) => b.length - a.length).join('|')})\\b`, 'g');
 
-const PictureContext = createContext((_name: string, _trigger: HTMLButtonElement) => {});
+const PictureContext = createContext<ReturnType<typeof createDialogHandle<string>> | null>(null);
 
 export function AgentPortrait({ name, large = false }: { name: string; large?: boolean }) {
-  const show = useContext(PictureContext);
+  const handle = useContext(PictureContext);
+
+  if (!handle) throw new Error('AgentPortrait requires AgentPictureProvider');
 
   return (
-    <button
+    <DialogTrigger
+      handle={handle}
+      payload={name}
       type="button"
       className={`dp-avatar ${large ? 'dp-avatar-large' : ''}`}
       aria-label={`View ${name} profile picture`}
-      aria-haspopup="dialog"
-      onClick={(event) => show(name, event.currentTarget)}
     >
       <img src={portraits.get(name) ?? fallback} alt="" width="128" height="128" />
-    </button>
+    </DialogTrigger>
   );
 }
 
@@ -86,76 +94,35 @@ export function AgentText({ text }: { text: string }) {
     .map((part, index) => (portraits.has(part) ? <AgentName key={index} name={part} /> : part));
 }
 
-function PictureDialog({ name, close }: { name: string; close: () => void }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  useLayoutEffect(() => {
-    dialog.current?.showModal();
-  }, []);
-
-  return createPortal(
-    <dialog
-      ref={dialog}
-      className="dp-picture-dialog"
-      aria-labelledby="dp-picture-title"
-      onCancel={(event) => {
-        event.preventDefault();
-        close();
-      }}
-      onKeyDown={(event) => {
-        if (event.key === 'Tab') {
-          event.preventDefault();
-          event.currentTarget.querySelector('button')?.focus();
-        }
-      }}
-      onClick={(event) => {
-        const box = event.currentTarget.getBoundingClientRect();
-
-        if (
-          event.target === event.currentTarget &&
-          (event.clientX < box.left ||
-            event.clientX > box.right ||
-            event.clientY < box.top ||
-            event.clientY > box.bottom)
-        )
-          close();
-      }}
-    >
-      <button autoFocus className="dp-help-close" aria-label="Close profile picture" onClick={close}>
-        <X size={18} />
-      </button>
+function PictureDialog({ name }: { name: string }) {
+  return (
+    <DialogContent className="replay-portrait-dialog" closeLabel="Close profile picture">
       <img
         src={portraits.get(name) ?? fallback}
         alt={`${name} ${name === 'Vesper' ? 'default' : 'illustrative'} profile picture`}
         width="320"
         height="320"
       />
-      <h2 id="dp-picture-title">{name}</h2>
-      <p>
+      <DialogTitle>{name}</DialogTitle>
+      <DialogDescription>
         {name === 'Vesper'
           ? 'No profile picture yet · default avatar'
           : 'Illustrative portrait · design preview'}
-      </p>
+      </DialogDescription>
       <small>Agents will use an owner-supplied picture or one they create with their own tools.</small>
-    </dialog>,
-    document.body,
+    </DialogContent>
   );
 }
 
 export function AgentPictureProvider({ children }: { children: ReactNode }) {
-  const [picture, setPicture] = useState<{ name: string; trigger: HTMLButtonElement } | null>(null);
+  const [handle] = useState(() => createDialogHandle<string>());
 
   return (
-    <PictureContext.Provider value={(name, trigger) => setPicture({ name, trigger })}>
+    <PictureContext.Provider value={handle}>
       {children}
-      {picture && (
-        <PictureDialog
-          name={picture.name}
-          close={() => {
-            setPicture(null);
-            requestAnimationFrame(() => picture.trigger.focus({ preventScroll: true }));
-          }}
-        />
-      )}
+      <Dialog handle={handle}>
+        {({ payload }) => payload !== undefined && <PictureDialog name={payload} />}
+      </Dialog>
     </PictureContext.Provider>
   );
 }

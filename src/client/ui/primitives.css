@@ -1,0 +1,254 @@
+/* Explicit, scoped baselines: the application deliberately does not import Preflight. */
+.replay-ui,
+.replay-ui-portal {
+  font-family: var(--replay-font-body);
+  color: var(--replay-foreground);
+}
+
+:where(.replay-ui, .replay-ui-portal) :is(.replay-button, .replay-rule-trigger) {
+  box-sizing: border-box;
+  margin: 0;
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  border: 1px solid var(--replay-border-strong);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+:where(.replay-ui, .replay-ui-portal) .replay-button {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--replay-space-2);
+  min-height: 44px;
+  max-width: 100%;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-image: var(--replay-frame) 16 / 12px;
+  color: var(--replay-accent);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  transition: color var(--replay-motion-fast) var(--replay-motion-ease);
+}
+
+:where(.replay-ui, .replay-ui-portal) .replay-rule-trigger {
+  display: inline-flex;
+  vertical-align: baseline;
+  align-items: center;
+  gap: 4px;
+  min-height: 27px;
+  max-width: 100%;
+  padding: 2px 6px 2px 3px;
+  margin: 0 1px;
+  border-color: #47716b;
+  border-radius: 5px;
+  background: #15312e;
+  color: #c6f1e5;
+  font-size: 0.87em;
+  line-height: 1.35;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+:where(.replay-ui, .replay-ui-portal) .replay-rule-trigger:hover {
+  background: #254b44;
+  border-color: #a6d1bd;
+}
+:where(.replay-ui, .replay-ui-portal) .replay-rule-trigger > svg {
+  width: 20px;
+  height: 23px;
+  flex-shrink: 0;
+}
+
+/* Clip only decoration. The focusable button and its outline remain unclipped. */
+:where(.replay-ui, .replay-ui-portal) .replay-button::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background: var(--replay-surface);
+  clip-path: var(--replay-step);
+}
+
+:where(.replay-ui, .replay-ui-portal) .replay-button[data-variant='primary'] {
+  color: var(--replay-accent-foreground);
+}
+:where(.replay-ui, .replay-ui-portal) .replay-button[data-variant='primary']::before {
+  background: var(--replay-accent);
+}
+:where(.replay-ui, .replay-ui-portal) .replay-button[data-variant='quiet'] {
+  border: 1px solid transparent;
+  border-image: none;
+}
+:where(.replay-ui, .replay-ui-portal) .replay-button[data-variant='quiet']::before {
+  background: transparent;
+}
+:where(.replay-ui, .replay-ui-portal) .replay-button[data-size='small'] {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+:where(.replay-ui, .replay-ui-portal) .replay-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+:where(.replay-ui, .replay-ui-portal) .replay-button > svg {
+  flex-shrink: 0;
+  pointer-events: none;
+}
+@media (hover: hover) {
+  :where(.replay-ui, .replay-ui-portal) .replay-button:enabled:hover::before {
+    background: color-mix(in srgb, var(--replay-surface), var(--replay-accent) 12%);
+  }
+  :where(.replay-ui, .replay-ui-portal) .replay-button[data-variant='primary']:enabled:hover::before {
+    background: color-mix(in srgb, var(--replay-accent), white 15%);
+  }
+}
+
+:where(.replay-ui, .replay-ui-portal) :is(button, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--replay-ring);
+  outline-offset: 3px;
+}
+
+.replay-ui-portal .replay-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--replay-overlay-z);
+  background: #020909bb;
+}
+.replay-ui-portal .replay-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--replay-overlay-z);
+  box-sizing: border-box;
+  margin: 0;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid transparent;
+  border-image: var(--replay-frame) 16 / 16px;
+  border-radius: 0;
+  background: var(--replay-surface);
+  color: #c7ded5;
+  overflow-wrap: anywhere;
+}
+.replay-ui-portal .replay-dialog h2 {
+  font-family: var(--replay-font-display);
+  font-size: 22px;
+  margin: 20px 0 8px;
+}
+.replay-ui-portal .replay-dialog p {
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--replay-muted-foreground);
+}
+.replay-ui-portal .replay-portrait-dialog > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 12px;
+}
+.replay-ui-portal .replay-portrait-dialog p {
+  font-size: 11px;
+  color: var(--replay-neutral);
+}
+.replay-ui-portal .replay-portrait-dialog small {
+  display: block;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #90aaa3;
+}
+.replay-ui-portal .replay-popover-positioner {
+  z-index: var(--replay-overlay-z);
+  max-width: var(--available-width);
+  isolation: isolate;
+}
+.replay-ui-portal .replay-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--replay-overlay-z);
+  background: #02090940;
+}
+.replay-ui-portal .replay-popover {
+  position: relative;
+  box-sizing: border-box;
+  margin: 0;
+  width: min(360px, calc(100vw - 24px));
+  max-width: var(--available-width);
+  max-height: min(var(--available-height), calc(100dvh - 24px));
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--replay-help-border);
+  border-radius: 8px;
+  background: var(--replay-help-background);
+  color: var(--replay-help-foreground);
+  box-shadow: 0 12px 40px #0009;
+  overflow-wrap: anywhere;
+}
+.replay-ui-portal .replay-rule-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 24px;
+  margin-bottom: 15px;
+}
+.replay-ui-portal .replay-rule-heading > span > svg {
+  display: block;
+  width: 38px;
+  height: 44px;
+  color: #b5dfc9;
+}
+.replay-ui-portal .replay-rule-heading h2 {
+  font: 400 22px var(--replay-font-body);
+  margin: 0;
+  color: #d1ead1;
+  letter-spacing: normal;
+}
+.replay-ui-portal .replay-rule-help > strong {
+  display: block;
+  font-size: 14px;
+  line-height: 1.7;
+  font-weight: 600;
+}
+.replay-ui-portal .replay-rule-help p {
+  font-size: 13px;
+  line-height: 1.85;
+  margin: 12px 0;
+  color: var(--replay-muted-foreground);
+}
+.replay-ui-portal .replay-rule-help > small {
+  color: #90aa93;
+  font-size: 10px;
+}
+.replay-ui-portal .replay-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: #c9e0c9;
+}
+.replay-ui-portal .replay-close:focus-visible {
+  outline-offset: -4px;
+}
+
+/* Legacy's important motion rules win earlier in the cascade too. Never override them. */
+@media (prefers-reduced-motion: reduce) {
+  .replay-ui,
+  .replay-ui-portal {
+    --replay-motion-fast: 0ms;
+  }
+}
+html:not([data-motion='enabled']) :is(.replay-ui, .replay-ui-portal) {
+  --replay-motion-fast: 0ms;
+}

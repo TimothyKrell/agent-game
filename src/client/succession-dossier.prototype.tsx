@@ -457,7 +457,7 @@ function DossierContent() {
   };
 
   return (
-    <div className="page replay-prototype dp-prototype">
+    <div className="page replay-prototype dp-prototype replay-ui">
       <div className="rp-entry-note">
         <a className="rp-breadcrumb" href="/?gameId=succession">
           <ChevronLeft size={15} />

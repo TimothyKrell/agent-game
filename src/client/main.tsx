@@ -41,12 +41,7 @@ import { Link } from './ui/link';
 import { ErrorBox, ResourceState } from './ui/resource-state';
 import { useLoad } from './use-load';
 import { ClientQueryProvider } from './query-client';
-import './styles.css';
-import './luminous.css';
-import './sitewide.css';
-import './motion.css';
-import './succession.css';
-import './local-game-controls.css';
+import './client.css';
 
 const DevAnnotations = import.meta.env.DEV
   ? React.lazy(() => import('agentation').then(({ Agentation }) => ({ default: Agentation })))
