@@ -36,3 +36,5 @@ The actual GitHub prebuilt artifact passes the accepted content validator: **29 
 All available GitHub artifacts, failed-step logs, job metadata and completed watcher output are retained under `/tmp/opencode/TIM-27-pr10-ci/`. The exact tested merge commit is also retained under `refs/evidence/pr-10-ci-34957418324` for recovery.
 
 **Retention boundary:** the initial workflow uploaded unit reports and logs but omitted playable native temporary state. That original remote state is unavailable. The corrected workflow retains existing identity/broker/playable evidence directories and `/tmp/opencode/tim27-playable-*`, including hidden fixture state, on success or failure. Original downloaded reports remain unchanged.
+
+Recovery archive: `/home/timothykrell/Code/agent-games-archive/PR-10-CI-34957418324/`, preserving865 entries and the exact tested merge commit in a verified Git bundle. All member hashes, unchanged originals and independent source recovery pass. Evidence archive SHA-256 `5676c9c4520a53c5c0b3c1afe9166b727036be1aa3e57155b9503d7f4ab1dcfb`; bundle `34d731613c126373a7e397a48d509007cb317ed366b5872b7e312bfeaf72687f`.
