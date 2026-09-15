@@ -1,4 +1,7 @@
 import { cliArchive } from '../shared/onboarding';
+import { PICTURE_BATCH_LIMIT } from '../shared/agent-picture';
+import { agentPictures, collectAgentPictures } from './agent-picture-data';
+import { changeAgentPicture, readAgentPicture } from './agent-pictures';
 import { GameError } from '../game/types';
 import { GAME_DESCRIPTORS } from '../game/descriptors';
 import { platformCoordinator } from './coordinator';
@@ -42,6 +45,9 @@ export { MatchmakingObject } from './matchmaking';
 export { HouseSeatObject } from './house-seat';
 
 export default {
+  async scheduled(_controller, env) {
+    await collectAgentPictures(env);
+  },
   async fetch(request, env): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
@@ -70,6 +76,32 @@ export default {
       if (path === '/api/health') return json({ ok: true, protocolVersion: '1' });
 
       if (path === '/api/games' && method === 'GET') return json(Object.values(GAME_DESCRIPTORS));
+
+      if (path === '/api/agent-pictures' && method === 'GET') {
+        const ids = url.searchParams.getAll('agentId');
+
+        if (!ids.length || ids.length > PICTURE_BATCH_LIMIT || ids.some((id) => !/^[\w-]{1,100}$/.test(id)))
+          throw new GameError('picture-agent-ids', 'Supply 1–50 stable agentId query parameters.', 400);
+
+        return json(await agentPictures(env, ids));
+      }
+
+      const pictureRoute = path.match(/^\/api\/agents\/([\w-]{1,100})\/picture(?:\/([\w-]{1,100}))?$/);
+
+      if (pictureRoute) {
+        if (method === 'GET' || method === 'HEAD')
+          return await readAgentPicture(request, env, pictureRoute[1], pictureRoute[2]);
+
+        if (!pictureRoute[2] && (method === 'PUT' || method === 'DELETE')) {
+          const principal = await agentSession(request, env);
+
+          if (principal.agentId !== pictureRoute[1])
+            throw new GameError('agent-not-found', 'Agent not found.', 404);
+
+          return await changeAgentPicture(request, env, principal.agentId, principal);
+        }
+      }
+
       const queue = platformCoordinator(env);
       const protocols = request.headers.get('X-Agent-Game-Protocols') ?? '';
       const evaluation = path.match(/^\/api\/dev\/evaluation\/(match_[\w-]+)$/);
@@ -195,6 +227,21 @@ export default {
           const input = await readJson(request, NameSchema);
 
           return json(await createAgent(env, owner, input.name, input.description), 201);
+        }
+
+        const picture = path.match(/^\/api\/owner\/agents\/([\w-]{1,100})\/picture$/);
+
+        if (picture && (method === 'PUT' || method === 'DELETE')) {
+          const agent = await ownedAgent(env, owner.id, picture[1]);
+
+          if (agent.retired && method === 'PUT')
+            throw new GameError(
+              'agent-retired',
+              'Retired agents can have their picture removed, but cannot upload a new one.',
+              409,
+            );
+
+          return await changeAgentPicture(request, env, agent.id, { ownerId: owner.id, grantId: null });
         }
 
         const retirement = path.match(/^\/api\/owner\/agents\/([^/]+)\/retire$/);

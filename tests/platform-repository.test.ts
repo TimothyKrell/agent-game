@@ -74,7 +74,7 @@ describe('platform migration and game-scoped repository', () => {
     legacyParticipants = (await env.DB.prepare('SELECT * FROM match_participants ORDER BY match_id').all())
       .results;
     legacyMatches = (await env.DB.prepare('SELECT * FROM matches ORDER BY id').all<{ id: string }>()).results;
-    await applyPlatformMigrations(env.DB, ['0002_games.sql']);
+    await applyPlatformMigrations(env.DB, ['0002_games.sql', '0003_agent_pictures.sql']);
   });
   afterAll(async () => {
     await dispose?.();

@@ -15,6 +15,7 @@ import type {
   SuccessionSummary,
 } from '../shared/api';
 import { nameValue, opaqueId } from './http';
+import { pictureView } from './agent-picture-data';
 
 export type RepositoryEnv = Pick<Env, 'DB' | 'HOUSE_PROVIDER' | 'HOUSE_MODEL'>;
 
@@ -66,7 +67,7 @@ function agentSelect(gameId: RepositoryGameId): string {
 
   if (gameId === 'secret-overlord') return AGENT_SELECT;
 
-  return `SELECT a.id, a.owner_id, a.name, a.description, a.house, a.retired_at, a.created_at, a.persona,
+  return `SELECT a.id, a.owner_id, a.name, a.description, a.house, a.retired_at, a.created_at, a.persona, p.picture_json,
     o.handle AS owner_handle, coalesce(s.rating,1000) AS rating, coalesce(s.games,0) AS games,
     coalesce(s.wins,0) AS wins, coalesce(s.losses,0) AS losses, coalesce(s.forfeits,0) AS forfeits,
     coalesce(s.placements,0) AS placements, coalesce(s.stats_json,'{}') AS roles_json,
@@ -75,7 +76,8 @@ function agentSelect(gameId: RepositoryGameId): string {
       WHERE t.game_id = 'succession' AND t.rating_pool_id = 'succession-1'
       AND b.house = 0 AND b.retired_at IS NULL AND t.placements >= ${PLACEMENT_RESULTS} AND t.rating > s.rating)
     ELSE NULL END AS rank FROM agents a LEFT JOIN owners o ON o.id = a.owner_id
-    LEFT JOIN agent_game_stats s ON s.agent_id = a.id AND s.game_id = 'succession' AND s.rating_pool_id = 'succession-1'`;
+    LEFT JOIN agent_game_stats s ON s.agent_id = a.id AND s.game_id = 'succession' AND s.rating_pool_id = 'succession-1'
+    LEFT JOIN agent_pictures p ON p.agent_id = a.id`;
 }
 
 const RoleStatsSchema = Schema.Record(
@@ -85,6 +87,7 @@ const RoleStatsSchema = Schema.Record(
 
 interface AgentRow {
   id: string;
+  picture_json: string | null;
   owner_id: string | null;
   owner_handle: string | null;
   name: string;
@@ -103,10 +106,11 @@ interface AgentRow {
   persona: string | null;
 }
 
-const AGENT_SELECT = `SELECT a.*, o.handle AS owner_handle,
+const AGENT_SELECT = `SELECT a.*, p.picture_json, o.handle AS owner_handle,
   CASE WHEN a.house = 0 AND a.retired_at IS NULL AND a.placements >= ${PLACEMENT_RESULTS}
   THEN 1 + (SELECT COUNT(*) FROM agents b WHERE b.house = 0 AND b.retired_at IS NULL AND b.placements >= ${PLACEMENT_RESULTS} AND b.rating > a.rating)
-  ELSE NULL END AS rank FROM agents a LEFT JOIN owners o ON o.id = a.owner_id`;
+  ELSE NULL END AS rank FROM agents a LEFT JOIN owners o ON o.id = a.owner_id
+  LEFT JOIN agent_pictures p ON p.agent_id = a.id`;
 
 function agentView(row: AgentRow): AgentProfile {
   const roles: Record<string, RoleStats> = Schema.decodeUnknownSync(RoleStatsSchema)(
@@ -115,6 +119,7 @@ function agentView(row: AgentRow): AgentProfile {
 
   return {
     id: row.id,
+    picture: pictureView(row.picture_json),
     ownerId: row.owner_id,
     ownerHandle: row.owner_handle,
     name: row.name,
