@@ -488,7 +488,7 @@ async function main() {
       );
       const { bridgeSettings } = await import('./preview-lifecycle-state.ts');
 
-      const { previewArtifactPublication, verifySourcePublicationReadback } =
+      const { previewArtifactPublication, verifySourcePublicationReadback, verifySourceArenaReadback } =
         await import('./preview-publication.ts');
 
       const settings = bridgeSettings(process.env)!;
@@ -510,6 +510,12 @@ async function main() {
         'Registration receipt differs from verified branch and trusted source release',
       );
       await verifySourcePublicationReadback(publication);
+      const sourceConfigured = await verifySourceArenaReadback(publication);
+      const targetConfigured = process.env.PREVIEW_BROKER_ENABLED === 'true';
+      requireCondition(
+        !targetConfigured || sourceConfigured,
+        'Source broker/provider is not ready for the configured live target',
+      );
       requireCondition(
         canonical(await github.verify(expected, controllerCommit)) === canonical(verified),
         'PR/run changed after source readback',
@@ -524,6 +530,7 @@ async function main() {
             incarnation: publication.incarnation,
             commit: publication.commit,
             readback: 'verified',
+            livePlay: { sourceConfigured, targetConfigured, capacityReserved: false },
           },
         }),
       );

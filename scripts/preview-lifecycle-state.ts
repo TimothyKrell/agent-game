@@ -18,6 +18,7 @@ const SourceOutput = Schema.Struct({
   databaseId: Schema.String.check(Schema.isPattern(databaseIdPattern)),
   sourceOrigin: Schema.String,
   previewBridgeVersion: Schema.Literal(1),
+  sourceCommit: Schema.optional(Schema.String.check(Schema.isPattern(/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/))),
 });
 
 const TargetOutput = Schema.Struct({
@@ -161,6 +162,9 @@ export const previewIdentityProvider = (env: NodeJS.ProcessEnv, fetcher: typeof 
 
       return {
         read: ({ output }) => Effect.succeed(output),
+        // Retirement is an output-state change, not necessarily a props change:
+        // a same-proof recovery must still mint a fresh incarnation.
+        diff: ({ output }) => Effect.succeed(output?.retired ? { action: 'update' as const } : undefined),
         reconcile: ({ news, output }) =>
           Effect.promise(async () => {
             requireCondition(

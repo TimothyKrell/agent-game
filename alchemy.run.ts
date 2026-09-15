@@ -2,6 +2,7 @@ import * as Alchemy from 'alchemy';
 import * as Cloudflare from 'alchemy/Cloudflare';
 import { Effect, Layer, Redacted } from 'effect';
 import { resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { validateArtifact } from './scripts/preview-artifact.ts';
 import {
   bridgeSettings,
@@ -179,6 +180,9 @@ export default Alchemy.Stack(
       databaseId: db.databaseId,
       sourceOrigin: preview ? undefined : appUrl,
       previewBridgeVersion: preview ? undefined : 1,
+      sourceCommit: preview
+        ? undefined
+        : execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     };
   }),
 );

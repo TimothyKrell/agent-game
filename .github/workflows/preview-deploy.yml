@@ -64,6 +64,7 @@ jobs:
       PREVIEW_IDENTITY_ENABLED: ${{ vars.TRUSTED_PREVIEW_IDENTITY_ENABLED }}
       # Protected preview-environment descriptor of a released source archive.
       PREVIEW_SOURCE_RELEASE: ${{ vars.TRUSTED_PREVIEW_SOURCE_RELEASE }}
+      PREVIEW_BROKER_ENABLED: ${{ vars.TRUSTED_PREVIEW_BROKER_ENABLED }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

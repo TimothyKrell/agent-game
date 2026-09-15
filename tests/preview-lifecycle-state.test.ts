@@ -43,7 +43,11 @@ import {
   targetGuard,
   targetRevision,
 } from '../scripts/preview-transaction';
-import { verifySourcePublicationReadback } from '../scripts/preview-publication';
+import { verifySourcePublicationReadback, verifySourceArenaReadback } from '../scripts/preview-publication';
+import {
+  configureSourcePreviewBroker,
+  configureTargetPreviewBroker,
+} from '../scripts/preview-broker-lifecycle';
 import { verifyRecords } from '../scripts/preview-github';
 import { records, expected } from './fixtures/preview-github';
 import { canonical, sha256 } from '../scripts/preview-artifact';
@@ -72,6 +76,7 @@ async function stateStore() {
             databaseId: lifecycleSourceId,
             sourceOrigin: lifecycleSourceOrigin,
             previewBridgeVersion: 1,
+            sourceCommit: 'e'.repeat(40),
           },
         },
       },
@@ -251,7 +256,9 @@ it('fails closed for missing production capability outputs and forged target dat
 
 async function post(origin: string, path: string, input: string, cookie = '', token = '') {
   const headers = new Headers({ 'content-type': 'application/json', origin, cookie });
+
   if (token) headers.set('authorization', `Bearer ${token}`);
+
   return fixture.fetcher(origin + path, {
     method: 'POST',
     headers,
@@ -285,6 +292,7 @@ it('publishes real source GET artifacts and completes same-owner browser/agent h
 
   expect(checks).toBeGreaterThanOrEqual(4);
   await verifySourcePublicationReadback(publication, fixture.fetcher);
+  expect(await verifySourceArenaReadback(publication, fixture.fetcher)).toBe(false);
 
   const login = await post(
     lifecycleSourceOrigin,
@@ -580,6 +588,161 @@ it('recovers a lost source-register acknowledgement with the retained key and re
   await expect(verifySourcePublicationReadback(publication, fixture.fetcher)).rejects.toThrow('unavailable');
 });
 
+it('requires independent source revision/configuration and current target runtime before broker enablement, without any inference', async () => {
+  const state = await stateStore();
+  await apply(state, 2);
+
+  const publication = await registerLifecycle(
+    state,
+    verifiedRun(),
+    fixture.artifact,
+    fixture.env,
+    async () => {},
+    fixture.fetcher,
+  );
+
+  const identity = (await retainedIdentity(state, 'pr-27'))!.identity;
+  const source = previewD1(identity.accountId, lifecycleSourceId, 'synthetic', fixture.fetcher);
+  const target = previewD1(identity.accountId, lifecycleTargetId, 'synthetic', fixture.fetcher);
+  expect(
+    await fixture.targetDB.prepare('SELECT enabled FROM preview_broker_settings WHERE id=1').first('enabled'),
+  ).toBe(0);
+  await expect(
+    configureSourcePreviewBroker(state, fixture.env, 'e'.repeat(40), true, fixture.fetcher),
+  ).rejects.toThrow('protected');
+  const enabled = { ...fixture.env, PREVIEW_BROKER_ENABLED: 'true' };
+  await expect(
+    configureSourcePreviewBroker(state, enabled, publication.commit, true, fixture.fetcher),
+  ).rejects.toThrow('source revision');
+  await expect(
+    configureTargetPreviewBroker(
+      source,
+      target,
+      'e'.repeat(40),
+      identity.incarnation,
+      publication.commit,
+      true,
+    ),
+  ).rejects.toThrow('explicitly configured');
+  await configureSourcePreviewBroker(state, enabled, 'e'.repeat(40), true, fixture.fetcher);
+  await expect(
+    configureTargetPreviewBroker(source, target, 'e'.repeat(40), identity.incarnation, 'f'.repeat(40), true),
+  ).rejects.toThrow('D1');
+  await configureTargetPreviewBroker(
+    source,
+    target,
+    'e'.repeat(40),
+    identity.incarnation,
+    publication.commit,
+    true,
+  );
+  expect(
+    await fixture.sourceDB
+      .prepare('SELECT revision FROM preview_broker_settings WHERE id=1')
+      .first('revision'),
+  ).toBe('e'.repeat(40));
+  expect(
+    await fixture.targetDB
+      .prepare('SELECT revision FROM preview_broker_settings WHERE id=1')
+      .first('revision'),
+  ).toBe(publication.commit);
+  // A source configured with the scripted provider still cannot advertise live
+  // play or pass the lifecycle's live publication check.
+  expect(await verifySourceArenaReadback(publication, fixture.fetcher)).toBe(false);
+  await expect(
+    registerLifecycle(state, verifiedRun(), fixture.artifact, enabled, async () => {}, fixture.fetcher),
+  ).rejects.toThrow('broker/provider');
+  await configureSourcePreviewBroker(state, enabled, 'e'.repeat(40), false, fixture.fetcher);
+  expect(
+    await fixture.sourceDB.prepare('SELECT enabled FROM preview_broker_settings WHERE id=1').first('enabled'),
+  ).toBe(0);
+});
+
+it('recovers a lost retirement acknowledgement without forgetting the incarnation or requiring an artifact', async () => {
+  const state = await stateStore();
+  await apply(state, 2);
+  const identity = (await retainedIdentity(state, 'pr-27'))!.identity;
+
+  const lost: typeof fetch = async (url, init) => {
+    const response = await fixture.fetcher(url, init);
+
+    if (String(init?.body ?? '').includes('UPDATE preview_arenas SET closed_at'))
+      throw new Error('Synthetic close lost acknowledgement');
+
+    return response;
+  };
+
+  await expect(retireLifecycle(state, 'pr-27', identity, fixture.env, async () => {}, lost)).rejects.toThrow(
+    'acknowledgement',
+  );
+  expect((await retainedIdentity(state, 'pr-27'))!.identity.retired).toBe(false);
+  await rm(fixture.artifactDirectory, { recursive: true });
+  await retireLifecycle(state, 'pr-27', identity, fixture.env, async () => {}, fixture.fetcher);
+  await apply(state, 2, true);
+  expect(await retainedIdentity(state, 'pr-27')).toBeUndefined();
+});
+
+it('fences a delayed old close after a concurrent retirement and same-proof cold refresh creates a new incarnation', async () => {
+  const state = await stateStore();
+  await apply(state, 2);
+  const old = (await retainedIdentity(state, 'pr-27'))!.identity;
+  let resume!: () => void;
+  let captured!: () => void;
+
+  const waiting = new Promise<void>((resolve) => {
+    captured = resolve;
+  });
+
+  const gate = new Promise<void>((resolve) => {
+    resume = resolve;
+  });
+
+  const delayed: typeof fetch = async (url, init) => {
+    if (String(init?.body ?? '').includes('UPDATE preview_arenas SET closed_at')) {
+      captured();
+      await gate;
+    }
+
+    return fixture.fetcher(url, init);
+  };
+
+  const closing = retireLifecycle(state, 'pr-27', old, fixture.env, async () => {}, delayed);
+  const rejected = expect(closing).rejects.toThrow('D1');
+
+  try {
+    await waiting;
+    await retireLifecycle(state, 'pr-27', old, fixture.env, async () => {}, fixture.fetcher);
+    // Retry the same verified proof/props without destroying the target stage.
+    await apply(state, 2);
+    expect((await retainedIdentity(state, 'pr-27'))!.identity.incarnation).not.toBe(old.incarnation);
+
+    const publication = await registerLifecycle(
+      state,
+      verifiedRun(),
+      fixture.artifact,
+      fixture.env,
+      async () => {},
+      fixture.fetcher,
+    );
+
+    resume();
+    await rejected;
+    await verifySourcePublicationReadback(publication, fixture.fetcher);
+  } finally {
+    resume();
+    await rejected.catch(() => {});
+  }
+});
+
+it('refuses source capability/migration drift before publishing a key and safely destroys an incomplete create', async () => {
+  const state = await stateStore();
+  await fixture.sourceDB.exec('DROP TRIGGER preview_arena_retire');
+  await expect(apply(state, 2)).rejects.toThrow();
+  expect(await retainedIdentity(state, 'pr-27')).toBeUndefined();
+  expect(await fixture.sourceDB.prepare('SELECT count(*) AS n FROM preview_arenas').first('n')).toBe(0);
+  await apply(state, 2, true);
+});
+
 it('tombstones never-published state before destruction and rejects late old-incarnation cleanup after recreation', async () => {
   const state = await stateStore();
   await apply(state, 2);
@@ -635,7 +798,7 @@ it('keeps retry identity on source outage and closes immediately when eligibilit
       fixture.artifact,
       fixture.env,
       async () => {
-        if (++count === 3) throw new Error('Synthetic synchronized head');
+        if (++count === 4) throw new Error('Synthetic synchronized head');
       },
       fixture.fetcher,
     ),

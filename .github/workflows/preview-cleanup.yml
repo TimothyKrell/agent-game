@@ -45,7 +45,7 @@ jobs:
         with:
           bun-version: '1.4.0'
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Recheck closed PR and destroy its retained stack without an artifact
+      - name: Retire source identity and destroy the closed PR's retained stack without an artifact
         run: node scripts/preview-controller.ts cleanup
         env:
           GH_TOKEN: ${{ github.token }}

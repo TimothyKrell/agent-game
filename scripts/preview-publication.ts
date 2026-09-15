@@ -109,3 +109,49 @@ export async function verifySourcePublicationReadback(
     'Source artifact readback differs from verified publication',
   );
 }
+
+/** Discovery's livePlay bit describes source configuration, never capacity. */
+export async function verifySourceArenaReadback(
+  publication: ReturnType<typeof previewArtifactPublication>,
+  fetcher: typeof fetch = fetch,
+) {
+  const response = await fetcher(`${publication.sourceOrigin}/api/preview/arenas`, {
+    redirect: 'error',
+    signal: AbortSignal.timeout(30_000),
+    headers: { accept: 'application/json' },
+  });
+
+  requireCondition(
+    response.ok &&
+      response.headers
+        .get('cache-control')
+        ?.split(',')
+        .map((value) => value.trim())
+        .includes('no-store') === true,
+    'Source arena readback unavailable',
+  );
+
+  const arenas = Schema.decodeUnknownSync(
+    Schema.Array(
+      Schema.Struct({
+        origin: Schema.String,
+        incarnation: Schema.String,
+        commit: Schema.String,
+        identityVersion: Schema.Literal(1),
+        ownerEntryUrl: Schema.String,
+        livePlay: Schema.Boolean,
+      }),
+    ),
+  )(JSON.parse((await boundedResponse(response, 64 * 1024)).toString('utf8')));
+
+  const matches = arenas.filter((arena) => arena.origin === publication.targetOrigin);
+  requireCondition(
+    matches.length === 1 &&
+      matches[0].incarnation === publication.incarnation &&
+      matches[0].commit === publication.commit &&
+      matches[0].ownerEntryUrl === `${publication.targetOrigin}/preview`,
+    'Source arena tuple differs from registered artifacts',
+  );
+
+  return matches[0].livePlay;
+}

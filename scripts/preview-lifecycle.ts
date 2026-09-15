@@ -25,8 +25,13 @@ import {
 import { previewD1 } from './preview-d1.ts';
 import { canonical, requireCondition, validateArtifact } from './preview-artifact.ts';
 import { previewTarget } from './preview-controller.ts';
-import { previewArtifactPublication, verifySourceExecutable } from './preview-publication.ts';
+import {
+  previewArtifactPublication,
+  verifySourceExecutable,
+  verifySourceArenaReadback,
+} from './preview-publication.ts';
 import type { VerifiedRun } from './preview-github.ts';
+import { configureTargetPreviewBroker } from './preview-broker-lifecycle.ts';
 
 export async function assertLifecycleGeneration(
   state: StateService,
@@ -211,6 +216,16 @@ export async function registerLifecycle(
   );
   await recheck();
   await assertLifecycleGeneration(state, target.stage, identity);
+  await configureTargetPreviewBroker(
+    source.DB,
+    targetEnv.DB,
+    sourceOutput.sourceCommit,
+    identity.incarnation,
+    identity.builtCommit,
+    env.PREVIEW_BROKER_ENABLED === 'true',
+  );
+  await recheck();
+  await assertLifecycleGeneration(state, target.stage, identity);
   await previewTransaction(
     source.DB,
     [sourceGuard(source.DB, identity.targetOrigin, beforeSource, desiredSource)],
@@ -250,6 +265,12 @@ export async function registerLifecycle(
     incarnation: identity.incarnation,
     executable,
   });
+
+  if (env.PREVIEW_BROKER_ENABLED === 'true')
+    requireCondition(
+      await verifySourceArenaReadback(publication, fetcher),
+      'Source broker/provider is not ready for live target publication',
+    );
 
   await recheck();
   await assertLifecycleGeneration(state, target.stage, identity);
