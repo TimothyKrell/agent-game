@@ -351,84 +351,118 @@ it('keeps a newly visible opposite-edge anchor when an older scroll request comp
   expect(client.getQueryCache().getAll()).toHaveLength(0);
 });
 
-it('uses canonical return landmarks for independent act windows and freezes the completed first act on live head growth', async () => {
-  const { initial, transition } = await storyAct2(8);
-  const events = projected([transition], 'public');
-  const start = events.find((event) => event.type === 'act-started')!;
-  const scope = { visibilityEpoch: 'return-public', streamHead: events.length };
-  const current = observeSuccession(transition.state, null, scope);
-  const queries: string[] = [];
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async (path: string) => {
-      queries.push(path);
-      const url = new URL(path, 'http://fixture');
+it.each(['steady', 'in-flight-transition', 'in-flight-head'] as const)(
+  'uses canonical return landmarks for independent act windows with %s and freezes completed Act I on live head growth',
+  async (timing) => {
+    const { created, initial, transition } = await storyAct2(8);
+    const events = projected([created, transition], 'public');
+    const start = events.find((event) => event.type === 'act-started')!;
+    const scope = { visibilityEpoch: 'return-public', streamHead: events.length };
+    const current = observeSuccession(transition.state, null, scope);
+    const queries: string[] = [];
+    const pending: (() => void)[] = [];
+    let transitioned = timing !== 'in-flight-transition';
+    let hold = timing !== 'steady';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string) => {
+        queries.push(path);
+        const url = new URL(path, 'http://fixture');
 
-      const common = {
-        protocolVersion: '2',
-        gameId: 'succession',
-        matchId: initial.id,
-        visibilityEpoch: scope.visibilityEpoch,
-      };
+        const common = {
+          protocolVersion: '2',
+          gameId: 'succession',
+          matchId: initial.id,
+          visibilityEpoch: scope.visibilityEpoch,
+        };
 
-      if (url.pathname.endsWith('/rounds'))
+        if (url.pathname.endsWith('/rounds')) {
+          const result = {
+            ...common,
+            rounds: (transitioned ? [events[0], start] : [events[0]]).map((event) => ({
+              key: `${event.act}:${event.round}`,
+              act: event.act,
+              round: event.round,
+              through: event.id,
+              eventKey: event.eventKey,
+            })),
+          };
+
+          if (hold) await new Promise<void>((resolve) => pending.push(resolve));
+
+          return Response.json(result);
+        }
+
+        const through = Number(url.searchParams.get('through'));
+
+        if (url.pathname.endsWith('/checkpoint')) {
+          const source = events[through - 1];
+
+          const saved =
+            transition.replayFrames.find((frame) => frame.eventKey === source?.eventKey)?.state ?? initial;
+
+          const baseline = observeSuccession(saved, null, { ...scope, streamHead: through });
+          baseline.decision = null;
+          baseline.chat = { ...baseline.chat, open: false, nextSpeakAt: null };
+
+          return Response.json({ ...common, through, baseline });
+        }
+
+        const after = Number(url.searchParams.get('after'));
+
         return Response.json({
           ...common,
-          rounds: [events[0], start].map((event) => ({
-            key: `${event.act}:${event.round}`,
-            act: event.act,
-            round: event.round,
-            through: event.id,
-            eventKey: event.eventKey,
-          })),
+          streamHead: events.length,
+          after,
+          through,
+          cursor: through,
+          events: events.slice(after, through),
+          hasMore: false,
+          reset: false,
         });
-      const through = Number(url.searchParams.get('through'));
+      }),
+    );
+    const client = new QueryClient();
 
-      if (url.pathname.endsWith('/checkpoint')) {
-        const source = events[through - 1];
+    const before =
+      timing === 'in-flight-head'
+        ? { ...current, history: { ...scope, streamHead: start.id } }
+        : transitioned
+          ? current
+          : observeSuccession(initial, null, { ...scope, streamHead: projected([created], 'public').length });
 
-        const saved =
-          transition.replayFrames.find((frame) => frame.eventKey === source?.eventKey)?.state ?? initial;
+    const first = new ContinuousSuccessionHistory(client, before, { act: 1 });
+    const second = new ContinuousSuccessionHistory(client, before, { act: 2 });
+    readers.push(first, second);
+    first.setEnabled(true);
+    second.setEnabled(true);
 
-        const baseline = observeSuccession(saved, null, { ...scope, streamHead: through });
-        baseline.decision = null;
-        baseline.chat = { ...baseline.chat, open: false, nextSpeakAt: null };
+    if (hold) {
+      await vi.waitFor(() => expect(pending.length).toBe(2));
+      transitioned = true;
+      hold = false;
+      first.observe(current);
+      second.observe(current);
+      pending.splice(0).forEach((resolve) => resolve());
+    }
 
-        return Response.json({ ...common, through, baseline });
-      }
-
-      const after = Number(url.searchParams.get('after'));
-
-      return Response.json({
-        ...common,
-        streamHead: events.length,
-        after,
-        through,
-        cursor: through,
-        events: events.slice(after, through),
-        hasMore: false,
-        reset: false,
-      });
-    }),
-  );
-  const client = new QueryClient();
-  const first = new ContinuousSuccessionHistory(client, current, { act: 1 });
-  const second = new ContinuousSuccessionHistory(client, current, { act: 2 });
-  readers.push(first, second);
-  first.setEnabled(true);
-  second.setEnabled(true);
-  await ready(first);
-  await ready(second);
-  expect(first.getSnapshot().rows.every((row) => row.position.act === 1)).toBe(true);
-  expect(first.getSnapshot().delivered).toBe(start.id - 1);
-  expect(second.getSnapshot().rows[0].fact.kind).toBe('act-started');
-  expect(
-    second.getSnapshot().model.end.every((seat) => seat.alive.status !== 'unavailable' && seat.alive.value),
-  ).toBe(true);
-  const requests = queries.length;
-  first.observe({ ...current, history: { ...scope, streamHead: events.length + 100 } });
-  await first.loadLater();
-  expect(queries).toHaveLength(requests);
-  expect(first.getSnapshot().head).toBe(start.id - 1);
-  expect(client.getQueryCache().getAll()).toHaveLength(0);
-});
+    await ready(first);
+    await ready(second);
+    expect(first.getSnapshot().rows.every((row) => row.position.act === 1)).toBe(true);
+    expect(first.getSnapshot().delivered).toBe(start.id - 1);
+    expect(start.id).toBe(6);
+    expect(second.getSnapshot().after).toBe(5);
+    expect(second.getSnapshot().rows[0].fact.kind).toBe('act-started');
+    expect(
+      second.getSnapshot().model.end.every((seat) => seat.alive.status !== 'unavailable' && seat.alive.value),
+    ).toBe(true);
+    const requests = queries.length;
+    const indexes = queries.filter((path) => path.endsWith('/rounds?epoch=return-public')).length;
+    expect(indexes).toBe(timing === 'in-flight-transition' ? 4 : 2);
+    first.observe({ ...current, history: { ...scope, streamHead: events.length + 100 } });
+    await first.loadLater();
+    expect(queries).toHaveLength(requests);
+    expect(first.getSnapshot().head).toBe(start.id - 1);
+    expect(client.getQueryCache().getAll()).toHaveLength(0);
+  },
+);
