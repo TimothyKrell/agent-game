@@ -19,6 +19,15 @@ Approved visual commit: **`d4f66e9`**, with `5ae78f2`, `c26cb6c` and `5a9f279` i
 3. Queue the requested profile-image storage/upload, shared identity presentation and optional agent-onboarding guidance from the first annotation review.
 4. Integrate this branch and its package/config changes with the existing main-checkout Agentation work. Use actual historical production contracts for state/rosters/private cards, bounded paging, anchors and live following.
 
+### Implementation queue confirmed
+
+The coordinator marked **[TIM-6 Done](https://linear.app/tims-stuff/issue/TIM-6)** and recorded the final owner acceptance. The implementation queue now includes:
+
+- **[TIM-18](https://linear.app/tims-stuff/issue/TIM-18)–[TIM-23](https://linear.app/tims-stuff/issue/TIM-23):** production story model, action/card/rule rendering, chapters/outcomes, state changes and continuous history. TIM-18 and TIM-21 were verified as **Todo**.
+- **[TIM-31](https://linear.app/tims-stuff/issue/TIM-31):** retained dev-only production-component style guide — **Todo**. Includes all 20 groups, 36 terms, shared UI adoption, documented entry point, build-output and runtime production-exclusion checks.
+- **[TIM-28](https://linear.app/tims-stuff/issue/TIM-28), [TIM-29](https://linear.app/tims-stuff/issue/TIM-29), [TIM-30](https://linear.app/tims-stuff/issue/TIM-30):** image upload/storage, shared portraits/enlargement, optional onboarding — all **Todo**.
+- **[TIM-24](https://linear.app/tims-stuff/issue/TIM-24):** integrated experience review after implementation.
+
 ## Required refinements
 
 **Approved reference:** [Second Agentation review](../annotation-review-2/README.md) addresses five more notes and completes the rule-icon audit: named Act I bonus summary, larger left-hand actor portraits, Executor/Act I vocabulary, dramatic red eliminations/executions, and historical remaining-agent rosters. **138 browser checks pass; 59 captures** are stored separately in `../annotation-review-2/`.
@@ -55,4 +64,4 @@ Application TypeScript, scoped Oxlint/Prettier and the Vite production build pas
 - Keep original entry identity and controller status in takeover/result handling. All ten return, including Act I executions. Act I earns advantage; only the supplied mechanical winner determines overall victory.
 - Act I initially closed / Act II open remains the prototype default, not a newly confirmed owner preference.
 
-Linear updates, production work allocation and shared package/integration changes remain with the coordinator. The owner-facing design review is complete, and the coordinator has been explicitly asked to queue implementation and return the issue links.
+Linear updates, production work allocation and shared package/integration changes remain with the coordinator. The owner-facing design review is complete; production work and style-guide retention are queued in the issues above.
