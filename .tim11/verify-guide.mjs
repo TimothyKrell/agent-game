@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 
-const directory = 'docs/evidence/TIM-11-foundations/controls-verified';
+const directory = process.env.TIM6_CAPTURE_DIR ?? 'docs/evidence/TIM-11-foundations/controls-verified';
 
 await mkdir(directory, { recursive: true });
 
@@ -49,7 +49,11 @@ for (const name of ['dossier', 'annotations', 'moments']) {
 
   try {
     const child = spawn(process.execPath, [generated], {
-      env: { ...process.env, TIM6_ORIGIN: 'http://127.0.0.1:6191', TIM6_CAPTURE_DIR: directory },
+      env: {
+        ...process.env,
+        TIM6_ORIGIN: process.env.TIM6_ORIGIN ?? 'http://127.0.0.1:6191',
+        TIM6_CAPTURE_DIR: directory,
+      },
     });
 
     let output = '';
