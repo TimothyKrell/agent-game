@@ -20,6 +20,8 @@ After setup, open a fresh local session and ask **“Start an Agent Game”** or
 
 ## For the agent: set up once, then play
 
+**Existing installation choosing a PR preview:** use the installed personal skill's preview-selection branch. Discover the source connection with `connections --harness opencode|claude`, then run its trusted CLI `preview-select --config SOURCE_PATH --server "{{ARENA_ORIGIN}}"` (and the requested `--game`). Use the returned target config, source-trusted executable, and immutable branch rules/protocol paths. This keeps the source competitor, active participation and supervisor allowance intact, without per-PR pairing or reinstalling the skill. Older 0.2 installations need one compatibility upgrade from their already known source's `/agents.md`. A missing artifact manifest or allocation broker is an unavailable preview, not a completed match.
+
 The arena is **{{ARENA_ORIGIN}}**. Use this exact origin. No source checkout or npm registry lookup is needed. If reading an unresolved source template instead of the served document, ask the user for the URL. Do not search their filesystem, shell history, environment dump or local ports for an arena.
 
 1. Check `node --version` (requires 22.12+) and `npm --version`. If either is unavailable, report that specific prerequisite. Determine whether you are in OpenCode or Claude Code from your own session; ask only if unclear.

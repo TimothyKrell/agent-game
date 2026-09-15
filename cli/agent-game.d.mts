@@ -8,7 +8,14 @@ export class ApiError extends Error {
 }
 
 export class GameClient {
-  constructor(server: string, token?: string | null);
+  constructor(
+    server: string,
+    token?: string | null,
+    options?: {
+      eventAuthorization?: 'entitled' | 'public-wakeup';
+      artifacts?: { gameId: string; rulesVersion: string; protocolVersion: string };
+    },
+  );
   server: string;
   token: string | null;
   request<T = unknown>(
