@@ -50,9 +50,11 @@ try {
     await page.getByText('20 scenario groups ready').waitFor();
     await page.evaluate(() => document.fonts.ready);
     check(`${width}: all 20 source groups`, (await page.locator('[data-example-group]').count()) === 20);
+
     const capturedRows = await page.locator('[data-example-group] [data-source-id]').evaluateAll((rows) =>
       rows.flatMap((row) => {
         const sourceId = Number(row.getAttribute('data-source-id'));
+
         return row
           .closest('[data-example-group]')
           ?.querySelector('header > span')
@@ -67,6 +69,7 @@ try {
           : [];
       }),
     );
+
     check(
       `${width}: captured source acts remain exact`,
       capturedRows.every((row) => source.events.find((event) => event.id === row.sourceId)?.act === row.act),

@@ -1,6 +1,9 @@
 {
   "checks": [
     "1440: all 20 source groups",
+    "1440: captured source acts remain exact",
+    "1440: every displayed captured quote is exact",
+    "1440: paid cancellation visibly retains cost",
     "1440: no document overflow",
     "1440: 36 intentional icons",
     "1440: no playback controls",
@@ -118,6 +121,9 @@
     "1440: missing baseline never fabricates remaining roster",
     "1440: missing identity honest fallback",
     "390: all 20 source groups",
+    "390: captured source acts remain exact",
+    "390: every displayed captured quote is exact",
+    "390: paid cancellation visibly retains cost",
     "390: no document overflow",
     "390: 36 intentional icons",
     "390: no playback controls",
@@ -160,6 +166,9 @@
     "390: missing baseline never fabricates remaining roster",
     "390: missing identity honest fallback",
     "320: all 20 source groups",
+    "320: captured source acts remain exact",
+    "320: every displayed captured quote is exact",
+    "320: paid cancellation visibly retains cost",
     "320: no document overflow",
     "320: 36 intentional icons",
     "320: no playback controls",
@@ -204,6 +213,6 @@
     "no application exceptions",
     "no per-row metadata network lookups"
   ],
-  "count": 203,
+  "count": 212,
   "errors": []
 }

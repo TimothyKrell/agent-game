@@ -1,5 +1,9 @@
 # TIM-19–22 / TIM-31 · Production Dossier presentation
 
+## Route assembly checkpoint
+
+After component checkpoint `db34430`, TIM-23 `bba70f8` (including `4cba978`) was merged into this lane. `succession-match.tsx` now composes the actual route with two mounted `useSuccessionStory` hooks, chapter-owned enablement, and `SuccessionTimeline` under the Dossier panels. Its summary model contains zero history rows at the authoritative current cursor; historical row state comes only from each reader window. One optional stable-original-ID picture batch supplies all portraits. The existing phase/decision composer still receives authoritative current state and the original command hook. `/history` resolves to the same continuous presentation. Route acceptance is in progress below; earlier checkpoint claims are retained for provenance.
+
 ## Integration interface (first component checkpoint)
 
 `src/client/succession-dossier.tsx` exports `SuccessionDossier` and its props. Supply a canonical bounded `StoryModel`, authoritative `status` (`active | finished | interrupted`) and current `act`. Optional `archiveAvailable` exposes a local disclosure for **already authorized** archive data. Optional `pictures` is a stable-original-entrant-ID `ReadonlyMap<string, AgentPicture>`; no row performs a metadata request.

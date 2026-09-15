@@ -7,6 +7,7 @@ import { RuleHelpProvider } from './ui/rule-help';
 import { DossierPictureProvider, dossierName, dossierValue } from './dossier-identity';
 import type { DossierPictures } from './dossier-identity';
 import { DossierRow } from './dossier-row';
+import { dossierVisible } from './dossier-cards';
 import { DossierRuleFocusProvider } from './dossier-rules';
 import { DossierOutcome, dossierOutcomeTitle } from './dossier-summary';
 import type { DossierStatus } from './dossier-summary';
@@ -25,21 +26,43 @@ export interface SuccessionDossierProps {
   pictures?: DossierPictures;
   /** Only shows the disclosure for already-authorized archive data. This never changes authority. */
   archiveAvailable?: boolean;
+  /** Route-owned disclosure also enables its mounted chapter readers. */
+  chapters?: DossierChapterState;
+  /** Authoritative live phase/decision UI, never derived from a historical reader window. */
+  currentState?: ReactNode;
   /** TIM-23 owns retrieval, source-act filtering, bounded DOM and continuous loading. */
   renderChapter?: (chapter: DossierChapterSlot) => ReactNode;
 }
 
 const noPictures: DossierPictures = new Map();
 
+export interface DossierChapterState {
+  open: Readonly<Record<1 | 2, boolean>>;
+  setOpen: (act: 1 | 2, open: boolean) => void;
+}
+
+/** Unset choices follow the current act; explicit reader choices survive current-state updates. */
+export function useDossierChapters(status: DossierStatus, act: 1 | 2): DossierChapterState {
+  const [choices, setChoices] = useState<Partial<Record<1 | 2, boolean>>>({});
+  const current = status === 'finished' ? 2 : act;
+
+  return {
+    open: { 1: choices[1] ?? current === 1, 2: choices[2] ?? current === 2 },
+    setOpen: (chapter, open) => setChoices((previous) => ({ ...previous, [chapter]: open })),
+  };
+}
+
 function DossierContent({
   model,
   status,
   act,
   archiveAvailable = false,
+  chapters: controlledChapters,
+  currentState,
   renderChapter,
 }: SuccessionDossierProps) {
-  // Explicit choices persist as active chapters and terminal summaries change.
-  const [choices, setChoices] = useState<Partial<Record<1 | 2, boolean>>>({});
+  const localChapters = useDossierChapters(status, act);
+  const chapters = controlledChapters ?? localChapters;
   const [archive, setArchive] = useState(false);
   const act1Heading = useRef<HTMLButtonElement>(null);
   const act2Heading = useRef<HTMLButtonElement>(null);
@@ -54,13 +77,15 @@ function DossierContent({
     seat.bonus === 1 ? [dossierName(seat.entrant, seat.seat)] : [],
   );
 
-  const renderRow = (row: StoryRow) => (
-    <DossierRow key={row.key} row={row} entrants={entrants} archive={showArchive} returns={returns} />
-  );
+  const renderRow = (row: StoryRow) =>
+    row.fact.kind === 'audit' || !dossierVisible(row.visibility, showArchive) ? null : (
+      <DossierRow key={row.key} row={row} entrants={entrants} archive={showArchive} returns={returns} />
+    );
 
   return (
     <div className="dossier replay-ui">
       <DossierOutcome chapters={model.chapters} status={status} act={act} entrants={entrants} />
+      {currentState}
       <div className="dossier-reading-options">
         {archiveAvailable && (
           <label>
@@ -78,7 +103,7 @@ function DossierContent({
         <span>Hover or tap a highlighted rule term</span>
       </div>
       {([1, 2] as const).map((chapter) => {
-        const open = choices[chapter] ?? chapter === (status === 'finished' ? 2 : act);
+        const open = chapters.open[chapter];
 
         const title =
           chapter === 1
@@ -104,11 +129,7 @@ function DossierContent({
                 : 'Individual victory';
 
         return (
-          <Collapsible
-            key={chapter}
-            open={open}
-            onOpenChange={(next) => setChoices((current) => ({ ...current, [chapter]: next }))}
-          >
+          <Collapsible key={chapter} open={open} onOpenChange={(next) => chapters.setOpen(chapter, next)}>
             <DossierRuleFocusProvider fallbackFocus={headings[chapter]}>
               <section className="dossier-chapter" aria-label={`Act ${chapter === 1 ? 'I' : 'II'}`}>
                 <h2>
@@ -123,15 +144,18 @@ function DossierContent({
                   </CollapsibleTrigger>
                 </h2>
                 <CollapsibleContent>
-                  {renderChapter ? (
-                    renderChapter({ act: chapter, archive: showArchive, renderRow })
-                  ) : (
-                    <ol className="dossier-record">
-                      {model.rows.flatMap((row) =>
-                        row.position.act === chapter ? [<li key={row.key}>{renderRow(row)}</li>] : [],
-                      )}
-                    </ol>
-                  )}
+                  {open &&
+                    (renderChapter ? (
+                      renderChapter({ act: chapter, archive: showArchive, renderRow })
+                    ) : (
+                      <ol className="dossier-record">
+                        {model.rows.flatMap((row) => {
+                          const content = row.position.act === chapter ? renderRow(row) : null;
+
+                          return content === null ? [] : [<li key={row.key}>{content}</li>];
+                        })}
+                      </ol>
+                    ))}
                 </CollapsibleContent>
               </section>
             </DossierRuleFocusProvider>
