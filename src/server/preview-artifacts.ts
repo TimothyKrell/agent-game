@@ -2,8 +2,9 @@ import { Option, Schema } from 'effect';
 import { GameError } from '../game/types';
 import { PreviewArtifactManifestSchema, type PreviewArtifactManifest } from '../shared/preview-artifacts';
 import { previewEnabled, previewOrigin } from './preview-config';
+import type { PreviewSourceEnvironment } from './preview-config';
 
-function artifactOrigin(value: string, env: Env): string {
+function artifactOrigin(value: string, env: Pick<Env, 'ENVIRONMENT'>): string {
   try {
     return previewOrigin(value, env);
   } catch {
@@ -11,7 +12,10 @@ function artifactOrigin(value: string, env: Env): string {
   }
 }
 
-export function parsePreviewArtifactManifest(env: Env, payload: string): PreviewArtifactManifest {
+export function parsePreviewArtifactManifest(
+  env: Omit<PreviewSourceEnvironment, 'DB'>,
+  payload: string,
+): PreviewArtifactManifest {
   if (new TextEncoder().encode(payload).byteLength > 16384)
     throw new GameError('preview-artifacts', 'Preview artifact metadata is too large.', 400);
   let decoded: Option.Option<PreviewArtifactManifest>;
@@ -65,7 +69,7 @@ const currentManifest = `SELECT p.manifest_json FROM preview_artifacts p
 
 /** Trusted controller entry point only. There is deliberately no HTTP publication route. */
 export async function registerPreviewArtifacts(
-  env: Env,
+  env: PreviewSourceEnvironment,
   input: PreviewArtifactManifest,
 ): Promise<PreviewArtifactManifest> {
   const manifest = parsePreviewArtifactManifest(env, JSON.stringify(input));
@@ -101,7 +105,7 @@ export async function registerPreviewArtifacts(
 
 /** Only current registered artifacts are discoverable; a retired incarnation cannot be revived by a cached manifest. */
 export async function readPreviewArtifacts(
-  env: Env,
+  env: PreviewSourceEnvironment,
   origin: string,
   commit: string,
 ): Promise<PreviewArtifactManifest> {

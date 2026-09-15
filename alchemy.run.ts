@@ -1,12 +1,24 @@
 import * as Alchemy from 'alchemy';
 import * as Cloudflare from 'alchemy/Cloudflare';
-import { Effect, Redacted } from 'effect';
+import { Effect, Layer, Redacted } from 'effect';
 import { resolve } from 'node:path';
 import { validateArtifact } from './scripts/preview-artifact.ts';
+import {
+  bridgeSettings,
+  PreviewIdentity,
+  previewIdentityProvider,
+} from './scripts/preview-lifecycle-state.ts';
+
+const state = Cloudflare.state();
 
 export default Alchemy.Stack(
   'agent-game',
-  { providers: Cloudflare.providers(), state: Cloudflare.state() },
+  {
+    providers: Layer.merge(Cloudflare.providers(), previewIdentityProvider(process.env)).pipe(
+      Layer.provide(state),
+    ),
+    state,
+  },
   Effect.gen(function* () {
     const stage = yield* Alchemy.Stage;
     const preview = /^pr-[1-9]\d*$/.test(stage);
@@ -15,8 +27,12 @@ export default Alchemy.Stack(
 
     // Alchemy's destroy plan uses persisted resources, including R2, rather than
     // the current spec. Never require a retained PR build to remove its stage.
-    if (preview && process.env.PREVIEW_OPERATION === 'destroy') {
-      if (!process.argv.includes('destroy')) throw new Error('Cleanup is destroy-only.');
+    if (
+      preview &&
+      (process.env.PREVIEW_OPERATION === 'destroy' || process.env.PREVIEW_OPERATION === 'retire')
+    ) {
+      if (!process.argv.includes(process.env.PREVIEW_OPERATION))
+        throw new Error('Cleanup is destroy/retire-only.');
 
       return {};
     }
@@ -70,6 +86,22 @@ export default Alchemy.Stack(
       forceDestroy: preview ? true : undefined,
     });
 
+    const previewAuth = preview ? yield* Alchemy.Random('PreviewAuth') : undefined;
+    const bridge = preview ? bridgeSettings(process.env) : undefined;
+
+    const identity =
+      bridge && previewAuth
+        ? yield* PreviewIdentity('PreviewIdentity', {
+            targetOrigin: appUrl,
+            authSecret: previewAuth.text,
+            runId: Number(process.env.PREVIEW_VERIFIED_RUN_ID),
+            runAttempt: Number(process.env.PREVIEW_VERIFIED_RUN_ATTEMPT),
+            builtCommit: process.env.PREVIEW_BUILT_COMMIT ?? '',
+            prHeadSha: process.env.PR_HEAD_SHA ?? '',
+            controllerRun: `${process.env.GITHUB_RUN_ID}:${process.env.GITHUB_RUN_ATTEMPT}`,
+          })
+        : undefined;
+
     const secret = (key: string) => (process.env[key] ? { [key]: Redacted.make(process.env[key]!) } : {});
 
     const shared = {
@@ -94,7 +126,8 @@ export default Alchemy.Stack(
           HOUSE_DAILY_BUDGET_USD: '0',
           HOUSE_MATCH_RESERVATION_USD: '0',
           HOUSE_SUCCESSION_MATCH_RESERVATION_USD: '',
-          BETTER_AUTH_SECRET: (yield* Alchemy.Random('PreviewAuth')).text,
+          BETTER_AUTH_SECRET: previewAuth!.text,
+          PREVIEW_SOURCE_URL: identity ? identity.sourceOrigin : '',
         }
       : {
           ...shared,
@@ -133,13 +166,19 @@ export default Alchemy.Stack(
       assets: {
         directory: artifactDirectory ? resolve(artifactDirectory, 'assets') : './dist/client',
         notFoundHandling: 'single-page-application',
-        runWorkerFirst: ['/api/*', '/agents.md', '/rules.md'],
+        runWorkerFirst: ['/api/*', '/preview', '/preview/*', '/agents.md', '/rules.md'],
       },
       env: bindings,
       crons: ['17 * * * *'],
       observability: { enabled: true, headSamplingRate: 1 },
     });
 
-    return { url: worker.url, workerName: worker.workerName, databaseId: db.databaseId };
+    return {
+      url: worker.url,
+      workerName: worker.workerName,
+      databaseId: db.databaseId,
+      sourceOrigin: preview ? undefined : appUrl,
+      previewBridgeVersion: preview ? undefined : 1,
+    };
   }),
 );

@@ -71,7 +71,7 @@ it('validates YAML credential boundaries, pinned default checkout, complete CI j
         expect(step.uses ?? '').not.toMatch(/cache|download-artifact|\.\/\.github\/actions/);
 
         if (step.env?.PREVIEW_DEPLOY_TOKEN) {
-          expect(step.run).toMatch(/^node scripts\/preview-controller\.ts (deploy|cleanup)$/);
+          expect(step.run).toMatch(/^node scripts\/preview-controller\.ts (deploy|cleanup|retire)$/);
           expect(step.env.PREVIEW_DEPLOY_TOKEN).toBe('${{ secrets.TRUSTED_PREVIEW_CLOUDFLARE_API_TOKEN }}');
         }
       }
@@ -143,9 +143,8 @@ it('executes the trusted command wrapper with hostile PR scripts present without
   );
   expect(JSON.parse(await readFile(recorded, 'utf8'))).toEqual({
     argv: [
-      resolve(trusted, 'node_modules/alchemy/bin/alchemy.ts'),
+      resolve(trusted, 'scripts/preview-alchemy.ts'),
       'deploy',
-      resolve(trusted, 'alchemy.run.ts'),
       '--stage',
       'pr-27',
       '--profile',
@@ -303,9 +302,8 @@ it.each([
       expect(child.status, child.stderr).toBe(0);
       expect(JSON.parse(await readFile(capture, 'utf8'))).toEqual({
         argv: [
-          resolve(scratch, 'node_modules/alchemy/bin/alchemy.ts'),
+          resolve(scratch, 'scripts/preview-alchemy.ts'),
           'destroy',
-          resolve(scratch, 'alchemy.run.ts'),
           '--stage',
           'pr-27',
           '--profile',
