@@ -351,7 +351,7 @@ export default {
         );
 
       const matchRoute = path.match(
-        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)(?:\/(actions|ticket|events|history|history-anchor|replay|rounds))?$/,
+        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)(?:\/(actions|ticket|events|history|history-anchor|checkpoint|replay|rounds))?$/,
       );
 
       if (matchRoute) {
@@ -363,7 +363,10 @@ export default {
         if (operation === 'ticket' && method === 'POST')
           return rpcResponse(await match.socketTicket(await agentSession(request, env), protocols));
 
-        if (['history', 'history-anchor', 'replay', 'rounds'].includes(operation) && method === 'GET') {
+        if (
+          ['history', 'history-anchor', 'checkpoint', 'replay', 'rounds'].includes(operation) &&
+          method === 'GET'
+        ) {
           const principal = request.headers.has('authorization') ? await agentSession(request, env) : null;
           const epoch = url.searchParams.get('epoch') ?? undefined;
 
@@ -375,6 +378,16 @@ export default {
           if (operation === 'replay')
             return rpcResponse(
               await match.replay(principal, epoch, Number(url.searchParams.get('through') ?? 0), protocols),
+            );
+
+          if (operation === 'checkpoint')
+            return rpcResponse(
+              await match.checkpoint(
+                principal,
+                epoch,
+                Number(url.searchParams.get('through') ?? 0),
+                protocols,
+              ),
             );
 
           if (operation === 'rounds') return rpcResponse(await match.rounds(principal, epoch, protocols));

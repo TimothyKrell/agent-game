@@ -34,7 +34,8 @@ function commandOwner(view: Observation2) {
   ]);
 }
 
-export function useSuccessionMatch(initial: Observation2) {
+export function useSuccessionMatch(initial: Observation2, options: { history?: boolean } = {}) {
+  const historyEnabled = options.history !== false;
   const queryClient = useQueryClient();
   const current = useRef(new SuccessionCurrent());
   const reader = useRef(new SuccessionHistory());
@@ -117,6 +118,7 @@ export function useSuccessionMatch(initial: Observation2) {
   };
 
   const loadHistory = async () => {
+    if (!historyEnabled) return;
     const walk = reader.current.request();
 
     if (!walk || pageBusy.current) return;
@@ -282,6 +284,18 @@ export function useSuccessionMatch(initial: Observation2) {
   }, [initial.matchId, retry]);
 
   useEffect(() => {
+    if (!historyEnabled) {
+      historyRequest.current?.abort();
+      pageRequest.current++;
+      pageBusy.current = false;
+      reader.current = new SuccessionHistory();
+      reader.current.observe(view.history);
+      setLoadingHistory(false);
+      setHistoryVersion((value) => value + 1);
+
+      return;
+    }
+
     const history = reader.current;
     const changedEpoch = history.epoch !== view.history.visibilityEpoch;
     const caughtUp = history.cursor === history.head;
@@ -296,8 +310,13 @@ export function useSuccessionMatch(initial: Observation2) {
     setHistoryVersion((value) => value + 1);
 
     // One bounded page per notification; older backlog requires explicit reading.
-    if (changedEpoch || (caughtUp && view.status === 'active')) void loadHistory();
-  }, [view.history.visibilityEpoch, view.history.streamHead, scopeIdentity(view)]);
+    if (
+      changedEpoch ||
+      (history.cursor === 0 && history.through === 0) ||
+      (caughtUp && view.status === 'active')
+    )
+      void loadHistory();
+  }, [historyEnabled, view.history.visibilityEpoch, view.history.streamHead, scopeIdentity(view)]);
 
   const act = async (action: Action2) => {
     const accepted = current.current.value;
