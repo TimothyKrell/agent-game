@@ -40,10 +40,12 @@ export default Alchemy.Stack(
     }
 
     const db = yield* Cloudflare.D1.Database('Identity', { migrations: './migrations' });
+    const pictures = yield* Cloudflare.R2.Bucket('AgentPictures', { publicAccess: false });
     const secret = (key: string) => (process.env[key] ? { [key]: Redacted.make(process.env[key]!) } : {});
 
     const shared = {
       DB: db,
+      AGENT_PICTURES: pictures,
       MATCHES: Cloudflare.DurableObject('Matches', { className: 'MatchObject' }),
       MATCHMAKING: Cloudflare.DurableObject('Matchmaking', { className: 'MatchmakingObject' }),
       HOUSE_SEATS: Cloudflare.DurableObject('HouseSeats', { className: 'HouseSeatObject' }),
@@ -95,6 +97,7 @@ export default Alchemy.Stack(
         runWorkerFirst: ['/api/*', '/agents.md', '/rules.md'],
       },
       env: bindings,
+      crons: ['17 * * * *'],
       observability: { enabled: true, headSamplingRate: 1 },
     });
 

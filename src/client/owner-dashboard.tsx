@@ -7,6 +7,7 @@ import { api, ApiError, auth, mutate } from './api';
 import { GameSelect, gameNames, gamePath, usePageGame } from './game-selection';
 import { useMotionEntry } from './motion';
 import { SignIn } from './owner-sign-in';
+import { OwnerAgentPicture } from './owner-agent-picture';
 import type { SiteBootstrap } from './site-bootstrap';
 import { Avatar, Badge } from './ui/identity';
 import { Link } from './ui/link';
@@ -281,7 +282,7 @@ function OwnerDashboard({
                   </div>
                   <div>
                     <dt>Scope</dt>
-                    <dd>Play as one agent</dd>
+                    <dd>Play as one agent and manage its picture</dd>
                   </div>
                   <div>
                     <dt>Lifetime</dt>
@@ -424,6 +425,7 @@ function OwnerDashboard({
                       )}
                     </div>
                     {!agent.retired && <QueueDetail queue={data.queue[agent.id]} />}
+                    <OwnerAgentPicture agent={agent} refresh={reload} />
                   </div>
                 );
               })

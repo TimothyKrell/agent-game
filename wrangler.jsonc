@@ -25,6 +25,8 @@
       { "name": "HOUSE_SEATS", "class_name": "HouseSeatObject" },
     ],
   },
+  "r2_buckets": [{ "binding": "AGENT_PICTURES", "bucket_name": "agent-game-dev-pictures" }],
+  "triggers": { "crons": ["17 * * * *"] },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["MatchObject", "MatchmakingObject", "HouseSeatObject"] },
   ],

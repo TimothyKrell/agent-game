@@ -1,4 +1,5 @@
 import { Schema } from 'effect';
+import { AgentPictureSchema, type AgentPicture } from './agent-picture';
 import type { ActionRequest, Observation, Role } from '../game/types';
 import type { GameDescriptor, GameId } from '../game/contracts';
 import type { ActionRequest2, IndividualResult2 } from './succession';
@@ -117,6 +118,7 @@ export interface RoleStats {
 
 export interface AgentProfile {
   id: string;
+  picture?: AgentPicture;
   ownerId: string | null;
   ownerHandle: string | null;
   name: string;
@@ -267,6 +269,7 @@ export const OwnerProfileSchema = Schema.Struct({
 
 export const AgentProfileSchema: Schema.Codec<AgentProfile> = Schema.Struct({
   id: Schema.String,
+  picture: Schema.optional(AgentPictureSchema),
   ownerId: Schema.NullOr(Schema.String),
   ownerHandle: Schema.NullOr(Schema.String),
   name: Schema.String,
