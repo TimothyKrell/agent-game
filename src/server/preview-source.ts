@@ -9,6 +9,7 @@ import type { PreviewIntent, PreviewReceipt } from '../shared/preview';
 import { agentSession, createAuth, ownerSession } from './auth';
 import { hashSecret, json, randomSecret, readJson } from './http';
 import { openPreview, previewEnabled, sealPreview } from './preview-config';
+import { readPreviewArtifacts } from './preview-artifacts';
 import {
   decodePreview,
   verifyPreviewRequest,
@@ -182,7 +183,17 @@ async function receipt(env: Env, row: Handoff): Promise<PreviewReceipt> {
 /** Registered target discovery and narrowly scoped source authority. No registration HTTP API. */
 export async function sourcePreviewRoute(request: Request, env: Env): Promise<Response | null> {
   if (previewEnabled(env)) return null;
-  const path = new URL(request.url).pathname;
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  if (path === '/api/preview/artifacts' && request.method === 'GET')
+    return json(
+      await readPreviewArtifacts(
+        env,
+        url.searchParams.get('origin') ?? '',
+        url.searchParams.get('commit') ?? '',
+      ),
+    );
 
   if (path === '/api/preview/arenas' && request.method === 'GET') {
     const arenas = (

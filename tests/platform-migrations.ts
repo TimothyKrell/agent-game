@@ -1,6 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 
-/** Line-terminated migration statements; trigger bodies terminate only at END;. */
+/** Line-terminated migration statements; trigger bodies terminate at a standalone END statement. */
 export async function applyPlatformMigrations(db: D1Database, only?: string[]) {
   const files = (await readdir('migrations')).filter((file) => file.endsWith('.sql')).sort();
 
@@ -13,7 +13,7 @@ export async function applyPlatformMigrations(db: D1Database, only?: string[]) {
       pending += `${line}\n`;
       const trigger = /CREATE\s+TRIGGER\b/i.test(pending);
 
-      if (trigger ? /^\s*END;\s*$/i.test(line) : /;\s*$/.test(line)) {
+      if (trigger ? /(?:^|;)\s*END;\s*$/i.test(line) : /;\s*$/.test(line)) {
         statements.push(pending.trim());
         pending = '';
       }
