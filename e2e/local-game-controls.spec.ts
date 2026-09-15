@@ -251,7 +251,12 @@ test('roster draft, expanded prompt and server participation survive a delayed s
     return route.fulfill({ json: body });
   });
   await page.goto('/dashboard?code=keep');
-  await page.locator('.roster-setup summary').click();
+
+  const setup = page.locator('.roster-setup').filter({
+    has: page.getByRole('heading', { name: 'Connect an installation', exact: true }),
+  });
+
+  await setup.locator('summary').click();
   await page.getByRole('combobox', { name: 'Play', exact: true }).selectOption('succession');
   const draft = page.locator('#create-agent input').first();
   await draft.fill('Draft survives');
@@ -260,7 +265,7 @@ test('roster draft, expanded prompt and server participation survive a delayed s
   await expect.poll(() => pending.length).toBe(1);
   await expect(draft).toHaveValue('Draft survives');
   await expect(draft).toHaveAttribute('data-retained', 'yes');
-  await expect(page.locator('.roster-setup')).toHaveAttribute('open', '');
+  await expect(setup).toHaveAttribute('open', '');
   await expect(page.getByRole('combobox', { name: 'Play', exact: true })).toHaveValue('succession');
   await expect(page.locator('.roster-card')).toContainText('Secret Overlord');
   await expect(page.locator('.roster-card')).toContainText('matched');

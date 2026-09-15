@@ -8,6 +8,8 @@ import type { GameId } from '../src/game/contracts';
 import { GAME_DESCRIPTORS } from '../src/game/descriptors';
 import type { GameBootstrap } from '../src/shared/api';
 import type { AuthorizedEvent2 } from '../src/shared/succession';
+import { HistoryCheckpoint2Schema } from '../src/shared/history-checkpoint';
+import { Schema } from 'effect';
 
 const entrants = Array.from({ length: 10 }, (_, seat) => ({
   agentId: `shape-agent-${seat}`,
@@ -81,6 +83,8 @@ export async function speechFixture(page: Page, gameId: GameId, archived: boolea
     );
   } else {
     let { state } = await createSuccession(id, entrants, now);
+    // These three presentation events are chat-only: each leaves this exact baseline unchanged.
+    const beforeSpeech = state;
 
     if (archived)
       state = evolveSuccession(
@@ -106,6 +110,28 @@ export async function speechFixture(page: Page, gameId: GameId, archived: boolea
     await page.routeWebSocket(`**/api/matches/${id}/events?*`, (socket) =>
       socket.send(JSON.stringify({ type: 'observation', observation: view })),
     );
+    await page.route(`**/api/matches/${id}/checkpoint?*`, (route) => {
+      const through = Number(new URL(route.request().url()).searchParams.get('through'));
+
+      const publicBaseline = observeSuccession(beforeSpeech, null, {
+        visibilityEpoch: epoch,
+        streamHead: through,
+      });
+
+      publicBaseline.decision = null;
+      publicBaseline.chat = { ...publicBaseline.chat, open: false, nextSpeakAt: null };
+
+      return route.fulfill({
+        json: Schema.decodeUnknownSync(HistoryCheckpoint2Schema)({
+          protocolVersion: '2',
+          gameId,
+          matchId: id,
+          visibilityEpoch: epoch,
+          through,
+          baseline: archived ? replayFrameSuccession(beforeSpeech, through, epoch) : publicBaseline,
+        }),
+      });
+    });
     await page.route(`**/api/matches/${id}/history?*`, (route) => {
       const query = new URL(route.request().url()).searchParams;
       const after = Number(query.get('after'));

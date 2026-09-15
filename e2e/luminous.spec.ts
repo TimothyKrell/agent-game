@@ -154,7 +154,7 @@ test('live and revealed records use real phase timers, outcomes, and accessible 
   page,
 }) => {
   const state = createMatch(
-    'luminous',
+    '4d2a08f1-91a7-4c65-a8dc-e7b9c2d60834',
     names.map((name, index) => ({
       name,
       agentId: `agent-${index}`,
@@ -203,18 +203,18 @@ test('live and revealed records use real phase timers, outcomes, and accessible 
   view.cursor = 4;
   view.reset = true;
   await page.route('**/api/bootstrap', (route) => route.fulfill({ json: bootstrap }));
-  await page.route('**/api/matches/luminous', (route) => route.fulfill({ json: view }));
+  await page.route(`**/api/matches/${state.id}`, (route) => route.fulfill({ json: view }));
 
   let send = (_value: typeof view): void => {
     throw new Error('Socket not connected');
   };
 
-  await page.routeWebSocket('**/api/matches/luminous/events?*', (socket) => {
+  await page.routeWebSocket(`**/api/matches/${state.id}/events?*`, (socket) => {
     send = (value) => socket.send(JSON.stringify({ type: 'observation', observation: value }));
     send(view);
   });
   await page.setViewportSize({ width: 1600, height: 1120 });
-  await page.goto('/matches/luminous');
+  await page.goto(`/matches/${state.id}`);
   await expect(page.getByText('Connected', { exact: true })).toBeVisible();
   await expect(page.locator('.countdown')).toHaveCount(0);
   send({ ...view, phase: { ...view.phase, kind: 'voting', graceUntil: Date.now() + 24000 } });
