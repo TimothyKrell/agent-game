@@ -1,6 +1,8 @@
 import * as Alchemy from 'alchemy';
 import * as Cloudflare from 'alchemy/Cloudflare';
 import { Effect, Redacted } from 'effect';
+import { resolve } from 'node:path';
+import { validateArtifact } from './scripts/preview-artifact.ts';
 
 export default Alchemy.Stack(
   'agent-game',
@@ -10,6 +12,26 @@ export default Alchemy.Stack(
     const preview = /^pr-[1-9]\d*$/.test(stage);
 
     if (stage !== 'prod' && !preview) throw new Error('Deploy prod or an isolated pr-<number> stage.');
+
+    // Alchemy's destroy plan uses persisted resources, including R2, rather than
+    // the current spec. Never require a retained PR build to remove its stage.
+    if (preview && process.env.PREVIEW_OPERATION === 'destroy') {
+      if (!process.argv.includes('destroy')) throw new Error('Cleanup is destroy-only.');
+
+      return {};
+    }
+
+    const artifactDirectory = preview ? process.env.PREVIEW_ARTIFACT_DIR : undefined;
+
+    if (preview && !artifactDirectory)
+      throw new Error('Preview deployment requires a verified prebuilt artifact.');
+
+    const artifact = artifactDirectory
+      ? yield* Effect.promise(() => validateArtifact(artifactDirectory))
+      : undefined;
+
+    if (artifact && artifact.manifestSha256 !== process.env.PREVIEW_MANIFEST_SHA256)
+      throw new Error('Preview artifact changed after controller verification.');
 
     const workerName = preview ? `agent-game-${stage}` : (process.env.WORKER_NAME ?? 'agent-game');
 
@@ -39,8 +61,15 @@ export default Alchemy.Stack(
       }
     }
 
-    const db = yield* Cloudflare.D1.Database('Identity', { migrations: './migrations' });
-    const pictures = yield* Cloudflare.R2.Bucket('AgentPictures', { publicAccess: false });
+    const db = yield* Cloudflare.D1.Database('Identity', {
+      migrations: artifactDirectory ? resolve(artifactDirectory, 'migrations') : './migrations',
+    });
+
+    const pictures = yield* Cloudflare.R2.Bucket('AgentPictures', {
+      publicAccess: false,
+      forceDestroy: preview ? true : undefined,
+    });
+
     const secret = (key: string) => (process.env[key] ? { [key]: Redacted.make(process.env[key]!) } : {});
 
     const shared = {
@@ -89,10 +118,20 @@ export default Alchemy.Stack(
     const worker = yield* Cloudflare.Worker('Arena', {
       name: workerName,
       domain: preview ? undefined : process.env.APP_DOMAIN,
-      main: './src/server/worker.ts',
+      main: artifactDirectory ? resolve(artifactDirectory, 'worker/worker.js') : './src/server/worker.ts',
+      bundle: artifact ? false : undefined,
+      rules: artifact
+        ? [
+            {
+              globs: artifact.manifest.files.flatMap((file) =>
+                file.path.startsWith('worker/') ? [file.path.slice('worker/'.length)] : [],
+              ),
+            },
+          ]
+        : undefined,
       compatibility: { date: '2026-09-10', flags: ['nodejs_compat'] },
       assets: {
-        directory: './dist/client',
+        directory: artifactDirectory ? resolve(artifactDirectory, 'assets') : './dist/client',
         notFoundHandling: 'single-page-application',
         runWorkerFirst: ['/api/*', '/agents.md', '/rules.md'],
       },

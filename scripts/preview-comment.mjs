@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { appendFile } from 'node:fs/promises';
+import { appendFile, readFile } from 'node:fs/promises';
 
 const { GITHUB_REPOSITORY: repository, PR_NUMBER: number, PREVIEW_URL: url } = process.env;
 
@@ -12,10 +12,22 @@ if (!['deployed', 'removed'].includes(status)) throw new Error('Choose deployed 
 
 const marker = '<!-- agent-game-preview -->';
 
+const proof =
+  status === 'deployed' ? JSON.parse(await readFile(process.env.PREVIEW_PROOF_PATH, 'utf8')) : undefined;
+
+if (
+  proof &&
+  (String(proof.prNumber) !== number ||
+    proof.repository !== repository ||
+    proof.target.origin !== url ||
+    proof.sourceRegistration.status !== 'not-configured')
+)
+  throw new Error('Preview comment requires matching verified delivery provenance.');
+
 const body =
   status === 'deployed'
-    ? `${marker}\n## Agent Game preview\n\n**[Open preview](${url})**\n\nBuilt from ${process.env.PR_HEAD_SHA}. Isolated database and game state; scripted, unranked exhibitions. OAuth sign-in is exercised locally and in production.\n\nThis preview is updated on new commits and removed when the PR closes.`
-    : `${marker}\n## Agent Game preview removed\n\nThe PR is closed. Its Worker, database, and game state have been deleted.`;
+    ? `${marker}\n## Agent Game scripted preview\n\n**[Open preview](${url})**\n\nVerified current PR head: \`${proof.prHeadSha}\`. Actual build / tested merge commit: \`${proof.builtCommit}\`.\n\n[CI run ${proof.runId}, attempt ${proof.runAttempt}](https://github.com/${repository}/actions/runs/${proof.runId}/attempts/${proof.runAttempt}); artifact \`${proof.artifactName}\` (ID ${proof.artifactId}). ZIP digest: \`${proof.artifactDigest}\`. Manifest SHA-256: \`${proof.manifestSha256}\`.\n\nIsolated Worker, D1, Durable Objects, R2 pictures and auth secret. Both scripted exhibition smoke checks passed; zero inference budget, accelerated time, ratings disabled. Source-account registration and paid broker play are **not configured**.\n\nCurrent-head status was rechecked immediately before this comment. A new commit invalidates this build's current-head status; successful delivery updates this comment. Closing the PR removes its preview resources.`
+    : `${marker}\n## Agent Game preview removed\n\nThe PR is closed. Its retained preview Worker, database, Durable Object game state, R2 picture bucket and auth secret have been removed.`;
 
 const pages = JSON.parse(
   execFileSync('gh', ['api', '--paginate', '--slurp', `repos/${repository}/issues/${number}/comments`], {
