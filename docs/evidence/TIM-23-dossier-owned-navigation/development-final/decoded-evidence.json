@@ -1,0 +1,1498 @@
+[
+  {
+    "title": "1440: pending Final move respects later portrait ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "1440: pending Final move respects later portrait-closed ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "1440: pending Final move respects later rule ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "1440: pending Final move respects later chapter ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 575.984375
+        }
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 575.984375
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=0",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=0&through=2&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "1440: pending Final move respects later keyboard ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "INPUT",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1449",
+          "y": 677.375
+        }
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "INPUT",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1449",
+          "y": 677.375
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "1440: pending Final move respects later wheel ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 120,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": "Final move "
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 557.375
+        }
+      },
+      "after": {
+        "y": 120,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": "Final move "
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 557.375
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "1440: held navigation completes without new intent; fresh cached navigation still works",
+    "status": "passed",
+    "uninterrupted": {
+      "y": 12638,
+      "active": {
+        "tag": "ARTICLE",
+        "event": "story-226372697-1604",
+        "text": "Act II \u00b7 Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 \u00b7 Cards at "
+      },
+      "modalFocus": false,
+      "dialogs": 0,
+      "visible": {
+        "key": "story-226372697-1599",
+        "y": -6.09375
+      }
+    }
+  },
+  {
+    "title": "1440: a new visibility scope retires the old held navigation",
+    "status": "passed",
+    "scope": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 631.984375
+        }
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 631.984375
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/rounds?epoch=route-revised",
+        "/api/matches/story-match-14/history-anchor?epoch=route-revised&eventKey=story-226372697-1366",
+        "/api/matches/story-match-14/checkpoint?epoch=route-revised&through=1051",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1051&through=1179&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1083&through=1179&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1115&through=1179&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1147&through=1179&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-revised&through=987",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=987&through=1115&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1019&through=1115&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1051&through=1115&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1083&through=1115&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/rounds?epoch=route-revised",
+        "/api/matches/story-match-14/checkpoint?epoch=route-revised&through=0",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=0&through=2&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "390: pending Final move respects later portrait ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 842.5625
+        }
+      },
+      "after": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 842.5625
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "390: pending Final move respects later portrait-closed ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 842.5625
+        }
+      },
+      "after": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 842.5625
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "390: pending Final move respects later rule ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 842.5625
+        }
+      },
+      "after": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 842.5625
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "390: pending Final move respects later chapter ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 632,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 221.78125
+        }
+      },
+      "after": {
+        "y": 632,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 221.78125
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=0",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=0&through=2&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "390: pending Final move respects later keyboard ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "INPUT",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "INPUT",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "390: pending Final move respects later wheel ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 241,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": "Final move "
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 722.5625
+        }
+      },
+      "after": {
+        "y": 241,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": "Final move "
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 722.5625
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "390: held navigation completes without new intent; fresh cached navigation still works",
+    "status": "passed",
+    "uninterrupted": {
+      "y": 17060,
+      "active": {
+        "tag": "ARTICLE",
+        "event": "story-226372697-1604",
+        "text": "Act II \u00b7 Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 \u00b7 Cards at "
+      },
+      "modalFocus": false,
+      "dialogs": 0,
+      "visible": {
+        "key": "story-226372697-1597",
+        "y": -145.03125
+      }
+    }
+  },
+  {
+    "title": "390: a new visibility scope retires the old held navigation",
+    "status": "passed",
+    "scope": {
+      "before": {
+        "y": 632,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 221.78125
+        }
+      },
+      "after": {
+        "y": 632,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 221.78125
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/rounds?epoch=route-revised",
+        "/api/matches/story-match-14/history-anchor?epoch=route-revised&eventKey=story-226372697-1366",
+        "/api/matches/story-match-14/checkpoint?epoch=route-revised&through=1051",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1051&through=1179&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1083&through=1179&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1115&through=1179&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1147&through=1179&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-revised&through=987",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=987&through=1115&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1019&through=1115&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1051&through=1115&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1083&through=1115&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/rounds?epoch=route-revised",
+        "/api/matches/story-match-14/checkpoint?epoch=route-revised&through=0",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=0&through=2&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "320: pending Final move respects later portrait ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 248,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": null
+      },
+      "after": {
+        "y": 248,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": null
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "320: pending Final move respects later portrait-closed ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 248,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      },
+      "after": {
+        "y": 248,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "320: pending Final move respects later rule ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 263,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": null
+      },
+      "after": {
+        "y": 263,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": null
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "320: pending Final move respects later chapter ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 912,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 124.46875
+        }
+      },
+      "after": {
+        "y": 912,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 124.46875
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=0",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=0&through=2&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "320: pending Final move respects later keyboard ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "INPUT",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "INPUT",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "320: pending Final move respects later wheel ownership",
+    "status": "passed",
+    "ownership": {
+      "before": {
+        "y": 383,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": "Final move "
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 783.25
+        }
+      },
+      "after": {
+        "y": 383,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": "Final move "
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 783.25
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604"
+      ]
+    }
+  },
+  {
+    "title": "320: held navigation completes without new intent; fresh cached navigation still works",
+    "status": "passed",
+    "uninterrupted": {
+      "y": 19678,
+      "active": {
+        "tag": "ARTICLE",
+        "event": "story-226372697-1604",
+        "text": "Act II \u00b7 Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 \u00b7 Cards at "
+      },
+      "modalFocus": false,
+      "dialogs": 0,
+      "visible": {
+        "key": "story-226372697-1597",
+        "y": -145.8125
+      }
+    }
+  },
+  {
+    "title": "320: a new visibility scope retires the old held navigation",
+    "status": "passed",
+    "scope": {
+      "before": {
+        "y": 912,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 124.46875
+        }
+      },
+      "after": {
+        "y": 912,
+        "active": {
+          "tag": "ARTICLE",
+          "event": "story-2609918634-36",
+          "text": "Act I \u00b7 Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": {
+          "key": "story-2609918634-36",
+          "y": 124.46875
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/rounds?epoch=route-revised",
+        "/api/matches/story-match-14/history-anchor?epoch=route-revised&eventKey=story-226372697-1442",
+        "/api/matches/story-match-14/checkpoint?epoch=route-revised&through=1111",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1111&through=1239&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1143&through=1239&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1175&through=1239&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=1207&through=1239&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/rounds?epoch=route-revised",
+        "/api/matches/story-match-14/checkpoint?epoch=route-revised&through=0",
+        "/api/matches/story-match-14/history?epoch=route-revised&after=0&through=2&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "unmount retires a held request; a fresh route visit can navigate",
+    "status": "passed",
+    "unmounted": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "A",
+          "event": null,
+          "text": "How to play"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "A",
+          "event": null,
+          "text": "How to play"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      }
+    }
+  },
+  {
+    "title": "intervention also cancels a held history page after anchor resolution",
+    "status": "passed",
+    "held-page": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      },
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "a fresh request supersedes a held one without retaining its old completion",
+    "status": "passed",
+    "superseded": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1449",
+          "y": 677.375
+        }
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1449",
+          "y": 677.375
+        }
+      }
+    }
+  },
+  {
+    "title": "1440: native wheel in the page gutter continues the visible record",
+    "status": "passed",
+    "gutter-target": {
+      "target": {
+        "tag": "DIV",
+        "className": "",
+        "chapter": null
+      },
+      "after": 1178,
+      "input": "wheel",
+      "width": 1440
+    },
+    "gutter-delivery": {
+      "after": 1114,
+      "requests": [
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "1440: native touch in the page gutter continues the visible record",
+    "status": "passed",
+    "gutter-target": {
+      "target": {
+        "tag": "DIV",
+        "className": "",
+        "chapter": null
+      },
+      "after": 1178,
+      "input": "touch",
+      "width": 1440
+    },
+    "gutter-delivery": {
+      "after": 1114,
+      "requests": [
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "1440: native gutter input cannot page behind a pending portrait reference",
+    "status": "passed",
+    "modal-gutter": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 677.375
+        }
+      }
+    }
+  },
+  {
+    "title": "390: native wheel in the page gutter continues the visible record",
+    "status": "passed",
+    "gutter-target": {
+      "target": {
+        "tag": "DIV",
+        "className": "",
+        "chapter": null
+      },
+      "after": 1178,
+      "input": "wheel",
+      "width": 390
+    },
+    "gutter-delivery": {
+      "after": 1114,
+      "requests": [
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "390: native touch in the page gutter continues the visible record",
+    "status": "passed",
+    "gutter-target": {
+      "target": {
+        "tag": "DIV",
+        "className": "",
+        "chapter": null
+      },
+      "after": 1178,
+      "input": "touch",
+      "width": 390
+    },
+    "gutter-delivery": {
+      "after": 1114,
+      "requests": [
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ]
+    }
+  },
+  {
+    "title": "390: native gutter input cannot page behind a pending portrait reference",
+    "status": "passed",
+    "modal-gutter": {
+      "before": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 842.5625
+        }
+      },
+      "after": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "event": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "visible": {
+          "key": "story-226372697-1366",
+          "y": 842.5625
+        }
+      }
+    }
+  }
+]

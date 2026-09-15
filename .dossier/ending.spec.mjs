@@ -200,6 +200,7 @@ for (const width of [1440, 390, 320]) {
       // Keyboard-only from the already loaded window is the smallest repro: no eviction or modal needed.
       if (destination !== 'keyboard') await older(page);
       await pending(page, control);
+      const anchorReads = control.requests.filter((path) => path.includes('/history-anchor?')).length;
 
       if (destination.startsWith('portrait') || destination === 'rule') {
         const trigger =
@@ -234,6 +235,7 @@ for (const width of [1440, 390, 320]) {
       const before = await state(page);
       await release(page, control);
       const after = await state(page);
+      expect(control.requests.filter((path) => path.includes('/history-anchor?'))).toHaveLength(anchorReads);
       await info.attach('ownership', {
         body: JSON.stringify({ before, after, requests: control.requests }, null, 2),
         contentType: 'application/json',
@@ -377,3 +379,90 @@ test('a fresh request supersedes a held one without retaining its old completion
   });
   expect(control.faults).toEqual([]);
 });
+
+async function gutterScroll(page, input) {
+  if (input === 'wheel') {
+    await page.mouse.move(6, 400);
+    await page.mouse.wheel(0, -100);
+
+    return;
+  }
+
+  const session = await page.context().newCDPSession(page);
+  await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 6, y: 400 }] });
+
+  for (const y of [430, 460, 500])
+    await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 6, y }] });
+  await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await session.detach();
+}
+
+for (const width of [1440, 390]) {
+  for (const input of ['wheel', 'touch']) {
+    test(`${width}: native ${input} in the page gutter continues the visible record`, async ({
+      page,
+    }, info) => {
+      const control = await harness(page, width);
+      const timeline = chapter(page);
+      await timeline
+        .locator('[data-story-key]')
+        .first()
+        .evaluate((element) => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
+      await expect(timeline).toHaveAttribute('aria-busy', 'false');
+      const after = Number(await timeline.getAttribute('data-story-after'));
+      const requests = control.requests.length;
+
+      const target = await page.evaluate(() => {
+        const target = document.elementFromPoint(6, 400);
+
+        return {
+          tag: target?.tagName,
+          className: target?.className,
+          chapter: target?.closest('[data-dossier-act]')?.getAttribute('data-dossier-act') ?? null,
+        };
+      });
+
+      expect(target.chapter).toBeNull();
+      await gutterScroll(page, input);
+      await info.attach('gutter-target', {
+        body: JSON.stringify({ target, after, input, width }),
+        contentType: 'application/json',
+      });
+      await expect
+        .poll(async () => Number(await timeline.getAttribute('data-story-after')))
+        .toBeLessThan(after);
+      await expect(timeline).toHaveAttribute('aria-busy', 'false');
+      expect(await timeline.locator('[data-story-key]').count()).toBeLessThanOrEqual(128);
+      await info.attach('gutter-delivery', {
+        body: JSON.stringify({
+          after: Number(await timeline.getAttribute('data-story-after')),
+          requests: control.requests.slice(requests),
+        }),
+        contentType: 'application/json',
+      });
+      expect(control.faults).toEqual([]);
+    });
+  }
+
+  test(`${width}: native gutter input cannot page behind a pending portrait reference`, async ({
+    page,
+  }, info) => {
+    const control = await harness(page, width);
+    await older(page);
+    await pending(page, control);
+    await page.locator('.dossier-outcome .replay-agent-portrait').click();
+    await expect.poll(async () => (await state(page)).modalFocus).toBe(true);
+    const before = await state(page);
+    const requests = control.requests.length;
+    await gutterScroll(page, 'wheel');
+    await gutterScroll(page, 'touch');
+    await release(page, control);
+    expect(await state(page)).toEqual(before);
+    expect(control.requests.slice(requests)).toEqual([]);
+    await info.attach('modal-gutter', {
+      body: JSON.stringify({ before, after: await state(page) }),
+      contentType: 'application/json',
+    });
+    expect(control.faults).toEqual([]);
+  });
+}

@@ -142,7 +142,11 @@ function DossierContent({
         return (
           <Collapsible key={chapter} open={open} onOpenChange={(next) => chapters.setOpen(chapter, next)}>
             <DossierRuleFocusProvider fallbackFocus={headings[chapter]}>
-              <section className="dossier-chapter" aria-label={`Act ${chapter === 1 ? 'I' : 'II'}`}>
+              <section
+                className="dossier-chapter"
+                data-dossier-act={chapter}
+                aria-label={`Act ${chapter === 1 ? 'I' : 'II'}`}
+              >
                 <h2>
                   <CollapsibleTrigger className="dossier-chapter-trigger" ref={headings[chapter]}>
                     <span className="dossier-act-numeral">{chapter === 1 ? 'I' : 'II'}</span>

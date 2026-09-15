@@ -6,17 +6,13 @@ import { useSuccessionMatch } from './use-succession-match';
 import { useSuccessionStory } from './use-succession-story';
 import { buildSuccessionStory } from './succession-story';
 import { SuccessionTimeline } from './succession-timeline';
+import type { SuccessionTimelineHandle } from './succession-timeline';
 import { SuccessionDossier, useDossierChapters } from './succession-dossier';
 import { SuccessionBoard, SuccessionPrivacy } from './succession-board';
 import { SuccessionControls, SuccessionPhase } from './succession-controls';
 import { dossierEnding } from './dossier-ending';
 import { dossierRowId } from './dossier-row';
-import {
-  dossierNavigationEvents,
-  dossierNavigationIntent,
-  dossierReadingAnchor,
-} from './dossier-navigation-intent';
-import { STORY_WINDOW_SHIFT } from './succession-story-data';
+import { dossierNavigationEvents, dossierNavigationIntent } from './dossier-navigation-intent';
 
 export function SuccessionMatch({ initial }: { initial: Observation2 }) {
   const match = useSuccessionMatch(initial, { history: false });
@@ -44,11 +40,25 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
   const [requestedEnding, setRequestedEnding] = useState<ReturnType<typeof dossierEnding>>(null);
   const endingIntent = useRef<ReturnType<typeof dossierNavigationIntent> | null>(null);
   const readingOwner = useRef<1 | 2 | 'other' | null>(null);
+  const oneTimeline = useRef<SuccessionTimelineHandle>(null);
+  const twoTimeline = useRef<SuccessionTimelineHandle>(null);
 
   useEffect(() => {
     const claim = (event: Event) => {
       const target = event.target;
-      let section = target instanceof Element ? target.closest('.dossier-chapter') : null;
+      const section = target instanceof Element ? target.closest('[data-dossier-act]') : null;
+
+      if (document.querySelector('[role="dialog"]')) {
+        readingOwner.current = 'other';
+
+        return;
+      }
+
+      const control =
+        target instanceof Element &&
+        target.closest(
+          'a[href],button,input,textarea,select,summary,[contenteditable]:not([contenteditable="false"]),[role="button"],[role="link"]',
+        );
 
       const editing =
         target instanceof HTMLElement &&
@@ -58,26 +68,22 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
       const documentKey =
         event instanceof KeyboardEvent &&
         !editing &&
-        ['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown', ' '].includes(event.key);
+        (['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown'].includes(event.key) ||
+          (event.key === ' ' && !control));
 
-      // Document keyboard/scrollbar input can target body, rather than a row.
+      // Native document gestures can target any noninteractive wrapper or gutter.
       // Consult the actual visible reading surface; layout-induced scroll is not input.
       if (
         (documentKey && !(target instanceof Element && target.closest('[data-story-window]'))) ||
-        (!section &&
-          (target === document.body || target === document.documentElement) &&
-          ['wheel', 'touchmove'].includes(event.type))
+        (!section && !control && ['wheel', 'touchmove'].includes(event.type))
       ) {
-        section =
-          Array.from(document.querySelectorAll('.dossier-chapter')).find((section) => {
-            const reader = section.querySelector('[data-story-window]');
-            const box = reader?.getBoundingClientRect();
-
-            return box && box.bottom > 0 && box.top < innerHeight;
-          }) ?? null;
-        readingOwner.current = section?.getAttribute('aria-label') === 'Act I' ? 1 : section ? 2 : null;
+        readingOwner.current = oneTimeline.current?.ownsViewport()
+          ? 1
+          : twoTimeline.current?.ownsViewport()
+            ? 2
+            : null;
       } else
-        readingOwner.current = section?.getAttribute('aria-label') === 'Act I' ? 1 : section ? 2 : 'other';
+        readingOwner.current = section?.getAttribute('data-dossier-act') === '1' ? 1 : section ? 2 : 'other';
     };
 
     const events = new AbortController();
@@ -207,31 +213,15 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
                       endingIntent.current?.cancel();
                       const reader = currentEnding.act === 1 ? actOne : actTwo;
 
-                      // A seek at the current window's center selects that same bounded
-                      // window. Supersede a canceled navigation without committing its tail.
-                      const retained = reader.rows.find(
-                        (row) =>
-                          row.source.cursor === Math.min(reader.after + STORY_WINDOW_SHIFT, reader.delivered),
-                      );
-
                       const intent = dossierNavigationIntent(document, () => {
                         setRequestedEnding(null);
-
-                        if (!retained) return;
-                        void reader.seek(retained.source.eventKey).then(() => {
-                          if (endingIntent.current !== intent) return;
-                          const current = reader.getAnchor();
-
-                          if (current?.eventKey === retained.source.eventKey && !current.focused)
-                            reader.rememberAnchor(dossierReadingAnchor(document, currentEnding.act));
-                        });
                       });
 
                       endingIntent.current = intent;
                       readingOwner.current = currentEnding.act;
                       chapters.setOpen(currentEnding.act, true);
                       setRequestedEnding(currentEnding);
-                      void reader.seek(currentEnding.source.eventKey);
+                      void reader.seek(currentEnding.source.eventKey, intent.signal);
                     }
                   : undefined,
               }
@@ -271,6 +261,7 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
 
           return (
             <SuccessionTimeline
+              ref={chapter === 1 ? oneTimeline : twoTimeline}
               reader={{
                 ...reader,
                 following: live && reader.following,

@@ -1,0 +1,928 @@
+{
+  "results": [
+    {
+      "case": "original pending navigation",
+      "width": 1440,
+      "destination": "portrait",
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "id": "",
+          "key": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1366",
+            "y": 677.375,
+            "height": 108.4375
+          },
+          {
+            "key": "story-226372697-1368",
+            "y": 801.8125,
+            "height": 505.21875
+          }
+        ]
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "id": "",
+          "key": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1366",
+            "y": 677.375,
+            "height": 108.4375
+          },
+          {
+            "key": "story-226372697-1368",
+            "y": 801.8125,
+            "height": 505.21875
+          }
+        ]
+      },
+      "repliesCompleted": 1,
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1050",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1050&through=1178&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1446"
+      ]
+    },
+    {
+      "case": "original pending navigation",
+      "width": 1440,
+      "destination": "portrait-closed",
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "id": "base-ui-_r_1_",
+          "key": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1366",
+            "y": 677.375,
+            "height": 108.4375
+          },
+          {
+            "key": "story-226372697-1368",
+            "y": 801.8125,
+            "height": 505.21875
+          }
+        ]
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "BUTTON",
+          "id": "base-ui-_r_1_",
+          "key": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1366",
+            "y": 677.375,
+            "height": 108.4375
+          },
+          {
+            "key": "story-226372697-1368",
+            "y": 801.8125,
+            "height": 505.21875
+          }
+        ]
+      },
+      "repliesCompleted": 1,
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1446"
+      ]
+    },
+    {
+      "case": "original pending navigation",
+      "width": 1440,
+      "destination": "chapter",
+      "before": {
+        "y": 476,
+        "active": {
+          "tag": "DIV",
+          "id": "",
+          "key": null,
+          "text": "Act I · Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act I record",
+            "after": "0",
+            "delivered": "2",
+            "rows": 2
+          },
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-2609918634-36",
+            "y": 99.984375,
+            "height": 379.25
+          },
+          {
+            "key": "story-2609918634-37",
+            "y": 495.234375,
+            "height": 768.140625
+          }
+        ]
+      },
+      "after": {
+        "y": 476,
+        "active": {
+          "tag": "DIV",
+          "id": "",
+          "key": null,
+          "text": "Act I · Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act I record",
+            "after": "0",
+            "delivered": "2",
+            "rows": 2
+          },
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-2609918634-36",
+            "y": 99.984375,
+            "height": 379.25
+          },
+          {
+            "key": "story-2609918634-37",
+            "y": 495.234375,
+            "height": 768.140625
+          }
+        ]
+      },
+      "repliesCompleted": 1,
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1446",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=0",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=0&through=2&limit=32&maxBytes=16384"
+      ]
+    },
+    {
+      "case": "original pending navigation",
+      "width": 390,
+      "destination": "portrait",
+      "before": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "id": "",
+          "key": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1366",
+            "y": 842.5625,
+            "height": 129.625
+          }
+        ]
+      },
+      "after": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "id": "",
+          "key": null,
+          "text": ""
+        },
+        "modalFocus": true,
+        "dialogs": 1,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1366",
+            "y": 842.5625,
+            "height": 129.625
+          }
+        ]
+      },
+      "repliesCompleted": 1,
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1446"
+      ]
+    },
+    {
+      "case": "original pending navigation",
+      "width": 390,
+      "destination": "portrait-closed",
+      "before": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "id": "base-ui-_r_1_",
+          "key": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1366",
+            "y": 842.5625,
+            "height": 129.625
+          }
+        ]
+      },
+      "after": {
+        "y": 121,
+        "active": {
+          "tag": "BUTTON",
+          "id": "base-ui-_r_1_",
+          "key": null,
+          "text": ""
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1366",
+            "y": 842.5625,
+            "height": 129.625
+          }
+        ]
+      },
+      "repliesCompleted": 1,
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1446"
+      ]
+    },
+    {
+      "case": "original pending navigation",
+      "width": 390,
+      "destination": "chapter",
+      "before": {
+        "y": 754,
+        "active": {
+          "tag": "DIV",
+          "id": "",
+          "key": null,
+          "text": "Act I · Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act I record",
+            "after": "0",
+            "delivered": "2",
+            "rows": 2
+          },
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-2609918634-36",
+            "y": 99.78125,
+            "height": 621.71875
+          },
+          {
+            "key": "story-2609918634-37",
+            "y": 737.5,
+            "height": 980.046875
+          }
+        ]
+      },
+      "after": {
+        "y": 754,
+        "active": {
+          "tag": "DIV",
+          "id": "",
+          "key": null,
+          "text": "Act I · Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act I record",
+            "after": "0",
+            "delivered": "2",
+            "rows": 2
+          },
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-2609918634-36",
+            "y": 99.78125,
+            "height": 621.71875
+          },
+          {
+            "key": "story-2609918634-37",
+            "y": 737.5,
+            "height": 980.046875
+          }
+        ]
+      },
+      "repliesCompleted": 1,
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1604",
+        "/api/matches/story-match-14/history-anchor?epoch=route-finished&eventKey=story-226372697-1446",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=0",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=0&through=2&limit=32&maxBytes=16384"
+      ]
+    },
+    {
+      "case": "native wheel gutter vs column",
+      "width": 1440,
+      "target": {
+        "tag": "DIV",
+        "cls": "",
+        "chapter": null
+      },
+      "before": {
+        "y": 577,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1178",
+            "delivered": "1306",
+            "rows": 91
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1449",
+            "y": 100.375,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 165.375,
+            "height": 244.578125
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 409.953125,
+            "height": 205.578125
+          },
+          {
+            "key": "story-226372697-1453",
+            "y": 615.53125,
+            "height": 126.875
+          },
+          {
+            "key": "story-226372697-1455",
+            "y": 742.40625,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1458",
+            "y": 807.40625,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1460",
+            "y": 872.40625,
+            "height": 244.578125
+          }
+        ]
+      },
+      "afterGutter": {
+        "y": 477,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1178",
+            "delivered": "1306",
+            "rows": 91
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1449",
+            "y": 200.375,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 265.375,
+            "height": 244.578125
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 509.953125,
+            "height": 205.578125
+          },
+          {
+            "key": "story-226372697-1453",
+            "y": 715.53125,
+            "height": 126.875
+          },
+          {
+            "key": "story-226372697-1455",
+            "y": 842.40625,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1458",
+            "y": 907.40625,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1460",
+            "y": 972.40625,
+            "height": 244.578125
+          }
+        ]
+      },
+      "afterColumn": {
+        "y": 7465,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1443",
+            "y": -147.234375,
+            "height": 205.578125
+          },
+          {
+            "key": "story-226372697-1444",
+            "y": 58.34375,
+            "height": 126.875
+          },
+          {
+            "key": "story-226372697-1446",
+            "y": 185.21875,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1449",
+            "y": 250.21875,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 315.21875,
+            "height": 244.578125
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 559.796875,
+            "height": 205.578125
+          },
+          {
+            "key": "story-226372697-1453",
+            "y": 765.375,
+            "height": 126.875
+          },
+          {
+            "key": "story-226372697-1455",
+            "y": 892.25,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1458",
+            "y": 957.25,
+            "height": 65
+          },
+          {
+            "key": "story-226372697-1460",
+            "y": 1022.25,
+            "height": 244.578125
+          }
+        ]
+      },
+      "gutterRequests": [],
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ]
+    },
+    {
+      "case": "native wheel gutter vs column",
+      "width": 390,
+      "target": {
+        "tag": "DIV",
+        "cls": "",
+        "chapter": null
+      },
+      "before": {
+        "y": 864,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1178",
+            "delivered": "1306",
+            "rows": 91
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1449",
+            "y": 99.5625,
+            "height": 60.625
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 160.1875,
+            "height": 359.265625
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 519.453125,
+            "height": 322.015625
+          },
+          {
+            "key": "story-226372697-1453",
+            "y": 841.46875,
+            "height": 148.0625
+          }
+        ]
+      },
+      "afterGutter": {
+        "y": 764,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1178",
+            "delivered": "1306",
+            "rows": 91
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1449",
+            "y": 199.5625,
+            "height": 60.625
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 260.1875,
+            "height": 359.265625
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 619.453125,
+            "height": 322.015625
+          }
+        ]
+      },
+      "afterColumn": {
+        "y": 10195,
+        "active": {
+          "tag": "BODY",
+          "id": "",
+          "key": null,
+          "text": "Skip to contentAGENT GAMEArenaLeaderboardYour rosterHow to playSign inConnect your agent Back to Suc"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "readers": [
+          {
+            "name": "Act II record",
+            "after": "1114",
+            "delivered": "1242",
+            "rows": 86
+          }
+        ],
+        "visible": [
+          {
+            "key": "story-226372697-1443",
+            "y": -281.203125,
+            "height": 322.015625
+          },
+          {
+            "key": "story-226372697-1444",
+            "y": 40.8125,
+            "height": 148.0625
+          },
+          {
+            "key": "story-226372697-1446",
+            "y": 188.875,
+            "height": 60.625
+          },
+          {
+            "key": "story-226372697-1449",
+            "y": 249.5,
+            "height": 60.625
+          },
+          {
+            "key": "story-226372697-1451",
+            "y": 310.125,
+            "height": 359.265625
+          },
+          {
+            "key": "story-226372697-1452",
+            "y": 669.390625,
+            "height": 322.015625
+          }
+        ]
+      },
+      "gutterRequests": [],
+      "requests": [
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14",
+        "/api/bootstrap",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/rounds?epoch=route-finished",
+        "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1114",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1114&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1146&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1242&limit=32&maxBytes=16384",
+        "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1242&limit=32&maxBytes=16384"
+      ]
+    }
+  ],
+  "faults": []
+}

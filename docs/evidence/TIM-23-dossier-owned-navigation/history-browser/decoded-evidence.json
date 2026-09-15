@@ -1,0 +1,253 @@
+[
+  {
+    "title": "announces paused Query reads as offline waiting, keeps delivered rows and cancels hidden or unmounted pauses",
+    "status": "passed"
+  },
+  {
+    "title": "reads 2,048 canonical messages forward/backward through eviction and revisits with a finite DOM",
+    "status": "passed",
+    "bounds": {
+      "maxDOM": 128,
+      "seen": 2054,
+      "requests": 252,
+      "maxBytes": 10774
+    }
+  },
+  {
+    "title": "holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading",
+    "status": "passed",
+    "prepend-geometry": {
+      "before": {
+        "key": "story-392621076-689",
+        "offset": -43
+      },
+      "after": {
+        "key": "story-392621076-689",
+        "offset": -43.375
+      }
+    }
+  },
+  {
+    "title": "pauses hidden reading, follows successive frozen live heads, and recovers a network retry from an empty record",
+    "status": "passed"
+  },
+  {
+    "title": "keeps two open document chapters independently reachable through scrolling, focus and window replacement",
+    "status": "passed"
+  },
+  {
+    "title": "retains the pre-replacement document anchor across forward tall-to-short windows",
+    "status": "passed",
+    "window-anchor-geometry": {
+      "direction": "forward",
+      "rendering": "short",
+      "before": {
+        "key": "story-392621076-236",
+        "cursor": 121,
+        "offset": -35.3125,
+        "scrollY": 23793
+      },
+      "after": {
+        "offset": -35.3125,
+        "scrollY": 4593
+      },
+      "drift": 0
+    }
+  },
+  {
+    "title": "retains the pre-replacement document anchor across forward tall-to-omitted windows",
+    "status": "passed",
+    "window-anchor-geometry": {
+      "direction": "forward",
+      "rendering": "omitted",
+      "before": {
+        "key": "story-392621076-236",
+        "cursor": 121,
+        "offset": -7.3125,
+        "scrollY": 23765
+      },
+      "after": {
+        "offset": -7.3125,
+        "scrollY": 4565
+      },
+      "drift": 0
+    }
+  },
+  {
+    "title": "retains the pre-replacement document anchor across backward tall-to-short windows",
+    "status": "passed",
+    "window-anchor-geometry": {
+      "direction": "backward",
+      "rendering": "short",
+      "before": {
+        "key": "story-392621076-180",
+        "cursor": 65,
+        "offset": -79.4375,
+        "scrollY": 190
+      },
+      "after": {
+        "offset": -79.5,
+        "scrollY": 5261
+      },
+      "drift": -0.0625
+    }
+  },
+  {
+    "title": "retains the pre-replacement document anchor across backward tall-to-omitted windows",
+    "status": "passed",
+    "window-anchor-geometry": {
+      "direction": "backward",
+      "rendering": "omitted",
+      "before": {
+        "key": "story-392621076-180",
+        "cursor": 65,
+        "offset": -79.4375,
+        "scrollY": 190
+      },
+      "after": {
+        "offset": -79.4375,
+        "scrollY": 190
+      },
+      "drift": 0
+    }
+  },
+  {
+    "title": "fences a held document replacement against actual navigation and focus into the other chapter",
+    "status": "passed",
+    "navigation-fence": {
+      "old": {
+        "key": "story-392621076-236",
+        "cursor": 121,
+        "offset": -7.3125,
+        "scrollY": 23765
+      },
+      "before": {
+        "top": 305.65625,
+        "scrollY": 24948
+      },
+      "after": {
+        "top": 305.59375,
+        "scrollY": 10819
+      },
+      "primaryBottom": -520.78125,
+      "drift": -0.0625
+    }
+  },
+  {
+    "title": "keeps live follow at the visible document edge through tall-row eviction",
+    "status": "passed",
+    "live-follow-edge": {
+      "before": -0.109375,
+      "after": 0.21875,
+      "drift": 0.328125
+    }
+  },
+  {
+    "title": "uses document scrolling and retains a focused row across automatic prepending",
+    "status": "passed"
+  },
+  {
+    "title": "crosses a long run of omitted row renderings in both directions without a request loop",
+    "status": "passed"
+  },
+  {
+    "title": "keeps actual command mutation receipts independent of cancelled reading and newer authoritative current",
+    "status": "passed"
+  },
+  {
+    "title": "fences pending reads on match A\u2013B\u2013A, keeps independent readers and recovers errors and epochs",
+    "status": "passed"
+  },
+  {
+    "title": "delayed A\u2013B\u2013A responses and failures cannot replace the newly selected window",
+    "status": "passed"
+  },
+  {
+    "title": "retains successful data on refetch failure and cancels an abandoned manual retry",
+    "status": "passed"
+  },
+  {
+    "title": "concurrent readers share one request; playback bounds the cache and evicted ranges remain reachable",
+    "status": "passed"
+  },
+  {
+    "title": "a remaining reader keeps its shared pending request when the other reader chooses unmount",
+    "status": "passed"
+  },
+  {
+    "title": "a remaining reader keeps its shared pending request when the other reader chooses seek",
+    "status": "passed"
+  },
+  {
+    "title": "offline reads show a paused state and resume without inventing a displayed frame",
+    "status": "passed"
+  },
+  {
+    "title": "a missing opaque anchor remains manually recoverable and translates the selected window",
+    "status": "passed"
+  },
+  {
+    "title": "a reset refreshes current once and manual retry recovers when the epoch is unchanged",
+    "status": "passed"
+  },
+  {
+    "title": "accepted epoch replacement retires in-flight scopes and old errors cannot reappear",
+    "status": "passed"
+  },
+  {
+    "title": "double submission is guarded and a receipt acknowledges its ID after a newer current packet",
+    "status": "passed"
+  },
+  {
+    "title": "current retry preserves an unresolved command and its success",
+    "status": "passed"
+  },
+  {
+    "title": "current retry preserves an unresolved command and its failure",
+    "status": "passed"
+  },
+  {
+    "title": "another seat's takeover preserves the submitting controller's success",
+    "status": "passed"
+  },
+  {
+    "title": "another seat's takeover preserves the submitting controller's failure",
+    "status": "passed"
+  },
+  {
+    "title": "a command receipt introducing the terminal archive retains its acknowledgment",
+    "status": "passed"
+  },
+  {
+    "title": "command rejection and offline failure release pending without automatic replay",
+    "status": "passed"
+  },
+  {
+    "title": "late command success is ignored after takeover and after unmount",
+    "status": "passed"
+  },
+  {
+    "title": "a public-seat-only takeover suppresses the old command's success",
+    "status": "passed"
+  },
+  {
+    "title": "late command failure is ignored after takeover and after unmount",
+    "status": "passed"
+  },
+  {
+    "title": "a public-seat-only takeover suppresses the old command's failure",
+    "status": "passed"
+  },
+  {
+    "title": "a rejected stale packet after reconnect does not announce a resync",
+    "status": "passed"
+  },
+  {
+    "title": "explicit current retry releases an abandoned live page so manual history loading can recover",
+    "status": "passed"
+  },
+  {
+    "title": "protocol one consumes its decoded initial observation once and retries a fresh read",
+    "status": "passed"
+  }
+]
