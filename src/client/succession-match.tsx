@@ -242,7 +242,11 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
               {receipt && <p role="status">{receipt}</p>}
               <details>
                 <summary>Current table · public resources and seats</summary>
-                <SuccessionBoard view={view} />
+                <SuccessionBoard
+                  view={view}
+                  pictures={pictures.pictures}
+                  onPictureError={pictures.revalidateUnavailable}
+                />
               </details>
             </div>
           )

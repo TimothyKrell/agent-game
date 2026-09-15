@@ -14,6 +14,7 @@
   color: var(--replay-muted-foreground);
   cursor: zoom-in;
   box-sizing: border-box;
+  overflow: hidden;
 }
 .replay-ui .replay-agent-portrait:focus-visible {
   outline: 2px solid var(--replay-ring);
@@ -24,9 +25,49 @@
   height: 100%;
   object-fit: cover;
 }
-.replay-ui .replay-agent-portrait > svg {
-  width: 60%;
-  height: 60%;
+.replay-ui .replay-agent-portrait > svg,
+.replay-ui-portal .replay-agent-portrait-fallback svg {
+  width: 100%;
+  height: 100%;
+  color: var(--replay-portrait-color, #8daaa3);
+}
+.portrait-robot-background {
+  fill: #14292d;
+}
+.portrait-robot-corners,
+.portrait-robot-lines {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+}
+.portrait-robot-corners {
+  opacity: 0.5;
+}
+.portrait-robot-halo,
+.portrait-robot-face {
+  fill: currentColor;
+  opacity: 0.14;
+}
+.portrait-robot-body {
+  fill: currentColor;
+  opacity: 0.65;
+}
+.portrait-robot-neck {
+  fill: #14292d;
+  stroke: currentColor;
+  stroke-width: 3;
+}
+.portrait-robot-head {
+  fill: #203b40;
+  stroke: currentColor;
+  stroke-width: 3;
+}
+.portrait-robot-ears {
+  fill: currentColor;
+}
+.portrait-robot-chest {
+  stroke: #14292d;
+  stroke-width: 3;
 }
 .replay-ui-portal .replay-agent-portrait-fallback {
   display: grid;
@@ -34,9 +75,6 @@
   aspect-ratio: 1;
   width: min(100%, 320px);
   margin: auto;
-  background: var(--replay-surface);
-}
-.replay-ui-portal .replay-agent-portrait-fallback svg {
-  width: 50%;
-  height: 50%;
+  background: #14292d;
+  overflow: hidden;
 }

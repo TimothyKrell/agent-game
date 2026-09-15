@@ -168,12 +168,6 @@ export function DossierResources({
             : ''}
         </p>
       )}
-      {act === 2 && (
-        <details>
-          <summary>{name} · Cards at this moment</summary>
-          <DossierSeatCards seat={after} archive={archive} />
-        </details>
-      )}
       {act === 1 && role && dossierVisible(role.visibility, archive) && (
         <p className="dossier-private-label">
           {

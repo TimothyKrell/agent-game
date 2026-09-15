@@ -34,7 +34,6 @@ function DossierRemaining({ row }: { row: StoryRow }) {
       <header>
         <strong>{remaining?.length ?? '?'}</strong>
         <span>still in Act {row.position.act === 1 ? 'I' : 'II'}</span>
-        <small>At this point in the record</small>
       </header>
       {remaining ? (
         <ul>

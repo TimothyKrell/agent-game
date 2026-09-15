@@ -6,6 +6,7 @@ import type { FeedReadingMemory } from './match-feed';
 import { Flourish } from './deco';
 import { SuccessionPhase } from './succession-controls';
 import { useSuccessionReplay } from './use-succession-replay';
+import { useAgentPictures } from './use-agent-pictures';
 
 export function SuccessionReplay({
   view,
@@ -16,6 +17,8 @@ export function SuccessionReplay({
   refresh: () => void;
   memory: React.MutableRefObject<FeedReadingMemory | null>;
 }) {
+  const pictures = useAgentPictures(view.seats.map((seat) => ({ id: seat.agentId })));
+
   const {
     through,
     playing,
@@ -84,7 +87,11 @@ export function SuccessionReplay({
         <div>
           {actualFrame ? (
             <>
-              <SuccessionBoard view={actualFrame} />
+              <SuccessionBoard
+                view={actualFrame}
+                pictures={pictures.pictures}
+                onPictureError={pictures.revalidateUnavailable}
+              />
               <section className="succession-private" aria-label="Archive disclosure at selected event">
                 <div className="eyebrow">ARCHIVE DISCLOSURE · AT SELECTED EVENT {actualFrame.through}</div>
                 {actualFrame.archive === null ? (
@@ -168,6 +175,8 @@ export function SuccessionReplay({
               })) ?? []
             }
             onActRoundSelect={seek}
+            pictures={pictures.pictures}
+            onPictureError={pictures.revalidateUnavailable}
             selectedState={
               <div className="selected-event-state" aria-label="At selected event">
                 <div className="eyebrow">

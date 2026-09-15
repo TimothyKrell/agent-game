@@ -117,7 +117,8 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
       const html = renderRow(row, model, false);
       expect(html).toContain('dossier-departure');
       expect(html).toContain(`<strong>${expectedCounts[index]}</strong>`);
-      expect(html).toContain('At this point in the record');
+      expect(html).not.toContain('At this point in the record');
+      expect(html).not.toContain('Cards at this moment');
     }
 
     const quotes = capturedEvents.filter((event) => event.type === 'chat');
