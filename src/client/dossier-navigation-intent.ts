@@ -1,5 +1,14 @@
 export const dossierNavigationEvents = ['pointerdown', 'click', 'keydown', 'wheel', 'touchmove'] as const;
 
+/** A real one-pixel move is reading intent; sub-pixel layout drift is not. */
+export const DOSSIER_TRAVERSAL_THRESHOLD = 1;
+
+export function dossierTraversalDirection(previous: number, current: number) {
+  const delta = current - previous;
+
+  return Math.abs(delta) < DOSSIER_TRAVERSAL_THRESHOLD ? null : delta < 0 ? 'earlier' : 'later';
+}
+
 /** One explicit reading request owns focus only until the viewer takes another action. */
 export function dossierNavigationIntent(document: Document, onIntervene: () => void) {
   const owner = document.activeElement;
