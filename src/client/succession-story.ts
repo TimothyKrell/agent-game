@@ -879,7 +879,7 @@ export function buildSuccessionStory(input: StoryWindow): StoryModel {
 
     const fact = readStoryFact(event);
 
-    // One command can publish next-turn phase state before its private response/hand updates.
+    // One command can publish next-turn or terminal phase state before its private response/hand updates.
     // Keep that causal tail separate from the active board, and expire it at the next activity.
     const trailing =
       fact.kind === 'reaction' || (fact.kind === 'private-cards' && fact.operation === 'hand-updated');
@@ -888,7 +888,7 @@ export function buildSuccessionStory(input: StoryWindow): StoryModel {
       !trailing &&
       fact.kind !== 'audit' &&
       fact.kind !== 'finished' &&
-      !(fact.kind === 'phase' && ['discussion', 'act-2:discussion'].includes(fact.phase))
+      !(fact.kind === 'phase' && ['discussion', 'act-2:discussion', 'finished'].includes(fact.phase))
     )
       state.completed = null;
 
