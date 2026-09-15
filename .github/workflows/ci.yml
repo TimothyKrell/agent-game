@@ -81,10 +81,15 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: npm run build
+      - name: Install browser used by native identity tests
+        run: npx playwright install --with-deps chromium
       - name: Exercise complete unit inventory shard
         shell: bash
         env:
           SUCCESSION_BOUNDS_RESULTS_PATH: succession-worker-bounds-results.json
+          TIM27_IDENTITY_EVIDENCE_DIR: .agent-game/ci-evidence/identity
+          TIM27_BROKER_EVIDENCE_DIR: .agent-game/ci-evidence/broker
+          TIM27_PLAYABLE_EVIDENCE_DIR: .agent-game/ci-evidence/playable
         run: |
           node -e 'const os = require("node:os"); console.log(JSON.stringify({ node: process.version, cpus: os.availableParallelism(), memoryBytes: os.totalmem(), workers: 1 }))' | tee unit.log
           npm test -- --shard=${{ matrix.shard }}/3 --maxWorkers=1 --reporter=verbose --reporter=json --outputFile.json=unit-results.json 2>&1 | tee -a unit.log
@@ -98,6 +103,9 @@ jobs:
             unit-results.json
             succession-worker-bounds-results.json
             /tmp/opencode/succession-worker-small-baseline-*.json
+            .agent-game/ci-evidence
+            /tmp/opencode/tim27-playable-*
+          include-hidden-files: true
           retention-days: 7
 
   api:
