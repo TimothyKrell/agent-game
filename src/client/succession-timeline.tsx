@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { Component, useEffect, useLayoutEffect, useRef } from 'react';
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import type { StoryRow } from './succession-story';
 import type { SuccessionStoryReader } from './use-succession-story';
@@ -7,6 +7,49 @@ export interface SuccessionTimelineProps extends Omit<HTMLAttributes<HTMLDivElem
   reader: SuccessionStoryReader;
   renderRow: (row: StoryRow) => ReactNode;
   scrollRoot?: 'document' | 'self';
+}
+
+interface WindowPosition {
+  owner: HTMLElement;
+  eventKey: string | null;
+  offset: number;
+  following: boolean;
+  version: string | undefined;
+}
+
+interface WindowCommitProps {
+  reader: SuccessionStoryReader;
+  scrollRoot: 'document' | 'self';
+  capture: () => WindowPosition | null;
+  restore: (position: WindowPosition) => void;
+  children: ReactNode;
+}
+
+/** React's pre-mutation snapshot fences real navigation without depending on post-eviction geometry. */
+class WindowCommit extends Component<WindowCommitProps, Record<string, never>, WindowPosition | null> {
+  getSnapshotBeforeUpdate(previous: WindowCommitProps) {
+    const { reader, scrollRoot, capture } = this.props;
+
+    return reader.enabled &&
+      previous.reader.enabled &&
+      reader.getAnchor === previous.reader.getAnchor &&
+      scrollRoot === previous.scrollRoot &&
+      reader.rows !== previous.reader.rows
+      ? capture()
+      : null;
+  }
+
+  componentDidUpdate(
+    _previous: WindowCommitProps,
+    _state: Record<string, never>,
+    position: WindowPosition | null,
+  ) {
+    if (position) this.props.restore(position);
+  }
+
+  render() {
+    return this.props.children;
+  }
 }
 
 /** Reading mechanics only. The caller owns rows, chapters, disclosure and visual composition. */
@@ -41,10 +84,10 @@ export function SuccessionTimeline({
     else window.scrollBy({ top: delta, behavior: 'instant' });
   };
 
-  const ownsViewport = () => {
+  const viewportOwner = () => {
     // Document readers share a scroller. The first visible reader owns it, unless a
     // visible row in another reader has focus; offscreen anchors never claim it.
-    if (scrollRoot === 'self') return true;
+    if (scrollRoot === 'self') return root.current;
 
     const visible = Array.from(
       document.querySelectorAll<HTMLElement>('[data-story-scroll-root="document"]'),
@@ -62,29 +105,85 @@ export function SuccessionTimeline({
         ? visible.find((element) => focused !== element && element.contains(focused))
         : undefined;
 
-    return (focusedReader ?? visible[0]) === root.current;
+    return focusedReader ?? visible[0] ?? null;
+  };
+
+  const ownsViewport = () => viewportOwner() === root.current;
+
+  const readingRow = (owner: HTMLElement) => {
+    const elements = Array.from(owner.querySelectorAll<HTMLElement>('[data-story-key]'));
+    const focused = elements.find((element) => element.contains(document.activeElement));
+
+    const row =
+      focused ??
+      elements.find(
+        (element) =>
+          element.getBoundingClientRect().bottom > top() && element.getBoundingClientRect().height > 0,
+      );
+
+    return { row, focused: Boolean(focused) };
+  };
+
+  const captureWindow = (): WindowPosition | null => {
+    const owner = viewportOwner();
+
+    if (!owner) return null;
+    const { row } = readingRow(owner);
+
+    const following = owner === root.current && latest.current.following;
+
+    if (!row && !following) return null;
+
+    return {
+      owner,
+      eventKey: row?.dataset.storyKey ?? null,
+      offset: row ? row.getBoundingClientRect().top - top() : 0,
+      following,
+      version: owner.dataset.storyVersion,
+    };
+  };
+
+  const restoreWindow = (snapshot: WindowPosition) => {
+    if (!snapshot.owner.isConnected || snapshot.owner.getBoundingClientRect().height === 0) return;
+
+    // A simultaneously replaced visible reader restores its own window (including
+    // live follow); a sibling must not override that reader's commit snapshot.
+    if (snapshot.owner !== root.current && snapshot.owner.dataset.storyVersion !== snapshot.version) return;
+
+    const row = Array.from(snapshot.owner.querySelectorAll<HTMLElement>('[data-story-key]')).find(
+      (element) => element.dataset.storyKey === snapshot.eventKey,
+    );
+
+    const delta = snapshot.following
+      ? (end.current?.getBoundingClientRect().bottom ?? bottom()) - bottom()
+      : row
+        ? row.getBoundingClientRect().top - top() - snapshot.offset
+        : 0;
+
+    // This snapshot belongs only to the synchronous commit that captured it. If a
+    // held read finishes after navigation, captureWindow selects the newly visible
+    // chapter instead, preserving that chapter through changes above it.
+    adjusting.current = true;
+    move(delta);
+    previousScroll.current = position();
+    adjusting.current = false;
+    ownsPosition.current = snapshot.owner === root.current;
+
+    if (ownsPosition.current) remember();
   };
 
   const remember = () => {
     const container = root.current;
 
     if (!container || !latest.current.enabled || !ownsPosition.current) return;
-    const elements = Array.from(container.querySelectorAll<HTMLElement>('[data-story-key]'));
-    const focused = elements.find((element) => element.contains(document.activeElement));
-
-    const visible = elements.find(
-      (element) =>
-        element.getBoundingClientRect().bottom > top() && element.getBoundingClientRect().height > 0,
-    );
-
-    const element = focused ?? visible;
+    const { row: element, focused } = readingRow(container);
 
     if (element?.dataset.storyKey)
       latest.current.rememberAnchor({
         eventKey: element.dataset.storyKey,
         cursor: Number(element.dataset.storyCursor),
         offset: element.getBoundingClientRect().top - top(),
-        focused: Boolean(focused),
+        focused,
       });
   };
 
@@ -119,7 +218,7 @@ export function SuccessionTimeline({
     wasEnabled.current = reader.enabled;
     // Status/follow/head-only snapshots do not replace rows or move the reading anchor.
     restore();
-  }, [reader.version, reader.enabled, scrollRoot]);
+  }, [reader.enabled, scrollRoot]);
 
   useEffect(() => {
     boundaryCheck.current();
@@ -289,77 +388,80 @@ export function SuccessionTimeline({
   if (scrollRoot === 'self') readingStyle.overflowY = 'auto';
 
   return (
-    <div
-      {...props}
-      ref={root}
-      tabIndex={props.tabIndex ?? 0}
-      style={readingStyle}
-      onKeyDown={(event) => {
-        props.onKeyDown?.(event);
+    <WindowCommit reader={reader} scrollRoot={scrollRoot} capture={captureWindow} restore={restoreWindow}>
+      <div
+        {...props}
+        ref={root}
+        tabIndex={props.tabIndex ?? 0}
+        style={readingStyle}
+        onKeyDown={(event) => {
+          props.onKeyDown?.(event);
 
-        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+          if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
 
-        if (
-          event.target instanceof HTMLElement &&
-          event.target.closest('input, textarea, select, [contenteditable="true"]')
-        )
-          return;
+          if (
+            event.target instanceof HTMLElement &&
+            event.target.closest('input, textarea, select, [contenteditable="true"]')
+          )
+            return;
 
-        const distance = new Map([
-          ['ArrowUp', -40],
-          ['ArrowDown', 40],
-          ['PageUp', top() - bottom() + 40],
-          ['PageDown', bottom() - top() - 40],
-        ]).get(event.key);
+          const distance = new Map([
+            ['ArrowUp', -40],
+            ['ArrowDown', 40],
+            ['PageUp', top() - bottom() + 40],
+            ['PageDown', bottom() - top() - 40],
+          ]).get(event.key);
 
-        if (distance === undefined) return;
-        event.preventDefault();
-        ownsPosition.current = ownsViewport();
-        direction.current = distance < 0 ? 'earlier' : 'later';
-        latest.current.detach();
-        move(distance);
-        remember();
-        boundaryCheck.current();
-      }}
-      aria-busy={reader.status === 'loading'}
-      data-story-window=""
-      data-story-scroll-root={scrollRoot}
-      data-story-after={reader.after}
-      data-story-delivered={reader.delivered}
-    >
-      <div ref={start} aria-hidden="true" />
-      {reader.rows.map((row) => {
-        const content = renderRow(row);
+          if (distance === undefined) return;
+          event.preventDefault();
+          ownsPosition.current = ownsViewport();
+          direction.current = distance < 0 ? 'earlier' : 'later';
+          latest.current.detach();
+          move(distance);
+          remember();
+          boundaryCheck.current();
+        }}
+        aria-busy={reader.status === 'loading'}
+        data-story-window=""
+        data-story-scroll-root={scrollRoot}
+        data-story-version={reader.version}
+        data-story-after={reader.after}
+        data-story-delivered={reader.delivered}
+      >
+        <div ref={start} aria-hidden="true" />
+        {reader.rows.map((row) => {
+          const content = renderRow(row);
 
-        return content == null ? null : (
-          <div key={row.key} data-story-key={row.source.eventKey} data-story-cursor={row.source.cursor}>
-            {content}
-          </div>
-        );
-      })}
-      <div ref={end} aria-hidden="true" />
-      <div role="status" aria-live="polite">
-        {reader.status === 'loading'
-          ? 'Loading record…'
-          : reader.status === 'paused'
-            ? 'Offline. Waiting for connection to load the record.'
-            : reader.status === 'ready' && reader.rows.length === 0
-              ? 'No records yet.'
-              : ''}
-      </div>
-      {reader.error && (
-        <div role="alert">
-          {reader.error}{' '}
-          <button type="button" onClick={() => void reader.retry()}>
-            Retry
-          </button>
+          return content == null ? null : (
+            <div key={row.key} data-story-key={row.source.eventKey} data-story-cursor={row.source.cursor}>
+              {content}
+            </div>
+          );
+        })}
+        <div ref={end} aria-hidden="true" />
+        <div role="status" aria-live="polite">
+          {reader.status === 'loading'
+            ? 'Loading record…'
+            : reader.status === 'paused'
+              ? 'Offline. Waiting for connection to load the record.'
+              : reader.status === 'ready' && reader.rows.length === 0
+                ? 'No records yet.'
+                : ''}
         </div>
-      )}
-      {!reader.following && reader.newEvents > 0 && (
-        <button type="button" onClick={() => void reader.follow()}>
-          {reader.newEvents} new records · Read latest
-        </button>
-      )}
-    </div>
+        {reader.error && (
+          <div role="alert">
+            {reader.error}{' '}
+            <button type="button" onClick={() => void reader.retry()}>
+              Retry
+            </button>
+          </div>
+        )}
+        {!reader.following && reader.newEvents > 0 && (
+          <button type="button" onClick={() => void reader.follow()}>
+            {reader.newEvents} new records · Read latest
+          </button>
+        )}
+      </div>
+    </WindowCommit>
   );
 }

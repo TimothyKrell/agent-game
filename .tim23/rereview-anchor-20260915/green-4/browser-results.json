@@ -1,0 +1,648 @@
+{
+  "config": {
+    "argv": [
+      "/home/timothykrell/.vite-plus/js_runtime/node/24.21.0/bin/node",
+      "/tmp/opencode/agent-game-TIM-23/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      ".tim23/playwright.config.ts",
+      "e2e/continuous-story.spec.ts",
+      "--timeout=30000"
+    ],
+    "configFile": "/tmp/opencode/agent-game-TIM-23/.tim23/playwright.config.ts",
+    "rootDir": "/tmp/opencode/agent-game-TIM-23/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/opencode/agent-game-TIM-23/.tim23/rereview-anchor-20260915/green-4/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/opencode/agent-game-TIM-23/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "continuous-story.spec.ts",
+          "query-lifecycle.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/opencode/agent-game-TIM-23/.tim23/rereview-anchor-20260915/green-4/browser-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "continuous-story.spec.ts",
+      "file": "continuous-story.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "announces paused Query reads as offline waiting, keeps delivered rows and cancels hidden or unmounted pauses",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 957,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:41:54.248Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-fa1cbe84afb81033f5c1",
+          "file": "continuous-story.spec.ts",
+          "line": 161,
+          "column": 1
+        },
+        {
+          "title": "reads 2,048 canonical messages forward/backward through eviction and revisits with a finite DOM",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8923,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:41:56.096Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "bounds",
+                      "contentType": "application/json",
+                      "body": "eyJtYXhET00iOjEyOCwic2VlbiI6MjA1NCwicmVxdWVzdHMiOjI1MiwibWF4Qnl0ZXMiOjEwNzc0fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-3118ced9d8d67877501d",
+          "file": "continuous-story.spec.ts",
+          "line": 211,
+          "column": 1
+        },
+        {
+          "title": "holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 719,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:05.025Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prepend-geometry",
+                      "contentType": "application/json",
+                      "body": "eyJiZWZvcmUiOnsia2V5Ijoic3RvcnktMzkyNjIxMDc2LTY4OSIsIm9mZnNldCI6LTQzfSwiYWZ0ZXIiOnsia2V5Ijoic3RvcnktMzkyNjIxMDc2LTY4OSIsIm9mZnNldCI6LTQzLjM3NX19"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-ca2b3f06cb841d13959b",
+          "file": "continuous-story.spec.ts",
+          "line": 272,
+          "column": 1
+        },
+        {
+          "title": "pauses hidden reading, follows successive frozen live heads, and recovers a network retry from an empty record",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 771,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:05.750Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-48a84b2b96d14601a00c",
+          "file": "continuous-story.spec.ts",
+          "line": 329,
+          "column": 1
+        },
+        {
+          "title": "keeps two open document chapters independently reachable through scrolling, focus and window replacement",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1522,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:06.526Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-cb6f26a88187447c7442",
+          "file": "continuous-story.spec.ts",
+          "line": 371,
+          "column": 1
+        },
+        {
+          "title": "retains the pre-replacement document anchor across forward tall-to-short windows",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 720,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:08.054Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "window-anchor-geometry",
+                      "contentType": "application/json",
+                      "body": "eyJkaXJlY3Rpb24iOiJmb3J3YXJkIiwicmVuZGVyaW5nIjoic2hvcnQiLCJiZWZvcmUiOnsia2V5Ijoic3RvcnktMzkyNjIxMDc2LTIzNiIsImN1cnNvciI6MTIxLCJvZmZzZXQiOi0zNS4zMTI1LCJzY3JvbGxZIjoyMzc5M30sImFmdGVyIjp7Im9mZnNldCI6LTM1LjMxMjUsInNjcm9sbFkiOjQ1OTN9LCJkcmlmdCI6MH0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-fa3e71932d27ecafa64a",
+          "file": "continuous-story.spec.ts",
+          "line": 457,
+          "column": 5
+        },
+        {
+          "title": "retains the pre-replacement document anchor across forward tall-to-omitted windows",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 562,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:08.779Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "window-anchor-geometry",
+                      "contentType": "application/json",
+                      "body": "eyJkaXJlY3Rpb24iOiJmb3J3YXJkIiwicmVuZGVyaW5nIjoib21pdHRlZCIsImJlZm9yZSI6eyJrZXkiOiJzdG9yeS0zOTI2MjEwNzYtMjM2IiwiY3Vyc29yIjoxMjEsIm9mZnNldCI6LTcuMzEyNSwic2Nyb2xsWSI6MjM3NjV9LCJhZnRlciI6eyJvZmZzZXQiOi03LjMxMjUsInNjcm9sbFkiOjQ1NjV9LCJkcmlmdCI6MH0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-4d17c96170e848c0c4a2",
+          "file": "continuous-story.spec.ts",
+          "line": 457,
+          "column": 5
+        },
+        {
+          "title": "retains the pre-replacement document anchor across backward tall-to-short windows",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 607,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:09.346Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "window-anchor-geometry",
+                      "contentType": "application/json",
+                      "body": "eyJkaXJlY3Rpb24iOiJiYWNrd2FyZCIsInJlbmRlcmluZyI6InNob3J0IiwiYmVmb3JlIjp7ImtleSI6InN0b3J5LTM5MjYyMTA3Ni0xODAiLCJjdXJzb3IiOjY1LCJvZmZzZXQiOi03OS40Mzc1LCJzY3JvbGxZIjoxOTB9LCJhZnRlciI6eyJvZmZzZXQiOi03OS41LCJzY3JvbGxZIjo1MjYxfSwiZHJpZnQiOi0wLjA2MjV9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-dd1f9604cfa0a67704bb",
+          "file": "continuous-story.spec.ts",
+          "line": 457,
+          "column": 5
+        },
+        {
+          "title": "retains the pre-replacement document anchor across backward tall-to-omitted windows",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 560,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:09.959Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "window-anchor-geometry",
+                      "contentType": "application/json",
+                      "body": "eyJkaXJlY3Rpb24iOiJiYWNrd2FyZCIsInJlbmRlcmluZyI6Im9taXR0ZWQiLCJiZWZvcmUiOnsia2V5Ijoic3RvcnktMzkyNjIxMDc2LTE4MCIsImN1cnNvciI6NjUsIm9mZnNldCI6LTc5LjQzNzUsInNjcm9sbFkiOjE5MH0sImFmdGVyIjp7Im9mZnNldCI6LTc5LjQzNzUsInNjcm9sbFkiOjE5MH0sImRyaWZ0IjowfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-18f56702e7a75bc51658",
+          "file": "continuous-story.spec.ts",
+          "line": 457,
+          "column": 5
+        },
+        {
+          "title": "fences a held document replacement against actual navigation and focus into the other chapter",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 563,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:10.525Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "navigation-fence",
+                      "contentType": "application/json",
+                      "body": "eyJvbGQiOnsia2V5Ijoic3RvcnktMzkyNjIxMDc2LTIzNiIsImN1cnNvciI6MTIxLCJvZmZzZXQiOi03LjMxMjUsInNjcm9sbFkiOjIzNzY1fSwiYmVmb3JlIjp7InRvcCI6MzA1LjY1NjI1LCJzY3JvbGxZIjoyNDk0OH0sImFmdGVyIjp7InRvcCI6MzA1LjU5Mzc1LCJzY3JvbGxZIjoxMDgxOX0sInByaW1hcnlCb3R0b20iOi01MjAuNzgxMjUsImRyaWZ0IjotMC4wNjI1fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-cbc5a827b3b2dbe5c7da",
+          "file": "continuous-story.spec.ts",
+          "line": 579,
+          "column": 1
+        },
+        {
+          "title": "keeps live follow at the visible document edge through tall-row eviction",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 579,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:11.092Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "live-follow-edge",
+                      "contentType": "application/json",
+                      "body": "eyJiZWZvcmUiOi0wLjEwOTM3NSwiYWZ0ZXIiOjAuMjE4NzUsImRyaWZ0IjowLjMyODEyNX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-015f828e6199f1c2389f",
+          "file": "continuous-story.spec.ts",
+          "line": 631,
+          "column": 1
+        },
+        {
+          "title": "uses document scrolling and retains a focused row across automatic prepending",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 415,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:11.676Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-6e520dbf97fd86a70b43",
+          "file": "continuous-story.spec.ts",
+          "line": 686,
+          "column": 1
+        },
+        {
+          "title": "crosses a long run of omitted row renderings in both directions without a request loop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1006,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:12.096Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-070dd660ef84455d8719",
+          "file": "continuous-story.spec.ts",
+          "line": 709,
+          "column": 1
+        },
+        {
+          "title": "keeps actual command mutation receipts independent of cancelled reading and newer authoritative current",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 407,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:13.106Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-c7b3299594bfc45fd9a3",
+          "file": "continuous-story.spec.ts",
+          "line": 734,
+          "column": 1
+        },
+        {
+          "title": "fences pending reads on match A–B–A, keeps independent readers and recovers errors and epochs",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1087,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T03:42:13.517Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bf3d64b3fa16b785ea0-6cdb6243029398bafae2",
+          "file": "continuous-story.spec.ts",
+          "line": 779,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-15T03:41:53.444Z",
+    "duration": 21221.924,
+    "expected": 15,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
