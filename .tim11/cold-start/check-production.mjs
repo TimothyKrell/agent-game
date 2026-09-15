@@ -3,15 +3,17 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
-const out = '.tim11/cold-start/runs/production';
+const out = process.env.TIM_PRODUCTION_OUT ?? '.tim11/cold-start/runs/production';
+
+const evidence = process.env.TIM_PRODUCTION_EVIDENCE ?? 'docs/evidence/TIM-11-corrections';
 
 await mkdir(out, { recursive: true });
 
-await mkdir('docs/evidence/TIM-11-corrections', { recursive: true });
+await mkdir(evidence, { recursive: true });
 
 let source = await readFile('.tim11/production.mjs', 'utf8');
 
-source = source.replace("'docs/evidence/TIM-11-foundations'", "'docs/evidence/TIM-11-corrections'");
+source = source.replace("'docs/evidence/TIM-11-foundations'", JSON.stringify(evidence));
 
 source = source.replaceAll('6192', '6191');
 

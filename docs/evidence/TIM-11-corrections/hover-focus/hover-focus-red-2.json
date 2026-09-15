@@ -1,0 +1,234 @@
+{
+  "config": {
+    "argv": [
+      "/home/timothykrell/.vite-plus/js_runtime/node/24.21.0/bin/node",
+      "/tmp/opencode/agent-game-TIM-11/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      ".tim11/cold-start/interaction.config.ts",
+      "--reporter=list,json",
+      "--grep",
+      "hover (outside scroll|active trigger unmount)"
+    ],
+    "configFile": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/interaction.config.ts",
+    "rootDir": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/runs/hover-focus-red-2/interactions",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start",
+        "testIgnore": [],
+        "testMatch": [
+          "rule-help.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "rule-help.spec.ts",
+      "file": "rule-help.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "hover outside scroll preserves an independent input's focus",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5852,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('textbox', { name: 'Reading note' })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('textbox', { name: 'Reading note' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('textbox', { name: 'Reading note' })\u001b[22m\n\u001b[2m    14 × locator resolved to <input id=\"reading-note\"/>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('textbox', { name: 'Reading note' })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('textbox', { name: 'Reading note' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('textbox', { name: 'Reading note' })\u001b[22m\n\u001b[2m    14 × locator resolved to <input id=\"reading-note\"/>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n    at /tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts:104:25",
+                    "location": {
+                      "file": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts",
+                      "column": 25,
+                      "line": 104
+                    },
+                    "snippet": "  102 |     }));\n  103 |     await test.info().attach('final-focus', { body: JSON.stringify({ dismissal, activeElement }), contentType: 'application/json' });\n> 104 |     await expect(input).toBeFocused();\n      |                         ^\n  105 |     await page.keyboard.type(' still focused');\n  106 |     await expect(input).toHaveValue('Keep reading here still focused');\n  107 |     expect(errors).toEqual([]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts",
+                        "column": 25,
+                        "line": 104
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('textbox', { name: 'Reading note' })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('textbox', { name: 'Reading note' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('textbox', { name: 'Reading note' })\u001b[22m\n\u001b[2m    14 × locator resolved to <input id=\"reading-note\"/>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n\n  102 |     }));\n  103 |     await test.info().attach('final-focus', { body: JSON.stringify({ dismissal, activeElement }), contentType: 'application/json' });\n> 104 |     await expect(input).toBeFocused();\n      |                         ^\n  105 |     await page.keyboard.type(' still focused');\n  106 |     await expect(input).toHaveValue('Keep reading here still focused');\n  107 |     expect(errors).toEqual([]);\n    at /tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts:104:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T02:26:53.060Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "final-focus",
+                      "contentType": "application/json",
+                      "body": "eyJkaXNtaXNzYWwiOiJvdXRzaWRlIHNjcm9sbCIsImFjdGl2ZUVsZW1lbnQiOiI8YnV0dG9uIHR5cGU9XCJidXR0b25cIiB0YWJpbmRleD1cIjBcIiBkYXRhLWJhc2UtdWktY2xpY2stdHJpZ2dlcj1cIlwiIGlkPVwiX3JfOV9cIiBhcmlhLWhhc3BvcHVwPVwiZGlhbG9nXCIgYXJpYS1leHBhbmRlZD1cImZhbHNlXCIgY2xhc3M9XCJyZXBsYXktcnVsZS10cmlnZ2VyIFwiPlRyZWFzdXJlciBydWxlczwvYnV0dG9uPiJ9"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/runs/hover-focus-red-2/interactions/rule-help-hover-outside-sc-bffa9-n-independent-input-s-focus/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/runs/hover-focus-red-2/interactions/rule-help-hover-outside-sc-bffa9-n-independent-input-s-focus/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts",
+                    "column": 25,
+                    "line": 104
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4976067260b09699cf1-f3d2eba9175004169c31",
+          "file": "rule-help.spec.ts",
+          "line": 78,
+          "column": 3
+        },
+        {
+          "title": "hover active trigger unmount preserves an independent input's focus",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5667,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('textbox', { name: 'Reading note' })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('textbox', { name: 'Reading note' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('textbox', { name: 'Reading note' })\u001b[22m\n\u001b[2m    14 × locator resolved to <input id=\"reading-note\"/>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('textbox', { name: 'Reading note' })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('textbox', { name: 'Reading note' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('textbox', { name: 'Reading note' })\u001b[22m\n\u001b[2m    14 × locator resolved to <input id=\"reading-note\"/>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n    at /tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts:104:25",
+                    "location": {
+                      "file": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts",
+                      "column": 25,
+                      "line": 104
+                    },
+                    "snippet": "  102 |     }));\n  103 |     await test.info().attach('final-focus', { body: JSON.stringify({ dismissal, activeElement }), contentType: 'application/json' });\n> 104 |     await expect(input).toBeFocused();\n      |                         ^\n  105 |     await page.keyboard.type(' still focused');\n  106 |     await expect(input).toHaveValue('Keep reading here still focused');\n  107 |     expect(errors).toEqual([]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts",
+                        "column": 25,
+                        "line": 104
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('textbox', { name: 'Reading note' })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('textbox', { name: 'Reading note' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('textbox', { name: 'Reading note' })\u001b[22m\n\u001b[2m    14 × locator resolved to <input id=\"reading-note\"/>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n\n  102 |     }));\n  103 |     await test.info().attach('final-focus', { body: JSON.stringify({ dismissal, activeElement }), contentType: 'application/json' });\n> 104 |     await expect(input).toBeFocused();\n      |                         ^\n  105 |     await page.keyboard.type(' still focused');\n  106 |     await expect(input).toHaveValue('Keep reading here still focused');\n  107 |     expect(errors).toEqual([]);\n    at /tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts:104:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T02:26:59.622Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "final-focus",
+                      "contentType": "application/json",
+                      "body": "eyJkaXNtaXNzYWwiOiJhY3RpdmUgdHJpZ2dlciB1bm1vdW50IiwiYWN0aXZlRWxlbWVudCI6IjxidXR0b24gdHlwZT1cImJ1dHRvblwiIGRhdGEtc2xvdD1cImJ1dHRvblwiIGRhdGEtdmFyaWFudD1cInNlY29uZGFyeVwiIGRhdGEtc2l6ZT1cImRlZmF1bHRcIiBjbGFzcz1cInJlcGxheS1idXR0b24gXCIgdGFiaW5kZXg9XCIwXCIgYXJpYS1kaXNhYmxlZD1cImZhbHNlXCIgYXJpYS1leHBhbmRlZD1cImZhbHNlXCI+UnVsZXMgY2hhcHRlcjwvYnV0dG9uPiJ9"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/runs/hover-focus-red-2/interactions/rule-help-hover-active-tri-53e23-n-independent-input-s-focus/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/runs/hover-focus-red-2/interactions/rule-help-hover-active-tri-53e23-n-independent-input-s-focus/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts",
+                    "column": 25,
+                    "line": 104
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4976067260b09699cf1-79a4803e948a92a6a963",
+          "file": "rule-help.spec.ts",
+          "line": 78,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-15T02:26:52.543Z",
+    "duration": 12933.359,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

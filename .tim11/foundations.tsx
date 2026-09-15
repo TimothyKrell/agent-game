@@ -120,6 +120,13 @@ function Foundations() {
           </CollapsibleContent>
         </Collapsible>
       </RuleHelpProvider>
+      <label>
+        Reading note
+        <input id="reading-note" />
+      </label>
+      <div role="region" aria-label="Independent scroll area" style={{ height: 60, overflow: 'auto' }}>
+        <p style={{ height: 160 }}>Scrollable notes outside the rule help.</p>
+      </div>
     </main>
   );
 }

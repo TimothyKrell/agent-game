@@ -25,6 +25,7 @@ try {
       '--config',
       '.tim11/cold-start/interaction.config.ts',
       '--reporter=list,json',
+      ...process.argv.slice(2),
     ],
     {
       env: {

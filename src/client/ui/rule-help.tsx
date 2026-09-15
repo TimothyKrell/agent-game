@@ -141,7 +141,8 @@ export function RuleHelpProvider({ children }: { children: ReactNode }) {
             backdrop={pinned}
             role={pinned ? 'dialog' : 'tooltip'}
             initialFocus={pinned ? close : false}
-            finalFocus={returnFocus}
+            // Preview dismissal preserves external focus; pinned mode survives through close.
+            finalFocus={pinned ? returnFocus : false}
           >
             {payload && (
               <>
