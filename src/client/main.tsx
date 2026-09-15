@@ -52,6 +52,16 @@ const DevAnnotations = import.meta.env.DEV
   ? React.lazy(() => import('agentation').then(({ Agentation }) => ({ default: Agentation })))
   : null;
 
+// Retained dev-only Succession style guide; keep both the import and route excluded from production.
+const ReplayDesignPrototype = import.meta.env.DEV
+  ? React.lazy(() => import('./succession-replay.prototype'))
+  : () => null;
+
+const isReplayDesignPrototype = () =>
+  import.meta.env.DEV &&
+  location.pathname === '/matches/tim-6-replay-prototype' &&
+  ['A', 'B', 'C'].includes(new URLSearchParams(location.search).get('variant') ?? '');
+
 /** Keep shared identity mounted across pool changes without depending on another pool's request. */
 function useRecordIdentity<T>(key: string, value: T | null) {
   const retained = useRef({ key, value });
@@ -1205,11 +1215,28 @@ function HowToPlay() {
 function App() {
   const path = new URL(useLocation()).pathname;
 
-  const { data, error, refresh } = useLoad('/api/bootstrap', SiteBootstrapSchema, 15_000);
+  const { data, error, refresh } = useLoad(
+    '/api/bootstrap',
+    SiteBootstrapSchema,
+    15_000,
+    !isReplayDesignPrototype(),
+  );
 
   let content: React.ReactNode;
 
-  if (path.startsWith('/matches/'))
+  if (isReplayDesignPrototype())
+    content = (
+      <React.Suspense
+        fallback={
+          <div className="loading" role="status">
+            <LoaderCircle className="spin" /> Loading the record…
+          </div>
+        }
+      >
+        <ReplayDesignPrototype />
+      </React.Suspense>
+    );
+  else if (path.startsWith('/matches/'))
     content = <MatchRoute key={path} id={path.split('/')[2]} fullHistory={path.endsWith('/history')} />;
   else if (path === '/leaderboard') content = <Leaderboard />;
   else if (path === '/how-to-play') content = <Rules />;
@@ -1255,6 +1282,11 @@ function App() {
         {content}
       </main>
       <Footer />
+      {DevAnnotations && !isReplayDesignPrototype() && (
+        <React.Suspense fallback={null}>
+          <DevAnnotations endpoint="http://localhost:4747" />
+        </React.Suspense>
+      )}
     </>
   );
 }
@@ -1264,11 +1296,6 @@ createRoot(document.getElementById('root')!).render(
     <MotionProvider>
       <ClientQueryProvider>
         <App />
-        {DevAnnotations && (
-          <React.Suspense fallback={null}>
-            <DevAnnotations endpoint="http://localhost:4747" />
-          </React.Suspense>
-        )}
       </ClientQueryProvider>
     </MotionProvider>
   </React.StrictMode>,

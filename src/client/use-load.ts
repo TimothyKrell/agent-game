@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Schema } from 'effect';
 import { api, ApiError } from './api';
 
-export function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0) {
+export function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval = 0, enabled = true) {
   const current = useRef({ path, sequence: 0 });
 
   if (current.current.path !== path) current.current = { path, sequence: 0 };
@@ -37,6 +37,7 @@ export function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval
   };
 
   useEffect(() => {
+    if (!enabled) return;
     void refresh();
     const timer = interval ? setInterval(refresh, interval) : null;
 
@@ -45,7 +46,7 @@ export function useLoad<T, I>(path: string, schema: Schema.Codec<T, I>, interval
 
       if (timer) clearInterval(timer);
     };
-  }, [path, schema, interval]);
+  }, [path, schema, interval, enabled]);
 
   const result = snapshot?.visit === visit ? snapshot : null;
 
