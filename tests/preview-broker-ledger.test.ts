@@ -5,6 +5,8 @@ import type { PreviewBrokerIntent, PreviewInference } from '../src/shared/previe
 
 function harness() {
   const db = new DatabaseSync(':memory:');
+  let alarm: number | null = null;
+  let alarmWrites = Promise.resolve();
 
   const storage = {
     sql: {
@@ -34,7 +36,23 @@ function harness() {
         throw error;
       }
     },
-    async setAlarm() {},
+    async setAlarm(at: number | Date) {
+      alarm = Number(at);
+    },
+    async getAlarm() {
+      return alarm;
+    },
+    transaction<T>(
+      fn: (txn: Pick<DurableObjectTransaction, 'getAlarm' | 'setAlarm'>) => Promise<T>,
+    ): Promise<T> {
+      const result = alarmWrites.then(() => fn(storage));
+      alarmWrites = result.then(
+        () => {},
+        () => {},
+      );
+
+      return result;
+    },
   };
 
   const env = {
@@ -108,6 +126,59 @@ function inference(allocationId: string, overrides: Partial<PreviewInference> = 
 
 afterEach(() => vi.useRealTimers());
 
+it('[correction] enforces close ownership inside the ledger and never erases production priority', () => {
+  const { db, queue, production } = harness();
+  production('match_production_public');
+  production('preview_nonbroker-production-id');
+  const intentValue = intent();
+  const receipt = queue.preview.allocate(intentValue, 'same', 'b'.repeat(40));
+  const target = { origin: intentValue.targetOrigin, incarnation: intentValue.incarnation };
+  const wrong = { ...target, origin: 'https://another-preview.example' };
+  db.prepare('INSERT INTO inference_waiters VALUES (?,?,?,?)').run(
+    'production-required',
+    'match_production_public',
+    'required',
+    Date.now() + 60000,
+  );
+  db.prepare('INSERT INTO inference_waiters VALUES (?,?,?,?)').run(
+    'preview-required',
+    receipt.allocationId,
+    'required',
+    Date.now() + 60000,
+  );
+  db.prepare('INSERT INTO inference_waiters VALUES (?,?,?,?)').run(
+    'prefix-required',
+    'preview_nonbroker-production-id',
+    'required',
+    Date.now() + 60000,
+  );
+  const before = db.prepare('SELECT * FROM inference_waiters ORDER BY id').all();
+  expect(() => queue.preview.close('match_production_public', target)).toThrow();
+  expect(() => queue.preview.close(receipt.allocationId, wrong)).toThrow();
+  expect(() =>
+    queue.preview.close(receipt.allocationId, { ...target, incarnation: 'other-incarnation' }),
+  ).toThrow();
+  queue.preview.close('preview_nonbroker-production-id', target);
+  expect(db.prepare('SELECT * FROM inference_waiters ORDER BY id').all()).toEqual(before);
+  expect(
+    db.prepare('SELECT state FROM allocations WHERE id=?').get('preview_nonbroker-production-id'),
+  ).toEqual({ state: 'active' });
+  queue.preview.close(receipt.allocationId, target);
+  queue.preview.close(receipt.allocationId, target);
+  expect(db.prepare('SELECT id FROM inference_waiters ORDER BY id').all()).toEqual([
+    { id: 'prefix-required' },
+    { id: 'production-required' },
+  ]);
+  const next = { ...intentValue, requestId: 'future-request-id' };
+  queue.preview.close(`preview_${next.requestId}`, target);
+  queue.preview.close(`preview_${next.requestId}`, target);
+  expect(() => queue.preview.allocate(next, 'future', 'b'.repeat(40))).toThrow('closed');
+  expect(db.prepare('SELECT id FROM inference_waiters ORDER BY id').all()).toEqual([
+    { id: 'prefix-required' },
+    { id: 'production-required' },
+  ]);
+});
+
 it('shares one preview slot and the existing global three slots/$5 ledger without resetting production rows', async () => {
   const { db, queue, production } = harness();
   production('production-one');
@@ -161,7 +232,10 @@ it('keeps full production and preview reservations across midnight and honors th
     activeReservedUsd: 3.5,
     remainingAdmissionUsd: 1.5,
   });
-  queue.preview.close(admitted.allocationId);
+  queue.preview.close(admitted.allocationId, {
+    origin: admitted.intent.targetOrigin,
+    incarnation: admitted.intent.incarnation,
+  });
   expect(queue.preview.status('succession').capacity).toBe('available');
   queue.reserveInference({
     id: 'prod-usage',
@@ -253,7 +327,10 @@ it('recovers allocation and dispatched receipts without duplicate billing; unkno
   expect(queue.preview.begin(input, 'request-fingerprint').result).toEqual({ state: 'unknown' });
   expect(queue.preview.begin({ ...input, attempt: 2 }, 'request-fingerprint').dispatch).toBe(true);
   expect(queue.inferenceSummary(receipt.allocationId).calls).toBe(2);
-  queue.preview.close(receipt.allocationId);
+  queue.preview.close(receipt.allocationId, {
+    origin: receipt.intent.targetOrigin,
+    incarnation: receipt.intent.incarnation,
+  });
   expect(queue.preview.status().livePreviewAllocations).toBe(1);
   expect(() => queue.preview.begin(input, 'request-fingerprint')).toThrow('Allocation is closed');
   queue.preview.finish(input, 'request-fingerprint', { state: 'failed' }, null);

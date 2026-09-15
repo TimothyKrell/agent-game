@@ -1450,3 +1450,369 @@ it('executes live target HouseSeat work at normal clocks and interrupts with par
     'Actual live target HouseSeat → source generateHouse → game submission at normal clocks; over-estimate actual costs stay charged, exhausted work interrupts with partial history and no ratings or local usage ledger.',
   );
 }, 150000);
+
+it('[correction] signed preview completion preserves production required waiters, usage and priority', async () => {
+  await post(source, '/fixture/broker-config', { enabled: true, revision: sourceRevision });
+  const arena = arenas[0];
+  const connected = await connection(arena);
+
+  const receipt = await decoded(
+    await broker(arena, 'allocate', connected.intent),
+    PreviewBrokerReceiptSchema,
+  );
+
+  const production = await decoded(
+    await post(source, '/fixture/production', {}),
+    Schema.Struct({ ok: Schema.Literal(true), value: Schema.Struct({ matchId: Schema.String }) }),
+  );
+
+  const reservedId = randomUUID();
+  const waiterId = randomUUID();
+
+  try {
+    expect(
+      await (
+        await post(source, '/fixture/reserve', {
+          id: reservedId,
+          matchId: production.value.matchId,
+          estimate: 1.49,
+          deadline: Date.now() + 60000,
+          mandatory: true,
+        })
+      ).json(),
+    ).toMatchObject({ allowed: true });
+    expect(
+      await (
+        await post(source, '/fixture/reserve', {
+          id: waiterId,
+          matchId: production.value.matchId,
+          estimate: 0.02,
+          deadline: Date.now() + 60000,
+          mandatory: true,
+        })
+      ).json(),
+    ).toMatchObject({ allowed: false, reason: 'match-budget', retryable: true });
+
+    const rows = () =>
+      query(
+        source,
+        'SELECT id,match_id,kind,expires_at FROM inference_waiters WHERE match_id=? ORDER BY id',
+        [production.value.matchId],
+        Schema.Array(
+          Schema.Struct({
+            id: Schema.String,
+            match_id: Schema.String,
+            kind: Schema.String,
+            expires_at: Schema.Number,
+          }),
+        ),
+        true,
+      );
+
+    const usage = () =>
+      query(
+        source,
+        'SELECT id,reserved,actual,done FROM usage WHERE match_id=? ORDER BY id',
+        [production.value.matchId],
+        Schema.Array(
+          Schema.Struct({
+            id: Schema.String,
+            reserved: Schema.Number,
+            actual: Schema.NullOr(Schema.Number),
+            done: Schema.Number,
+          }),
+        ),
+        true,
+      );
+
+    const before = await rows();
+    const charges = await usage();
+
+    const optional = inference(receipt, {
+      kind: 'initial',
+      choices: [],
+      prompt: JSON.stringify({ task: 'chat' }),
+    });
+
+    expect(await settle(arena, optional)).toMatchObject({ state: 'denied', reason: 'required-priority' });
+    const response = await broker(arena, 'complete', { allocationId: production.value.matchId, commit });
+    const after = await rows();
+    await writeFile(
+      `${evidence}/correction-close.json`,
+      JSON.stringify(
+        { status: response.status, before, after, chargesBefore: charges, chargesAfter: await usage() },
+        null,
+        2,
+      ),
+    );
+    expect(response.status).toBe(401);
+    expect(after).toEqual(before);
+    expect(await usage()).toEqual(charges);
+    expect(await settle(arena, optional)).toMatchObject({ state: 'denied', reason: 'required-priority' });
+    expect((await broker(arenas[1], 'complete', { allocationId: receipt.allocationId, commit })).status).toBe(
+      401,
+    );
+    await close(arena, receipt.allocationId);
+    await close(arena, receipt.allocationId);
+    expect(await rows()).toEqual(before);
+    expect(await usage()).toEqual(charges);
+    const future = { ...connected.intent, requestId: randomUUID() };
+    await close(arena, `preview_${future.requestId}`);
+    await close(arena, `preview_${future.requestId}`);
+    expect((await broker(arena, 'allocate', future)).status).toBe(409);
+    expect(await rows()).toEqual(before);
+  } finally {
+    // Fixture-only admission had no provider dispatch; cleanup records the proven unused reservation.
+    await post(source, '/fixture/record', { id: reservedId, actual: 0 });
+    await post(source, '/fixture/complete', { matchId: production.value.matchId });
+    await close(arena, receipt.allocationId);
+  }
+});
+
+it('[correction] live fill timestamps and readiness both use 30 seconds with the smoke scale configured', async () => {
+  await post(source, '/fixture/broker-config', { enabled: true, revision: sourceRevision });
+  const arena = arenas[0];
+  const connected = await connection(arena);
+  const requestId = randomUUID();
+  let matchId: string | null = null;
+
+  try {
+    const queued = await decoded(
+      await post(arena.worker, '/api/queue', { requestId, gameId: 'secret-overlord' }, connected.token),
+      Schema.Struct({ status: Schema.String, joinedAt: Schema.Number, fillAt: Schema.Number }),
+    );
+
+    await writeFile(
+      `${evidence}/correction-fill.json`,
+      JSON.stringify({ ...queued, delayMs: queued.fillAt - queued.joinedAt }, null, 2),
+    );
+    expect(queued.fillAt - queued.joinedAt).toBe(30000);
+    await sql(
+      arena.worker,
+      'UPDATE tickets SET joined_at=? WHERE agent_id=?',
+      [Date.now() - 28000, agentId],
+      true,
+    );
+    await post(arena.worker, '/fixture/queue-alarm', {});
+    expect(await pending(arena, requestId)).toBeUndefined();
+    await sql(
+      arena.worker,
+      'UPDATE tickets SET joined_at=? WHERE agent_id=?',
+      [Date.now() - 31000, agentId],
+      true,
+    );
+    await post(arena.worker, '/fixture/queue-alarm', {});
+    const allocation = await pending(arena, requestId);
+    matchId = allocation.match_id;
+    expect(allocation.init_dispatched).toBe(1);
+    const receipt = Schema.decodeUnknownSync(PreviewBrokerReceiptSchema)(JSON.parse(allocation.receipt!));
+    expect(receipt.snapshot.timing).toEqual(gameDescriptor('secret-overlord').timing);
+  } finally {
+    if (matchId) await releaseTarget(arena, matchId);
+    else
+      await arena.worker.fetch('/api/queue', {
+        method: 'DELETE',
+        headers: { authorization: `Bearer ${connected.token}`, origin: arena.origin },
+        body: JSON.stringify({ requestId, gameId: 'secret-overlord' }),
+      });
+  }
+});
+
+it('[correction] allocation retries preserve the real source scheduler for fill, recovery, expiry and retirement', async () => {
+  await post(source, '/fixture/broker-config', { enabled: true, revision: sourceRevision });
+  await sql(source, "INSERT OR REPLACE INTO broker_fixture VALUES ('automatic-alarms','1')", [], true);
+  const arena = arenas[0];
+  const connected = await connection(arena);
+
+  const alarmTime = async () =>
+    (
+      await decoded(
+        await post(source, '/fixture/alarm-time', {}),
+        Schema.Struct({ at: Schema.NullOr(Schema.Number) }),
+      )
+    ).at;
+
+  // Consume any harmless wake retained from an earlier completed fixture allocation.
+  await post(source, '/fixture/wake', {});
+  await waitFor(async () => (await alarmTime()) === null);
+  const requestedAt = Date.now();
+
+  const receipt = await decoded(
+    await broker(arena, 'allocate', connected.intent),
+    PreviewBrokerReceiptSchema,
+  );
+
+  const initial = await alarmTime();
+  expect(initial).not.toBeNull();
+  expect(initial!).toBeGreaterThanOrEqual(requestedAt + 30000);
+  expect(initial!).toBeLessThanOrEqual(Date.now() + 30000);
+
+  const retry = () =>
+    broker(arena, 'allocate', connected.intent).then((response) =>
+      decoded(response, PreviewBrokerReceiptSchema),
+    );
+
+  let matchedId: string | null = null;
+  let creatingId: string | null = null;
+  let registryClosed = false;
+
+  try {
+    expect(await retry()).toEqual(receipt);
+    const initialAfterRetry = await alarmTime();
+    const requestId = randomUUID();
+    expect(
+      (await post(source, '/api/queue', { requestId, gameId: 'secret-overlord' }, connected.sourceToken))
+        .status,
+    ).toBe(200);
+    const joinedAt = Date.now() - 25000;
+    const fillAt = joinedAt + 30000;
+    await sql(source, 'UPDATE tickets SET joined_at=? WHERE agent_id=?', [joinedAt, agentId], true);
+    await post(source, '/fixture/wake', {});
+    await waitFor(async () => (await alarmTime()) === fillAt);
+    await Promise.all(Array.from({ length: 8 }, retry));
+    const afterRetry = await alarmTime();
+    await writeFile(
+      `${evidence}/correction-alarm.json`,
+      JSON.stringify(
+        {
+          initial,
+          initialAfterRetry,
+          fillAt,
+          afterRetry,
+          postponedByMs: afterRetry === null ? null : afterRetry - fillAt,
+        },
+        null,
+        2,
+      ),
+    );
+    expect(afterRetry).toBe(fillAt);
+    expect(initialAfterRetry).toBe(initial);
+    await waitFor(async () => {
+      const rows = await query(
+        source,
+        'SELECT match_id FROM joins WHERE id=?',
+        [`${agentId}:${requestId}`],
+        Schema.Array(Schema.Struct({ match_id: Schema.NullOr(Schema.String) })),
+        true,
+      );
+
+      matchedId = rows[0].match_id;
+
+      return matchedId !== null;
+    }, 8000);
+    await post(source, '/fixture/complete', { matchId: matchedId });
+    matchedId = null;
+
+    // The actual alarm retries a real creating allocation whose initializer is temporarily unavailable.
+    await sql(source, "INSERT OR REPLACE INTO broker_test_controls VALUES ('initialize-before','1')");
+    expect((await post(source, '/fixture/production', {})).status).toBe(500);
+    creatingId = (
+      await query(
+        source,
+        "SELECT id FROM allocations WHERE state='creating'",
+        [],
+        Schema.Array(Schema.Struct({ id: Schema.String })),
+        true,
+      )
+    )[0].id;
+    await post(source, '/fixture/wake', {});
+    await waitFor(async () => {
+      const at = await alarmTime();
+
+      return at !== null && at > Date.now() + 300 && at < Date.now() + 1100;
+    });
+    const recoveryAt = await alarmTime();
+    await Promise.all(Array.from({ length: 4 }, retry));
+    expect(await alarmTime()).toBe(recoveryAt);
+    await sql(source, "DELETE FROM broker_test_controls WHERE key='initialize-before'");
+    await waitFor(
+      async () =>
+        (
+          await query(
+            source,
+            'SELECT state FROM allocations WHERE id=?',
+            [creatingId!],
+            Schema.Array(Schema.Struct({ state: Schema.String })),
+            true,
+          )
+        )[0].state === 'active',
+    );
+    await post(source, '/fixture/complete', { matchId: creatingId });
+    creatingId = null;
+
+    const expiryRequest = randomUUID();
+    expect(
+      (
+        await post(
+          source,
+          '/api/queue',
+          { requestId: expiryRequest, gameId: 'secret-overlord' },
+          connected.sourceToken,
+        )
+      ).status,
+    ).toBe(200);
+    const expiresAt = Date.now() + 4000;
+    await sql(source, 'UPDATE tickets SET expires_at=? WHERE agent_id=?', [expiresAt, agentId], true);
+    await post(source, '/fixture/wake', {});
+    await waitFor(async () => (await alarmTime()) === expiresAt);
+    await Promise.all(Array.from({ length: 8 }, retry));
+    expect(await alarmTime()).toBe(expiresAt);
+    await waitFor(async () => (await count(source, 'tickets')) === 0, 6000);
+    await waitFor(async () => {
+      const at = await alarmTime();
+
+      return at !== null && at > Date.now() + 20000;
+    });
+
+    const retirementAt = await alarmTime();
+    expect(retirementAt).not.toBeNull();
+    expect(retirementAt!).toBeLessThanOrEqual(Date.now() + 30000);
+    await Promise.all(Array.from({ length: 8 }, retry));
+    expect(await alarmTime()).toBe(retirementAt);
+    expect(
+      (await post(source, '/fixture/close', { origin: arena.origin, incarnation: arena.incarnation })).status,
+    ).toBe(200);
+    registryClosed = true;
+
+    // Read SQL only: neither signed status nor a manual alarm may trigger this reconciliation.
+    const allocationState = () =>
+      query(
+        source,
+        'SELECT p.closed,a.state FROM preview_broker_allocations p JOIN allocations a ON a.id=p.id WHERE p.id=?',
+        [receipt.allocationId],
+        Schema.Array(Schema.Struct({ closed: Schema.Number, state: Schema.String })),
+        true,
+      );
+
+    expect(await allocationState()).toEqual([{ closed: 0, state: 'active' }]);
+    await waitFor(async () => (await allocationState())[0].closed === 1, 35000);
+    const retiredAt = Date.now();
+    expect(await allocationState()).toEqual([{ closed: 1, state: 'settled' }]);
+    expect(retiredAt).toBeGreaterThanOrEqual(retirementAt!);
+    expect(retiredAt - retirementAt!).toBeLessThan(5000);
+    await writeFile(
+      `${evidence}/correction-scheduler.json`,
+      JSON.stringify(
+        { initial, fillAt, afterRetry, recoveryAt, expiresAt, retirementAt, retiredAt },
+        null,
+        2,
+      ),
+    );
+  } finally {
+    await sql(source, "DELETE FROM broker_test_controls WHERE key='initialize-before'");
+
+    if (matchedId) await post(source, '/fixture/complete', { matchId: matchedId });
+
+    if (creatingId) await post(source, '/fixture/complete', { matchId: creatingId });
+    await source.fetch('/api/queue', {
+      method: 'DELETE',
+      headers: { authorization: `Bearer ${connected.sourceToken}` },
+    });
+
+    if (registryClosed) await post(source, '/fixture/queue-alarm', {});
+    else await close(arena, receipt.allocationId);
+    await post(source, '/fixture/wake', {});
+    await waitFor(async () => (await alarmTime()) === null);
+    await sql(source, "DELETE FROM broker_fixture WHERE key='automatic-alarms'", [], true);
+  }
+}, 60000);

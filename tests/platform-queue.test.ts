@@ -21,6 +21,7 @@ function harness(legacy = false) {
   let beforeRead: (() => void) | undefined;
   let failInitialize = false;
   let alarm = 0;
+  let alarmWrites = Promise.resolve();
 
   const storage = {
     sql: {
@@ -53,6 +54,20 @@ function harness(legacy = false) {
     },
     async setAlarm(value: number) {
       alarm = value;
+    },
+    async getAlarm() {
+      return alarm || null;
+    },
+    transaction<T>(
+      fn: (txn: Pick<DurableObjectTransaction, 'getAlarm' | 'setAlarm'>) => Promise<T>,
+    ): Promise<T> {
+      const result = alarmWrites.then(() => fn(storage));
+      alarmWrites = result.then(
+        () => {},
+        () => {},
+      );
+
+      return result;
     },
   };
 
@@ -135,6 +150,12 @@ function harness(legacy = false) {
 
   // The queue consumes a faithful SQLite storage harness; the DO host only forwards RPCs.
   const queue: MatchmakingObject = Reflect.construct(MatchmakingObject, [ctx, env]);
+  const deliverAlarm = queue.alarm.bind(queue);
+  // workerd consumes the pending alarm before delivering the handler; emulate that storage boundary.
+  queue.alarm = async () => {
+    alarm = 0;
+    await deliverAlarm();
+  };
 
   function ticket(
     agent: string,
@@ -169,6 +190,21 @@ function harness(legacy = false) {
 }
 
 describe('one physical coordinator with game-scoped candidates', () => {
+  it('keeps ordinary queue scaling in both the reported fill time and actual readiness', async () => {
+    const h = harness();
+    h.env.TIME_SCALE = '0.1';
+    const joinedAt = Date.now();
+    h.ticket('scaled-production', 'secret-overlord', joinedAt);
+    expect(h.queue.status('scaled-production').fillAt).toBe(joinedAt + 3000);
+    await h.queue.alarm();
+    expect(h.initialized).toHaveLength(0);
+    expect(h.alarm).toBe(joinedAt + 3000);
+    h.db
+      .prepare('UPDATE tickets SET joined_at=? WHERE agent_id=?')
+      .run(Date.now() - 3100, 'scaled-production');
+    await h.queue.alarm();
+    expect(h.initialized).toHaveLength(1);
+  });
   it('rechecks global capacity after an admission interleaves with entrant reads', async () => {
     const h = harness();
     h.env.MAX_CONCURRENT_MATCHES = '1';

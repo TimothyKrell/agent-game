@@ -82,10 +82,10 @@ export class MatchmakingObject extends DurableObject<Env> {
     return this.queue.preview.status(gameId);
   }
 
-  allocatePreview(intent: PreviewBrokerIntent, fingerprint: string, sourceRevision: string) {
+  async allocatePreview(intent: PreviewBrokerIntent, fingerprint: string, sourceRevision: string) {
     const result = brokerResult(() => this.queue.preview.allocate(intent, fingerprint, sourceRevision));
 
-    if (result.ok) this.ctx.waitUntil(this.ctx.storage.setAlarm(Date.now() + 30000));
+    if (result.ok) await this.queue.schedule();
 
     return result;
   }
@@ -112,7 +112,7 @@ export class MatchmakingObject extends DurableObject<Env> {
   }
 
   completePreview(id: string, target: { origin: string; incarnation: string }) {
-    return this.queue.preview.close(id, target);
+    return brokerResult(() => this.queue.preview.close(id, target));
   }
 
   reconcilePreviewTargets() {

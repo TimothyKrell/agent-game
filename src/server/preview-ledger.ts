@@ -337,15 +337,28 @@ export class PreviewBrokerLedger {
     });
   }
 
-  close(id: string, target?: { origin: string; incarnation: string }): void {
+  close(id: string, target: { origin: string; incarnation: string }): void {
     this.ctx.storage.transactionSync(() => {
-      if (target)
-        this.ctx.storage.sql.exec(
-          'INSERT OR IGNORE INTO preview_broker_closures VALUES (?,?,?)',
-          id,
-          target.origin,
-          target.incarnation,
-        );
+      if (!/^preview_[A-Za-z0-9_-]{8,100}$/.test(id))
+        throw new GameError('preview-allocation', 'A preview allocation is required.', 401);
+      const row = this.row(id);
+
+      if (row) {
+        const { intent }: PreviewBrokerReceipt = JSON.parse(row.receipt);
+
+        if (intent.targetOrigin !== target.origin || intent.incarnation !== target.incarnation)
+          throw new GameError('preview-target', 'Allocation belongs to a different target.', 401);
+      }
+
+      this.ctx.storage.sql.exec(
+        'INSERT OR IGNORE INTO preview_broker_closures VALUES (?,?,?)',
+        id,
+        target.origin,
+        target.incarnation,
+      );
+
+      // Only an owned broker row authorizes mutations to the shared allocation/waiter tables.
+      if (!row) return;
       this.ctx.storage.sql.exec('UPDATE preview_broker_allocations SET closed=1 WHERE id=?', id);
       this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id=?', id);
       this.releaseClosed(id);
@@ -367,7 +380,7 @@ export class PreviewBrokerLedger {
       )
       .toArray();
 
-    for (const row of rows) this.close(row.id);
+    for (const row of rows) this.close(row.id, { origin, incarnation });
   }
 
   needsReconciliation(): boolean {

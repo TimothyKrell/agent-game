@@ -444,7 +444,7 @@ export class PlatformQueue {
             gameId,
           );
         });
-      await this.ctx.storage.setAlarm(Date.now() + 1);
+      await this.wakeAt(Date.now() + 1);
 
       return { ok: true, value: this.status(principal.agentId) };
     } catch (error) {
@@ -496,7 +496,7 @@ export class PlatformQueue {
       ),
       matchId: ticket.match_id,
       joinedAt: ticket.joined_at,
-      fillAt: oldest === null ? null : oldest + Number(this.env.QUEUE_WAIT_SECONDS) * 1000 * this.scale(),
+      fillAt: oldest === null ? null : this.fillAt(oldest),
       position,
       capacity: this.queueCapacity(ticket.game_id),
     };
@@ -564,7 +564,7 @@ export class PlatformQueue {
         `${agentId}:${ticket.request_id}`,
       );
     });
-    this.ctx.waitUntil(this.ctx.storage.setAlarm(Date.now() + 1));
+    this.ctx.waitUntil(this.wakeAt(Date.now() + 1));
 
     return { ok: true, value: this.status(agentId) };
   }
@@ -576,7 +576,7 @@ export class PlatformQueue {
       this.ctx.storage.sql.exec('DELETE FROM tickets WHERE match_id = ?', matchId);
       this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id = ?', matchId);
     });
-    await this.ctx.storage.setAlarm(Date.now() + 1);
+    await this.wakeAt(Date.now() + 1);
   }
 
   async revokeGrant(grantId: string): Promise<void> {
@@ -778,7 +778,7 @@ export class PlatformQueue {
 
   recordInference(id: string, actual: number | null): void {
     this.ctx.storage.sql.exec('UPDATE usage SET done = 1, actual = ? WHERE id = ? AND done = 0', actual, id);
-    this.ctx.waitUntil(this.ctx.storage.setAlarm(Date.now() + 1));
+    this.ctx.waitUntil(this.wakeAt(Date.now() + 1));
   }
 
   inferenceSummary(matchId: string) {
@@ -942,13 +942,13 @@ export class PlatformQueue {
   }
 
   private ready(tickets: Ticket[]): boolean {
-    return tickets.length >= 10 || (tickets.length > 0 && Date.now() >= this.fillAt(tickets[0]));
+    return tickets.length >= 10 || (tickets.length > 0 && Date.now() >= this.fillAt(tickets[0].joined_at));
   }
 
-  private fillAt(ticket: Ticket): number {
-    if (previewEnabled(this.env)) return ticket.joined_at + 30000;
+  private fillAt(joinedAt: number): number {
+    if (previewEnabled(this.env)) return joinedAt + 30000;
 
-    return ticket.joined_at + Number(this.env.QUEUE_WAIT_SECONDS) * 1000 * this.scale();
+    return joinedAt + Number(this.env.QUEUE_WAIT_SECONDS) * 1000 * this.scale();
   }
 
   private candidates() {
@@ -973,7 +973,19 @@ export class PlatformQueue {
     );
   }
 
-  private async schedule(): Promise<void> {
+  /** The sole coordinator alarm writer. Preserve an earlier pending wake across concurrent callers. */
+  private wakeAt(at: number): Promise<void> {
+    // recordInference can run inside a synchronous SQL transaction; start this transaction after it commits.
+    return Promise.resolve().then(() =>
+      this.ctx.storage.transaction(async (txn) => {
+        const current = await txn.getAlarm();
+
+        if (current === null || at < current) await txn.setAlarm(at);
+      }),
+    );
+  }
+
+  async schedule(): Promise<void> {
     const now = Date.now();
     const candidates = this.candidates();
     const creating = this.allocations().some((allocation) => allocation.state === 'creating');
@@ -994,7 +1006,7 @@ export class PlatformQueue {
     if (creating) times.push(now + 1000);
 
     for (const candidate of candidates) {
-      const fill = this.fillAt(candidate.tickets[0]);
+      const fill = this.fillAt(candidate.tickets[0].joined_at);
 
       if (fill > now) times.push(fill);
 
@@ -1006,7 +1018,7 @@ export class PlatformQueue {
       }
     }
 
-    await this.ctx.storage.setAlarm(Math.max(now + 1, Math.min(...times)));
+    await this.wakeAt(Math.max(now + 1, Math.min(...times)));
   }
 
   private async finishAllocation(allocation: Allocation): Promise<void> {
