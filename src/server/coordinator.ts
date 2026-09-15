@@ -10,6 +10,9 @@ import type { MatchSnapshot } from '../game/contracts';
 import { gameDescriptor } from '../game/descriptors';
 import { fault, opaqueId } from './http';
 import { HOUSE_CHAT_MIN_REMAINING_MS } from './house-contract';
+import { PreviewBrokerLedger } from './preview-ledger';
+import { PreviewTargetAllocations } from './preview-allocation';
+import { previewEnabled } from './preview-config';
 
 type Ticket = {
   game_id: RepositoryGameId;
@@ -117,6 +120,8 @@ function validGame(gameId: RepositoryGameId): void {
 
 /** One deployed coordinator, two logical queues and global admission/participation limits. */
 export class PlatformQueue {
+  readonly preview: PreviewBrokerLedger;
+  readonly previewTarget: PreviewTargetAllocations;
   constructor(
     private readonly ctx: DurableObjectState,
     private readonly env: Env,
@@ -159,6 +164,14 @@ export class PlatformQueue {
       ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS coordinator_schema (version INTEGER PRIMARY KEY)');
       ctx.storage.sql.exec('INSERT OR IGNORE INTO coordinator_schema(version) VALUES (2)');
     });
+    this.preview = new PreviewBrokerLedger(ctx, env, {
+      capacity: (reservation) => this.capacity(reservation),
+      reservation: (game) => this.reservation(game),
+      reserve: (input) => this.reserveInference(input),
+      record: (id, actual) => this.recordInference(id, actual),
+      retire: (input) => this.retireInferenceWaiter(input),
+    });
+    this.previewTarget = new PreviewTargetAllocations(ctx, env);
   }
 
   private scale(): number {
@@ -231,11 +244,21 @@ export class PlatformQueue {
     return 'available';
   }
 
+  private queueCapacity(gameId: RepositoryGameId = 'secret-overlord'): QueueStatus['capacity'] {
+    return previewEnabled(this.env)
+      ? this.previewTarget.capacity(gameId)
+      : this.capacity(this.reservation(gameId));
+  }
+
   async retire(agentId: string, ownerId: string): Promise<RpcResult<{ retired: true }>> {
     return this.ctx.blockConcurrencyWhile(async () => {
       const current = this.status(agentId);
 
-      if (current.status === 'matched' || current.status === 'starting')
+      if (
+        current.status === 'matched' ||
+        (current.status === 'starting' &&
+          (!current.matchId || !this.previewTarget.canCancel(current.matchId)))
+      )
         return {
           ok: false,
           error: {
@@ -262,12 +285,13 @@ export class PlatformQueue {
 
   async exhibition(gameId: RepositoryGameId = 'secret-overlord'): Promise<RpcResult<{ matchId: string }>> {
     validGame(gameId);
-    const reservation = this.reservation(gameId);
-    const snapshot = this.snapshot(gameId, true);
+    const smoke = previewEnabled(this.env);
+    const reservation = smoke ? 0 : this.reservation(gameId);
+    const snapshot = smoke ? this.smokeSnapshot(gameId) : this.snapshot(gameId, true);
 
     if (
       this.env.ENVIRONMENT !== 'development' &&
-      !(this.env.ENVIRONMENT === 'preview' && this.env.HOUSE_PROVIDER === 'preview')
+      !(this.env.ENVIRONMENT === 'preview' && (smoke || this.env.HOUSE_PROVIDER === 'preview'))
     )
       return { ok: false, error: { code: 'not-found', message: 'Not found.', status: 404 } };
 
@@ -316,6 +340,25 @@ export class PlatformQueue {
     return { ok: true, value: { matchId: allocation.id } };
   }
 
+  private smokeSnapshot(gameId: RepositoryGameId): MatchSnapshot {
+    const descriptor = gameDescriptor(gameId);
+    const timing = descriptor.timing;
+
+    return {
+      ...descriptor,
+      mode: 'preview',
+      timing: {
+        nomination: timing.nomination * 0.1,
+        debate: timing.debate * 0.1,
+        executive: timing.executive * 0.1,
+        action: timing.action * 0.1,
+        grace: timing.grace * 0.1,
+        chatCooldown: timing.chatCooldown * 0.1,
+      },
+      houseModel: { provider: 'preview', model: 'scripted', policyVersion: descriptor.housePolicyVersion },
+    };
+  }
+
   async join(
     principal: AgentPrincipal,
     requestId: string,
@@ -323,6 +366,8 @@ export class PlatformQueue {
   ): Promise<RpcResult<PlatformQueueStatus>> {
     try {
       validGame(gameId);
+
+      if (previewEnabled(this.env)) await this.previewTarget.refresh();
 
       const valid = await this.env.DB.prepare('SELECT id FROM agents WHERE id = ? AND retired_at IS NULL')
         .bind(principal.agentId)
@@ -358,7 +403,7 @@ export class PlatformQueue {
             joinedAt: null,
             fillAt: null,
             position: null,
-            capacity: this.capacity(),
+            capacity: this.queueCapacity(receipt.game_id),
           },
         };
 
@@ -423,7 +468,7 @@ export class PlatformQueue {
         joinedAt: null,
         fillAt: null,
         position: null,
-        capacity: this.capacity(),
+        capacity: this.queueCapacity(),
       };
 
     const position = this.ctx.storage.sql
@@ -453,7 +498,7 @@ export class PlatformQueue {
       joinedAt: ticket.joined_at,
       fillAt: oldest === null ? null : oldest + Number(this.env.QUEUE_WAIT_SECONDS) * 1000 * this.scale(),
       position,
-      capacity: this.capacity(this.reservation(ticket.game_id)),
+      capacity: this.queueCapacity(ticket.game_id),
     };
   }
 
@@ -488,16 +533,20 @@ export class PlatformQueue {
         },
       };
 
+    const cancellable =
+      ticket.state === 'queued' ||
+      (ticket.state === 'starting' && !!ticket.match_id && this.previewTarget.canCancel(ticket.match_id));
+
     if (
       expected &&
       (expected.gameId !== ticket.game_id ||
         expected.requestId !== ticket.request_id ||
         (expected.joinedAt !== undefined && expected.joinedAt !== ticket.joined_at) ||
-        ticket.state !== 'queued')
+        !cancellable)
     )
       return { ok: true, value: this.status(agentId) };
 
-    if (ticket.state !== 'queued')
+    if (!cancellable)
       return {
         ok: false,
         error: {
@@ -522,6 +571,7 @@ export class PlatformQueue {
 
   async complete(matchId: string): Promise<void> {
     this.ctx.storage.transactionSync(() => {
+      this.previewTarget.close(matchId);
       this.ctx.storage.sql.exec("UPDATE allocations SET state = 'settled' WHERE id = ?", matchId);
       this.ctx.storage.sql.exec('DELETE FROM tickets WHERE match_id = ?', matchId);
       this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id = ?', matchId);
@@ -625,7 +675,10 @@ export class PlatformQueue {
     const ceilings: { rows: Funding[]; limit: number; reason: InferenceDenial }[] = [];
 
     if (
-      allocation.grants === '{}' &&
+      (allocation.grants === '{}' ||
+        this.ctx.storage.sql
+          .exec('SELECT id FROM preview_broker_allocations WHERE id=?', input.matchId)
+          .toArray().length > 0) &&
       (snapshot?.houseModel.provider ?? this.env.HOUSE_PROVIDER) !== 'preview'
     ) {
       const funds = this.funding('match_id', input.matchId);
@@ -756,6 +809,8 @@ export class PlatformQueue {
 
   async alarm(): Promise<void> {
     try {
+      if (!previewEnabled(this.env)) this.preview.dispatchReconciliation();
+
       for (const ticket of this.ctx.storage.sql
         .exec<Ticket>("SELECT * FROM tickets WHERE state = 'queued' AND expires_at <= ?", Date.now())
         .toArray())
@@ -764,9 +819,11 @@ export class PlatformQueue {
       for (const allocation of this.allocations().filter((entry) => entry.state === 'creating'))
         await this.finishAllocation(allocation);
 
+      if (previewEnabled(this.env) && this.candidates().length) await this.previewTarget.refresh();
+
       while (true) {
         const candidate = this.candidates().find(
-          (entry) => this.ready(entry.tickets) && this.capacity(entry.reservation) === 'available',
+          (entry) => this.ready(entry.tickets) && this.queueCapacity(entry.gameId) === 'available',
         );
 
         if (!candidate) break;
@@ -802,6 +859,12 @@ export class PlatformQueue {
           ].map((id) => entrant(this.env, id, gameId)),
         );
 
+        const id = opaqueId('match');
+
+        const previewIntent = previewEnabled(this.env)
+          ? await this.previewTarget.prepare(id, valid, gameId)
+          : null;
+
         // External reads may interleave with cancellation. Recheck the exact tickets before reservation.
         if (
           valid.some(
@@ -822,11 +885,10 @@ export class PlatformQueue {
           continue;
 
         // Other admissions can interleave while the entrant/credential reads await D1.
-        if (this.capacity(reservation) !== 'available') continue;
+        if (this.queueCapacity(gameId) !== 'available') continue;
 
         if (entries.length !== 10)
           throw new GameError('house-unavailable', 'Ten distinct entrants are required.');
-        const id = opaqueId('match');
         const grants = Object.fromEntries(valid.map((ticket) => [ticket.agent_id, ticket.grant_id]));
 
         const allocation: Allocation = {
@@ -841,6 +903,7 @@ export class PlatformQueue {
         };
 
         this.ctx.storage.transactionSync(() => {
+          if (previewIntent) this.previewTarget.persist(previewIntent);
           this.ctx.storage.sql.exec(
             'INSERT INTO allocations (id, state, entries, grants, created_at, reservation, game_id, snapshot) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             id,
@@ -861,6 +924,9 @@ export class PlatformQueue {
             );
         });
         await this.finishAllocation(allocation);
+
+        // The source has the only live-preview slot; refresh before considering another local admission.
+        if (previewIntent) await this.previewTarget.refresh();
       }
     } catch (error) {
       console.error(
@@ -870,6 +936,7 @@ export class PlatformQueue {
         }),
       );
     } finally {
+      this.previewTarget.dispatchCleanup();
       await this.schedule();
     }
   }
@@ -879,6 +946,8 @@ export class PlatformQueue {
   }
 
   private fillAt(ticket: Ticket): number {
+    if (previewEnabled(this.env)) return ticket.joined_at + 30000;
+
     return ticket.joined_at + Number(this.env.QUEUE_WAIT_SECONDS) * 1000 * this.scale();
   }
 
@@ -909,8 +978,12 @@ export class PlatformQueue {
     const candidates = this.candidates();
     const creating = this.allocations().some((allocation) => allocation.state === 'creating');
 
-    if (!candidates.length && !creating) return;
+    const cleanup = this.previewTarget.cleanupAt();
+
+    if (!candidates.length && !creating && cleanup === null && !this.preview.needsReconciliation()) return;
     const times = [now + 30_000];
+
+    if (cleanup !== null) times.push(Math.max(now + 1, cleanup));
 
     const expiry = this.ctx.storage.sql
       .exec<{ at: number | null }>("SELECT min(expires_at) AS at FROM tickets WHERE state = 'queued'")
@@ -927,7 +1000,7 @@ export class PlatformQueue {
 
       for (const ticket of candidate.tickets) if (ticket.expires_at > now) times.push(ticket.expires_at);
 
-      if (this.capacity(candidate.reservation) === 'budget') {
+      if (this.queueCapacity(candidate.gameId) === 'budget') {
         const day = new Date(now);
         times.push(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate() + 1));
       }
@@ -947,8 +1020,13 @@ export class PlatformQueue {
 
     if (allocation.snapshot) input.snapshot = JSON.parse(allocation.snapshot);
 
-    await this.env.MATCHES.getByName(allocation.id).initialize(input);
+    const preview = await this.previewTarget.finish(input);
+
+    if (preview === 'abandoned') return;
+
+    if (preview === 'ordinary') await this.env.MATCHES.getByName(allocation.id).initialize(input);
     this.ctx.storage.transactionSync(() => {
+      this.previewTarget.recoverParticipation(allocation.id);
       this.ctx.storage.sql.exec(
         "UPDATE allocations SET state = 'active' WHERE id = ? AND state = 'creating'",
         allocation.id,

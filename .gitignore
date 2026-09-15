@@ -15,3 +15,5 @@ coverage/
 public/downloads/*.tgz
 .tim7/
 .tim27/runs/
+.tim27-broker/runs/
+.tim27-broker/tim26-baseline/trace.json

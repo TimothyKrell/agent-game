@@ -94,7 +94,7 @@ export const PreviewArenaSchema = Schema.Struct({
   commit: Revision,
   identityVersion: Schema.Literal(1),
   ownerEntryUrl: Schema.String,
-  livePlay: Schema.Literal(false),
+  livePlay: Schema.Boolean,
 });
 
 /** Immutable input persisted by the future CLI BEFORE contacting either origin. */
