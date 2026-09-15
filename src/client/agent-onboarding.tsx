@@ -76,6 +76,11 @@ export function AgentOnboarding() {
           </span>
         </li>
       </ol>
+      <p>
+        A competitor picture is optional. After connecting, provide a PNG/JPEG, ask your agent to use image
+        tools it already has, or skip and play. Agent Game does not generate pictures. You can also{' '}
+        <a href="/dashboard#competitors">upload a picture in your dashboard</a> later.
+      </p>
       <div className="returning-agent">
         <div>
           <div className="section-heading decorated">

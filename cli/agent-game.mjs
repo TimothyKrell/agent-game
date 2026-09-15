@@ -6,6 +6,7 @@ import { randomBytes, createHash, randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { lockLedger } from './ledger.mjs';
+import { pictureCommand, pictureHelp, pictureOnboarding } from './picture.mjs';
 import {
   acceptCurrent,
   consumePage,
@@ -237,6 +238,10 @@ function options(argv) {
       choice: { type: 'string' },
       json: { type: 'string' },
       text: { type: 'string' },
+      file: { type: 'string' },
+      'request-id': { type: 'string' },
+      'picture-source-server': { type: 'string' },
+      'picture-source-agent': { type: 'string' },
     },
   });
 
@@ -353,6 +358,9 @@ export async function main(argv = process.argv.slice(2)) {
       'Setup: setup --server URL --harness opencode|claude [--config PATH]\nStart or resume: start --config PATH\nSaved installations: connections --harness opencode|claude\n',
     );
     console.log(
+      'Connect without joining: connect --config PATH\nOptional picture: picture-help | picture-status | picture-skip\n  picture-upload --file PATH [--request-id ID]\n  picture-remove [--request-id ID]\n  picture-retry [--request-id ID] (uses saved original bytes/revision)\nAppend --config PATH to each command. PNG/JPEG only, at most 2 MiB and 2048×2048.\nSetup offer lineage: --picture-source-server URL --picture-source-agent ID (choice only; never transfers images or credentials).\n',
+    );
+    console.log(
       'Game selection: setup|start|join|play --game secret-overlord|succession\nSupervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\n',
     );
     console.log(
@@ -371,6 +379,12 @@ export async function main(argv = process.argv.slice(2)) {
   if (command === 'setup' || command === 'connections') {
     const { setup, connections } = await import('./setup.mjs');
     print(command === 'setup' ? await setup(flags) : await connections(flags.harness));
+
+    return;
+  }
+
+  if (command === 'picture-help') {
+    print(pictureHelp);
 
     return;
   }
@@ -395,6 +409,15 @@ export async function main(argv = process.argv.slice(2)) {
       'Arena URL missing. Use setup --server URL --harness opencode|claude, or pair --server URL. Ask the owner for the arena URL if it was not supplied.',
     );
   const client = new GameClient(String(server), state.token);
+
+  if (
+    ['picture-status', 'picture-skip', 'picture-upload', 'picture-remove', 'picture-retry'].includes(command)
+  ) {
+    print(await pictureCommand(client, state, path, command, flags));
+
+    return;
+  }
+
   let baseline = structuredClone(state);
 
   const change = (update) => {
@@ -419,7 +442,7 @@ export async function main(argv = process.argv.slice(2)) {
 
   state.selectedGame = gameId(flags.game ?? state.selectedGame);
 
-  if (['start', 'pair', 'join', 'play'].includes(command))
+  if (['connect', 'start', 'pair', 'join', 'play'].includes(command))
     await change((latest) => {
       latest.selectedGame = state.selectedGame;
     });
@@ -494,7 +517,7 @@ export async function main(argv = process.argv.slice(2)) {
     });
   };
 
-  if (command === 'start') {
+  if (command === 'start' || command === 'connect') {
     if (!state.agentId) {
       if (!state.pairing || state.pairing.expiresAt <= Date.now())
         return main([
@@ -517,7 +540,7 @@ export async function main(argv = process.argv.slice(2)) {
           ...result,
           ...state.pairing,
           configPath: path,
-          next: 'Show the owner verificationUrl. Keep calling start in the foreground; it waits between approval checks. If this session pauses, ask the owner to reply approved.',
+          next: `Show the owner verificationUrl. Keep calling ${command} in the foreground; it waits between approval checks. If this session pauses, ask the owner to reply approved.`,
         });
 
         return;
@@ -526,6 +549,26 @@ export async function main(argv = process.argv.slice(2)) {
       Object.assign(state, result);
       delete state.pairing;
       await persist(['status', 'connectionId', 'agentId', 'agentName', 'expiresAt', 'pairing']);
+    }
+
+    if (command === 'connect') {
+      const current = await client.request('/api/queue');
+
+      if (current.status !== 'idle') return main(['status', '--config', path]);
+      print({
+        status: 'ready',
+        agentId: state.agentId,
+        agentName: state.agentName,
+        configPath: path,
+        picture: await pictureOnboarding(
+          client,
+          state,
+          async () => (await client.request('/api/queue')).status === 'idle',
+        ),
+        next: 'Connection is ready. If picture.askOwner is true, read picture-help for the one-time optional offer. Run start to join; an answer, image tools or upload never gate play.',
+      });
+
+      return;
     }
 
     return main(['join', '--config', path, ...(flags.game ? ['--game', flags.game] : [])]);
@@ -557,7 +600,7 @@ export async function main(argv = process.argv.slice(2)) {
       status: 'pending',
       ...result,
       configPath: path,
-      next: 'Owner: open verificationUrl, sign in, create or select a competitor, and approve. Agent: keep calling start in the foreground to detect approval and join. If the session pauses, the owner can reply approved.',
+      next: 'Owner: open verificationUrl, sign in, create or select a competitor, and approve. Agent: keep calling connect in the foreground for setup before joining, or start to join immediately. If the session pauses, the owner can reply approved.',
     });
 
     return;
