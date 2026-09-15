@@ -42,6 +42,13 @@ export interface ContinuousStorySnapshot {
   enabled: boolean;
 }
 
+interface StoryNavigation {
+  eventKey: string;
+  signal?: AbortSignal;
+  abort: () => void;
+  ticket: number;
+}
+
 let serial = 0;
 
 /** One reader lifetime, one bounded replacement at a time, no ownership of current or commands. */
@@ -62,6 +69,7 @@ export class ContinuousSuccessionHistory {
   private acknowledgedHead: number;
   private anchor: StoryReadingAnchor | null = null;
   private intent = 'initial';
+  private navigation: StoryNavigation | null = null;
 
   constructor(
     private readonly client: QueryClient,
@@ -171,6 +179,7 @@ export class ContinuousSuccessionHistory {
 
   dispose() {
     this.setEnabled(false);
+    this.releaseNavigation();
     this.listeners.clear();
   }
 
@@ -189,20 +198,57 @@ export class ContinuousSuccessionHistory {
 
     return this.read('follow');
   };
-  seek = (eventKey: string) => {
+  /** Cancellation belongs to this seek, including a queued/paused seek, never a later read. */
+  seek = (eventKey: string, signal?: AbortSignal) => {
+    if (signal?.aborted) return Promise.resolve();
+    this.releaseNavigation();
     this.detach();
     this.intent = `key:${eventKey}`;
     this.interrupted = !this.active;
 
     if (this.running) {
+      const ownedKey = [...this.key, this.ticket];
       this.ticket++;
       this.running = false;
-      void this.client.cancelQueries({ queryKey: this.key });
-      this.client.removeQueries({ queryKey: this.key });
+      void this.client.cancelQueries({ queryKey: ownedKey });
+      this.client.removeQueries({ queryKey: ownedKey });
     }
+
+    const navigation: StoryNavigation = {
+      eventKey,
+      signal,
+      ticket: 0,
+      abort: () => {
+        if (this.navigation !== navigation) return;
+        this.releaseNavigation();
+
+        if (this.running && this.ticket === navigation.ticket) {
+          const ownedKey = [...this.key, navigation.ticket];
+          this.ticket++;
+          this.running = false;
+          void this.client.cancelQueries({ queryKey: ownedKey });
+          this.client.removeQueries({ queryKey: ownedKey });
+        }
+
+        this.interrupted = false;
+        this.intent = this.initialized ? 'later' : 'initial';
+
+        if (this.snapshot.status !== 'reset')
+          this.publish({ status: this.initialized ? 'ready' : 'idle', error: '' });
+      },
+    };
+
+    this.navigation = navigation;
+    signal?.addEventListener('abort', navigation.abort, { once: true });
 
     return this.read(this.intent);
   };
+
+  private releaseNavigation() {
+    const navigation = this.navigation;
+    navigation?.signal?.removeEventListener('abort', navigation.abort);
+    this.navigation = null;
+  }
   restoreAnchor(anchor: StoryReadingAnchor) {
     this.anchor = anchor;
     this.intent = `key:${anchor.eventKey}`;
@@ -264,11 +310,30 @@ export class ContinuousSuccessionHistory {
       return;
 
     if (this.initialized && intent === 'earlier' && this.snapshot.after <= this.lower) return;
+    const navigation = intent === `key:${this.navigation?.eventKey}` ? this.navigation : null;
+
+    if (!navigation) this.releaseNavigation();
     this.running = true;
     this.intent = intent;
     const ticket = ++this.ticket;
     const valid = () => ticket === this.ticket && this.active;
     const ownedKey = [...this.key, ticket];
+
+    if (navigation) navigation.ticket = ticket;
+    let selectedAnchor: StoryReadingAnchor | null = null;
+
+    const commitNavigation = () => {
+      if (navigation === this.navigation) this.releaseNavigation();
+
+      // Resolving a source must not overwrite the live reading position while its
+      // replacement is pending. Commit the selected anchor with the delivered window.
+      if (selectedAnchor)
+        this.anchor =
+          this.anchor?.eventKey === selectedAnchor.eventKey
+            ? { ...this.anchor, cursor: selectedAnchor.cursor }
+            : selectedAnchor;
+    };
+
     this.publish({ status: 'loading', error: '' });
 
     try {
@@ -311,10 +376,7 @@ export class ContinuousSuccessionHistory {
         if (result.cursor <= this.lower || result.cursor > upper)
           throw new Error('This reading anchor is outside the selected act.');
         after = result.cursor - STORY_WINDOW_SHIFT;
-        this.anchor =
-          this.anchor?.eventKey === intent.slice(4)
-            ? { ...this.anchor, cursor: result.cursor }
-            : { eventKey: intent.slice(4), cursor: result.cursor, offset: 0 };
+        selectedAnchor = { eventKey: intent.slice(4), cursor: result.cursor, offset: 0 };
         this.client.removeQueries({ queryKey: [...ownedKey, 'anchor'] });
       } else if (!this.initialized)
         after = this.options.initial === 'latest' ? upper - STORY_WINDOW_EVENTS : this.lower;
@@ -337,6 +399,7 @@ export class ContinuousSuccessionHistory {
       const through = Math.min(upper, after + STORY_WINDOW_EVENTS);
 
       if (this.initialized && after === this.snapshot.after && through === this.snapshot.delivered) {
+        commitNavigation();
         this.publish({ status: 'ready' });
 
         return;
@@ -366,6 +429,7 @@ export class ContinuousSuccessionHistory {
       const model = buildSuccessionStory({ ...window, current: this.current });
       this.acknowledgedHead = Math.max(this.acknowledgedHead, model.delivered);
       this.initialized = true;
+      commitNavigation();
       this.publish({
         model,
         rows: model.rows,
@@ -405,6 +469,7 @@ export class ContinuousSuccessionHistory {
       this.client.removeQueries({ queryKey: ownedKey });
 
       if (valid()) {
+        if (navigation === this.navigation) this.releaseNavigation();
         this.running = false;
 
         if (

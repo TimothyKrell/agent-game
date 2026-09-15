@@ -351,6 +351,119 @@ it('keeps a newly visible opposite-edge anchor when an older scroll request comp
   expect(client.getQueryCache().getAll()).toHaveLength(0);
 });
 
+it.each(['anchor', 'page', 'paused'] as const)(
+  'aborts only its pending navigation at %s, retaining the delivered window and latest reading anchor',
+  async (stage) => {
+    const state = transport();
+    const { reader: reading, client } = reader(400);
+    await ready(reading);
+    const before = reading.getSnapshot();
+    const originalAnchor = { eventKey: fixture.events[60].eventKey, cursor: 61, offset: 12 };
+    reading.rememberAnchor(originalAnchor);
+    const navigation = new AbortController();
+    state.holdAnchor = stage === 'anchor';
+    state.hold = stage === 'page';
+
+    if (stage === 'paused') onlineManager.setOnline(false);
+    const seeking = reading.seek(fixture.events[300].eventKey, navigation.signal);
+
+    if (stage === 'paused') expect(reading.getSnapshot().status).toBe('paused');
+    else await vi.waitFor(() => expect(state.pending).toHaveLength(1));
+    expect(reading.getAnchor()).toBe(originalAnchor);
+    const anchor = { eventKey: fixture.events[80].eventKey, cursor: 81, offset: -15, focused: true };
+    reading.rememberAnchor(anchor);
+    navigation.abort();
+    expect(reading.getSnapshot()).toMatchObject({ status: 'ready', after: 0, delivered: 128 });
+    expect(reading.getSnapshot().rows).toBe(before.rows);
+    expect(reading.getAnchor()).toBe(anchor);
+    expect(client.getQueryCache().getAll()).toHaveLength(0);
+    state.hold = state.holdAnchor = false;
+    state.pending.splice(0).forEach((resolve) => resolve());
+    onlineManager.setOnline(true);
+    await seeking;
+    expect(reading.getSnapshot().rows).toBe(before.rows);
+    expect(reading.getAnchor()).toBe(anchor);
+    expect(state.anchors).toBe(stage === 'paused' ? 0 : 1);
+    expect(state.walks).toHaveLength(stage === 'page' ? 5 : 4);
+  },
+);
+
+it('cancels a queued closed-panel navigation without replaying it when the panel opens', async () => {
+  const state = transport();
+  const { reader: reading } = reader(400);
+  await ready(reading);
+  const before = reading.getSnapshot();
+  reading.setEnabled(false);
+  const navigation = new AbortController();
+  await reading.seek(fixture.events[300].eventKey, navigation.signal);
+  navigation.abort();
+  reading.setEnabled(true);
+  expect(reading.getSnapshot().rows).toBe(before.rows);
+  expect(reading.getSnapshot().status).toBe('ready');
+  expect(state.anchors).toBe(0);
+});
+
+it('a navigation abort leaves a sibling reader in the shared Query cache running', async () => {
+  const state = transport();
+  const first = reader(400);
+  await ready(first.reader);
+  const second = new ContinuousSuccessionHistory(first.client, fixture.current(400));
+  readers.push(second);
+  second.setEnabled(true);
+  await ready(second);
+  state.hold = state.holdAnchor = true;
+  const navigation = new AbortController();
+  const seeking = first.reader.seek(fixture.events[300].eventKey, navigation.signal);
+  const paging = second.loadLater();
+  await vi.waitFor(() => expect(state.pending).toHaveLength(2));
+  navigation.abort();
+  expect(first.client.getQueryCache().getAll()).toHaveLength(1);
+  expect(second.getSnapshot().status).toBe('loading');
+  state.hold = state.holdAnchor = false;
+  state.pending.splice(0).forEach((resolve) => resolve());
+  await Promise.all([seeking, paging]);
+  expect(first.reader.getSnapshot().delivered).toBe(128);
+  expect(second.getSnapshot().delivered).toBe(192);
+  expect(first.client.getQueryCache().getAll()).toHaveLength(0);
+});
+
+it('old and completed navigation signals cannot cancel a successor or later live-follow read', async () => {
+  const state = transport();
+  const { reader: reading, client } = reader(400);
+  await ready(reading);
+  state.holdAnchor = true;
+  const old = new AbortController();
+  const first = reading.seek(fixture.events[300].eventKey, old.signal);
+  await vi.waitFor(() => expect(state.pending).toHaveLength(1));
+  const next = new AbortController();
+  const second = reading.seek(fixture.events[350].eventKey, next.signal);
+  await vi.waitFor(() => expect(state.pending).toHaveLength(2));
+  old.abort();
+  expect(reading.getSnapshot().status).toBe('loading');
+  state.holdAnchor = false;
+  state.pending.splice(0).forEach((resolve) => resolve());
+  await Promise.all([first, second]);
+  expect(reading.getSnapshot().delivered).toBe(400);
+  // Warm seek resolves its source without replacing the already delivered window.
+  const rows = reading.getSnapshot().rows;
+  const warm = new AbortController();
+  await reading.seek(fixture.events[350].eventKey, warm.signal);
+  expect(reading.getSnapshot().rows).toBe(rows);
+  state.hold = true;
+  state.head = 500;
+  reading.observe(fixture.current(500));
+  const following = reading.follow();
+  await vi.waitFor(() => expect(state.pending).toHaveLength(1));
+  next.abort();
+  warm.abort();
+  expect(reading.getSnapshot()).toMatchObject({ status: 'loading', following: true });
+  state.hold = false;
+  state.pending.splice(0).forEach((resolve) => resolve());
+  await following;
+  expect(reading.getSnapshot()).toMatchObject({ status: 'ready', following: true, delivered: 500 });
+  expect(client.getQueryCache().getAll()).toHaveLength(0);
+});
+
 it.each(['steady', 'in-flight-transition', 'in-flight-head'] as const)(
   'uses canonical return landmarks for independent act windows with %s and freezes completed Act I on live head growth',
   async (timing) => {
