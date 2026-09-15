@@ -135,6 +135,9 @@ The exchange verifier is a separately generated random value: submit its S256 ch
 alongside `targetTokenHash`. At redemption the source sees that verifier and the token
 hash, never the raw target token; the target independently checks the raw target-token
 proof against the bound hash. Do not use either bearer token as the PKCE verifier.
+Persist the complete request tuple, verifier, target token, source connection identity,
+target/incarnation/commit and request ID before the first network operation. A cold
+restart must reproduce the same receipt proof, not mint a new request from a token-only file.
 
 The source calls `agentSession` and binds the exchange to that exact source grant,
 owner and competitor with scope `preview:play`. This authorizes neither other roster
@@ -164,14 +167,22 @@ participation through the existing `/api/queue` contract.
   cookie retries reuse the saved target session only for the same browser-state proof.
   Expired/consumed browser state requires a new login flow, not reusable sign-in links.
 - Better Auth session creation and application import are separate writes. Persist a
-  completion state machine and session reference; guard with a request lease/unique
-  receipt. A crash must not expose an unbound session or leave two usable sessions.
-  Revoke an orphan before retry. Do not claim cross-origin/D1 atomicity.
+  completion state machine and preallocated token correlation. Better Auth 1.7.3
+  `createSession` strips an overridden ID, but accepts a preallocated `token` when
+  `overrideAll=true`. Persist the encrypted token with the exchange intent before
+  creating a session; retry finds that session by token. Commit source lineage before
+  setting any cookie. Test crashes after intent, session creation and lineage writes;
+  a lease without recoverable correlation is insufficient. Do not claim cross-origin atomicity.
 - Derived owner sessions and agent grants live no longer than the source authority
   and target registration. Store source delegation references separately from tokens.
   **Every privileged HTTP use** checks local authority and source introspection, with
   no positive cross-request cache. Source reads use primary/current authority, not a
   stale read replica. Network uncertainty fails closed for authority.
+- This includes Better Auth's own authenticated routes reached by the early
+  `/api/auth/*` dispatch: session listing/revocation and user/account operations must
+  pass source introspection too. Gate them before library dispatch; `ownerSession`
+  alone is insufficient. An old source-revoked target cookie cannot inspect or revoke
+  a newer target session. Ordinary production authentication remains unchanged.
 - Also introspect before asynchronous queue allocation, not only `POST /api/queue`.
   Source retirement, grant revocation/expiry, owner-session revocation, delegation
   revocation or arena closure denies subsequent derived operations. Local revoke or
@@ -273,6 +284,11 @@ design worktree (sections “Profile-picture work requested” and “Verificati
    request IDs or budget ledgers into preview state. Preserve 120/10/10 Succession,
    35-minute Secret Overlord and existing harness-accounting behavior; a preview is not
    an extra Claude allowance.
+5. Pin branch rules/skill artifacts separately from the trusted executable. Connection
+   and active-participation records carry artifact paths, game/rules version, preview
+   commit and archive/content digests. Dispatcher and supervisor read those pinned
+   artifacts, not adjacent files from the source CLI installation. A later rules-only
+   PR test must prove branch rules are consumed while the executable stays trusted.
 
 Source-token transport must remain in the source-trusted dispatcher. The automatic
 compatible path does not execute arbitrary code downloaded from a PR to read a source
@@ -328,6 +344,13 @@ Implementation shape:
    comes from the source broker, not a copied local `$5` environment setting; local
    inference telemetry is not a second authoritative usage ledger. Failed initialization
    retries the same allocation, while smoke allocations stay entirely local and free.
+   **Before source allocation I/O**, persist target match ID, stable allocation request
+   ID, exact tickets and authority/play intent. Recover the same source receipt after
+   lost acknowledgement. Creating-allocation recovery must recheck source authority
+   and exact unchanged tickets before first Match initialization. Persist/query an
+   initialization receipt to distinguish an already initialized match (recover existing
+   participation) from one never initialized (revalidate or cancel). Queued-ticket
+   checks alone miss the existing creating → finishAllocation recovery branch.
 2. Source accepts at most **one active live-preview allocation globally**, within the
    existing three total slots and current remaining money. Bind each allocation to the
    registered incarnation/commit, authenticated play intent, game and preview match ID;
@@ -374,16 +397,12 @@ The source production policy has wider mixed-match completion obligations; its r
 spending can still exceed the daily target. Newly added previews must not claim to make
 that target a hard cap.
 
-**Owner decision still needed before live hosted evidence:** authorize the particular
-real-model preview trial against the **shared operating target's actual remaining
-allowance**, accepting the bounded preview-allocation interruption policy above, or
-allocate it to a separately approved evaluation envelope. This slice spends nothing.
-The last committed separate $10 evaluation ledger reports only **$0.791523 remaining**
-([deployment record](../deployment.md#next-owner-step)); that is below a
-$1.50 reservation and is not permission to top it up from an unrelated ledger. The
-parent must reconcile current usage and name the funding ledger before admitting a
-trial. Guaranteeing arbitrary-length mixed preview completion, raising either ceiling,
-or granting additional harness spend is a **new budget/product decision**, not inferred
+Before live hosted evidence, reconcile the **actual current shared operating ledger**
+and name the trial's funding ledger. The historical separate evaluation balance of
+$0.791523 is not current operating usage and is not an operating-budget blocker or
+evidence that new approval is required. Local implementation proceeds without paid
+calls. Guaranteeing arbitrary-length mixed preview completion, raising either ceiling,
+or granting additional harness spend is a new budget/product decision, not inferred
 from TIM-26's synthetic $1.2804700 completion.
 
 ## Exact implementation slices and ownership
