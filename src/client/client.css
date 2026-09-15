@@ -14,6 +14,7 @@
 
 @import './ui/tokens.css' layer(base);
 @import './ui/primitives.css' layer(components);
+@import './agent-portrait.css' layer(components);
 
 /* No Preflight. Add sources only when their consumers migrate. */
 @import 'tailwindcss/utilities.css' layer(utilities) prefix(tw) source(none);
