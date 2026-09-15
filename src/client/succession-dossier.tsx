@@ -72,6 +72,7 @@ function DossierContent({
   const entrants = new Map(model.end.map((seat) => [seat.seat, seat.entrant]));
   const faction = dossierValue(model.chapters.act1);
   const tracks = dossierValue(model.chapters.finalTracks);
+  // Canonical recorded Act II creation allocation, independent of any current seat balances/hands.
   const returns = dossierValue(model.chapters.returns);
 
   const recipients = returns?.flatMap((seat) =>

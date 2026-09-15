@@ -132,6 +132,12 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
     expect(returned).toHaveLength(10);
     expect(returned.filter((seat) => seat.returnedAfterExecution)).toHaveLength(2);
     expect(returned.every((seat) => seat.influence === 2)).toBe(true);
+    const start = execution[1].rows.find((row) => row.fact.kind === 'act-started')!;
+    expect(renderRow(start, execution[1], false)).toContain('All 10 starting states');
+    const missingReturns = structuredClone(execution[1]);
+    missingReturns.chapters.returns = { status: 'unavailable', reason: 'not-recorded' };
+    expect(renderRow(start, missingReturns, false)).toContain('Recorded starting states unavailable.');
+    expect(renderRow(start, missingReturns, false)).not.toContain('dossier-starting-totals');
 
     const double = examples.find((example) => example.id === 'double-loss')!.models[0];
     const losses = double.rows.filter((row) => row.fact.kind === 'influence-lost');

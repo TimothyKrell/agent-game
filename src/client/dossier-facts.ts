@@ -2,16 +2,7 @@ import type { StoryRow } from './succession-story-types';
 import type { DossierEntrants } from './dossier-summary';
 import { unavailableEntrant } from './dossier-summary';
 import { dossierName, dossierValue } from './dossier-identity';
-import { storyRules } from './succession-story-rules';
-
-const actionNames = {
-  income: 'Income',
-  tax: 'Tax',
-  steal: 'Theft',
-  assassinate: 'Assassination',
-  exchange: 'Exchange',
-  coup: 'Coup',
-} as const;
+import { storyActionRules, storyRules } from './succession-story-rules';
 
 /** Mechanical wording from typed facts. Only speech is an exact source quotation. */
 export function dossierFactText(row: StoryRow, entrants: DossierEntrants) {
@@ -30,7 +21,7 @@ export function dossierFactText(row: StoryRow, entrants: DossierEntrants) {
 
   switch (fact.kind) {
     case 'declaration':
-      return `Declares ${actionNames[fact.action.type]}${fact.action.target === undefined ? '' : ` against ${name(fact.action.target)}`}.${fact.claim ? ` Claims ${storyRules[fact.claim][0]}.` : ''}${fact.payment ? ` Pays ${fact.payment} coins.` : ''}`;
+      return `Declares ${storyRules[storyActionRules[fact.action.type]][0]}${fact.action.target === undefined ? '' : ` against ${name(fact.action.target)}`}.${fact.claim ? ` Claims ${storyRules[fact.claim][0]}.` : ''}${fact.payment ? ` Pays ${fact.payment} coins.` : ''}`;
     case 'challenge-resolved':
       return fact.challenger === null
         ? `${name(fact.claimant)}’s ${storyRules[fact.capability][0]} ${fact.block ? 'block' : 'claim'} is unchallenged.`

@@ -1,6 +1,6 @@
 import type { Observation2, ReplayFrame2 } from '../shared/succession';
 import { readStoryFact } from './succession-story-events';
-import { storyText } from './succession-story-rules';
+import { storyActionRules, storyText } from './succession-story-rules';
 import type { StoryRule } from './succession-story-rules';
 import type {
   StoryAction,
@@ -343,19 +343,10 @@ function phaseActor(
   return known(null, source);
 }
 
-const actionTerms: Record<StoryAction['action'], StoryRule> = {
-  income: 'income',
-  tax: 'tax',
-  steal: 'theft',
-  assassinate: 'assassination',
-  exchange: 'exchange',
-  coup: 'coup',
-};
-
 function ruleTerms(fact: StoryFact): StoryRule[] {
   switch (fact.kind) {
     case 'declaration':
-      return [actionTerms[fact.action.type], ...(fact.claim ? [fact.claim] : []), 'coins'];
+      return [storyActionRules[fact.action.type], ...(fact.claim ? [fact.claim] : []), 'coins'];
     case 'challenge-resolved':
       return ['challenge', fact.capability, ...(fact.block ? ['block' as const] : [])];
     case 'proof':

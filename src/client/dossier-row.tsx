@@ -6,16 +6,7 @@ import { DossierRule, DossierText } from './dossier-rules';
 import { dossierFactText } from './dossier-facts';
 import type { DossierEntrants } from './dossier-summary';
 import { DossierAward, DossierCap, DossierReturn, unavailableEntrant } from './dossier-summary';
-import type { StoryRule } from './succession-story-rules';
-
-export const dossierActions = {
-  income: 'income',
-  tax: 'tax',
-  steal: 'theft',
-  assassinate: 'assassination',
-  exchange: 'exchange',
-  coup: 'coup',
-} as const satisfies Record<string, StoryRule>;
+import { storyActionRules } from './succession-story-rules';
 
 const powerRules = {
   investigate: 'investigation',
@@ -74,7 +65,7 @@ function DossierActionContext({ row, entrants }: { row: StoryRow; entrants: Doss
       data-action-source={declaration?.kind === 'event' ? declaration.eventKey : undefined}
     >
       <span>
-        Action by {name} · <DossierRule rule={dossierActions[action.action]} />
+        Action by {name} · <DossierRule rule={storyActionRules[action.action]} />
         {action.target !== null
           ? ` → ${dossierName(rowEntrant(row, entrants, action.target), action.target)}`
           : ''}
@@ -98,7 +89,7 @@ function FactEvidence({ row, entrants }: { row: StoryRow; entrants: DossierEntra
     case 'declaration':
       return (
         <div className="dossier-action-facts">
-          <DossierRule rule={dossierActions[fact.action.type]} />
+          <DossierRule rule={storyActionRules[fact.action.type]} />
           {fact.claim && (
             <span>
               Claims <DossierRule rule={fact.claim} />
@@ -320,19 +311,6 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
   const name = portraitSeat == null ? 'Actor unavailable' : dossierName(entrant, portraitSeat);
   const evidence = !speech && !system && fact.kind !== 'act-started' && fact.kind !== 'act-ended';
 
-  const returned: StoryReturn[] | undefined =
-    fact.kind === 'act-started'
-      ? fact.roles.map((role, seat) => ({
-          seat,
-          entrant: rowEntrant(row, entrants, seat),
-          role,
-          returnedAfterExecution: fact.returnedSeats.includes(seat),
-          bonus: fact.bonuses[seat],
-          coins: fact.bonuses[seat] === 1 ? 3 : 2,
-          influence: 2,
-        }))
-      : undefined;
-
   const remaining = dossierValue(row.remaining);
   const action = dossierValue(row.action);
   const actionSource = action ? dossierValue(action.declaration) : undefined;
@@ -401,14 +379,15 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
               <DossierActionContext row={row} entrants={entrants} />
               {fact.kind === 'turn-ended' && dossierValue(row.resolution) && (
                 <p>
-                  {action && <DossierRule rule={dossierActions[action.action]} />} ·{' '}
+                  {action && <DossierRule rule={storyActionRules[action.action]} />} ·{' '}
                   {dossierValue(row.resolution)}
                 </p>
               )}
               {fact.kind === 'act-ended' && (
                 <DossierAward team={fact.team} reason={fact.reason} seats={returns} />
               )}
-              {fact.kind === 'act-started' && returned && <DossierReturn seats={returned} />}
+              {fact.kind === 'act-started' &&
+                (returns ? <DossierReturn seats={returns} /> : <p>Recorded starting states unavailable.</p>)}
             </>
           )}
         </div>
