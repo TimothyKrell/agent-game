@@ -127,7 +127,7 @@ async function picture(response: Response) {
 
 beforeEach(async ({ task }) => {
   captureTakeoverFailure = undefined;
-  const root = resolve(process.env.GAME_FIXTURE_EVIDENCE_DIR ?? '.tim28/runs');
+  const root = resolve(process.env.GAME_FIXTURE_EVIDENCE_DIR ?? 'test-results/agent-pictures');
   await mkdir(root, { recursive: true });
   persistTo = await mkdtemp(`${root}/agent-pictures-`);
   await promisify(execFile)(process.execPath, [
@@ -138,22 +138,25 @@ beforeEach(async ({ task }) => {
     'tim28',
     '--local',
     '--config',
-    '.tim28/wrangler.jsonc',
+    'tests/fixtures/agent-pictures/wrangler.jsonc',
     '--persist-to',
     persistTo,
   ]);
   const takeover = task.name === takeoverCase;
-  runtime = await unstable_dev(takeover ? '.tim28/portrait-worker.ts' : '.tim28/worker.ts', {
-    config: '.tim28/wrangler.jsonc',
-    local: true,
-    persist: true,
-    persistTo,
-    port: 0,
-    inspectorPort: 0,
-    logLevel: 'error',
-    vars: takeover ? { TIME_SCALE: '1' } : undefined,
-    experimental: { forceLocal: true, disableExperimentalWarning: true, watch: false },
-  });
+  runtime = await unstable_dev(
+    takeover ? 'tests/fixtures/agent-pictures/portrait-worker.ts' : 'tests/fixtures/agent-pictures/worker.ts',
+    {
+      config: 'tests/fixtures/agent-pictures/wrangler.jsonc',
+      local: true,
+      persist: true,
+      persistTo,
+      port: 0,
+      inspectorPort: 0,
+      logLevel: 'error',
+      vars: takeover ? { TIME_SCALE: '1' } : undefined,
+      experimental: { forceLocal: true, disableExperimentalWarning: true, watch: false },
+    },
+  );
 }, 60_000);
 
 afterEach(async ({ task }) => {
@@ -380,7 +383,7 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
   it('accepts actual JPEG bytes and fences retirement/revocation occurring after initial authorization', async () => {
     const cookie = await owner();
     const profile = await agent(cookie);
-    const jpeg = await readFile('.tim28/fixture.jpg');
+    const jpeg = await readFile('tests/fixtures/agent-pictures/fixture.jpg');
     const original = await picture(await change(profile.id, cookie, 0, { bytes: jpeg, type: 'image/jpeg' }));
     expect(original).toMatchObject({ contentType: 'image/jpeg', width: 8, height: 8 });
     const token = await pair(cookie, profile.id);
@@ -553,13 +556,13 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
       'tim28',
       '--local',
       '--config',
-      '.tim28/wrangler.jsonc',
+      'tests/fixtures/agent-pictures/wrangler.jsonc',
       '--persist-to',
       isolatedStorage,
     ]);
 
-    const isolated = await unstable_dev('.tim28/worker.ts', {
-      config: '.tim28/wrangler.jsonc',
+    const isolated = await unstable_dev('tests/fixtures/agent-pictures/worker.ts', {
+      config: 'tests/fixtures/agent-pictures/wrangler.jsonc',
       local: true,
       persist: true,
       persistTo: isolatedStorage,

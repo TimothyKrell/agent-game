@@ -4,9 +4,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // The hidden dev fixture is outside Vite's default HTML scan. Scan both entry graphs
+  // Scan the application and foundations fixture entry graphs
   // together so its Base UI imports cannot replace React chunks during first render.
-  optimizeDeps: { entries: ['index.html', '.tim11/foundations.html'] },
+  optimizeDeps: { entries: ['index.html', 'dev/foundations/foundations.html'] },
   build: { outDir: 'dist/client', emptyOutDir: true },
   server: {
     port: 5174,

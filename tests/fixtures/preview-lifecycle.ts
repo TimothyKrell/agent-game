@@ -28,8 +28,8 @@ export const LifecycleBatch = Schema.Struct({ batch: Schema.Array(Query) });
 
 /** Both unmodified application Workers, real databases and real Cloudflare-shaped transport. */
 export async function lifecycleFixture(options: { targetMigrations?: boolean } = {}) {
-  await mkdir('.tim27-lifecycle/runs', { recursive: true });
-  const directory = await mkdtemp(resolve('.tim27-lifecycle/runs/worker-'));
+  await mkdir('test-results/preview-lifecycle', { recursive: true });
+  const directory = await mkdtemp(resolve('test-results/preview-lifecycle/worker-'));
   const artifactDirectory = resolve(directory, 'artifact');
   execFileSync(process.execPath, ['scripts/produce-preview-artifact.ts', artifactDirectory], {
     timeout: 90_000,

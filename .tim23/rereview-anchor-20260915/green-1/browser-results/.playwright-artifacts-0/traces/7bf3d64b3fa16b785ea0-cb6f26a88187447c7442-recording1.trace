@@ -1,1 +1,0 @@
-{"version":9,"type":"context-options","origin":"library","browserName":"","playwrightVersion":"1.63.0","options":{},"platform":"linux","wallTime":1789443219369,"monotonicTime":2454.021,"sdkLanguage":"javascript","title":"continuous-story.spec.ts:371 › keeps two open document chapters independently reachable through scrolling, focus and window replacement"}

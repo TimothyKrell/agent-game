@@ -1,3 +1,0 @@
-# Preserve raw tool output byte-for-byte, including its original whitespace.
-accepted/*.log -whitespace
-ci-evidence/** -whitespace

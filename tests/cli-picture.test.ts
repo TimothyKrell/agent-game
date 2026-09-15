@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { Schema } from 'effect';
 import { version } from '../package.json';
-import { pictureFixture, picturePort, png } from '../.tim30/picture-fixture';
+import { pictureFixture, picturePort, png } from './fixtures/cli-onboarding/picture-fixture';
 import { AgentPictureSchema } from '../src/shared/agent-picture';
 import { validatePicture } from '../cli/picture.mjs';
 import { advance, createMatch } from '../src/game/engine';

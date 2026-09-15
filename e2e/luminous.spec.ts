@@ -134,7 +134,6 @@ test('arena selects real summaries and switches to replay records on desktop and
     '/matches/2b8a30',
   );
   await expect(page.locator('.match-option[aria-pressed="true"]')).toContainText('2B8A30');
-  await page.screenshot({ path: '/tmp/opencode/luminous-arena-desktop.png', fullPage: true });
   await page.getByRole('button', { name: 'Recent replays', exact: true }).click();
   await expect(detail).toContainText('Cooperative victory.');
   await expect(detail.getByRole('link', { name: 'Open replay' })).toHaveAttribute('href', '/matches/4d2a08');
@@ -147,7 +146,6 @@ test('arena selects real summaries and switches to replay records on desktop and
     'href',
     '/matches/9f2d64',
   );
-  await page.screenshot({ path: '/tmp/opencode/luminous-arena-mobile.png', fullPage: true });
 });
 
 test('live and revealed records use real phase timers, outcomes, and accessible mobile participants', async ({

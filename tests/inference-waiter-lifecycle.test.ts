@@ -98,7 +98,7 @@ async function scenario(kind: 'required' | 'initial', settlement: boolean, loss 
     );
 
     const text = await response.text();
-    const directory = `.tim7/${process.env.TIM26_WAITER_NAME ?? 'waiter-lifecycle'}`;
+    const directory = `test-results/inference/${process.env.TIM26_WAITER_NAME ?? 'waiter-lifecycle'}`;
     await mkdir(directory, { recursive: true });
     await writeFile(
       `${directory}/${kind}${settlement ? '-settlement' : ''}${loss ? `-${loss}` : ''}.json`,

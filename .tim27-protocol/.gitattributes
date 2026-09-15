@@ -1,5 +1,0 @@
-# Raw diagnostic captures retain the tool's whitespace and terminal control bytes.
-accepted/**/*.log -whitespace
-accepted/historical-error.txt -whitespace
-correction-accepted/**/*.log -whitespace
-correction-accepted/**/*.patch -whitespace

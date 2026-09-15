@@ -53,7 +53,7 @@ it('measures eligible speakers and fresh follow-up opportunities through the rea
     );
 
     const text = await response.text();
-    const directory = resolve('.tim7', process.env.TIM7_NAME ?? 'latest');
+    const directory = resolve('test-results/dialogue', process.env.TIM7_NAME ?? 'latest');
     await mkdir(directory, { recursive: true });
 
     if (!response.ok)

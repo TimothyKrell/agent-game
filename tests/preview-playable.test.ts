@@ -4,8 +4,12 @@ import { afterEach, beforeEach, expect, it } from 'vitest';
 import { Schema } from 'effect';
 import { gameDescriptor } from '../src/game/descriptors';
 import { decodeGameState, inspectGame } from '../src/game/registry';
-import { assertArchive, assertLiveCheckpoint, assertSourceAccounting } from '../.tim27-playable/assertions';
-import { hash } from '../.tim27-cli/artifacts';
+import {
+  assertArchive,
+  assertLiveCheckpoint,
+  assertSourceAccounting,
+} from './fixtures/preview-playable/assertions';
+import { hash } from './fixtures/cli-preview/artifacts';
 import {
   initialize,
   shutdown,
@@ -32,7 +36,7 @@ import {
   incarnation,
   discussion,
   observe,
-} from '../.tim27-playable/harness';
+} from './fixtures/preview-playable/harness';
 
 beforeEach(initialize, 120000);
 

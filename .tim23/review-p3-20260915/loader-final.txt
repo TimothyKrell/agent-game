@@ -1,1 +1,0 @@
-JSON report written to /tmp/opencode/agent-game-TIM-23/.tim23/review-p3-20260915/loader-final.json

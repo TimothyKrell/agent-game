@@ -241,10 +241,10 @@ Covered:
   → fragment-stripped target completion → authenticated target owner HTTP. Cookies
   are checked to stay on their respective source/target hosts.
 
-Artifacts: [`identity-result.json`](../../.tim27/identity-result.json),
-[`identity-vitest.json`](../../.tim27/identity-vitest.json),
-[`identity-browser.png`](../../.tim27/identity-browser.png), and
-[`identity-provenance.json`](../../.tim27/identity-provenance.json).
+Artifacts: [`identity-result.json`](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-result.json),
+[`identity-vitest.json`](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-vitest.json),
+[`identity-browser.png`](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-browser.png), and
+[`identity-provenance.json`](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-provenance.json).
 The screenshot is deliberately a minimal continuation page, not an owner-dashboard
 visual review. Current reruns default to a unique ignored `.tim27/runs/identity-*`
 directory, created before Chromium captures. `TIM27_IDENTITY_EVIDENCE_DIR` selects an
@@ -277,13 +277,13 @@ Do not point a rerun at the accepted root captures or regenerate their manifests
   That first combined run could not start `worker-errors` because `dist/client` was
   absent. `node node_modules/vite/bin/vite.js build` created only local assets; its
   two tests then passed, including production-mode development-login rejection.
-  See [`identity-worker-regressions.json`](../../.tim27/identity-worker-regressions.json).
+  See [`identity-worker-regressions.json`](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-worker-regressions.json).
 
 - Existing deterministic `tests/preview-worker.test.ts` passed both scripted games,
   including complete Succession acts and archive replay. Its normal configured
   bounds are 190/310 seconds; earlier foreground commands were stopped by shorter
   shell timeouts, then the full background run completed successfully. See
-  [`identity-preview-regression.json`](../../.tim27/identity-preview-regression.json).
+  [`identity-preview-regression.json`](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-preview-regression.json).
 - No model/provider calls were made. Inference fixtures and the preview provider
   are deterministic. Expected fault-injection logs and occasional local workerd
   connection-reset diagnostics are not provider errors or test failures.

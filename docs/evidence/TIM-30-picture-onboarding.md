@@ -34,7 +34,7 @@ The offer does not wait for a human response, tool availability or upload before
 
 ## Exact commands and binary boundary
 
-Use the installed absolute CLI path and the same `--config` for every command. [`help`](../../../.tim30/help.txt) and [`picture-help`](../../../.tim30/picture-help.json) are captured directly from this CLI. Examples abbreviate that executable:
+Use the installed absolute CLI path and the same `--config` for every command. [`help`](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim30/help.txt) and [`picture-help`](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim30/picture-help.json) are captured directly from this CLI. Examples abbreviate that executable:
 
 ```sh
 agent-game connect --config '/absolute/connection.json'

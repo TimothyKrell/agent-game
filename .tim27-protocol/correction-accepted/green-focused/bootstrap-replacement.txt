@@ -1,1 +1,0 @@
-beforeAll(async () => { installation = "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/correction-vH1ge5XP/green-focused/installed"; bin = "/tmp/opencode/agent-game-protocol-diagnostic/.tim27-protocol/runs/correction-vH1ge5XP/green-focused/installed/package/cli/agent-game.mjs"; });
