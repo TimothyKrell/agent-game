@@ -35,6 +35,7 @@ import {
 } from './http';
 import { houseConfigured } from './house-model';
 import { sourcePreviewRoute } from './preview-source';
+import { sourceBrokerRoute } from './preview-inference';
 import { targetPreviewRoute } from './preview-target';
 import { previewEnabled } from './preview-config';
 import { previewPage } from './preview-pages';
@@ -61,7 +62,7 @@ export default {
   async scheduled(_controller, env) {
     await collectAgentPictures(env);
   },
-  async fetch(request, env): Promise<Response> {
+  async fetch(request, env, ctx?: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
@@ -91,7 +92,10 @@ export default {
       }
 
       if (path.startsWith('/api/preview/')) {
-        const preview = (await targetPreviewRoute(request, env)) ?? (await sourcePreviewRoute(request, env));
+        const preview =
+          (await targetPreviewRoute(request, env)) ??
+          (await sourcePreviewRoute(request, env)) ??
+          (await sourceBrokerRoute(request, env, ctx));
 
         if (preview) return preview;
       }
@@ -365,14 +369,7 @@ export default {
         }
 
         if (method === 'POST') {
-          if (previewEnabled(env))
-            throw new GameError(
-              'preview-allocation-pending',
-              'Preview identity is connected. Shared allocation support is not enabled yet.',
-              503,
-            );
-
-          if (!houseConfigured(env))
+          if (!previewEnabled(env) && !houseConfigured(env))
             throw new GameError(
               'house-unavailable',
               'House agents are not configured. Match admission is paused.',

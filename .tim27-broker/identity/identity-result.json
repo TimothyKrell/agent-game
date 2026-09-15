@@ -1,0 +1,24 @@
+{
+  "sourceOrigin": "http://localhost:32923",
+  "targetOrigin": "http://127.0.0.1:34491",
+  "observations": [
+    "Agent-first then owner import converges; credentials, auth users, accounts and history isolated.",
+    "Foreign origin/port, missing browser, bad verifier/token, wrong incarnation, expired and replayed signatures rejected.",
+    "Pending intent and consumed source receipt survive lost acknowledgements and target cold restarts.",
+    "Crashes after library session insert and lineage commit recover one session; sign-out cannot be undone by replay.",
+    "Concurrent native D1 owner completion and cold agent retry produce one receipt; local grant revocation persists.",
+    "Unused 60-second codes expire; consumed receipts require the same proof within ten minutes; existing authority remains usable.",
+    "Target grant + lineage batch survives interrupted acknowledgement; retry recovers the same connection.",
+    "Real creation APIs: local names/tombstones stay intact; concurrent owner/agent imports suffix source IDs, handle 80-code-unit names and Unicode keys, and repeat without duplicates.",
+    "Correctly signed agent-scope introspection rejects another active same-owner competitor; owner roster scope keeps live eligibility checks.",
+    "Owner-first/agent-second and 28-agent paginated imports preserve IDs and reset history; a conflicting local ID fails on every retry.",
+    "Insert-only metadata and retirement survive import/redeploy; stale unconsumed commit-bound codes fail.",
+    "Revoked source cookie cannot list/revoke newer target sessions; owner-derived pairing authority revokes with its source session.",
+    "Source retirement/grant revocation blocks private HTTP; derived private socket tickets denied and public reads unaffected.",
+    "Chromium: target start → source local Better Auth login → source authorization → fragment-stripped target completion → authenticated owner HTTP.",
+    "Live authority fails closed during source outage, then recovers after a source cold restart without re-pairing.",
+    "Only trusted controller registration exists; closed incarnations cannot reopen old authorities."
+  ],
+  "runtime": "Wrangler 4.129.1 / local workerd D1 / Better Auth 1.7.3",
+  "paidCalls": 0
+}

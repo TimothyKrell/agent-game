@@ -127,8 +127,9 @@ export async function redeemPreview(env: Env, requestId: string, code: string, v
 export async function verifyPreviewRequest(
   env: Env,
   request: Request,
+  maxBytes = 32768,
 ): Promise<{ origin: string; incarnation: string; payload: string }> {
-  const input = await readJson(request, PreviewSignedSchema, 32768);
+  const input = await readJson(request, PreviewSignedSchema, maxBytes);
 
   if (!Number.isSafeInteger(input.at) || input.at < Date.now() - 60000 || input.at > Date.now() + 5000)
     throw new GameError('preview-proof', 'Expired target proof.', 401);
