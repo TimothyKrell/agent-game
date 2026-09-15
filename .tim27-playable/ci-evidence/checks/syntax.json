@@ -1,7 +1,0 @@
-{
-  "passed": [
-    ".tim27-playable/native.cjs",
-    ".tim27-playable/ci.config.mjs",
-    ".tim27-playable/report.mjs"
-  ]
-}
