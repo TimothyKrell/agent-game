@@ -17,6 +17,13 @@ release. The exact retained deployed 0.2.0 archive remains separate.
 
 ## Authority and ordering
 
+**Follow-up status:** the fixed runner's full resource graph and transient-read
+recovery now have additional local coverage. A separate real-D1 probe has exposed
+a remaining A→B→A generation-fencing gap; see
+[the follow-up evidence](../../.tim27-lifecycle/followup.md). The earlier statement
+that tuple guards fence every delayed write is superseded by the limitation below.
+Hosted activation remains blocked on an approved durable generation helper/schema.
+
 The existing default-off deployment activation, immutable GitHub-tested merge
 identity, seven required checks, three unit shards, 15-minute job deadlines,
 quarantine and validated `bundle:false` upload remain the prerequisite.
@@ -31,7 +38,9 @@ It maps the distinct protected-environment `PREVIEW_DEPLOY_TOKEN` to Alchemy's
 `CLOUDFLARE_API_TOKEN` internally. The runner validates its exact arguments and
 independently repeats the controller's event/default-branch/GitHub/proof checks.
 It compiles the fixed trusted stack and calls the locked Alchemy Plan/Apply APIs
-in process. Cleanup validates the live closed PR again. No PR script, config,
+in process through `scripts/preview-apply.ts`. The runner and local provider
+transports use the same `arenaResources` graph and Plan/Apply/lifecycle sequence.
+Cleanup validates the live closed PR again. No PR script, config,
 import path, account, database, stage alias, release version, or secret selects
 control-plane authority.
 
@@ -128,9 +137,19 @@ The existing GitHub per-PR noncancelling queue serializes controllers. Before
 writes, retained generation and live eligibility are checked again. Fixed SQL
 **read guards** inside the same D1 transaction compare the observed predecessor
 or exact desired tuple. An invalid predecessor deliberately aborts the whole
-transaction. Late old-commit configuration or registration cannot overwrite a
-newer tuple; same-desired retries can succeed after a lost acknowledgement.
+transaction. A delayed write is rejected when the current tuple differs from
+both its observed predecessor and its desired tuple; same-desired retries can
+succeed after a lost acknowledgement. **These guards do not fence A→B→A cycles.**
+When the predecessor recurs, the old request can overwrite a newer generation.
+Both source registration and target configuration reproduce this on real D1.
 These guards do not rewrite accepted helper SQL or interpolate parameters.
+
+Closing that gap requires a durable per-origin generation fence, advanced and
+checked atomically with the accepted helper writes. The source needs to retain
+its fence across close/recreation. The target must reject delayed older
+configuration. The parent must reserve/own a migration and approve the narrow
+helper contract before this lane can integrate it. No additional migration or
+production-helper SQL change has been made here.
 
 `previewTransaction` gives each accepted helper an ordered slot. A helper's
 `run`/`batch` promise resolves only after the complete native transaction returns
@@ -150,6 +169,9 @@ retirement triggers and table availability, not just an environment flag.
 - Failed/lost D1 acknowledgements never count as readiness. Reconciliation reads
   actual state, retaining the key through transient failure and a new runner.
 - Observed eligibility loss after registration retires that exact incarnation.
+  `PreviewEligibilityChanged` distinguishes independently observed closed/head/
+  run changes from transport, malformed-response and failed-verification errors.
+  A transient recheck failure preserves the registered incarnation/key for retry.
   A workflow failure finalizer also retires a completed delivery whose smoke or
   readback failed, or an observed closed/changed-head pending delivery. A failed
   GitHub read alone does not authorize destruction. Partial current deliveries
@@ -169,7 +191,8 @@ retirement triggers and table availability, not just an environment flag.
 - The remote Alchemy state service has no compare-and-swap API. Controller
   exclusivity therefore depends on the shared GitHub per-PR queue; unrelated
   manual concurrent writers to that stage are outside the controller contract.
-  D1 preimage guards additionally fence requests delayed past a controller exit.
+  D1 preimage guards additionally reject delayed requests whose predecessor no
+  longer matches; the revision-cycle limitation above still needs a durable fence.
 
 ## Broker handoff and activation
 

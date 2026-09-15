@@ -1,5 +1,10 @@
 # TIM-27 lifecycle working evidence
 
+**Follow-up:** [runner/retry corrections and the remaining generation-fence
+blocker](followup.md) supersede the original universal delayed-write-fencing
+claim. Identity activation remains blocked on the parent-approved durable
+generation helper/schema. The original reports below remain historical evidence.
+
 This new lane starts at parent `635894b`. Original delivery worktree and its
 evidence remain archived separately and untouched.
 
