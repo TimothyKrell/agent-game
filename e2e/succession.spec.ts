@@ -751,7 +751,9 @@ for (const width of [320, 390, 768, 1600]) {
           await routes(page, viewOf(state));
           await page.goto('/matches/succession-ui');
           await expect(
-            page.getByText('Challenges sealed · Choices reveal together at resolution.'),
+            page
+              .getByRole('region', { name: 'Current match state', exact: true })
+              .getByText('Challenges sealed · Choices reveal together at resolution.', { exact: true }),
           ).toBeVisible();
           await expect(page.locator('.seat')).toHaveCount(10);
           await page.getByText('Current table · public resources and seats', { exact: true }).click();
