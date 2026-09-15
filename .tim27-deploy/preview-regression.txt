@@ -1,0 +1,12 @@
+Existing scripted preview regression — local workerd, no paid inference
+
+tests/preview-worker.test.ts
+PASS hosts an unranked scripted preview while keeping owner login disabled (49475ms)
+PASS completes both actual Succession acts through house DO jobs and serves bounded archive replay (124543ms)
+
+Test Files: 1 passed
+Tests: 2 passed
+Duration: 177.19s
+
+Raw log: .tim27-deploy/preview-regression.log
+SHA-256: 31cd6639133c0e50641bf1949bf6ed2fe04e3f3a3c9bbba23777bb84de1bfa70
