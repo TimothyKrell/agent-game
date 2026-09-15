@@ -6,6 +6,7 @@ import {
   type AgentPicture,
 } from '../shared/agent-picture';
 import { api, ApiError } from './api';
+import { activeAgentPictures } from './active-agent-pictures';
 
 export type AgentPictureMap = ReadonlyMap<string, AgentPicture>;
 
@@ -54,7 +55,18 @@ export function agentPictureOptions(agentIds: readonly string[]) {
 
   return queryOptions({
     queryKey: ['agent-pictures-v1', ids] as const,
-    queryFn: ({ signal }) => readAgentPictures(ids, signal),
+    queryFn: async ({ signal, client }) => {
+      const pictures = await readAgentPictures(ids, signal);
+      signal.throwIfAborted();
+      const known = activeAgentPictures(client);
+      known.publish(pictures);
+
+      return mergeAgentPictures(
+        ids.map((id) => ({ id })),
+        pictures,
+        known.getSnapshot(),
+      );
+    },
     enabled: ids.length > 0,
     staleTime: Infinity,
     gcTime: 0,
@@ -67,15 +79,20 @@ export function agentPictureOptions(agentIds: readonly string[]) {
 /** Only current profile fields belong here; immutable mutation receipts are not current metadata. */
 export function mergeAgentPictures(
   agents: readonly PictureIdentity[],
-  current?: AgentPictureMap,
+  ...current: (AgentPictureMap | undefined)[]
 ): AgentPictureMap {
   const pictures = new Map<string, AgentPicture>();
 
   for (const agent of agents) {
     if (!agent.id) continue;
-    const provided = agent.picture ?? missingAgentPicture;
-    const loaded = current?.get(agent.id);
-    const picture = loaded && loaded.revision > provided.revision ? loaded : provided;
+    let picture = agent.picture ?? missingAgentPicture;
+
+    for (const source of current) {
+      const loaded = source?.get(agent.id);
+
+      if (loaded && loaded.revision > picture.revision) picture = loaded;
+    }
+
     const previous = pictures.get(agent.id);
 
     if (!previous || picture.revision > previous.revision) pictures.set(agent.id, picture);
