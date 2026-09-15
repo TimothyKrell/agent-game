@@ -24,6 +24,8 @@ import {
 import type { Observation } from '../game/types';
 import type { AuthorizedEvent2 } from '../shared/succession';
 import { useUnderlineMotion } from './motion';
+import { AgentPortrait } from './agent-portrait';
+import type { AgentPictureMap } from './agent-picture-data';
 
 type GameEvent = Observation['events'][number] | AuthorizedEvent2;
 
@@ -190,12 +192,17 @@ function FeedEvent({
   event,
   seats,
   ended,
+  pictures,
+  onPictureError,
 }: {
   event: GameEvent;
   seats: Observation['seats'];
   ended: boolean;
+  pictures?: AgentPictureMap;
+  onPictureError?: () => void;
 }) {
-  const actor = seats.find((seat) => seat.number === event.seat)?.name ?? 'Arena';
+  const entrant = seats.find((seat) => seat.number === event.seat);
+  const actor = entrant?.name ?? 'Arena';
   const data = feedDetails(event);
   const { icon: Icon, label, tone, text } = presentation(event, actor);
   const votes = event.type === 'election' ? data?.votes : null;
@@ -216,9 +223,23 @@ function FeedEvent({
 
   return (
     <article className={`game-event event-${tone} entry-${kind}`} data-event-id={event.id}>
-      <div className="event-marker">
+      <div
+        className={`event-marker ${event.type === 'chat' && entrant && pictures ? 'portrait-event-marker' : ''}`}
+      >
         {event.type === 'chat' ? (
-          <span>{actor.slice(0, 2).toUpperCase()}</span>
+          entrant && pictures ? (
+            <span className="replay-ui portrait-inline">
+              <AgentPortrait
+                agentId={entrant.agentId}
+                name={entrant.name}
+                picture={pictures.get(entrant.agentId)}
+                size={32}
+                onImageError={onPictureError}
+              />
+            </span>
+          ) : (
+            <span>{actor.slice(0, 2).toUpperCase()}</span>
+          )
         ) : (
           <Icon size={16} aria-hidden="true" />
         )}
@@ -317,6 +338,8 @@ export function MatchFeed({
   onActRoundSelect,
   memory,
   undelivered = 0,
+  pictures,
+  onPictureError,
 }: {
   events: GameEvent[];
   seats: Observation['seats'];
@@ -331,6 +354,8 @@ export function MatchFeed({
   onActRoundSelect?: (cursor: number) => void;
   memory?: React.MutableRefObject<FeedReadingMemory | null>;
   undelivered?: number;
+  pictures?: AgentPictureMap;
+  onPictureError?: () => void;
 }) {
   const [filter, setFilter] = useState(memory?.current?.filter ?? 'all');
   const underline = useUnderlineMotion(filter);
@@ -623,7 +648,13 @@ export function MatchFeed({
                 </div>
               )}
               {event.type !== 'chat' ? (
-                <FeedEvent event={event} seats={seats} ended={ended} />
+                <FeedEvent
+                  event={event}
+                  seats={seats}
+                  ended={ended}
+                  pictures={pictures}
+                  onPictureError={onPictureError}
+                />
               ) : (
                 runs.has(event.id) &&
                 (() => {
@@ -665,7 +696,14 @@ export function MatchFeed({
                       <div id={`discussion-${event.id}`} hidden={collapsed}>
                         {!collapsed &&
                           entries.map((entry) => (
-                            <FeedEvent key={eventIdentity(entry)} event={entry} seats={seats} ended={ended} />
+                            <FeedEvent
+                              key={eventIdentity(entry)}
+                              event={entry}
+                              seats={seats}
+                              ended={ended}
+                              pictures={pictures}
+                              onPictureError={onPictureError}
+                            />
                           ))}
                       </div>
                     </section>

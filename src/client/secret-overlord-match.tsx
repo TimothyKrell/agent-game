@@ -6,12 +6,23 @@ import { replayFrame } from '../game/replay';
 import { Emblem, Flourish } from './deco';
 import { MatchFeed } from './match-feed';
 import { useMotionEntry } from './motion';
-import { Avatar, Badge } from './ui/identity';
+import { Badge } from './ui/identity';
+import { AgentPortrait } from './agent-portrait';
+import { useAgentPictures } from './use-agent-pictures';
+import type { AgentPictureMap } from './agent-picture-data';
 import { Link } from './ui/link';
 import { ErrorBox, ResourceState } from './ui/resource-state';
 import { useSecretOverlordMatch } from './use-secret-overlord-match';
 
-function MatchResult({ view }: { view: Observation }) {
+function MatchResult({
+  view,
+  pictures,
+  onPictureError,
+}: {
+  view: Observation;
+  pictures: AgentPictureMap;
+  onPictureError: () => void;
+}) {
   const partial = view.status === 'interrupted';
   const entry = useMotionEntry(partial || !view.winner ? 'partial' : 'result');
 
@@ -103,6 +114,23 @@ function MatchResult({ view }: { view: Observation }) {
           ))}
         </div>
       </section>
+      <section aria-label="Original entrants" className="portrait-result-roster">
+        {view.seats.map((seat) => (
+          <div key={seat.agentId}>
+            <span className="replay-ui portrait-inline">
+              <AgentPortrait
+                agentId={seat.agentId}
+                name={seat.name}
+                picture={pictures.get(seat.agentId)}
+                size={32}
+                onImageError={onPictureError}
+              />
+            </span>
+            <Link href={`/agents/${seat.agentId}`}>{seat.name}</Link>
+            {seat.forfeited && <span className="muted">Forfeit</span>}
+          </div>
+        ))}
+      </section>
     </section>
   );
 }
@@ -110,6 +138,11 @@ function MatchResult({ view }: { view: Observation }) {
 export function SecretOverlordMatch({ initial }: { initial: Observation }) {
   const id = initial.matchId;
   const { view, error, connected, refresh } = useSecretOverlordMatch(initial);
+
+  const { pictures, revalidateUnavailable } = useAgentPictures(
+    (view?.seats ?? initial.seats).map((seat) => ({ id: seat.agentId })),
+  );
+
   const [now, setNow] = useState(Date.now());
   const [step, setStep] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -166,7 +199,7 @@ export function SecretOverlordMatch({ initial }: { initial: Observation }) {
         Back to arena
       </Link>
       {ended ? (
-        <MatchResult view={view} />
+        <MatchResult view={view} pictures={pictures} onPictureError={revalidateUnavailable} />
       ) : (
         <div className="section-heading">
           <div>
@@ -350,11 +383,19 @@ export function SecretOverlordMatch({ initial }: { initial: Observation }) {
             <div className="seat-grid" tabIndex={0} role="region" aria-label="All ten participants">
               {board.seats.map((seat, i) => (
                 <div
-                  className={`seat ${!seat.alive ? 'eliminated' : ''} ${seat.number === board.coordinator ? 'coordinator' : ''}`}
+                  className={`seat portrait-seat ${!seat.alive ? 'eliminated' : ''} ${seat.number === board.coordinator ? 'coordinator' : ''}`}
                   key={seat.number}
                 >
                   <span className="seat-number">{String(i + 1).padStart(2, '0')}</span>
-                  <Avatar name={seat.name} index={i} />
+                  <span className="replay-ui portrait-inline">
+                    <AgentPortrait
+                      agentId={seat.agentId}
+                      name={seat.name}
+                      picture={pictures.get(seat.agentId)}
+                      size={48}
+                      onImageError={revalidateUnavailable}
+                    />
+                  </span>
                   <Link href={`/agents/${seat.agentId}`}>{seat.name}</Link>
                   <small>
                     {seat.originalHouse ? 'House agent' : 'External agent'}
@@ -403,6 +444,8 @@ export function SecretOverlordMatch({ initial }: { initial: Observation }) {
           key={id}
           events={events}
           seats={view.seats}
+          pictures={pictures}
+          onPictureError={revalidateUnavailable}
           ended={ended}
           chatOpen={view.chat.open}
           connected={connected}

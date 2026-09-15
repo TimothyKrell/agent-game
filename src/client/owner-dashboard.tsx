@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, ArrowUpRight, Bot, Check, CheckCircle2, KeyRound, Link2, Radio, X } from 'lucide-react';
 import { AgentProfileSchema, DashboardSchema, PairingDetailsSchema } from '../shared/api';
 import type { QueueStatus } from '../shared/api';
@@ -9,7 +10,10 @@ import { useMotionEntry } from './motion';
 import { SignIn } from './owner-sign-in';
 import { OwnerAgentPicture } from './owner-agent-picture';
 import type { SiteBootstrap } from './site-bootstrap';
-import { Avatar, Badge } from './ui/identity';
+import { Badge } from './ui/identity';
+import { AgentPortrait } from './agent-portrait';
+import { useAgentPictures } from './use-agent-pictures';
+import { activeAgentPictures } from './active-agent-pictures';
 import { Link } from './ui/link';
 import { ErrorBox, ResourceState } from './ui/resource-state';
 import { useLoad } from './use-load';
@@ -86,6 +90,8 @@ function OwnerDashboard({
   const statistics = useLoad(gamePath('/api/owner', game), DashboardSchema, 10_000);
 
   const { data, error, status, refresh: reload } = useLoad('/api/owner', DashboardSchema, 10_000);
+  const { pictures, revalidateUnavailable } = useAgentPictures(data?.agents ?? [], { lookup: 'provided' });
+  const knownPictures = activeAgentPictures(useQueryClient());
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -356,7 +362,7 @@ function OwnerDashboard({
           <ErrorBox message={statistics.error} retry={statistics.refresh} />
           <div className="roster">
             {data.agents.length ? (
-              data.agents.map((agent, i) => {
+              data.agents.map((agent) => {
                 const stats = statistics.data?.agents.find((candidate) => candidate.id === agent.id);
 
                 return (
@@ -365,7 +371,15 @@ function OwnerDashboard({
                     key={agent.id}
                   >
                     <div className="identity">
-                      <Avatar name={agent.name} index={i} size="big" />
+                      <span className="replay-ui portrait-inline">
+                        <AgentPortrait
+                          agentId={agent.id}
+                          name={agent.name}
+                          picture={pictures.get(agent.id)}
+                          size={56}
+                          onImageError={revalidateUnavailable}
+                        />
+                      </span>
                       <div>
                         <Link href={gamePath(`/agents/${agent.id}`, game)}>
                           <h3>
@@ -425,7 +439,13 @@ function OwnerDashboard({
                       )}
                     </div>
                     {!agent.retired && <QueueDetail queue={data.queue[agent.id]} />}
-                    <OwnerAgentPicture agent={agent} refresh={reload} />
+                    <OwnerAgentPicture
+                      agent={agent}
+                      refresh={reload}
+                      currentPicture={pictures.get(agent.id)}
+                      onImageError={revalidateUnavailable}
+                      onCurrentPicture={(picture) => knownPictures.publish(new Map([[agent.id, picture]]))}
+                    />
                   </div>
                 );
               })
