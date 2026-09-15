@@ -86,6 +86,14 @@ The source recorded93 tests, including16 native broker,56 ledger/regression,18 i
 
 Initial broker integration **1c43b1b** preserves the source artifact GET alongside broker-aware discovery, exact checkpoint/history code and additive migrations0005/0006/0007. Parent passed **88 native/identity/Worker/queue/repository/summary/cleanup cases**, then **11 ledger/registry cases**, and **27 installed CLI preview cases** against the combined server. The first command named a nonexistent `preview-ledger.test.ts`; parent explicitly ran the actual five-case `preview-broker-ledger.test.ts` in the subsequent11-case command. Typecheck/lint/build and whitespace checks pass. These establish integration compatibility and do not close the three assigned broker findings.
 
+### Actual API and restart regression
+
+The unchanged API inventory also passes **six tests** against a clean1c43b1b checkout and real local Worker/D1/DO processes. It covers full externally controlled completion, retry receipts, reconnect/private isolation, actual CLI pairing/queue/revocation, same-owner matchmaking and a real Worker restart during a required decision without downtime forfeiture.
+
+The primary fixture used6441 and recovery8811; an existing8791 listener was left untouched. A fresh explicit environment/empty HOME and local scripted provider avoided production credentials and inference. Results and provenance: `/tmp/opencode/TIM-integrated-api/`. Both owned processes stopped after testing.
+
+Recovery archive: `/home/timothykrell/Code/agent-games-archive/TIM-integrated-api-2026-09-15/`, with2,316 source/evidence and3,062 parent/runtime entries, all hashes and independent recovery verified. Snapshot SHA-256 `cf845f9f84d3a651922205c2a894fb17fb7d58fb43bbc9a37038c175921c13d8`; runtime archive `1115899ca4875e075c16f45edfe8dbecfda6d0648a67ea949764ee7f6cbe30b8`; bundle `7a2deb3771ae7da14875e70cef5b7ccf21f67b23384c2b09bb470130a2554143`.
+
 ## Combined unprivileged artifact verification
 
 The parent ran the actual artifact producer against a clean detached **aa88233** checkout, with a fresh explicit environment and empty HOME. The checkout contains the production Dossier, complete portrait/summary adoption and corrected CLI. No account or deployment credential was supplied. GitHub identity fields were synthetic local fixture data, not a claimed successful hosted workflow.
