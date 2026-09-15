@@ -9,14 +9,22 @@ export type DossierPictures = ReadonlyMap<string, AgentPicture>;
 
 const Pictures = createContext<DossierPictures>(new Map());
 
+const PictureRecovery = createContext<(() => void) | undefined>(undefined);
+
 export function DossierPictureProvider({
   pictures,
+  onImageError,
   children,
 }: {
   pictures: DossierPictures;
+  onImageError?: () => void;
   children: ReactNode;
 }) {
-  return <Pictures.Provider value={pictures}>{children}</Pictures.Provider>;
+  return (
+    <Pictures.Provider value={pictures}>
+      <PictureRecovery.Provider value={onImageError}>{children}</PictureRecovery.Provider>
+    </Pictures.Provider>
+  );
 }
 
 export function dossierValue<T>(value: StoryValue<T>): T | undefined {
@@ -30,9 +38,16 @@ export function dossierName(entrant: StoryValue<StoryEntrant>, seat: number) {
 export function DossierPortrait({ entrant, name }: { entrant?: StoryEntrant; name: string }) {
   const pictures = useContext(Pictures);
   const picture = entrant ? pictures.get(entrant.agentId) : undefined;
+  const onImageError = useContext(PictureRecovery);
 
   return (
-    <AgentPortrait agentId={entrant?.agentId} name={name} picture={picture} className="dossier-portrait" />
+    <AgentPortrait
+      agentId={entrant?.agentId}
+      name={name}
+      picture={picture}
+      onImageError={onImageError}
+      className="dossier-portrait"
+    />
   );
 }
 

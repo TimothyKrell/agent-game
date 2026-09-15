@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, Eye, Radio } from 'lucide-react';
 import type { Observation2 } from '../shared/succession';
-import { AgentPicturesSchema } from '../shared/agent-picture';
-import { useLoad } from './use-load';
+import { useAgentPictures } from './use-agent-pictures';
 import { useSuccessionMatch } from './use-succession-match';
 import { useSuccessionStory } from './use-succession-story';
 import { buildSuccessionStory } from './succession-story';
@@ -46,14 +45,7 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
   );
 
   // A single optional current-picture batch for the ten stable original entrants. Rows never fetch metadata.
-  const ids = [...new Set(view.seats.map((seat) => seat.agentId))].sort();
-  const query = new URLSearchParams(ids.map((id) => ['agentId', id]));
-  const pictures = useLoad(`/api/agent-pictures?${query}`, AgentPicturesSchema, 0, ids.length > 0);
-
-  const pictureMap = useMemo(
-    () => new Map(pictures.data?.map((entry) => [entry.agentId, entry.picture])),
-    [pictures.data],
-  );
+  const pictures = useAgentPictures(view.seats.map((seat) => ({ id: seat.agentId })));
 
   const ended = view.status !== 'active';
   const [now, setNow] = useState(Date.now());
@@ -100,7 +92,8 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
         act={view.act}
         chapters={chapters}
         archiveAvailable={ended}
-        pictures={pictureMap}
+        pictures={pictures.pictures}
+        onImageError={pictures.revalidateUnavailable}
         currentState={
           !ended && (
             <div className="dossier-current">

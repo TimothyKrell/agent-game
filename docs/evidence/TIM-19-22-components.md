@@ -6,8 +6,9 @@
 - **`db34430`**: all twenty retained scenario groups adopted as production-component consumers, exact source and independent engine fixtures, browser evidence.
 - **`e292a03`**: actual `/matches/:id` route assembly. Existing `/matches/:id/history` resolves to the same continuous Dossier.
 - **`49935cc`**: independently cherry-pickable `AgentPortrait` extraction for TIM-29. See [exact portrait contract](TIM-29-portrait-interface.md).
+- **`e2d98ca`**: additive fixed-size and image-failure callback props for TIM-29's shared roster recovery.
 
-This lane merged isolated TIM-23 **`bba70f8`** (including TIM-18 **`4cba978`**) and TIM-11 **`ee2220f`** (including **`d1b2a9b`**). The final component/browser runs use normal local primitive source. Parent retains ownership of pending TIM-23 review corrections and final integrated acceptance.
+This lane merged isolated TIM-23 **`bba70f8`** (including TIM-18 **`4cba978`**) and TIM-11 **`ee2220f`** (including **`d1b2a9b`**). TIM-29's isolated lookup commit **`ee945f5`** was cherry-picked as **`6419fc8`**. The final component/browser runs use normal local primitive source. Parent retains ownership of pending TIM-23 review corrections and final integrated acceptance.
 
 ### Actual match route
 
@@ -30,7 +31,8 @@ const actOne = useSuccessionStory(match.view, {
   status={match.view.status}
   act={match.view.act}
   chapters={chapters}
-  pictures={pictureMap}
+  pictures={pictures.pictures}
+  onImageError={pictures.revalidateUnavailable}
   archiveAvailable={match.view.status !== 'active'}
   currentState={/* existing authoritative live phase/decision composition */}
   renderChapter={({ act, renderRow }) => (
@@ -49,7 +51,7 @@ const actOne = useSuccessionStory(match.view, {
 
 The existing `SuccessionPhase`, `SuccessionControls`, current connection/error/receipt handling and original command hook remain authoritative. Current public seats/resources are available in a collapsed disclosure. There is one chronological reading surface, with no playback, scrubbing, tabs, round selector, permanent seat sidebar or manual page-by-page history controls. The tie commitment/reveal remains available.
 
-The route currently makes one optional ten-entrant picture query for the fixed original-ID roster and passes its map to the Dossier. React's development StrictMode may replay that mount request; it does not scale with rows or history windows. The production route check requires a single request. TIM-29 owns the shared batch lookup; this inline route batch can consume that handoff when available, keeping one metadata owner.
+The route uses `useAgentPictures(view.seats.map(seat => ({ id: seat.agentId })))` from TIM-29 for one optional fixed original-ID roster batch, passing its map and shared `revalidateUnavailable` callback to the Dossier. Every portrait reports image failure through that same callback; the hook permits one additional whole-roster recovery read and honors newer removal revisions. React's development StrictMode may replay a mount request; requests do not scale with rows/history windows. The normal production route check requires one request; a separate failed-image/removal test exercises the one extra recovery read.
 
 ## Presentation API
 
@@ -57,6 +59,7 @@ The route currently makes one optional ten-entrant picture query for the fixed o
 
 - Required props: bounded canonical `model: StoryModel`, authoritative `status: 'active' | 'finished' | 'interrupted'`, current `act: 1 | 2`.
 - Optional `pictures: ReadonlyMap<string, AgentPicture>` is keyed by stable **original entrant** ID, never the replacement controller.
+- Optional `onImageError` supplies the one caller-owned shared roster recovery callback. It is forwarded unchanged to each `AgentPortrait`.
 - `archiveAvailable` exposes only a display preference for already-authorized archive data. It neither fetches nor authorizes secrets. Live entitled private facts remain readable; archive data is gated independently at row and nested hand/role values.
 - Optional `chapters` allows the route to share disclosure state with reader enablement. Without it, the composition owns the same defaults locally.
 - `currentState` is the authoritative live-controls slot below the compact overall summary.
@@ -89,11 +92,11 @@ The original `sample=examples` comparison and `sample=match` archive remain usab
 
 ## Verification and open integration findings
 
-- **39 tests pass**: 26 canonical story tests, nine continuous-reader tests and four substantive presentation tests. Coverage includes all twenty groups, paid cancellation, challenger versus turn owner, nested archive privacy, proof/replacement versus permanent loss, all nine captured elimination rosters, executions/ten-agent return, double loss, all cap criteria and forfeit credit.
+- **53 tests pass**: 26 canonical story tests, nine continuous-reader tests, four substantive presentation tests and 14 shared picture-data tests. Coverage includes all twenty groups, paid cancellation, challenger versus turn owner, nested archive privacy, proof/replacement versus permanent loss, all nine captured elimination rosters, executions/ten-agent return, double loss, all cap criteria, forfeit credit, stable-ID batching, metadata revisions and recovery ownership.
 - **212 component browser assertions pass** at 1440, 390 and 320 CSS pixels. Coverage includes all 36 keyboard rules and exact focus return, delayed hover-to-pin, touch, portal tokens, chapter preferences, controlled row eviction/fallback focus, archive privacy, exact source dialogue/acts, long identities, reduced motion, current stable-ID pictures, lazy loading, missing/broken fallbacks and enlargement. See `after/browser-checks.json` and responsive captures. The Dossier now delegates these same picture cases to `AgentPortrait`.
 - **Typecheck, lint, scoped formatting and app build pass.** No new dependencies/package/lock changes. Application configuration changes in ancestry are the consumed TIM-11 correction, not a new lane-specific config edit.
 - **Production graph/exclusion checks pass:** the actual app bundle contains both the Dossier and bounded reader. Normal app assets and an independent component-entry bundle exclude prototype/scenario/raw-capture markers. Direct production requests cannot mount the development gallery/hidden fixture. See `production.json`.
-- **53 actual-route browser assertions pass, with three retained focus failures**, in both development and the production build. Results are in `route/checks.json` and `route-production/checks.json`. The actual route reaches the terminal event with **128 maximum visible records per reader** and **0.421875px** retained-row drift during the measured forward walk. Checks cover chapter defaults/reopening, exact source-act filtering with both chapters open, archive gating, optional batched pictures, current authority/command IDs, terminal epoch/explicit closure, interrupted semantics and the `/history` alias. The test-only intercepted backend uses **1,306 canonical engine archive events**, exact authorized checkpoints, current snapshots and WebSocket/action responses. These are UI composition tests, not a deployed backend or server authorization certification.
+- **54 development / 57 production actual-route assertions pass, with three retained focus failures in each build.** Results are in `route/checks.json` and `route-production/checks.json`. The actual route reaches the terminal event and reverses through eviction with **128 maximum visible records per reader** and **0.421875px** retained-row drift during the measured forward walk. Checks cover chapter defaults/reopening, exact source-act filtering with both chapters open, archive gating, optional batched pictures, current authority/command IDs, terminal epoch/explicit closure, interrupted semantics and the `/history` alias. The production suite additionally confirms a failed picture triggers exactly one extra whole-roster read, applies a newer removal revision and retains an accessible fallback. The test-only intercepted backend uses **1,306 canonical engine archive events**, exact authorized checkpoints, current snapshots and WebSocket/action responses. These are UI composition tests, not a deployed backend or server authorization certification.
 
 ### Pending shared-owner acceptance
 
@@ -108,7 +111,7 @@ node .dossier/serve.mjs
 node .dossier/verify.mjs
 node .dossier/route.mjs
 TIM6_ORIGIN=http://127.0.0.1:6291 TIM6_CAPTURE_DIR=docs/evidence/TIM-19-22-components/guide-regression node .tim11/verify-guide.mjs
-node node_modules/vitest/vitest.mjs run tests/dossier-components.test.ts tests/succession-story.test.ts tests/continuous-succession-history.test.ts
+node node_modules/vitest/vitest.mjs run tests/dossier-components.test.ts tests/succession-story.test.ts tests/continuous-succession-history.test.ts tests/agent-picture-data.test.ts
 npm run typecheck
 npm run lint
 npm run build

@@ -42,14 +42,28 @@ function check(name, condition) {
   checks.push(name);
 }
 
-async function harness(width, mode, suffix = '') {
+async function harness(width, mode, suffix = '', recoverPictures = false) {
   const page = await browser.newPage({
     viewport: { width, height: width === 1440 ? 1080 : 844 },
     reducedMotion: 'reduce',
   });
 
   page.on('pageerror', (error) => faults.push(error.message));
-  const control = { mode, fail: false, requests: [], commands: [], socket: null };
+
+  const control = {
+    mode,
+    fail: false,
+    requests: [],
+    commands: [],
+    socket: null,
+    pictureReads: 0,
+    imageRequests: 0,
+  };
+
+  const recovered = recoverPictures
+    ? page.waitForResponse((response) => response.headers()['x-fixture-picture-revision'] === '2')
+    : null;
+
   const observation = () => fixture.observation(control.mode, mode === 'controller' ? fixture.actor : null);
   await page.routeWebSocket('**/api/matches/*/events?*', (socket) => {
     control.socket = socket;
@@ -68,13 +82,35 @@ async function harness(width, mode, suffix = '') {
       visibilityEpoch: view.history.visibilityEpoch,
     };
 
-    if (url.pathname === '/api/agent-pictures')
+    if (url.pathname === '/api/agent-pictures') {
+      control.pictureReads++;
+      const stale = recoverPictures && control.pictureReads === 1;
+
       return route.fulfill({
+        headers: { 'x-fixture-picture-revision': stale ? '1' : '2' },
         json: view.seats.map((seat) => ({
           agentId: seat.agentId,
-          picture: { state: 'missing', revision: 0 },
+          picture: stale
+            ? {
+                state: 'present',
+                revision: 1,
+                version: 'stale-fixture',
+                url: `/api/agents/${seat.agentId}/picture/stale-fixture`,
+                contentType: 'image/jpeg',
+                width: 8,
+                height: 8,
+                bytes: 296,
+              }
+            : { state: 'missing', revision: recoverPictures ? 2 : 0 },
         })),
       });
+    }
+
+    if (url.pathname.endsWith('/picture/stale-fixture')) {
+      control.imageRequests++;
+
+      return route.fulfill({ status: 404 });
+    }
 
     if (url.pathname.endsWith('/actions')) {
       const command = route.request().postDataJSON();
@@ -175,7 +211,7 @@ async function harness(width, mode, suffix = '') {
     });
   await page.evaluate(() => document.fonts.ready);
 
-  return { page, control };
+  return { page, control, recovered };
 }
 
 const chapter = (page, act) => page.getByRole('region', { name: `Act ${act} record`, exact: true });
@@ -358,11 +394,29 @@ try {
       );
       check('production DOM bounded to 128 visible records per reader', maxDOM <= 128);
       check('continuous production reader visits over 512 distinct records', seen.size > 512);
+
+      const after = Number(await two.getAttribute('data-story-after'));
       await two
         .locator('[data-story-key]')
         .first()
         .evaluate((element) => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
       await page.keyboard.press('PageUp');
+      await page.waitForFunction(
+        ({ element, after }) =>
+          Number(element.getAttribute('data-story-after')) < after &&
+          element.getAttribute('aria-busy') === 'false',
+        { element: await two.elementHandle(), after },
+      );
+      await page.waitForFunction(
+        (element) =>
+          [...element.querySelectorAll('[data-story-key]')].some((row) => {
+            const box = row.getBoundingClientRect();
+
+            return box.bottom > 0 && box.top < innerHeight;
+          }),
+        await two.elementHandle(),
+      );
+      checks.push('production reader reverses through eviction with visible retained rows');
       await page.screenshot({ path: `${directory}/1440-bounded-history.png` });
     }
 
@@ -439,6 +493,22 @@ try {
       (await legacy.page.getByText('Load next record page').count()) === 0,
   );
   await legacy.page.close();
+
+  if (process.env.DOSSIER_PRODUCTION) {
+    const recovery = await harness(390, 'finished', '', true);
+    await recovery.recovered;
+    await recovery.page.locator('.dossier-outcome .dossier-portrait > svg').waitFor();
+    await ready(chapter(recovery.page, 'II'));
+    check('shared portrait reports failed delivery to its roster owner', recovery.control.imageRequests > 0);
+    check('failed pictures use exactly one extra whole-roster read', recovery.control.pictureReads === 2);
+    check(
+      'newer removal metadata leaves an accessible fallback',
+      (await recovery.page.locator('.dossier-outcome .dossier-portrait img').count()) === 0,
+    );
+    await recovery.page.screenshot({ path: `${directory}/390-picture-removal-recovery.png` });
+    await recovery.page.close();
+  }
+
   check('no application exceptions', faults.length === 0);
 
   if (maxDrift > 1) failures.push(`retained-row drift ${maxDrift}px exceeds 1px`);

@@ -24,6 +24,7 @@ export interface SuccessionDossierProps {
   status: DossierStatus;
   act: 1 | 2;
   pictures?: DossierPictures;
+  onImageError?: () => void;
   /** Only shows the disclosure for already-authorized archive data. This never changes authority. */
   archiveAvailable?: boolean;
   /** Route-owned disclosure also enables its mounted chapter readers. */
@@ -169,7 +170,7 @@ function DossierContent({
 /** Pure presentation composition; model is bounded by buildSuccessionStory, never a full archive import. */
 export function SuccessionDossier(props: SuccessionDossierProps) {
   return (
-    <DossierPictureProvider pictures={props.pictures ?? noPictures}>
+    <DossierPictureProvider pictures={props.pictures ?? noPictures} onImageError={props.onImageError}>
       <RuleHelpProvider>
         <DossierContent key={props.model.scope.matchId} {...props} />
       </RuleHelpProvider>
