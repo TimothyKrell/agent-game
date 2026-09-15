@@ -1,0 +1,103 @@
+name: Deliver trusted PR preview
+
+on:
+  workflow_run:
+    workflows: [CI and deploy]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+env:
+  CI: 'true'
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  identify:
+    name: Verify CI identity
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      pr-number: ${{ steps.identity.outputs.pr-number }}
+    steps:
+      # workflow_run's SHA is the trusted default branch, not workflow_run.head_sha.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.21.0'
+      # No shared PR cache, PR npm configuration, or dependency lifecycle scripts.
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - id: identity
+        run: node scripts/preview-controller.ts discover
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  deploy:
+    name: Deliver verified preview artifact
+    needs: identify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    concurrency:
+      group: preview-${{ needs.identify.outputs.pr-number }}
+      cancel-in-progress: false
+      queue: max
+    environment:
+      name: preview
+      url: https://agent-game-pr-${{ needs.identify.outputs.pr-number }}.${{ vars.WORKERS_SUBDOMAIN }}.workers.dev
+    env:
+      PR_NUMBER: ${{ needs.identify.outputs.pr-number }}
+      WORKERS_SUBDOMAIN: ${{ vars.WORKERS_SUBDOMAIN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.21.0'
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: '1.4.0'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify, download, quarantine and snapshot the exact CI artifact
+        run: node scripts/preview-controller.ts prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Recheck current CI and deploy prebuilt bytes to the isolated stage
+        run: node scripts/preview-controller.ts deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Verify scripted exhibitions without deployer credentials
+        run: node scripts/verify-preview.mjs "$PREVIEW_URL"
+        env:
+          # The legacy smoke record's sourceCommit field means the actual build.
+          PR_HEAD_SHA: ${{ env.PREVIEW_BUILT_COMMIT }}
+      # Extension point: future source registration consumes preview-delivery.json
+      # after a fresh current-head check. No source authority/configuration exists here.
+      - name: Recheck and publish artifact and tested-head status
+        run: node scripts/preview-controller.ts publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Retain delivery provenance and both-game smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: preview-delivery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .agent-game/preview-delivery.json
+            .agent-game/preview-manifest.json
+            .agent-game/preview-smoke.json
+          include-hidden-files: true
+          retention-days: 30
