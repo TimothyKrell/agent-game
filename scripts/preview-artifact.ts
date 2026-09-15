@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { dirname, resolve, posix, sep } from 'node:path';
 import { Schema } from 'effect';
 import { init, parse } from 'es-module-lexer';
+import { BranchContent, validateBranchContent } from './preview-content.ts';
 
 export const limits = {
   files: 2048,
@@ -26,6 +27,7 @@ const ManifestSchema = Schema.Struct({
   prHeadSha: Schema.String,
   builtCommit: Schema.String,
   entry: Schema.Literal('worker/worker.js'),
+  branchContent: BranchContent,
   files: Schema.Array(FileSchema),
 });
 
@@ -39,6 +41,15 @@ export const repositoryPattern = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 
 export function requireCondition(condition: boolean, message: string): asserts condition {
   if (!condition) throw new Error(message);
+}
+
+function validateProductionContent(bytes: Buffer) {
+  requireCondition(
+    !/succession-replay-fixture|dp-prototype|data-agentation|agentation-overlay|Nomination, dialogue, ballots, policy & investigation/.test(
+      bytes.toString('utf8'),
+    ),
+    'Development fixture payload in artifact',
+  );
 }
 
 export function allowedPath(name: string) {
@@ -235,12 +246,7 @@ export async function validateArtifact(root: string) {
     );
 
     if (/\.(?:js|css|html|json|md|txt)$/.test(file.path)) {
-      requireCondition(
-        !/succession-replay-fixture|dp-prototype|data-agentation|agentation-overlay|Nomination, dialogue, ballots, policy & investigation/.test(
-          bytes.toString('utf8'),
-        ),
-        'Development fixture payload in artifact',
-      );
+      validateProductionContent(bytes);
     }
 
     files.set(file.path, bytes);
@@ -281,8 +287,11 @@ export async function validateArtifact(root: string) {
     'Manifest changed during validation',
   );
   await validateGraph(files);
+  const content = validateBranchContent(manifest.branchContent, manifest.builtCommit, files);
 
-  return { manifest, manifestSha256: sha256(raw), files, raw };
+  for (const bytes of content.content.values()) validateProductionContent(bytes);
+
+  return { manifest, manifestSha256: sha256(raw), files, raw, branchContent: content.descriptor };
 }
 
 // Snapshot from the already-validated buffers, not by copying attacker-owned paths.

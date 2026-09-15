@@ -36,6 +36,7 @@ describe('trusted GitHub delivery eligibility', () => {
           prHeadSha: head,
           builtCommit: head,
           entry: 'worker/worker.js',
+          branchContent: { archivePath: '', games: [] },
           files: [],
         },
         verified,
@@ -342,6 +343,7 @@ describe('trusted GitHub delivery eligibility', () => {
       prHeadSha: head,
       builtCommit: merge,
       entry: 'worker/worker.js' as const,
+      branchContent: { archivePath: '', games: [] },
       files: [],
     };
 

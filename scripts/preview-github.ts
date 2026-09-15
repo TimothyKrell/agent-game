@@ -91,6 +91,7 @@ export const producerPaths = [
   '.github/actions/setup/action.yml',
   'scripts/produce-preview-artifact.ts',
   'scripts/preview-artifact.ts',
+  'scripts/preview-content.ts',
 ];
 
 export const artifactName = (runId: number, attempt: number) => `preview-bundle-${runId}-${attempt}`;

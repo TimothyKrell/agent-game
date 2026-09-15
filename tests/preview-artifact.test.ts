@@ -27,6 +27,7 @@ import {
 } from '../scripts/preview-artifact.ts';
 import type { Manifest } from '../scripts/preview-artifact.ts';
 import { version } from '../package.json';
+import { contentPaths, readContentArchive, branchContentForTarget } from '../scripts/preview-content.ts';
 
 let scratch: string;
 
@@ -109,6 +110,33 @@ describe('real application preview artifact', () => {
       manifest.files.some((file) => file.path === `assets/downloads/agent-game-cli-${version}.tgz`),
     ).toBe(true);
     expect(allowedPath('assets/assets/succession-dossier-a123.js')).toBe(true);
+
+    const branch = branchContentForTarget(
+      validated.branchContent,
+      'https://agent-game-pr-27.tk-d86.workers.dev',
+    );
+
+    expect(branch.games.map((game) => [game.gameId, game.protocol])).toEqual([
+      ['secret-overlord', 1],
+      ['succession', 2],
+    ]);
+    expect(branch.games[0].archive.url).toBe(
+      `https://agent-game-pr-27.tk-d86.workers.dev/downloads/previews/${manifest.builtCommit}/${validated.branchContent.archive.sha256}.tgz`,
+    );
+    const archivePath = resolve(source, manifest.branchContent.archivePath);
+    expect(execFileSync('tar', ['-tzf', archivePath], { encoding: 'utf8' }).trim().split('\n')).toEqual(
+      contentPaths,
+    );
+    expect(execFileSync('tar', ['-xzOf', archivePath, 'package/public/rules.md'])).toEqual(
+      await readFile('dist/client/rules.md'),
+    );
+    const content = readContentArchive(await readFile(archivePath));
+    expect(content.get('package/skills/agent-game/SKILL.md')).toEqual(
+      await readFile('skills/agent-game/SKILL.md'),
+    );
+    expect(contentPaths.every((path) => !path.includes('/cli/') && !path.endsWith('package.json'))).toBe(
+      true,
+    );
   });
 
   it('runs actual prebuilt Worker health, DO exports, D1 migrations and local owner/R2 upload without bundling', async () => {
@@ -165,8 +193,39 @@ describe('real application preview artifact', () => {
 
       const health = await request('/api/health');
       expect(health.status, await health.clone().text()).toBe(200);
+
+      const bootstrap = Schema.decodeUnknownSync(
+        Schema.Struct({
+          games: Schema.Array(
+            Schema.Struct({
+              gameId: Schema.String,
+              protocolVersion: Schema.String,
+              rulesVersion: Schema.String,
+            }),
+          ),
+        }),
+      )(await (await request('/api/bootstrap')).json());
+
+      expect(
+        bootstrap.games.map((game) => ({
+          gameId: game.gameId,
+          protocol: game.protocolVersion,
+          rulesVersion: game.rulesVersion,
+        })),
+      ).toEqual(
+        manifest.branchContent.games.map((game) => ({
+          gameId: game.gameId,
+          protocol: game.protocol,
+          rulesVersion: game.rulesVersion,
+        })),
+      );
       expect((await request('/rules.md')).status).toBe(200);
       expect((await request(`/downloads/agent-game-cli-${version}.tgz`)).status).toBe(200);
+      const contentResponse = await request(manifest.branchContent.archivePath.slice('assets'.length));
+      expect(contentResponse.status).toBe(200);
+      expect(sha256(Buffer.from(await contentResponse.arrayBuffer()))).toBe(
+        (await validateArtifact(source)).branchContent.archive.sha256,
+      );
 
       const login = await request('/api/dev/login', {
         method: 'POST',
@@ -369,6 +428,41 @@ describe('real application preview artifact', () => {
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
     await writeFile(resolve(directory, 'manifest.json'), canonical({ ...manifest, files }));
     await expect(validateArtifact(directory)).rejects.toThrow('Artifact byte limit');
+  });
+
+  it('rejects forged content metadata, target-selected source executables and rules outside the actual archive', async () => {
+    const executable = await copy();
+    await writeFile(
+      resolve(executable, 'manifest.json'),
+      canonical({
+        ...manifest,
+        branchContent: { ...manifest.branchContent, executable: { url: 'https://attacker.invalid/cli.tgz' } },
+      }),
+    );
+    await expect(validateArtifact(executable)).rejects.toThrow();
+    const metadata = await copy();
+    await writeFile(
+      resolve(metadata, 'manifest.json'),
+      canonical({
+        ...manifest,
+        branchContent: {
+          ...manifest.branchContent,
+          games: manifest.branchContent.games.map((game, index) =>
+            index ? game : { ...game, rules: { ...game.rules, sha256: '0'.repeat(64) } },
+          ),
+        },
+      }),
+    );
+    await expect(validateArtifact(metadata)).rejects.toThrow('descriptor digest/size mismatch');
+    const mismatch = await copy();
+    await replaceFile(mismatch, 'assets/rules.md', '# Different rules than the archive\n');
+    await expect(validateArtifact(mismatch)).rejects.toThrow('differs from built public asset');
+    const wrongCommit = await copy();
+    await writeFile(
+      resolve(wrongCommit, 'manifest.json'),
+      canonical({ ...manifest, builtCommit: 'a'.repeat(40) }),
+    );
+    await expect(validateArtifact(wrongCommit)).rejects.toThrow('commit/digest path mismatch');
   });
 
   it('rejects an artifact being mutated concurrently instead of copying a moving file tree', async () => {

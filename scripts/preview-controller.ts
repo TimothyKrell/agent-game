@@ -13,6 +13,8 @@ import {
 } from './preview-artifact.ts';
 import { GitHub, PullRequest, verifyManifestIdentity } from './preview-github.ts';
 import type { VerifiedRun } from './preview-github.ts';
+import { branchContentForTarget } from './preview-content.ts';
+import type { ValidatedBranchContent } from './preview-content.ts';
 
 export function previewTarget(prNumber: number, subdomain: string) {
   requireCondition(
@@ -35,6 +37,7 @@ export function deliveryProof(
   manifestSha256: string,
   controllerCommit: string,
   subdomain: string,
+  branchContent?: ValidatedBranchContent,
 ) {
   return {
     version: 1,
@@ -42,6 +45,9 @@ export function deliveryProof(
     controllerCommit,
     manifestSha256,
     target: previewTarget(verified.prNumber, subdomain),
+    branchContent: branchContent
+      ? branchContentForTarget(branchContent, previewTarget(verified.prNumber, subdomain).origin)
+      : undefined,
     sourceRegistration: { status: 'not-configured' },
   };
 }
@@ -230,7 +236,15 @@ async function main() {
     );
     const artifact = await snapshotArtifact(resolve(work, 'quarantine'), resolve(work, 'verified'));
     verifyManifestIdentity(artifact.manifest, verified);
-    const proof = deliveryProof(verified, artifact.manifestSha256, controllerCommit, subdomain);
+
+    const proof = deliveryProof(
+      verified,
+      artifact.manifestSha256,
+      controllerCommit,
+      subdomain,
+      artifact.branchContent,
+    );
+
     await mkdir('.agent-game', { recursive: true });
     await writeFile('.agent-game/preview-delivery.json', canonical(proof));
     await writeFile('.agent-game/preview-manifest.json', artifact.raw);
@@ -244,7 +258,15 @@ async function main() {
 
   const artifact = await validateArtifact(process.env.PREVIEW_ARTIFACT_DIR ?? '');
   verifyManifestIdentity(artifact.manifest, verified);
-  const proof = deliveryProof(verified, artifact.manifestSha256, controllerCommit, subdomain);
+
+  const proof = deliveryProof(
+    verified,
+    artifact.manifestSha256,
+    controllerCommit,
+    subdomain,
+    artifact.branchContent,
+  );
+
   const recorded = await readStable('.agent-game/preview-delivery.json', 512 * 1024);
   requireCondition(recorded.toString('utf8') === canonical(proof), 'Delivery proof changed since quarantine');
   requireCondition(

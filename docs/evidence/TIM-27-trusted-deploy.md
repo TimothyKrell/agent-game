@@ -44,7 +44,7 @@ Cleanup deliberately remains independent of the new-delivery switch, using the s
 - Exact repository numeric ID/name, same-repository head/base, `pull_request` event, `.github/workflows/ci.yml` path and workflow ID, completed successful originating run and exact triggering attempt.
 - One associated open PR targeting the repository default branch, with its current head matching the run association. The built commit comes from the exact successful `Verify` job's first user step (number 2), whose GitHub-evaluated name is `Preview identity v1 merge=${{ github.sha }} base=${{ github.event.pull_request.base.sha }} head=${{ github.event.pull_request.head.sha }}`. It runs before checkout or PR tooling. Require one exact marker, successful step/job status, exact run/attempt/head, and GitHub commit parents equal to that historical base/head in order. Never derive tested identity from the artifact claim or moving `refs/pull/N/merge`. Run API head SHA and current PR head remain independently checked.
 - Exactly one successful, completed job from the same run/attempt/head for each of Verify, all three unit shards, API/recovery, browser/motion and production provider transport. Skipped, pending, failed, duplicate, missing or old-attempt jobs fail closed.
-- The CI workflow, setup action, producer and artifact verifier blob IDs at the **tested merge** match the trusted controller commit. The workflow blob at the independently associated PR head must also match, preventing a modified PR workflow from nominating another merge through a forged step name. A PR changing those files must first land that controller/producer update on the default branch and use that accepted workflow. This prevents spoofing the required job/identity names.
+- The CI workflow, setup action, producer, artifact verifier and content-archive codec blob IDs at the **tested merge** match the trusted controller commit. The workflow blob at the independently associated PR head must also match, preventing a modified PR workflow from nominating another merge through a forged step name. A PR changing those files must first land that controller/producer update on the default branch and use that accepted workflow. This prevents spoofing the required job/identity names.
 - Exactly one `preview-bundle-<run-id>-<attempt>` artifact, nonexpired, correctly associated with the run/repositories/head and carrying a SHA-256 digest. Download uses that API artifact ID; the signed storage redirect receives no GitHub token. The downloaded ZIP digest must match before extraction.
 - No newer same-PR CI run or newer attempt, even if it failed. Current-run presence and complete inventories are required. Inventories reaching 100 entries fail closed rather than silently truncating.
 
@@ -73,6 +73,10 @@ Canonical `manifest.json`, schema version 1:
   "prHeadSha": "1111111111111111111111111111111111111111",
   "builtCommit": "2222222222222222222222222222222222222222",
   "entry": "worker/worker.js",
+  "branchContent": {
+    "archivePath": "assets/downloads/previews/<builtCommit>/<archive-sha256>.tgz",
+    "games": []
+  },
   "files": [{ "path": "assets/index.html", "bytes": 123, "sha256": "<64 lowercase hex characters>" }]
 }
 ```
@@ -82,6 +86,12 @@ The example above illustrates fields only; a deployable inventory includes all r
 The manifest requires the real three Durable Object exports in the built entry, resolves all static/known literal module imports, and rejects missing modules. The one locked Better Auth optional `nodeSqlite` computed built-in import is explicitly recognized; arbitrary computed imports fail closed. No transformation or export generation occurs in the deployer. The Alchemy 2.0.0-beta.76 `Workers/Sources/Prebuilt.ts` contract reads the entry first, selects other modules with exact rules relative to the entry directory, and returns each file unchanged. Tests exercise that actual installed implementation, including a companion module and a malicious top-level entry.
 
 Versioned CLI archives (including the retained 0.1.1 release), game rules, migration 0003 and private R2 storage survive the handoff. New SQL migrations such as 0004 are accepted as bounded data without this controller inventing their runtime contract. Actual retained prototype fixture filenames/markers, capture tools and Agentation payloads are forbidden in emitted assets. A legitimate future production filename such as `succession-dossier-a123.js` is accepted.
+
+### Branch content archive
+
+`scripts/preview-content.ts` adds one deterministic, regular-file-only USTAR/gzip archive at `assets/downloads/previews/<builtCommit>/<sha256>.tgz`. Its seven UTF-8 Markdown entries are the two games' rules/protocol/rating-method files under `package/public/` plus the shared `package/skills/agent-game/SKILL.md`. There are no CLI modules, package manifest/scripts, links, executable modes or extended tar headers. Compressed and expanded bytes are bounded at 2 MiB; each text file is bounded at the source registry's **128 KiB**. Validation checks exact headers, inventory, padding/trailer, sizes, text-file digests and equality of public archive entries with the built public assets.
+
+The manifest's `branchContent` must contain both full game descriptors: `gameId`, internal string `protocol`, `rulesVersion`, and `{path,bytes,sha256}` for `rules`, `skill` and `protocolFile`; the abbreviated example above omits those entries. The unprivileged producer reads the PR's game descriptors, while the credentialed controller never imports them. The checked delivery proof converts protocols to numeric `1`/`2`, attaches the exact trusted target origin and carries the resulting `branchContent.games`. This is branch data, not source executable authority. Original 22-file evidence predates this additional archive and is preserved at its original implementation commit.
 
 ## Exact source-registration extension interface
 
@@ -93,6 +103,7 @@ After successful quarantine, the controller writes:
   - `runId`, `runAttempt`, `workflowId`, `jobs: [{id, name}]`;
   - `artifactId`, `artifactName`, `artifactDigest` (GitHub ZIP SHA-256), `manifestSha256`, `controllerCommit`;
   - `target: {stage, workerName, origin, policy: "scripted-zero-budget-unranked"}` derived entirely from the trusted PR number and configured Workers subdomain;
+  - `branchContent: {games: [...]}` with numeric protocols, verified text descriptors and the shared target content-addressed archive URL/digest/size;
   - `sourceRegistration: {status: "not-configured"}`.
 
 These files are retained with the smoke result for 30 days. The proof records verified input; actual deployment/smoke success comes from those workflow steps and their retained output. A future registration implementation belongs at the explicit workflow seam after credential-free smoke and before publication, inside the same per-PR lock. It must call `GitHub.verify(expected, controllerCommit)` and `verifyManifestIdentity(manifest, verified)` again, compare both retained hashes, and pin the **built commit plus artifact/manifest digests**, rather than treating the PR head as the uploaded commit.
@@ -113,6 +124,8 @@ Use **default-branch in-process lifecycle functions with a D1 REST adapter**, ra
 
 Exact bridge-owned adapter requirement: expose narrowly typed control-plane environments for the existing functions (or a focused control-plane wrapper) so trusted tooling can provide D1 `prepare/bind/run` plus the environment fields actually used, without manufacturing a complete application `Env`. Registration needs `DB` and environment/origin validation; configuration additionally needs `APP_URL`, `PREVIEW_SOURCE_URL` and target `BETTER_AUTH_SECRET`; closure needs source `DB`. The adapter must use only the default branch's accepted functions/SQL and preserve their tombstone and encryption semantics. This worktree does not modify the concurrently owned runtime files or copy their implementation into an infra script.
 
+The accepted artifact-registry seam at parent `dc60060` additionally requires real D1 `batch` and `first`: `registerPreviewArtifacts` performs its conditional insert/read in **one atomic batch**, not separate REST requests. Include this in the narrow source control-plane environment. The adapter must return standard D1 result metadata/results and preserve parameter binding; it must not translate registry SQL into independent writes.
+
 Required lifecycle ordering once that handoff is implemented:
 
 1. Under the existing per-PR lock, verify the same artifact/commit proof and resolve trusted source/target resources and retained incarnation/key material.
@@ -121,6 +134,17 @@ Required lifecycle ordering once that handoff is implemented:
 4. If eligibility changes after registration, close that exact incarnation before advertising anything. Close cleanup must invoke `closePreviewTarget(sourceEnv, origin, incarnation)` **before** destroying target resources, independent of artifact retention. Persist lifecycle state needed for this close/retry path outside the PR artifact, with source tombstones authoritative.
 
 Source credentials exposed to PR workflows remain an external blocker. The bridge's queue stays gated pending broker followup, even after identity registration. Metadata is never an instruction to execute a registration command from the artifact. Source-account play requires this adapter, lifecycle readback and credential cutover to be integrated and tested before the comment's `not-configured` status changes.
+
+### Source-published artifact mapping (`dc60060`)
+
+`scripts/preview-publication.ts` provides the concrete source-artifact metadata and readback seam:
+
+1. Obtain the **released source** executable descriptor from trusted source deployment/release state, independently of the PR artifact and current checkout package version. `verifySourceExecutable(sourceOrigin, executable)` fetches only the exact `${sourceOrigin}/downloads/agent-game-cli-${version}.tgz`, without credentials or redirects, and verifies its pinned bytes/hash and `[1,2]` protocol declaration. A matching URL alone is insufficient. This lane does not invent a hosted release pin.
+2. After fresh GitHub and retained-manifest/proof verification under the per-PR lock, call `previewArtifactPublication(verified, validatedArtifact, {subdomain, sourceOrigin, incarnation, executable})`. It maps the independently verified **built commit**, trusted target origin, retained incarnation, verified target text/archive bytes and independently trusted source executable into the exact version-1 source contract.
+3. In the default-branch D1 control-plane lifecycle wrapper, call the parent's `parsePreviewArtifactManifest(sourceEnv, JSON.stringify(publication))` then `registerPreviewArtifacts(sourceEnv, parsed)` after successful target configuration/registration. There is no HTTP write route and the source server performs no generic fetch. Recheck eligibility immediately before this write; retain immutable tuple conflicts rather than replacing them.
+4. After credentials leave scope, call `verifySourcePublicationReadback(publication)`. It performs the real source `GET /api/preview/artifacts?origin=<target>&commit=<builtCommit>`, requires `no-store`, bounds JSON to 16 KiB and checks exact semantic equality before any source-artifact availability claim. A pending/stale/closed tuple or different executable pin fails publication.
+
+The parent's source schema and lifecycle implementation are used directly in the local integration harness, not copied into deployment code. `.tim27-deploy/check-source-registry.mjs` reads a pinned `dc60060` source tree into this worktree's scratch space, dry-run bundles its actual Worker, uses real local D1 and actual source GET responses, and checks the parent's actual packaged 0.3.0 bytes through local source asset delivery. It covers 503 pending, successful publication/readback, immutable retry/conflict and stale/closed 503 responses. These local bytes are **not** evidence of a hosted 0.3.0 release. Source registration stays `not-configured` until the resource/environment adapter, released-source pin, identity lifecycle and credential cutover are integrated; broker admission remains separately gated.
 
 ## Cleanup and production
 
