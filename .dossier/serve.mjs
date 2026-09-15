@@ -6,9 +6,11 @@ import { resolve } from 'node:path';
 // Normal development requires no override; this never changes the application config or source.
 const ruleHelp = process.env.DOSSIER_RULE_HELP_SOURCE;
 
+const port = Number(process.env.DOSSIER_PORT ?? 6291);
+
 const server = await createServer({
   cacheDir: '/tmp/opencode/dossier-vite-cache',
-  server: { host: '127.0.0.1', port: 6291, strictPort: true },
+  server: { host: '127.0.0.1', port, strictPort: true },
   optimizeDeps: { entries: ['index.html', '.dossier/browser.html'] },
   plugins: ruleHelp
     ? [
@@ -24,4 +26,4 @@ const server = await createServer({
 
 await server.listen();
 
-console.log(`Dossier verification on 6291${ruleHelp ? ` · incoming RuleHelp: ${ruleHelp}` : ''}`);
+console.log(`Dossier verification on ${port}${ruleHelp ? ` · incoming RuleHelp: ${ruleHelp}` : ''}`);

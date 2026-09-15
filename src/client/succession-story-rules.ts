@@ -1,3 +1,5 @@
+import type { StoryAction } from './succession-story-types';
+
 /** Rules-version succession-1 vocabulary. UI icons/help must exhaust this closed set. */
 export const storyRules = {
   treasurer: ['Treasurer', 'Claim Tax to gain 3 coins. The claim may be challenged.'],
@@ -138,6 +140,15 @@ export const storyRules = {
 } as const;
 
 export type StoryRule = keyof typeof storyRules;
+
+export const storyActionRules = {
+  income: 'income',
+  tax: 'tax',
+  steal: 'theft',
+  assassinate: 'assassination',
+  exchange: 'exchange',
+  coup: 'coup',
+} as const satisfies Record<StoryAction['action'], StoryRule>;
 
 export const storyRuleSource = '/games/succession/rules.md';
 

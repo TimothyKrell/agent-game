@@ -5,14 +5,16 @@ import { chromium } from '@playwright/test';
 
 const origin = process.env.DOSSIER_ORIGIN ?? 'http://127.0.0.1:6291';
 
-const directory = `docs/evidence/TIM-19-22-components/route${process.env.DOSSIER_PRODUCTION ? '-production' : ''}${process.env.DOSSIER_ROUTE_MODE ? `-${process.env.DOSSIER_ROUTE_MODE}` : ''}`;
+const directory =
+  process.env.DOSSIER_EVIDENCE_DIR ??
+  `docs/evidence/TIM-19-22-components/route${process.env.DOSSIER_PRODUCTION ? '-production' : ''}${process.env.DOSSIER_ROUTE_MODE ? `-${process.env.DOSSIER_ROUTE_MODE}` : ''}`;
 
 await mkdir(directory, { recursive: true });
 
 const loader = await createServer({
   configFile: false,
   cacheDir: '/tmp/opencode/dossier-fixture-cache',
-  server: { middlewareMode: true },
+  server: { middlewareMode: true, hmr: false },
   logLevel: 'error',
 });
 
@@ -238,11 +240,84 @@ async function ready(timeline) {
     );
 }
 
+async function earlier(page, timeline) {
+  const after = Number(await timeline.getAttribute('data-story-after'));
+  await timeline
+    .locator('[data-story-key]')
+    .first()
+    .evaluate((element) => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
+  await page.keyboard.press('PageUp');
+  await page.waitForFunction(
+    ({ element, after }) =>
+      Number(element.getAttribute('data-story-after')) < after &&
+      element.getAttribute('aria-busy') === 'false',
+    { element: await timeline.elementHandle(), after },
+  );
+}
+
+async function finalMove(page, timeline, width, label) {
+  const declaration = fixture.eventsFor('finished').findLast((event) => event.type === 'declaration');
+  await page.getByRole('button', { name: 'Final move', exact: true }).click();
+  await page.waitForFunction(
+    (key) => document.activeElement?.getAttribute('data-event-key') === key,
+    declaration.eventKey,
+  );
+  check(
+    `${width}: Final move ${label} lands on source-backed declaration`,
+    (await timeline
+      .locator(`[data-event-key="${declaration.eventKey}"][data-event-type="declaration"]`)
+      .count()) === 1,
+  );
+  check(
+    `${width}: Final move ${label} remains bounded`,
+    (await timeline.locator('[data-story-key]').count()) <= 128,
+  );
+}
+
+async function beginning(page, timeline) {
+  for (let step = 0; step < 23 && Number(await timeline.getAttribute('data-story-after')) > 2; step++) {
+    await earlier(page, timeline);
+  }
+
+  check(
+    'continuous completed reader reaches the Act II start in reverse',
+    Number(await timeline.getAttribute('data-story-after')) === 2,
+  );
+}
+
 try {
   for (const width of process.env.DOSSIER_ROUTE_MODE ? [] : [1440, 390, 320]) {
-    const { page, control } = await harness(width, 'finished');
+    const { page, control } = await harness(width, 'finished', width === 390 ? '/history' : '');
     const two = chapter(page, 'II');
     await ready(two);
+    await writeFile(
+      `${directory}/${width}-terminal-entry.json`,
+      JSON.stringify(
+        {
+          delivered: await two.getAttribute('data-story-delivered'),
+          after: await two.getAttribute('data-story-after'),
+          head: fixture.eventsFor('finished').length,
+          finalMove: await page.getByRole('button', { name: 'Final move', exact: true }).count(),
+          requests: control.requests,
+        },
+        null,
+        2,
+      ),
+    );
+    check(
+      `${width}: completed entry loads the bounded terminal window`,
+      Number(await two.getAttribute('data-story-delivered')) === fixture.eventsFor('finished').length,
+    );
+    check(
+      `${width}: terminal entry avoids fetching the archive prefix`,
+      control.requests
+        .filter((path) => path.includes('/history?'))
+        .every(
+          (path) =>
+            Number(new URL(path, origin).searchParams.get('after')) >=
+            fixture.eventsFor('finished').length - 128,
+        ),
+    );
     check(
       `${width}: compact completed outcome and chapter defaults`,
       (await headings(page).nth(0).getAttribute('aria-expanded')) === 'false' &&
@@ -267,18 +342,31 @@ try {
     );
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await page.screenshot({ path: `${directory}/${width}-finished-entry.png` });
+    await beginning(page, two);
     await page.getByRole('checkbox', { name: /Show private archive/ }).check();
     await two.locator('.dossier-private').first().waitFor();
     check(`${width}: authorized archive rows reveal`, (await two.locator('.dossier-private').count()) > 0);
     await page.getByRole('checkbox', { name: /Show private archive/ }).uncheck();
     check(`${width}: archive hides again`, (await two.locator('.dossier-private').count()) === 0);
-    const delivered = await two.getAttribute('data-story-delivered');
+    await finalMove(page, two, width, 'from an older window');
+    await page.locator('.dossier-outcome h1').click();
+    await earlier(page, two);
     await headings(page).nth(1).click();
+    await finalMove(page, two, width, 'from a closed chapter');
+    await page.screenshot({ path: `${directory}/${width}-final-move.png` });
+    const delivered = await two.getAttribute('data-story-delivered');
+    // Activate without scrolling to the header first: that scroll legitimately reads
+    // earlier history now that the initial window is terminal, rather than Act II start.
+    await headings(page)
+      .nth(1)
+      .evaluate((button) => button.click());
     check(
       `${width}: closed panel removes its row UI`,
       (await page.locator('[data-story-key]').count()) === 0,
     );
-    await headings(page).nth(1).click();
+    await headings(page)
+      .nth(1)
+      .evaluate((button) => button.click());
     await ready(two);
     check(
       `${width}: reopening retains reader window`,
@@ -361,6 +449,10 @@ try {
 
     if (width === 1440) {
       const seen = new Set();
+
+      // Completed entry is terminal-first. Traverse all the way back before retaining
+      // the original forward/eviction checks; do not replace them with a short tail read.
+      await beginning(page, two);
 
       for (let step = 0; step < 23; step++) {
         await ready(two);
@@ -445,6 +537,19 @@ try {
       `${mode}: current-act default`,
       (await headings(page).nth(initialAct).getAttribute('aria-expanded')) === 'true',
     );
+    const currentTimeline = chapter(page, initialAct === 0 ? 'I' : 'II');
+    await page.waitForFunction(
+      (element) => element.getAttribute('aria-busy') === 'false',
+      await currentTimeline.elementHandle(),
+    );
+    check(
+      `${mode}: current chapter opens at its latest authorized record`,
+      Number(await currentTimeline.getAttribute('data-story-delivered')) === fixture.eventsFor(mode).length,
+    );
+    check(
+      `${mode}: no completed-only Final move action`,
+      (await page.getByRole('button', { name: 'Final move', exact: true }).count()) === 0,
+    );
     check(
       `${mode}: decisions only when entitled`,
       (await page.locator('.legal-actions button').count()) ===
@@ -524,7 +629,7 @@ try {
         canonicalArchiveEvents: fixture.eventsFor('finished').length,
         interceptedBackend: true,
         actualMatchRoute: true,
-        ruleHelpCommit: 'ee2220f',
+        ruleHelpBaseline: 'ee2220f',
         failures,
         faults,
       },

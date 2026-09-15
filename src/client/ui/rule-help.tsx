@@ -75,9 +75,12 @@ export function RuleHelpProvider({ children }: { children: ReactNode }) {
     () => ({
       handle,
       detach: (id, fallback) => {
-        if (handle.isOpen && returnFocus.current?.id === id) {
+        // An outside chapter click may close the Popover before React removes its trigger.
+        // Base UI still reads this ref during close; retarget it even when already closing.
+        if (returnFocus.current?.id === id) {
           returnFocus.current = fallback;
-          handle.close();
+
+          if (handle.isOpen) handle.close();
         }
       },
     }),

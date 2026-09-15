@@ -1,0 +1,20 @@
+{
+  "fallback": {
+    "tag": "BUTTON",
+    "text": "IIACT II · SUCCESSIONAgent 6 wins the matchAll ten return · 2 fresh influence each · Individual victory.",
+    "connected": true
+  },
+  "error": "page.waitForFunction: Timeout 3000ms exceeded.",
+  "state": {
+    "active": {
+      "tag": "BODY",
+      "id": ""
+    },
+    "expanded": [
+      "false",
+      "false"
+    ],
+    "dialogs": 0,
+    "rows": 0
+  }
+}

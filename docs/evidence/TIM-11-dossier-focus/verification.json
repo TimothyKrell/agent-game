@@ -1,0 +1,23 @@
+{
+  "baseline": "4f7901b with ee2220f",
+  "minimalRed": { "tests": 1, "failed": 1, "symptom": "Surviving chapter button inactive after popup and trigger removal", "seconds": 5.9 },
+  "nativeRed": { "tests": 1, "failed": 1 },
+  "lifecycle": [
+    { "event": "openchange", "open": true, "reason": "trigger-press" },
+    { "event": "openchange", "open": false, "reason": "outside-press", "targetConnected": true },
+    { "event": "detach", "handleOpen": false, "targetConnected": false, "fallback": "Rules chapter" },
+    { "event": "resolve-final-focus", "targetConnected": false }
+  ],
+  "focusedGreen": { "tests": 4, "failed": 0 },
+  "originalRuleHelpGreen": { "tests": 9, "failed": 0 },
+  "actualRouteRed": { "passed": 54, "failed": 3 },
+  "actualRouteGreen": { "passed": 57, "failed": 0 },
+  "productionRouteGreen": { "passed": 60, "failed": 0 },
+  "widths": [1440, 390, 320],
+  "browser": "Chromium/Linux",
+  "typecheck": "passed",
+  "lint": "passed",
+  "build": "passed",
+  "productionExclusion": "passed",
+  "historyAndPictureDataChanged": false
+}

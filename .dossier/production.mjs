@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { build, preview } from 'vite';
 import { chromium } from '@playwright/test';
 
-const directory = 'docs/evidence/TIM-19-22-components';
+const directory = process.env.DOSSIER_PRODUCTION_EVIDENCE_DIR ?? 'docs/evidence/TIM-19-22-components';
+
+await mkdir(directory, { recursive: true });
 
 const forbidden = [
   'tim-6-replay-prototype',
@@ -18,6 +20,8 @@ const forbidden = [
   'Canonical component fixture ready',
   'production-components',
   'captured-initial',
+  'Rule-help focus regression',
+  'Provider owner control',
 ];
 
 const assets = await readdir('dist/client', { recursive: true, withFileTypes: true });
@@ -86,6 +90,8 @@ try {
   await page.goto('http://127.0.0.1:6292/.dossier/browser.html');
   assert.equal(await page.getByText('Canonical component fixture ready').count(), 0);
   assert.equal(await page.getByRole('navigation', { name: 'Fixture controls' }).count(), 0);
+  await page.goto('http://127.0.0.1:6292/.dossier/focus.html');
+  assert.equal(await page.getByRole('textbox', { name: 'External note' }).count(), 0);
   assert.ok(!requests.some((url) => /:4747|prototype\.(tsx|json)|dossier-controls/.test(url)));
   await writeFile(
     `${directory}/production.json`,
@@ -101,7 +107,7 @@ try {
         dossierIncluded,
         readerIncluded,
         integrationBoundary:
-          'Route browser acceptance is recorded separately in route-production/checks.json; parent owns pending TIM-23 review corrections.',
+          'Route browser acceptance is recorded separately in the route checks; independent integration review follows the lane handoff.',
       },
       null,
       2,

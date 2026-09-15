@@ -31,6 +31,8 @@ export interface SuccessionDossierProps {
   chapters?: DossierChapterState;
   /** Authoritative live phase/decision UI, never derived from a historical reader window. */
   currentState?: ReactNode;
+  /** Source-backed route entry point, resolved and loaded by the bounded chapter reader. */
+  ending?: { label: string; onRead?: () => void };
   /** TIM-23 owns retrieval, source-act filtering, bounded DOM and continuous loading. */
   renderChapter?: (chapter: DossierChapterSlot) => ReactNode;
 }
@@ -60,6 +62,7 @@ function DossierContent({
   archiveAvailable = false,
   chapters: controlledChapters,
   currentState,
+  ending,
   renderChapter,
 }: SuccessionDossierProps) {
   const localChapters = useDossierChapters(status, act);
@@ -72,6 +75,7 @@ function DossierContent({
   const entrants = new Map(model.end.map((seat) => [seat.seat, seat.entrant]));
   const faction = dossierValue(model.chapters.act1);
   const tracks = dossierValue(model.chapters.finalTracks);
+  // Canonical recorded Act II creation allocation, independent of any current seat balances/hands.
   const returns = dossierValue(model.chapters.returns);
 
   const recipients = returns?.flatMap((seat) =>
@@ -85,7 +89,13 @@ function DossierContent({
 
   return (
     <div className="dossier replay-ui">
-      <DossierOutcome chapters={model.chapters} status={status} act={act} entrants={entrants} />
+      <DossierOutcome
+        chapters={model.chapters}
+        status={status}
+        act={act}
+        entrants={entrants}
+        ending={ending}
+      />
       {currentState}
       <div className="dossier-reading-options">
         {archiveAvailable && (

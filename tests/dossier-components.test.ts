@@ -8,6 +8,7 @@ import { RuleHelpProvider } from '../src/client/ui/rule-help';
 import { buildSuccessionStory } from '../src/client/succession-story';
 import type { StoryModel, StoryRow } from '../src/client/succession-story';
 import { dossierFactText } from '../src/client/dossier-facts';
+import { dossierEnding } from '../src/client/dossier-ending';
 import { readStoryFact } from '../src/client/succession-story-events';
 import { capturedEvents, capturedStory, dossierRecordedExamples } from './fixtures/dossier-recorded';
 import { dossierEngineExamples, dossierProof } from './fixtures/dossier-engine';
@@ -132,6 +133,12 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
     expect(returned).toHaveLength(10);
     expect(returned.filter((seat) => seat.returnedAfterExecution)).toHaveLength(2);
     expect(returned.every((seat) => seat.influence === 2)).toBe(true);
+    const start = execution[1].rows.find((row) => row.fact.kind === 'act-started')!;
+    expect(renderRow(start, execution[1], false)).toContain('All 10 starting states');
+    const missingReturns = structuredClone(execution[1]);
+    missingReturns.chapters.returns = { status: 'unavailable', reason: 'not-recorded' };
+    expect(renderRow(start, missingReturns, false)).toContain('Recorded starting states unavailable.');
+    expect(renderRow(start, missingReturns, false)).not.toContain('dossier-starting-totals');
 
     const double = examples.find((example) => example.id === 'double-loss')!.models[0];
     const losses = double.rows.filter((row) => row.fact.kind === 'influence-lost');
@@ -145,5 +152,31 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
     const takeover = examples.find((example) => example.id === 'takeover')!.models;
     expect(dossierValue(takeover[0].chapters.outcome)?.credit).toMatchObject({ value: 'forfeit-loss' });
     expect(takeover[1].chapters.outcome.status).toBe('unavailable');
+  });
+
+  it('uses the terminal canonical action source, with an honest terminal-record fallback', async () => {
+    const examples = await dossierEngineExamples();
+    const model = examples.find((example) => example.id === 'cap')!.models[0];
+    const terminal = model.rows.find((row) => row.fact.kind === 'finished')!;
+    const ending = dossierEnding(model.rows)!;
+    const action = dossierValue(model.rows.findLast((row) => row.fact.kind === 'turn-ended')!.action)!;
+    expect(ending.label).toBe('Final move');
+    expect(ending.source).toEqual(dossierValue(action.declaration));
+    expect(model.rows.find((row) => row.source.eventKey === ending.source.eventKey)?.fact.kind).toBe(
+      'declaration',
+    );
+
+    // Other declarations in the window cannot substitute for missing causal evidence.
+    const partial = structuredClone(model.rows);
+
+    for (const row of partial) {
+      if (row.fact.kind === 'finished' || row.fact.kind === 'turn-ended')
+        row.action = { status: 'unavailable', reason: 'not-recorded' };
+    }
+
+    expect(dossierEnding(partial)).toMatchObject({ label: 'Terminal record', source: terminal.source });
+    const gapped = model.rows.filter((row) => row.fact.kind !== 'phase');
+    expect(dossierEnding(gapped)).toMatchObject({ label: 'Terminal record', source: terminal.source });
+    expect(dossierEnding(model.rows.filter((row) => row !== terminal))).toBeNull();
   });
 });
