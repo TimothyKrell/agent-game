@@ -12,11 +12,19 @@ import type { ArtifactPin } from '../cli/preview-artifacts.mjs';
 
 const run = promisify(execFile);
 
-const source = 'http://127.0.0.1:6361';
+const portBase = Number(process.env.TIM27_CLI_PORT_BASE ?? 6361);
 
-const target = 'http://127.0.0.1:6362';
+if (!Number.isInteger(portBase) || portBase < 1 || portBase > 65532)
+  throw new Error('TIM27_CLI_PORT_BASE must start a valid four-port range.');
 
-const other = 'http://127.0.0.1:6363';
+const source = `http://127.0.0.1:${portBase}`;
+
+const target = `http://127.0.0.1:${portBase + 1}`;
+
+const other = `http://127.0.0.1:${portBase + 2}`;
+
+const evidenceDirectory =
+  process.env.TIM27_CLI_EVIDENCE_DIR ?? `.tim27-cli/runs/cli-${process.pid}-${randomUUID()}`;
 
 const incarnation = 'cli-incarnation-1';
 
@@ -235,8 +243,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
   vi.unstubAllEnvs();
+  await mkdir(evidenceDirectory, { recursive: true });
   await writeFile(
-    '.tim27-cli/scripted-results.json',
+    resolve(evidenceDirectory, 'scripted-results.json'),
     JSON.stringify(
       {
         scope: 'Local scripted fixture allocations; broker admission and hosted agents are not exercised.',

@@ -65,7 +65,17 @@ Picture choice lineage is exactly `{ server: sourceOrigin, agentId: sourceAgentI
 
 ## Local verification
 
-Reproduction: `bash .tim27-cli/verify.sh`. Tests use 6361–6364 and isolated `/tmp/opencode/tim27-cli-*` homes/storage. Fixtures run the actual application identity routes, D1 migrations, source registry functions, R2 binding and match DOs. `.tim27-cli/worker.ts` is a separate loopback-only test entrypoint; the identity lane's fixture and probe tests are untouched.
+Reproduction: `bash .tim27-cli/verify.sh`. Tests default to 6361–6364 and isolated `/tmp/opencode/tim27-cli-*` homes/storage. Set `TIM27_CLI_PORT_BASE=6411` to use 6411–6414 instead; the verification script derives the serial TIM-30 fixture range from that base unless `TIM30_PORT_BASE` is explicitly supplied. Fixtures run the actual application identity routes, D1 migrations, source registry functions, R2 binding and match DOs. `.tim27-cli/worker.ts` is a separate loopback-only test entrypoint; the identity lane's fixture and probe tests are untouched.
+
+New evidence uses an ignored, unique run directory. Direct Vitest invocation defaults to `.tim27-cli/runs/cli-<pid>-<uuid>/scripted-results.json`; `TIM27_CLI_EVIDENCE_DIR` overrides the directory. The verification script chooses `.tim27-cli/runs/verify-<random>/`, prints and exports that directory, and writes all logs, `scripted-results.json`, and `package-contents.txt` beneath it. For a chosen fresh directory:
+
+```sh
+TIM27_CLI_PORT_BASE=6411 TIM27_CLI_EVIDENCE_DIR=.tim27-cli/runs/my-fresh-run bash .tim27-cli/verify.sh
+```
+
+Filtered or failed runs can produce an empty/partial `completions` array in their own run directory. They do not replace the committed original `.tim27-cli/scripted-results.json`, `.tim27-cli/package-contents.txt`, or the historical root-level logs described below.
+
+Evidence-isolation correction: two filtered installed-CLI runs passed on ports 6411–6414, one using the automatic directory and one using an explicit override. Both produced their own empty `completions` capture. SHA-256 comparisons confirmed all 17 pre-existing root-level JSON/text/log artifacts stayed byte-identical. The correction proof and scoped checks are in `.tim27-cli/runs/evidence-correction-05b3feca-b6e8-4512-a183-c331de069a74/isolation-proof.json` and sibling logs. Fixture typecheck, scoped lint/formatting and shell syntax checks passed.
 
 The installed-package suite covers:
 
@@ -87,4 +97,4 @@ The first full regression run passed all 92 assertions but failed Vitest's unhan
 - The source registry controller must publish verified source-release descriptors and target archive bytes for the independently verified built commit. This lane adds no deployment controller, registry write route or migration of its own.
 - Preview live allocation remains gated until the broker lane is integrated. Scripted engine results are neither broker admission nor hosted-agent completion evidence. No paid inference or deployment was performed.
 - Hosted OpenCode/Claude conversational adherence, one-time compatibility upgrade from the actual deployed archive, owner/external-image-tool chat behavior and real hosted preview selection remain acceptance checks.
-- The two-origin fixture exposed an identity controller issue: close an incarnation, then register a new incarnation at that origin, and the retirement trigger can raise a duplicate retired-key constraint. This was handed to parent; the CLI separately verifies closure and direct replacement. No identity-owned source file is changed by this lane.
+- Historical identity finding: closing an incarnation then registering a fresh incarnation could raise a duplicate retired-key constraint. Parent corrected this in accepted `54fc037` (migration 0007). The original CLI evidence separately verifies closure and direct replacement; this evidence-path correction changes no identity-owned source or migration.
