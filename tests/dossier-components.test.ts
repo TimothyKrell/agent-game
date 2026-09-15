@@ -205,6 +205,11 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
     );
     expect(proofPanel).toContain('Proved · replaced, not lost');
     expect(proofPanel).not.toContain('dossier-card-known');
+    const proofRow = renderRow(proved, proof, false);
+
+    expect(proofRow).toContain('dossier-event-panel');
+    expect(proofRow.match(/dossier-card-revealed/g)).toHaveLength(1);
+    expect(proofRow).not.toContain('dossier-delta');
 
     const double = examples.find((example) => example.id === 'double-loss')!.models[0];
     const eliminated = double.rows.find((row) => row.fact.kind === 'influence-lost' && row.fact.eliminated)!;
@@ -216,6 +221,11 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
     );
     expect(lossPanel).toContain('Eliminated · coins frozen');
     expect(lossPanel).toContain('Lost · publicly revealed');
+    const lossRow = renderRow(eliminated, double, false);
+
+    expect(lossRow).toContain('dossier-event-panel-eliminated');
+    expect(lossRow.match(/dossier-card-lost/g)).toHaveLength(1);
+    expect(lossRow).not.toContain('dossier-delta');
   });
 
   it('uses the terminal canonical action source, with an honest terminal-record fallback', async () => {
