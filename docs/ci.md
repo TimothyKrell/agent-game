@@ -4,6 +4,8 @@ Repository: **https://github.com/TimothyKrell/agent-game** (private).
 
 ## Current release gates — production first
 
+Unit jobs have a35-minute job cap after run34979641841 exceeded25 minutes with62 cases still unreported. Four tests had already failed, so the additional reporting headroom does not close those findings. Individual test and game deadlines remain unchanged. CLI fixture evidence is now explicitly routed into the uploaded diagnostics directory. Extended preview activation retains its25-minute cap.
+
 Production requires Verify, three release-unit shards, API/recovery, browser and provider verification, followed by the deployed-arena smoke check. The extended playable-preview and preview-smoke suites run in a separate **Preview activation tests** job; production does not depend on that job. Trusted preview deployment explicitly requires it in addition to the seven existing checks, with activation still default-off.
 
 `vitest.release.config.ts` selects65 files and `vitest.preview-activation.config.ts` selects the remaining six. The default local configuration still runs all71 files. The partition has no omissions or overlap. See [the production-first release decision](evidence/TIM-27-production-first-release.md). Older complete-shard timing projections below predate this separation.

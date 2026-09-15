@@ -70,7 +70,7 @@ jobs:
   unit:
     name: Unit and Worker tests (${{ matrix.shard }}/3)
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -89,6 +89,7 @@ jobs:
           SUCCESSION_BOUNDS_RESULTS_PATH: succession-worker-bounds-results.json
           TIM27_IDENTITY_EVIDENCE_DIR: .agent-game/ci-evidence/identity
           TIM27_BROKER_EVIDENCE_DIR: .agent-game/ci-evidence/broker
+          TIM27_CLI_EVIDENCE_DIR: .agent-game/ci-evidence/cli
           TIM27_PLAYABLE_EVIDENCE_DIR: .agent-game/ci-evidence/playable
         run: |
           node -e 'const os = require("node:os"); console.log(JSON.stringify({ node: process.version, cpus: os.availableParallelism(), memoryBytes: os.totalmem(), workers: 1 }))' | tee unit.log
