@@ -148,13 +148,13 @@ export async function sourceBrokerRoute(
   if (operation === 'complete' || operation === 'retire') {
     const input = decodePreview(PreviewBrokerReferenceSchema, proof.payload);
     await currentTarget(env, proof, input.commit);
-    const receipt = await queue.previewAllocation(input.allocationId);
 
-    if (receipt) owns(proof, receipt);
+    if (operation === 'retire') {
+      const receipt = await queue.previewAllocation(input.allocationId);
 
-    if (operation === 'retire')
+      if (receipt) owns(proof, receipt);
       await queue.retirePreviewInference(decodePreview(PreviewRetireInferenceSchema, proof.payload));
-    else await queue.completePreview(input.allocationId, proof);
+    } else brokerValue(await queue.completePreview(input.allocationId, proof));
 
     return json({ closed: true });
   }

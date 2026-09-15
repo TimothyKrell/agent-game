@@ -26,8 +26,8 @@ export class BrokerTestCoordinator extends MatchmakingObject {
       throw new Error(`Fixture lost acknowledgement after real ${point}`);
     }
   }
-  allocatePreview(intent: PreviewBrokerIntent, fingerprint: string, revision: string) {
-    const receipt = super.allocatePreview(intent, fingerprint, revision);
+  async allocatePreview(intent: PreviewBrokerIntent, fingerprint: string, revision: string) {
+    const receipt = await super.allocatePreview(intent, fingerprint, revision);
     this.crash('allocation');
 
     return receipt;
@@ -40,7 +40,18 @@ export class BrokerTestCoordinator extends MatchmakingObject {
     return receipt;
   }
   async alarm(): Promise<void> {
-    await this.ctx.storage.deleteAlarm();
+    const automatic =
+      this.ctx.storage.sql.exec("SELECT key FROM broker_fixture WHERE key='automatic-alarms'").toArray()
+        .length > 0;
+
+    if (automatic) await super.alarm();
+    else await this.ctx.storage.deleteAlarm();
+  }
+  fixtureAlarmTime() {
+    return this.ctx.storage.getAlarm();
+  }
+  fixtureWake() {
+    return this.ctx.storage.setAlarm(Date.now() + 1);
   }
   async fixtureAlarm(): Promise<void> {
     await super.alarm();
@@ -62,6 +73,10 @@ export class BrokerTestMatch extends MatchObject {
     return this.alarm();
   }
   async initialize(input: MatchInitialization): Promise<void> {
+    if (
+      await this.env.DB.prepare("SELECT key FROM broker_test_controls WHERE key='initialize-before'").first()
+    )
+      throw new Error('Fixture interruption before Match initialize');
     await super.initialize(input);
     // Fixtures inspect the committed game before explicitly enabling its normal runtime.
     await this.ctx.storage.deleteAlarm();
@@ -120,6 +135,14 @@ export default {
 
       if (path === '/fixture/queue-alarm') {
         await queue.fixtureAlarm();
+
+        return json({ done: true });
+      }
+
+      if (path === '/fixture/alarm-time') return json({ at: await queue.fixtureAlarmTime() });
+
+      if (path === '/fixture/wake') {
+        await queue.fixtureWake();
 
         return json({ done: true });
       }
