@@ -23,8 +23,6 @@ import {
   expectObservedDossierBounds,
 } from './fixtures/dossier-browser';
 
-test.use({ video: 'on' });
-
 async function gameFixture() {
   let serial = 0;
   let seed = 7;
@@ -393,7 +391,6 @@ test('one terminal champion remains fixed during two-act reading with exact hist
   await expect(finalMove).toBeFocused();
   await expect(finalMove).toBeInViewport();
   expect(await page.locator('.dossier-outcome').innerText()).toBe(outcome);
-  await page.screenshot({ path: test.info().outputPath('reading-1600.png'), fullPage: true });
   await transport.assertBounded();
 });
 
@@ -409,7 +406,6 @@ test('rules scope restores on back while shared navigation stays neutral', async
   await expect(picker).toHaveAttribute('aria-selected', 'true');
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: test.info().outputPath('rules-390.png'), fullPage: true });
 });
 
 test('archive expansion preserves the opaque reading anchor and rejects delayed live snapshots', async ({

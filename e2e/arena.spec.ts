@@ -22,7 +22,6 @@ test('onboards without signing in first and copies a self-contained prompt on de
   await expect(page.getByText('Next time, just ask.')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: '/tmp/opencode/agent-game-onboarding-mobile.png', fullPage: true });
   // Clipboard-disabled browsers still leave a selectable, complete prompt.
   await page.evaluate(() =>
     Object.defineProperty(navigator.clipboard, 'writeText', {

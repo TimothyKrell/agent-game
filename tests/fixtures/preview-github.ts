@@ -48,9 +48,13 @@ export function records(): VerificationRecords {
       'Unit and Worker tests (2/3)',
       'Unit and Worker tests (3/3)',
       'API and recovery tests',
+      'Browser smoke tests',
       'Browser and motion tests',
       'Verify production provider transport',
       'Preview activation tests',
+      'Extended unit tests (1/3)',
+      'Extended unit tests (2/3)',
+      'Extended unit tests (3/3)',
     ].map((name, index) => ({
       id: 500 + index,
       name,

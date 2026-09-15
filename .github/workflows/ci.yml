@@ -4,8 +4,13 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
+    inputs:
+      extended:
+        description: Run full-match, stress, visual-matrix and preview verification
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -40,12 +45,12 @@ jobs:
       - run: npx wrangler deploy --dry-run 2>&1 | tee dry-run.log
         shell: bash
       - name: Produce prebuilt preview bytes without deployment credentials
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extended-ci') && github.event.pull_request.head.repo.full_name == github.repository
         run: node scripts/produce-preview-artifact.ts
         env:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       - name: Publish immutable preview build
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'extended-ci') && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: preview-bundle-${{ github.run_id }}-${{ github.run_attempt }}
@@ -54,7 +59,7 @@ jobs:
           include-hidden-files: true
           retention-days: 7
       - name: Save build diagnostics
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: build-${{ github.run_id }}-${{ github.run_attempt }}
@@ -70,7 +75,7 @@ jobs:
   unit:
     name: Unit and Worker tests (${{ matrix.shard }}/3)
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -81,9 +86,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: npm run build
-      - name: Install browser used by native identity tests
-        run: npx playwright install --with-deps chromium
-      - name: Exercise production release inventory shard
+      - name: Exercise core inventory shard
         shell: bash
         env:
           SUCCESSION_BOUNDS_RESULTS_PATH: succession-worker-bounds-results.json
@@ -94,9 +97,9 @@ jobs:
           TIM27_PLAYABLE_EVIDENCE_DIR: .agent-game/ci-evidence/playable
         run: |
           node -e 'const os = require("node:os"); console.log(JSON.stringify({ node: process.version, cpus: os.availableParallelism(), memoryBytes: os.totalmem(), workers: 1 }))' | tee unit.log
-          npm test -- --config vitest.release.config.ts --shard=${{ matrix.shard }}/3 --maxWorkers=1 --reporter=verbose --reporter=json --outputFile.json=unit-results.json 2>&1 | tee -a unit.log
+          npm test -- --config vitest.core.config.ts --shard=${{ matrix.shard }}/3 --maxWorkers=1 --reporter=default --reporter=json --outputFile.json=unit-results.json 2>&1 | tee -a unit.log
       - name: Save unit and actual-host evidence
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: unit-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -110,8 +113,46 @@ jobs:
           include-hidden-files: true
           retention-days: 7
 
+  extended-unit:
+    name: Extended unit tests (${{ matrix.shard }}/3)
+    if: inputs.extended == true || contains(github.event.pull_request.labels.*.name, 'extended-ci')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Exercise full-match, stress and lifecycle tests
+        shell: bash
+        env:
+          TIM27_IDENTITY_EVIDENCE_DIR: .agent-game/ci-evidence/identity
+          TIM27_BROKER_EVIDENCE_DIR: .agent-game/ci-evidence/broker
+          TIM27_CLI_EVIDENCE_DIR: .agent-game/ci-evidence/cli
+          GAME_FIXTURE_EVIDENCE_DIR: .agent-game/ci-evidence/game-fixtures
+          SUCCESSION_BOUNDS_RESULTS_PATH: .agent-game/ci-evidence/bounds.json
+        run: npm test -- --config vitest.extended.config.ts --shard=${{ matrix.shard }}/3 --maxWorkers=1 --reporter=default --reporter=json --outputFile.json=extended-results.json 2>&1 | tee extended.log
+      - name: Save extended failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: extended-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            extended.log
+            extended-results.json
+            .agent-game/ci-evidence
+          include-hidden-files: true
+          retention-days: 7
+
   preview-activation:
     name: Preview activation tests
+    if: inputs.extended == true || contains(github.event.pull_request.labels.*.name, 'extended-ci')
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -126,7 +167,7 @@ jobs:
           TIM27_PLAYABLE_EVIDENCE_DIR: .agent-game/ci-evidence/playable
         run: npm test -- --config vitest.preview-activation.config.ts --maxWorkers=1 --reporter=verbose --reporter=json --outputFile.json=preview-activation-results.json 2>&1 | tee preview-activation.log
       - name: Save preview activation evidence
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: preview-activation-${{ github.run_id }}-${{ github.run_attempt }}
@@ -150,7 +191,7 @@ jobs:
       - run: npm run test:api -- --reporter=verbose --reporter=json --outputFile.json=api-results.json 2>&1 | tee api.log
         shell: bash
       - name: Save API diagnostics
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: api-${{ github.run_id }}-${{ github.run_attempt }}
@@ -160,7 +201,7 @@ jobs:
           retention-days: 7
 
   browser:
-    name: Browser and motion tests
+    name: Browser smoke tests
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -170,10 +211,10 @@ jobs:
       - uses: ./.github/actions/setup
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser 2>&1 | tee browser.log
+      - run: npm run test:browser -- --config playwright.smoke.config.ts 2>&1 | tee browser.log
         shell: bash
       - name: Save browser diagnostics
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: browser-${{ github.run_id }}-${{ github.run_attempt }}
@@ -183,8 +224,34 @@ jobs:
             playwright-report
           retention-days: 7
 
+  browser-full:
+    name: Browser and motion tests
+    if: inputs.extended == true || contains(github.event.pull_request.labels.*.name, 'extended-ci')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser 2>&1 | tee browser-full.log
+        shell: bash
+      - name: Save full-browser failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: browser-full-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            browser-full.log
+            test-results
+            playwright-report
+          retention-days: 7
+
   provider:
     name: Verify production provider transport
+    if: inputs.extended == true || contains(github.event.pull_request.labels.*.name, 'extended-ci')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -197,7 +264,7 @@ jobs:
         shell: bash
         run: npm run test:provider 2>&1 | tee provider-verification.log
       - name: Save provider verification evidence
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: provider-${{ github.run_id }}-${{ github.run_attempt }}
@@ -206,7 +273,7 @@ jobs:
 
   production:
     name: Deploy production
-    needs: [verify, unit, api, browser, provider]
+    needs: [verify, unit, api, browser]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 15

@@ -7,7 +7,12 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,
-  use: { baseURL, trace: 'retain-on-failure', screenshot: 'only-on-failure' },
+  use: {
+    baseURL,
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  },
   webServer: {
     command: 'node scripts/dev.mjs --test',
     url: `${baseURL}/api/health`,

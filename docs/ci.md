@@ -2,13 +2,39 @@
 
 Repository: **https://github.com/TimothyKrell/agent-game** (private).
 
-## Current release gates — production first
+## Default CI: core checks
 
-Unit jobs have a35-minute job cap after run34979641841 exceeded25 minutes with62 cases still unreported. Four tests had already failed, so the additional reporting headroom does not close those findings. Individual test and game deadlines remain unchanged. CLI fixture evidence is now explicitly routed into the uploaded diagnostics directory. Extended preview activation retains its25-minute cap.
+Every PR and push to `main` runs:
 
-Production requires Verify, three release-unit shards, API/recovery, browser and provider verification, followed by the deployed-arena smoke check. The extended playable-preview and preview-smoke suites run in a separate **Preview activation tests** job; production does not depend on that job. Trusted preview deployment explicitly requires it in addition to the seven existing checks, with activation still default-off.
+- **Verify:** lint, formatting, types, production build and Worker dry run.
+- **Three core-test shards:** game rules, authorization, persistence, accounting primitives, CLI contracts, pictures and reader/UI behavior. One worker per shard; ten-minute job cap.
+- **API and recovery:** the existing six actual-server cases.
+- **Four browser smoke cases:** onboarding, arena navigation, completed two-act Dossier privacy/navigation, and rules/back navigation, including narrow viewports. No smoke videos.
 
-`vitest.release.config.ts` selects65 files and `vitest.preview-activation.config.ts` selects the remaining six. The default local configuration still runs all71 files. The partition has no omissions or overlap. See [the production-first release decision](evidence/TIM-27-production-first-release.md). Older complete-shard timing projections below predate this separation.
+Production deployment requires these checks, then performs its deployed-arena smoke check. Full-match repetitions, large history stress tests, the visual/motion matrix, provider games and preview lifecycle journeys are **opt-in**, not default release blockers. Production game budgets and deadlines are unchanged.
+
+### Run extended checks when needed
+
+Add the **`extended-ci`** label to a PR to run the extended unit shards, full browser suite, synthetic provider suite and preview activation journeys. Subsequent commits on that labelled PR also run them. Alternatively use **Actions → CI and deploy → Run workflow → extended** for a branch-specific manual run. Reserve these runs for changes to those paths or investigating a regression.
+
+Local commands:
+
+```sh
+npm test -- --config vitest.core.config.ts
+npm run test:browser -- --config playwright.smoke.config.ts
+npm test -- --config vitest.extended.config.ts --maxWorkers=1
+npm test -- --config vitest.preview-activation.config.ts --maxWorkers=1
+```
+
+The default `npm test` still selects the full unit inventory. Core, extended and preview-activation configurations partition that inventory. Existing tests remain available; making them opt-in does not claim equivalent coverage in the smaller default gate.
+
+### Diagnostics and preview delivery
+
+Routine test/build artifacts upload only on failure and expire after seven days. GitHub logs remain available for successful jobs. Smoke browser traces/screenshots are failure-only; the full browser suite retains videos only on failure. No routine manual manifests, archives or independent review rounds are required.
+
+Prebuilt preview artifacts are produced only for same-repository PRs labelled `extended-ci`. The trusted controller requires the core jobs **and every extended job** to succeed on the exact originating attempt. Missing, skipped or failed extended jobs cannot authorize a preview. A manual non-PR run does not attest a PR. Activation remains default-off and credential isolation is unchanged. Deployment receipts and required preview build bytes remain retained because delivery consumes them.
+
+The sections below are historical implementation and operating notes; their earlier test counts, gating descriptions and timing projections predate this lean default.
 
 ## Verified lifecycle — 2026-09-11
 
