@@ -73,6 +73,8 @@ The source-model projection has fixed ten-seat resources and at most 128 rows. M
 
 The existing round-index source enforces its 42-landmark rules bound. Wheel/touch direction at a window edge is observed even when the browser cannot scroll farther, so loading earlier does not depend on producing an additional scroll event at `scrollTop=0`.
 
+`succession-history-data.ts` owns the shared `readAuthorizedHistory(scope, range, signal, maxEvents)` cursor walk used by story and replay selected reads. Frame/checkpoint composition and Query ownership remain at the callers. Wrong-match responses are rejected before reset classification; API and transport error identities are preserved. `HistoryReset` remains available through the existing replay-data export.
+
 ## Verification and handoff
 
 Artifacts are preserved in `.tim23/`. Browser fixtures use intercepted local URLs on 6283 with an in-memory Vite build of the actual production hooks/container. Worker tests run local `unstable_dev`, isolated SQLite/D1 and canonical engine actions. No production server, inference provider or hosted deployment is used.

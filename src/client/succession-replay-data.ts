@@ -4,7 +4,9 @@ import { HistoryPage2Schema, ReplayFrame2Schema } from '../shared/succession';
 import type { AuthorizedEvent2, HistoryPage2, Observation2, ReplayFrame2 } from '../shared/succession';
 import { HistoryAnchor2Schema, RoundIndex2Schema } from '../shared/history';
 import { api } from './api';
-import { historyPath, SuccessionHistory } from './succession-stream';
+import { HistoryReset, readAuthorizedHistory } from './succession-history-data';
+
+export { HistoryReset } from './succession-history-data';
 
 /** Cookie owner identity is not the match's controller audience. Never put credentials in keys. */
 export function matchReadScope(view: Observation2, credentialRevision = 0) {
@@ -36,13 +38,6 @@ export function matchReadKey(scope: MatchReadScope) {
     scope.generations,
     scope.epoch,
   ] as const;
-}
-
-export class HistoryReset extends Error {
-  constructor(readonly scope: MatchReadScope) {
-    super('The record visibility changed. Retry loading the current record.');
-    this.name = 'HistoryReset';
-  }
 }
 
 export type ReplaySlice = { frame: ReplayFrame2; events: AuthorizedEvent2[] };
@@ -100,37 +95,12 @@ export function replaySliceOptions(scope: MatchReadScope, through: number) {
         return frame;
       };
 
-      const loadWindow = async () => {
-        const history = new SuccessionHistory();
-        history.observe({ visibilityEpoch: scope.epoch, streamHead: through });
-        history.seek(Math.max(0, through - 32), through);
-
-        for (let pageNumber = 0; history.cursor < through && pageNumber < 32; pageNumber++) {
-          shared.throwIfAborted();
-          const walk = { epoch: scope.epoch, after: history.cursor, through };
-
-          const page = await api(historyPath(scope.matchId, walk), HistoryPage2Schema, undefined, {
-            signal: shared,
-          });
-
-          if (page.reset) rejectReset(page, scope);
-          requireScope(page, scope);
-
-          if (
-            page.events.length > 32 ||
-            new TextEncoder().encode(JSON.stringify(page)).byteLength > 16384 ||
-            !history.accept(page, walk)
-          )
-            throw new Error('The replay history page changed while loading.');
-        }
-
-        if (history.cursor !== through) throw new Error('The selected replay window is incomplete.');
-
-        return history.events;
-      };
-
       try {
-        const [frame, events] = await Promise.all([loadFrame(), loadWindow()]);
+        const [frame, events] = await Promise.all([
+          loadFrame(),
+          readAuthorizedHistory(scope, { after: Math.max(0, through - 32), through }, shared, 32),
+        ]);
+
         shared.throwIfAborted();
 
         return { frame, events };
