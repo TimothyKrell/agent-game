@@ -143,9 +143,31 @@ The smoke classification correction from **f036787/8399265** is integrated at **
 
 Protocol fixture correction **0829c70**, integrated at **3182c23**, passes **15/15** parent cases through the maintained package/install bootstrap. Known API requests retain strict protocol-header assertions; unrelated routes cannot mutate fixture state, and asynchronous handler errors reach awaited teardown. Evidence and completed TCP controls are in `/tmp/opencode/TIM-27-lead-protocol-correction/`. Parent typecheck, lint and formatting pass.
 
-Both corrections have independent Standards0. Their final correctness reviews were interrupted by a usage limit and resumed after the owner confirmed the reset; acceptance awaits those completed reviews. The earlier historical packet remains unattributed.
+Both corrections have independent Standards0 and final Correctness0. Their reviews were interrupted by a usage limit and resumed after the owner confirmed the reset, preserving completed checks and evidence. The earlier historical packet remains unattributed.
 
 The final67-file CI inventory places both playable and smoke journeys on unit shard3. Its observed projection is18m24s including conservative hook and setup allowances, leaving6m36s within the scoped25-minute unit-job limit. This is a planning estimate; actual hosted CI remains the next delivery check.
+
+### Lifecycle locally accepted
+
+The resumed final Spec review reports **0 findings** for87dda38…8399265. Together with the prior generation review and final Standards0, this closes the local trusted lifecycle implementation gate.
+
+The reviewer replayed its original health-schema probe byte-for-byte through actual Node smoke/controller entrypoints, Alchemy, native D1 and both Workers. The same HTTP200 `{}` now produces a missing-key schema error, no invalidation marker or tombstone, unchanged healthy target responses and an unretired incarnation with its source publication intact. Finalization performs20 fresh GitHub reads. Four selected tests cover seven boundary cases; additional controls preserve identity for programmatic assertions, unexpected HTTP status, invalid UTF-8 and transport errors. Well-typed negative health/bootstrap observations still enforce exact-owner, source-before-target retirement.
+
+The review verified17 correction evidence hashes,41 preserved hashes, the29-file committed artifact, and unchanged1,724 current/1,702 prior exported source files. It audited the retained170-test report and prior164/121 identities without repeating that entire suite. Parent32-case integration verification remains separate. The original red probes and historical failure reports are preserved.
+
+Hosted source release, protected credential configuration, actual preview activation and owner/agent end-to-end acceptance remain downstream work; local lifecycle acceptance does not close TIM-27 as a whole.
+
+The verified lifecycle archive at `/home/timothykrell/Code/agent-games-archive/TIM-27-lifecycle-2026-09-15/` preserves **15,242 source/evidence and27,344 parent/reviewer entries**. All member hashes, unchanged source, bundle and independent source recovery pass. Snapshot SHA-256 `a9df45bb74f635e8ba6d7a5e6a99a4eea93dba0a0fc5cd5683c9f5a522410947`; parent/reviewer archive `7f8c8a824851b129ca826a264d7559e66ae1b74bdb6685c18cba460633005b2f`; bundle `84873d005972e76b28ed19ee834fd9a9a4fa7071fae483cb5b3297789f75f6de`.
+
+### Protocol fixture locally accepted
+
+Final correctness review of508bbef…0829c70 reports **0 findings**. The exact pinned15-case file passes with zero unhandled errors. Two supplemental teardown cases pass; a deliberate invalid-API control fails its owning test as expected, with zero unhandled errors. A request finishing during teardown retains its original parser cause alongside earlier header failures, and unrelated traffic leaves API state unchanged.
+
+The reviewer verified22 original captures,34 correction captures, all three historical logs and288 retained review files. Its15-case execution completed before the usage-limit interruption; supplemental probes ran once after resumption. No completed check was repeated or overwritten. Parent's independent maintained package/install run passed15/15 with the same production CLI bytes.
+
+Recovery archive: `/home/timothykrell/Code/agent-games-archive/TIM-27-protocol-2026-09-15/`, preserving17,508 source/evidence and3,129 parent/reviewer entries. All member hashes, unchanged source, bundle and independent source recovery verified. Snapshot SHA-256 `201ee129cd6fdfb1989a15bff2eb71aec62c2e21682880af57df16ef8eff2dc1`; parent/reviewer archive `9a6864f40f272a79ed7bfaeadd14f35b9ec0906534a3574bb09226193c980713`; bundle `70d8fa2d56f93509cb16d2eea15846f159a604b11493481fe88389059dab3ee6`.
+
+Both completed source worktrees and branches are retired after owner-session moves, clean expected-head checks and source-entry hash revalidation. Lifecycle removal initially left read-only quarantine directories after Git deregistration. All4,006 remaining captured files were reverified; the excluded Git administration pointer was preserved separately, and only50 directory modes were changed to remove the remnants. Metadata records both initial stops and final disposition. The approved TIM-6 design worktree remains available.
 
 ### Actual API and restart regression
 
