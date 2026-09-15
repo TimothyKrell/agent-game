@@ -1,0 +1,26 @@
+{
+  "errors": [],
+  "modules": [
+    "http://127.0.0.1:6191/.tim11/foundations.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/react.js?v=158291f2",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/react-dom_client.js?v=0c26eb37",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/lucide-react.js?v=0db08d14",
+    "http://127.0.0.1:6191/src/client/ui/button.tsx",
+    "http://127.0.0.1:6191/src/client/ui/collapsible.tsx",
+    "http://127.0.0.1:6191/src/client/ui/dialog.tsx",
+    "http://127.0.0.1:6191/src/client/ui/rule-help.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/react_jsx-dev-runtime.js?v=158291f2",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=2ced02b6",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/@base-ui_react_collapsible.js?v=814b8bc5",
+    "http://127.0.0.1:6191/src/client/ui/popover.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/@base-ui_react_dialog.js?v=57e3ae14",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/react-dom.js?v=158291f2",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/react_jsx-runtime.js?v=158291f2",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=2ced02b6",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/useOpenInteractionType-D2wbWC_s.js?v=2ced02b6",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-7/vite-cache/deps/@base-ui_react_popover.js?v=efc2b6a6"
+  ],
+  "navigations": [
+    "http://127.0.0.1:6191/.tim11/foundations.html"
+  ]
+}

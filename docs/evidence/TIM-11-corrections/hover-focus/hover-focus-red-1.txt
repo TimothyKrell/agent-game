@@ -1,0 +1,79 @@
+
+Running 8 tests using 1 worker
+
+  ✓  1 .tim11/cold-start/rule-help.spec.ts:4:3 › patient mouse activation pins rather than closes a preview (1.9s)
+  ✓  2 .tim11/cold-start/rule-help.spec.ts:4:3 › patient Enter activation pins rather than closes a preview (1.5s)
+  ✓  3 .tim11/cold-start/rule-help.spec.ts:4:3 › patient Space activation pins rather than closes a preview (1.3s)
+  ✓  4 .tim11/cold-start/rule-help.spec.ts:26:1 › removing the active trigger closes pinned help and returns focus to the surviving chapter control (413ms)
+  ✓  5 .tim11/cold-start/rule-help.spec.ts:48:1 › removing a hover trigger dismisses its preview without stealing focus (411ms)
+  ✓  6 .tim11/cold-start/rule-help.spec.ts:62:1 › unmounting an unrelated trigger preserves the pinned reference (409ms)
+  ✘  7 .tim11/cold-start/rule-help.spec.ts:78:3 › hover outside scroll preserves an independent input's focus (5.5s)
+  ✘  8 .tim11/cold-start/rule-help.spec.ts:78:3 › hover active trigger unmount preserves an independent input's focus (5.6s)
+
+
+  1) .tim11/cold-start/rule-help.spec.ts:78:3 › hover outside scroll preserves an independent input's focus
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('textbox', { name: 'Reading note' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('textbox', { name: 'Reading note' }) with timeout 5000ms
+      - waiting for getByRole('textbox', { name: 'Reading note' })
+        14 × locator resolved to <input id="reading-note"/>
+           - unexpected value "inactive"
+
+
+      102 |     }));
+      103 |     await test.info().attach('final-focus', { body: JSON.stringify({ dismissal, activeElement }), contentType: 'application/json' });
+    > 104 |     await expect(input).toBeFocused();
+          |                         ^
+      105 |     await page.keyboard.type(' still focused');
+      106 |     await expect(input).toHaveValue('Keep reading here still focused');
+      107 |     expect(errors).toEqual([]);
+        at /tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts:104:25
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .tim11/cold-start/runs/hover-focus-red-1/interactions/rule-help-hover-outside-sc-bffa9-n-independent-input-s-focus/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .tim11/cold-start/runs/hover-focus-red-1/interactions/rule-help-hover-outside-sc-bffa9-n-independent-input-s-focus/error-context.md
+
+  2) .tim11/cold-start/rule-help.spec.ts:78:3 › hover active trigger unmount preserves an independent input's focus
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('textbox', { name: 'Reading note' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('textbox', { name: 'Reading note' }) with timeout 5000ms
+      - waiting for getByRole('textbox', { name: 'Reading note' })
+        14 × locator resolved to <input id="reading-note"/>
+           - unexpected value "inactive"
+
+
+      102 |     }));
+      103 |     await test.info().attach('final-focus', { body: JSON.stringify({ dismissal, activeElement }), contentType: 'application/json' });
+    > 104 |     await expect(input).toBeFocused();
+          |                         ^
+      105 |     await page.keyboard.type(' still focused');
+      106 |     await expect(input).toHaveValue('Keep reading here still focused');
+      107 |     expect(errors).toEqual([]);
+        at /tmp/opencode/agent-game-TIM-11/.tim11/cold-start/rule-help.spec.ts:104:25
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .tim11/cold-start/runs/hover-focus-red-1/interactions/rule-help-hover-active-tri-53e23-n-independent-input-s-focus/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .tim11/cold-start/runs/hover-focus-red-1/interactions/rule-help-hover-active-tri-53e23-n-independent-input-s-focus/error-context.md
+
+  2 failed
+    .tim11/cold-start/rule-help.spec.ts:78:3 › hover outside scroll preserves an independent input's focus
+    .tim11/cold-start/rule-help.spec.ts:78:3 › hover active trigger unmount preserves an independent input's focus
+  6 passed (18.6s)

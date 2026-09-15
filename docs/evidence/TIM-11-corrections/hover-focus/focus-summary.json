@@ -1,0 +1,65 @@
+[
+  {
+    "run": "hover-focus-red-1",
+    "stats": {
+      "startTime": "2026-09-15T02:26:06.499Z",
+      "duration": 18571.722,
+      "expected": 6,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "focus": [
+      {
+        "dismissal": "outside scroll",
+        "activeElement": "<button type=\"button\" tabindex=\"0\" data-base-ui-click-trigger=\"\" id=\"_r_9_\" aria-haspopup=\"dialog\" aria-expanded=\"false\" class=\"replay-rule-trigger \">Treasurer rules</button>"
+      },
+      {
+        "dismissal": "active trigger unmount",
+        "activeElement": "<button type=\"button\" data-slot=\"button\" data-variant=\"secondary\" data-size=\"default\" class=\"replay-button \" tabindex=\"0\" aria-disabled=\"false\" aria-expanded=\"false\">Rules chapter</button>"
+      }
+    ]
+  },
+  {
+    "run": "hover-focus-red-2",
+    "stats": {
+      "startTime": "2026-09-15T02:26:52.543Z",
+      "duration": 12933.359,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "focus": [
+      {
+        "dismissal": "outside scroll",
+        "activeElement": "<button type=\"button\" tabindex=\"0\" data-base-ui-click-trigger=\"\" id=\"_r_9_\" aria-haspopup=\"dialog\" aria-expanded=\"false\" class=\"replay-rule-trigger \">Treasurer rules</button>"
+      },
+      {
+        "dismissal": "active trigger unmount",
+        "activeElement": "<button type=\"button\" data-slot=\"button\" data-variant=\"secondary\" data-size=\"default\" class=\"replay-button \" tabindex=\"0\" aria-disabled=\"false\" aria-expanded=\"false\">Rules chapter</button>"
+      }
+    ]
+  },
+  {
+    "run": "hover-focus-green-1",
+    "stats": {
+      "startTime": "2026-09-15T02:27:45.202Z",
+      "duration": 7858.043999999999,
+      "expected": 9,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "focus": [
+      {
+        "dismissal": "outside scroll",
+        "activeElement": "<input id=\"reading-note\">"
+      },
+      {
+        "dismissal": "active trigger unmount",
+        "activeElement": "<input id=\"reading-note\">"
+      }
+    ]
+  }
+]

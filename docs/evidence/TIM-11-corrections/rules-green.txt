@@ -1,0 +1,11 @@
+
+Running 6 tests using 1 worker
+
+  ✓  1 .tim11/cold-start/rule-help.spec.ts:4:3 › patient mouse activation pins rather than closes a preview (1.7s)
+  ✓  2 .tim11/cold-start/rule-help.spec.ts:4:3 › patient Enter activation pins rather than closes a preview (1.3s)
+  ✓  3 .tim11/cold-start/rule-help.spec.ts:4:3 › patient Space activation pins rather than closes a preview (1.3s)
+  ✓  4 .tim11/cold-start/rule-help.spec.ts:26:1 › removing the active trigger closes pinned help and returns focus to the surviving chapter control (446ms)
+  ✓  5 .tim11/cold-start/rule-help.spec.ts:48:1 › removing a hover trigger dismisses its preview without stealing focus (400ms)
+  ✓  6 .tim11/cold-start/rule-help.spec.ts:62:1 › unmounting an unrelated trigger preserves the pinned reference (396ms)
+
+  6 passed (6.5s)
