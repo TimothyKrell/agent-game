@@ -1,6 +1,25 @@
-# Secret Overlord UI delivery plan
+# Match UI delivery plan
 
-## Scope
+## Latest scope decision
+
+The owner has reopened all Succession UI work. Apply the improvements to both
+live play and replay now. Whether to pause Succession or introduce a coding
+finale is an open product decision, not a prerequisite for UI delivery.
+This supersedes the original deferral notes below. Do not disable Succession or
+change matchmaking defaults based on the earlier pause assumption. Remove the
+match-facing selector only while preserving access to both games elsewhere.
+
+Two additional GPT-5.6 Sol medium lanes implement:
+
+- **Succession panels — TIM-33, TIM-39, TIM-40:** prototype-aligned Act I result
+  and beneficiary bonuses, Act II opening, integrated elimination/proof boxes.
+- **Succession reader — TIM-32:** sticky act headers, collapse anchoring,
+  per-act start/end controls, live following and manual reading preservation.
+
+Shared visual work applies to both games. Panel/row wiring is integrated after
+the visual lane to avoid competing edits; reader work owns the chapter shell.
+
+## Original scope (superseded where noted above)
 
 Ship the reusable UI improvements against Secret Overlord, now the main game.
 Succession-specific Act I rewards, Act II opening, influence/card-loss and proof
