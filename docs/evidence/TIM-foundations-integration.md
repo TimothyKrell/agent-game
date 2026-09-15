@@ -1,6 +1,6 @@
 # Dossier foundations — parent integration checks
 
-**Current review status:** TIM-28 is accepted after correction `a9fe024` and independent re-review. TIM-11 and TIM-18 corrections remain in progress. The earlier combined-checkpoint findings below are retained as historical evidence.
+**Current review status:** TIM-28 is accepted after correction `a9fe024`; TIM-11 is accepted through `ee2220f`. Both have Standards 0 / Spec 0 outstanding. TIM-18's final-turn causal context correction remains in progress with TIM-23. The earlier combined-checkpoint findings below are retained as historical evidence.
 
 ## Combined checkpoint
 
@@ -70,3 +70,19 @@ The recovery archive is `/home/timothykrell/Code/agent-games-archive/TIM-28-2026
 - Source was unchanged across snapshotting. Bundle verification and an independent clone recovered the exact corrected owner-control source. Only worktree administration and the dependency symlink are excluded, with their disposition recorded in `manifest.json`.
 
 The reviewer archive includes faithfully reconstructed original probes and their recorded results, pinned source snapshots and dependency provenance. Original probe bundles were not retained; that limitation is recorded explicitly. No hosted R2 provisioning or owner/agent acceptance is inferred from these local results; integrated hosted review remains TIM-24.
+
+## TIM-11 acceptance and recovery archive
+
+Corrections `d1b2a9b` and `ee2220f` are integrated through `b7c59cc`. The first stabilizes the hidden development entry's initial dependency graph and closes delayed activation and orphaned-help findings. The final correction restricts deliberate return focus to pinned references; hover-only dismissal preserves focus on an independent surviving input.
+
+Parent independently reproduced the original cold error with the index-only negative control, then passed the corrected fresh-cache entry, all **five original primitive journeys**, **six initial lifecycle corrections**, **138 guide checks** and production exclusion. After the hover-focus finding, all **nine final lifecycle checks** passed, alongside typecheck/lint/build. The Spec reviewer independently repeated six focus cases with zero page errors and confirmed closure of all three interaction findings. Final review: **Standards 0 / Spec 0 outstanding**.
+
+The explicit consumer contract remains: removable pinned rule triggers receive the surviving chapter control via `fallbackFocus`. The provider owns dismissal/restoration. Hover previews do not move external focus. Optimizer entries do not become production build inputs.
+
+Archive: `/home/timothykrell/Code/agent-games-archive/TIM-11-2026-09-15/`. **2,118 source/evidence entries and 556 parent/reviewer entries** were hash-verified, with unchanged-source inventory and independent bundle recovery. The final reviewer bundles, red/green focus observations, negative/positive dependency captures, original guide/cascade evidence and all source fixtures are preserved.
+
+- `worktree-evidence.tar.gz`: 168,017,591 bytes; SHA-256 `4f9fda4e1cda66ab76fbe5207099a55a277bd2f91d69b8dc75760266b671902d`.
+- `lead-review-evidence.tar.gz`: SHA-256 `81c1965dba09ea42fef3ded7a4ea503ea3e307128991e78f2bb4f49532820cde`.
+- `repository.bundle`: SHA-256 `8c9f42b488136116d70fb33cd3a30225193c627f5ef21104cde84eb6722d19d0`.
+
+The development guide remains in the application source and the approved TIM-6 worktree. Retiring the completed TIM-11 implementation worktree does not remove that reference.
