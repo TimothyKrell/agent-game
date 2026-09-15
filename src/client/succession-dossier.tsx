@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { StoryModel, StoryRow } from './succession-story-types';
@@ -7,6 +7,7 @@ import { RuleHelpProvider } from './ui/rule-help';
 import { DossierPictureProvider, dossierName, dossierValue } from './dossier-identity';
 import type { DossierPictures } from './dossier-identity';
 import { DossierRow } from './dossier-row';
+import { DossierRuleFocusProvider } from './dossier-rules';
 import { DossierOutcome, dossierOutcomeTitle } from './dossier-summary';
 import type { DossierStatus } from './dossier-summary';
 
@@ -40,6 +41,9 @@ function DossierContent({
   // Explicit choices persist as active chapters and terminal summaries change.
   const [choices, setChoices] = useState<Partial<Record<1 | 2, boolean>>>({});
   const [archive, setArchive] = useState(false);
+  const act1Heading = useRef<HTMLButtonElement>(null);
+  const act2Heading = useRef<HTMLButtonElement>(null);
+  const headings = { 1: act1Heading, 2: act2Heading };
   const showArchive = archiveAvailable && archive;
   const entrants = new Map(model.end.map((seat) => [seat.seat, seat.entrant]));
   const faction = dossierValue(model.chapters.act1);
@@ -105,30 +109,32 @@ function DossierContent({
             open={open}
             onOpenChange={(next) => setChoices((current) => ({ ...current, [chapter]: next }))}
           >
-            <section className="dossier-chapter" aria-label={`Act ${chapter === 1 ? 'I' : 'II'}`}>
-              <h2>
-                <CollapsibleTrigger className="dossier-chapter-trigger">
-                  <span className="dossier-act-numeral">{chapter === 1 ? 'I' : 'II'}</span>
-                  <span className="dossier-chapter-copy">
-                    <small>ACT {chapter === 1 ? 'I · SECRET OVERLORD' : 'II · SUCCESSION'}</small>
-                    <strong>{title}</strong>
-                    <span>{summary}</span>
-                  </span>
-                  <ChevronDown aria-hidden="true" />
-                </CollapsibleTrigger>
-              </h2>
-              <CollapsibleContent>
-                {renderChapter ? (
-                  renderChapter({ act: chapter, archive: showArchive, renderRow })
-                ) : (
-                  <ol className="dossier-record">
-                    {model.rows.flatMap((row) =>
-                      row.position.act === chapter ? [<li key={row.key}>{renderRow(row)}</li>] : [],
-                    )}
-                  </ol>
-                )}
-              </CollapsibleContent>
-            </section>
+            <DossierRuleFocusProvider fallbackFocus={headings[chapter]}>
+              <section className="dossier-chapter" aria-label={`Act ${chapter === 1 ? 'I' : 'II'}`}>
+                <h2>
+                  <CollapsibleTrigger className="dossier-chapter-trigger" ref={headings[chapter]}>
+                    <span className="dossier-act-numeral">{chapter === 1 ? 'I' : 'II'}</span>
+                    <span className="dossier-chapter-copy">
+                      <small>ACT {chapter === 1 ? 'I · SECRET OVERLORD' : 'II · SUCCESSION'}</small>
+                      <strong>{title}</strong>
+                      <span>{summary}</span>
+                    </span>
+                    <ChevronDown aria-hidden="true" />
+                  </CollapsibleTrigger>
+                </h2>
+                <CollapsibleContent>
+                  {renderChapter ? (
+                    renderChapter({ act: chapter, archive: showArchive, renderRow })
+                  ) : (
+                    <ol className="dossier-record">
+                      {model.rows.flatMap((row) =>
+                        row.position.act === chapter ? [<li key={row.key}>{renderRow(row)}</li>] : [],
+                      )}
+                    </ol>
+                  )}
+                </CollapsibleContent>
+              </section>
+            </DossierRuleFocusProvider>
           </Collapsible>
         );
       })}

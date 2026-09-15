@@ -1,4 +1,12 @@
 /* Approved C / Dossier. Scope includes production reading surfaces and shared portals. */
+.replay-ui {
+  --dossier-term-background: #15312e;
+  --dossier-term-border: #47716b;
+  --dossier-term-foreground: #c6f1e5;
+}
+.replay-ui.dossier {
+  overflow-wrap: anywhere;
+}
 .replay-ui .dossier-term {
   display: inline-flex;
   vertical-align: baseline;
@@ -7,10 +15,10 @@
   min-height: 27px;
   padding: 2px 6px 2px 3px;
   margin: 0 1px;
-  border: 1px solid var(--replay-help-border);
+  border: 1px solid var(--dossier-term-border);
   border-radius: 5px;
-  background: var(--replay-help-background);
-  color: var(--replay-help-foreground);
+  background: var(--dossier-term-background);
+  color: var(--dossier-term-foreground);
   font: inherit;
   font-size: 0.87em;
   line-height: 1.35;
@@ -435,6 +443,13 @@
 .replay-ui .dossier-card-lost {
   border-color: var(--replay-departure-border);
 }
+.replay-ui .dossier-card-lost,
+.replay-ui .dossier-card-revealed {
+  width: fit-content;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
 .replay-ui .dossier-card-lost > span {
   color: var(--replay-departure);
 }
@@ -452,6 +467,7 @@
   color: var(--replay-private);
   font-size: 11px;
 }
+.replay-ui.dossier details summary,
 .replay-ui .dossier details summary {
   cursor: pointer;
   padding-block: 10px;
@@ -477,9 +493,20 @@
   align-items: center;
 }
 .replay-ui .dossier-award {
+  position: relative;
+  isolation: isolate;
   padding: 24px;
+  border: 1px solid transparent;
+}
+.replay-ui .dossier-award::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   border: 1px solid var(--replay-bonus-border);
   background: var(--replay-bonus-fill);
+  clip-path: var(--replay-step);
 }
 .replay-ui .dossier-award > header {
   display: flex;

@@ -43,7 +43,11 @@ export function DossierPortrait({ entrant, name }: { entrant?: StoryEntrant; nam
 
   return (
     <Dialog>
-      <DialogTrigger className="dossier-portrait" aria-label={`View ${name} profile picture`}>
+      <DialogTrigger
+        className="dossier-portrait"
+        data-entrant-id={entrant?.agentId}
+        aria-label={`View ${name} profile picture`}
+      >
         {image}
       </DialogTrigger>
       <DialogContent className="replay-portrait-dialog" closeLabel="Close profile picture">

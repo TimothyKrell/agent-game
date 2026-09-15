@@ -56,7 +56,7 @@ export function dossierFactText(row: StoryRow, entrants: DossierEntrants) {
     case 'policy':
       return `${fact.chaos ? 'Chaos enacts' : 'Enacts'} ${storyRules[fact.policy][0]}.`;
     case 'tracker':
-      return `Election tracker advances to ${fact.tracker}.`;
+      return `Election tracker: ${fact.tracker}.`;
     case 'execution':
       return `${who} executes ${name(fact.target)}.`;
     case 'investigation':
@@ -105,13 +105,13 @@ export function dossierFactText(row: StoryRow, entrants: DossierEntrants) {
         case 'discussion':
           return 'Discuss the next turn.';
         case 'action':
-          return 'The active agent chooses an action.';
+          return `${actor == null ? 'The active agent' : who} chooses an action.`;
         case 'challenge':
           return 'Challenges sealed · choices reveal together at resolution.';
         case 'block':
           return 'The target chooses whether to block.';
         case 'loss':
-          return 'An agent chooses which influence card to lose.';
+          return `${actor == null ? 'An agent' : who} chooses which influence card to lose.`;
         case 'exchange':
           return 'Private Exchange choice · public chat pauses.';
         case 'finished':

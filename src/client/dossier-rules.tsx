@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { createContext, useContext } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import {
   ArrowRight,
   Ban,
@@ -29,6 +30,19 @@ import { InfluenceBack } from './deco';
 import { storyRules, storyText } from './succession-story-rules';
 import type { StoryRule } from './succession-story-rules';
 import { RuleHelpTrigger } from './ui/rule-help';
+
+const ChapterFocus = createContext<RefObject<HTMLElement | null> | undefined>(undefined);
+
+/** The shared rule-help owner restores this control when its active row is evicted or collapsed. */
+export function DossierRuleFocusProvider({
+  fallbackFocus,
+  children,
+}: {
+  fallbackFocus: RefObject<HTMLElement | null>;
+  children: ReactNode;
+}) {
+  return <ChapterFocus.Provider value={fallbackFocus}>{children}</ChapterFocus.Provider>;
+}
 
 function CapabilityMark({ path }: { path: string }) {
   return (
@@ -107,11 +121,14 @@ export function DossierRule({
   before?: number | null;
 }) {
   const [title, description] = storyRules[rule];
+  // Additive RuleHelpTrigger API from TIM-11 correction d1b2a9b. The provider owns all lifecycle behavior.
+  const focusProps = { fallbackFocus: useContext(ChapterFocus) };
   const resource = value !== undefined;
   const changed = before !== undefined && before !== value;
 
   return (
     <RuleHelpTrigger
+      {...focusProps}
       help={{ title, summary: title, description, icon: <DossierRuleIcon rule={rule} /> }}
       className={`dossier-term ${rule === 'coins' ? 'dossier-coins' : ''} ${resource ? 'dossier-resource' : ''}`}
       data-rule-term={title}
@@ -120,7 +137,7 @@ export function DossierRule({
         resource ? `${changed ? `${before ?? 'Unknown'} to ` : ''}${value ?? 'Unknown'} ${title}` : undefined
       }
     >
-      {rule === 'influence' && resource ? (
+      {rule === 'influence' && resource && value !== null ? (
         <span className="dossier-influence-backs" aria-hidden="true">
           {[0, 1].map((index) => (
             <span key={index} className={value !== null && index >= value! ? 'is-lost' : ''}>

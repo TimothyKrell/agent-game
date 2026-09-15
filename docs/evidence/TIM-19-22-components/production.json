@@ -1,0 +1,10 @@
+{
+  "scannedAssets": 3,
+  "entryBundleBytes": 250891,
+  "productionComponentImportGraphClean": true,
+  "directGuideExcluded": true,
+  "directFixtureExcluded": true,
+  "noPrototypeOrAgentationRequests": true,
+  "integratedProductionRoute": false,
+  "integrationBoundary": "Parent wires TIM-23 bounded historical reader to the Dossier chapter render slot."
+}

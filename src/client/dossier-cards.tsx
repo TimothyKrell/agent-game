@@ -32,7 +32,7 @@ export function DossierCard({
       {capability && state !== 'hidden' ? (
         <>
           <DossierRule rule={capability} />
-          <small>{storyRules[capability][1]}</small>
+          {state === 'known' && <small>{storyRules[capability][1]}</small>}
         </>
       ) : (
         <>
@@ -91,6 +91,7 @@ export function DossierSeatCards({ seat, archive }: { seat: StorySeat; archive: 
   const owner = dossierName(seat.entrant, seat.seat);
   const role = dossierValue(seat.role);
   const draw = dossierValue(seat.exchangeDraw);
+  const revealed = dossierValue(seat.revealed);
 
   return (
     <>
@@ -102,6 +103,16 @@ export function DossierSeatCards({ seat, archive }: { seat: StorySeat; archive: 
         </p>
       )}
       <Hand hand={seat.hand} owner={owner} archive={archive} influence={dossierValue(seat.influence)} />
+      {revealed && revealed.length > 0 && (
+        <section className="dossier-public-losses" aria-label={`${owner} publicly lost cards`}>
+          <small>{owner} · Publicly lost cards</small>
+          <div className="dossier-cards">
+            {revealed.map((capability, index) => (
+              <DossierCard key={index} capability={capability} state="lost" />
+            ))}
+          </div>
+        </section>
+      )}
       {draw && dossierVisible(draw.visibility, archive) && draw.cards.length > 0 && (
         <Hand hand={seat.exchangeDraw} owner={owner} archive={archive} label="Exchange draw" />
       )}

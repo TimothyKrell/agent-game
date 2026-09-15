@@ -17,6 +17,12 @@ export const dossierActions = {
   coup: 'coup',
 } as const satisfies Record<string, StoryRule>;
 
+const powerRules = {
+  investigate: 'investigation',
+  execute: 'execution',
+  'special-election': 'special-election',
+} as const;
+
 export function dossierRowId(row: StoryRow) {
   return `dossier-event-${encodeURIComponent(row.source.matchId)}-${encodeURIComponent(row.source.eventKey)}`;
 }
@@ -68,7 +74,7 @@ function DossierActionContext({ row, entrants }: { row: StoryRow; entrants: Doss
       data-action-source={declaration?.kind === 'event' ? declaration.eventKey : undefined}
     >
       <span>
-        {name} · <DossierRule rule={dossierActions[action.action]} />
+        Action by {name} · <DossierRule rule={dossierActions[action.action]} />
         {action.target !== null
           ? ` → ${dossierName(rowEntrant(row, entrants, action.target), action.target)}`
           : ''}
@@ -85,6 +91,7 @@ function FactEvidence({ row, entrants }: { row: StoryRow; entrants: DossierEntra
   const fact = row.fact;
   const actor = dossierValue(row.actor);
   const lossReason = dossierValue(row.lossReason);
+  const power = dossierValue(row.executivePower);
   const name = (seat: number) => dossierName(rowEntrant(row, entrants, seat), seat);
 
   switch (fact.kind) {
@@ -188,7 +195,11 @@ function FactEvidence({ row, entrants }: { row: StoryRow; entrants: DossierEntra
           <DossierRule rule="safeguard" value={fact.safeguards} />
           <DossierRule rule="override" value={fact.overrides} />
           {fact.chaos && <DossierRule rule="chaos" />}
-          {dossierValue(row.executivePower) && <DossierText text={dossierValue(row.executivePower)!} />}
+          {power && (
+            <span>
+              Coordinator power: <DossierRule rule={powerRules[power]} />
+            </span>
+          )}
         </div>
       );
     case 'tracker':
@@ -323,6 +334,8 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
       : undefined;
 
   const remaining = dossierValue(row.remaining);
+  const action = dossierValue(row.action);
+  const actionSource = action ? dossierValue(action.declaration) : undefined;
 
   const victim: StorySeat | undefined =
     portraitSeat == null ? undefined : row.affected.find((change) => change.seat === portraitSeat)?.after;
@@ -335,6 +348,7 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
       data-source-id={row.source.cursor}
       data-source-act={row.position.act}
       data-event-key={row.source.eventKey}
+      data-action-key={actionSource?.kind === 'event' ? actionSource.eventKey : undefined}
     >
       <div className="dossier-coordinate">
         <span>
@@ -356,9 +370,12 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
         )}
         <div className="dossier-copy">
           {speech ? (
-            <blockquote>
-              <DossierText text={row.text} />
-            </blockquote>
+            <>
+              {actor == null && <small>Speaker unavailable</small>}
+              <blockquote>
+                <DossierText text={row.text} />
+              </blockquote>
+            </>
           ) : (
             <>
               {departure && (
@@ -374,26 +391,18 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
               <p className="dossier-source-text">
                 <DossierText text={dossierFactText(row, entrants)} />
               </p>
-              {departure && (
+              {fact.kind === 'execution' && (
                 <p>
-                  {fact.kind === 'execution'
-                    ? `Coordinator: ${actor == null ? 'unavailable' : dossierName(rowEntrant(row, entrants, actor), actor)}`
-                    : dossierValue(row.action)
-                      ? `Action by ${dossierName(rowEntrant(row, entrants, dossierValue(row.action)!.actor), dossierValue(row.action)!.actor)}`
-                      : 'Action actor unavailable'}
+                  Coordinator:{' '}
+                  {actor == null ? 'unavailable' : dossierName(rowEntrant(row, entrants, actor), actor)}
                 </p>
               )}
+              {departure && fact.kind !== 'execution' && !action && <p>Action actor unavailable</p>}
               <DossierActionContext row={row} entrants={entrants} />
               {fact.kind === 'turn-ended' && dossierValue(row.resolution) && (
                 <p>
-                  <DossierRule
-                    rule={
-                      dossierValue(row.action)
-                        ? dossierActions[dossierValue(row.action)!.action]
-                        : 'influence'
-                    }
-                  />{' '}
-                  · {dossierValue(row.resolution)}
+                  {action && <DossierRule rule={dossierActions[action.action]} />} ·{' '}
+                  {dossierValue(row.resolution)}
                 </p>
               )}
               {fact.kind === 'act-ended' && (
