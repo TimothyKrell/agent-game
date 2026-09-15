@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdir, readFile, writeFile, rename, chmod, realpath } from 'node:fs/promises';
+import { mkdir, readFile, realpath } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { randomBytes, createHash, randomUUID } from 'node:crypto';
@@ -7,6 +7,8 @@ import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { lockLedger } from './ledger.mjs';
 import { pictureCommand, pictureHelp, pictureOnboarding } from './picture.mjs';
+import { activeArtifacts, pinParticipation, verifyPins } from './preview-artifacts.mjs';
+import { writeJsonDurably } from './durable-json.mjs';
 import {
   acceptCurrent,
   consumePage,
@@ -50,7 +52,7 @@ function boundedTime(ms) {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, boundedTime(ms)));
 
 export class GameClient {
-  constructor(server, token = null) {
+  constructor(server, token = null, options = {}) {
     const url = new URL(server);
 
     if (
@@ -62,6 +64,11 @@ export class GameClient {
     if (url.username || url.password) throw new Error('Server URLs must not contain credentials.');
     this.server = url.origin;
     this.token = token;
+    this.eventAuthorization = options.eventAuthorization ?? 'entitled';
+    this.artifacts = options.artifacts;
+
+    if (!['entitled', 'public-wakeup'].includes(this.eventAuthorization))
+      throw new Error('Unsupported event authorization capability.');
   }
   async request(path, body, method, authenticated = true) {
     for (let attempt = 0; ; attempt++) {
@@ -99,7 +106,11 @@ export class GameClient {
     }
   }
   async observation(matchId, after = 0) {
-    return this.request(`/api/matches/${matchId}?after=${after}`);
+    const view = await this.request(`/api/matches/${matchId}?after=${after}`);
+
+    if (this.artifacts) validateCurrent(view, this.artifacts);
+
+    return view;
   }
   async action(matchId, request) {
     return this.request(`/api/matches/${matchId}/actions`, request);
@@ -113,7 +124,11 @@ export class GameClient {
     return validatePage(await this.request(`/api/matches/${matchId}/history?${query}`), parameters);
   }
   async connect(matchId, after = 0, protocolVersion = '1') {
-    const ticket = this.token ? (await this.request(`/api/matches/${matchId}/ticket`, {})).ticket : null;
+    const ticket =
+      this.token && this.eventAuthorization !== 'public-wakeup'
+        ? (await this.request(`/api/matches/${matchId}/ticket`, {})).ticket
+        : null;
+
     const url = new URL(`/api/matches/${matchId}/events`, this.server);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.searchParams.set('after', String(after));
@@ -141,6 +156,7 @@ export class GameClient {
       let finished = false;
       let retries = 0;
       let retryTimer;
+      let readingWake = false;
 
       const finish = (value, error) => {
         if (finished) return;
@@ -180,10 +196,25 @@ export class GameClient {
             return;
           }
 
-          socket.onmessage = (event) => {
+          socket.onmessage = async (event) => {
             if (event.data === 'pong') return;
 
             try {
+              if (this.eventAuthorization === 'public-wakeup') {
+                if (readingWake || finished) return;
+                readingWake = true;
+
+                try {
+                  const entitled = await this.observation(matchId, after);
+
+                  if (changed(entitled) || entitled.decision || terminal(entitled)) finish(entitled);
+                } finally {
+                  readingWake = false;
+                }
+
+                return;
+              }
+
               const packet = JSON.parse(event.data);
               const view = packet.observation;
 
@@ -242,6 +273,7 @@ function options(argv) {
       'request-id': { type: 'string' },
       'picture-source-server': { type: 'string' },
       'picture-source-agent': { type: 'string' },
+      renew: { type: 'string' },
     },
   });
 
@@ -250,10 +282,7 @@ function options(argv) {
 
 export async function save(path, data) {
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-  const temp = `${path}.${process.pid}.${randomUUID()}.tmp`;
-  await writeFile(temp, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
-  await rename(temp, path);
-  await chmod(path, 0o600);
+  await writeJsonDurably(path, data);
 }
 
 export async function updateCurrent(path, update) {
@@ -358,6 +387,9 @@ export async function main(argv = process.argv.slice(2)) {
       'Setup: setup --server URL --harness opencode|claude [--config PATH]\nStart or resume: start --config PATH\nSaved installations: connections --harness opencode|claude\n',
     );
     console.log(
+      'Registered previews: previews --config SOURCE_PATH\nSelect a preview: preview-select --server TARGET_URL --config SOURCE_PATH [--game succession] [--renew NEW_AUTHORIZATION_LABEL]\nSelection preserves source credentials/participation; use its returned target config and pinned executable/rules.\n',
+    );
+    console.log(
       'Connect without joining: connect --config PATH\nOptional picture: picture-help | picture-status | picture-skip\n  picture-upload --file PATH [--request-id ID]\n  picture-remove [--request-id ID]\n  picture-retry [--request-id ID] (uses saved original bytes/revision)\nAppend --config PATH to each command. PNG/JPEG only, at most 2 MiB and 2048×2048.\nSetup offer lineage: --picture-source-server URL --picture-source-agent ID (choice only; never transfers images or credentials).\n',
     );
     console.log(
@@ -379,6 +411,13 @@ export async function main(argv = process.argv.slice(2)) {
   if (command === 'setup' || command === 'connections') {
     const { setup, connections } = await import('./setup.mjs');
     print(command === 'setup' ? await setup(flags) : await connections(flags.harness));
+
+    return;
+  }
+
+  if (command === 'preview-select' || command === 'previews') {
+    const { previewSelect } = await import('./preview-select.mjs');
+    print(await previewSelect(flags, command === 'previews'));
 
     return;
   }
@@ -408,7 +447,12 @@ export async function main(argv = process.argv.slice(2)) {
     throw new Error(
       'Arena URL missing. Use setup --server URL --harness opencode|claude, or pair --server URL. Ask the owner for the arena URL if it was not supplied.',
     );
-  const client = new GameClient(String(server), state.token);
+  await verifyPins(activeArtifacts(state));
+
+  const client = new GameClient(String(server), state.token, {
+    eventAuthorization: state.preview ? 'public-wakeup' : state.eventAuthorization,
+    artifacts: activeArtifacts(state),
+  });
 
   if (
     ['picture-status', 'picture-skip', 'picture-upload', 'picture-remove', 'picture-retry'].includes(command)
@@ -635,10 +679,12 @@ export async function main(argv = process.argv.slice(2)) {
     if (current.status === 'idle') {
       state.joinRequest ??= randomUUID();
       state.pendingJoin ??= { gameId: state.selectedGame, requestId: state.joinRequest };
+      pinParticipation(state, state.pendingJoin.requestId, state.selectedGame, path);
+      client.artifacts = activeArtifacts(state);
 
       if (state.pendingJoin.gameId !== state.selectedGame)
         throw new Error('A pending join belongs to another game. Resume or cancel it first.');
-      await persist(['joinRequest', 'pendingJoin']);
+      await persist(['joinRequest', 'pendingJoin', 'previewParticipation']);
     }
 
     if (current.status !== 'idle' && flags.game && gameId(current.gameId) !== flags.game)
@@ -653,7 +699,7 @@ export async function main(argv = process.argv.slice(2)) {
       result = await client.request('/api/queue', request);
     }
 
-    if (result.status !== 'idle') validateIdentity(result);
+    if (result.status !== 'idle') validateIdentity(result, activeArtifacts(state));
 
     if (result.status === 'queued') {
       delete state.matchId;
@@ -674,11 +720,13 @@ export async function main(argv = process.argv.slice(2)) {
 
       state.matchId = result.matchId;
       state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };
+
+      if (state.previewParticipation) state.previewParticipation.matchId = result.matchId;
       delete state.joinRequest;
       delete state.pendingJoin;
     }
 
-    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin']);
+    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin', 'previewParticipation']);
 
     const assignment = {
       ...result,
@@ -688,6 +736,8 @@ export async function main(argv = process.argv.slice(2)) {
           ? 'Run observe now, then keep the foreground act / say / wait loop running until finished or interrupted.'
           : 'Keep calling status --wait 5 in the foreground until matched. House agents fill open seats after the queue timer, subject to arena capacity.',
     };
+
+    if (state.preview) assignment.artifacts = activeArtifacts(state);
 
     if (result.matchId) assignment.watchUrl = `${client.server}/matches/${result.matchId}`;
     print(assignment);
@@ -706,7 +756,7 @@ export async function main(argv = process.argv.slice(2)) {
 
     const result = await client.request('/api/queue', undefined, command === 'leave' ? 'DELETE' : 'GET');
 
-    if (result.status !== 'idle') validateIdentity(result);
+    if (result.status !== 'idle') validateIdentity(result, activeArtifacts(state));
 
     if (result.matchId) {
       if (state.matchId !== result.matchId) {
@@ -718,6 +768,8 @@ export async function main(argv = process.argv.slice(2)) {
 
       state.matchId = result.matchId;
       state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };
+
+      if (state.previewParticipation) state.previewParticipation.matchId = result.matchId;
       delete state.joinRequest;
       delete state.pendingJoin;
     }
@@ -727,7 +779,7 @@ export async function main(argv = process.argv.slice(2)) {
       delete state.pendingJoin;
     }
 
-    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin']);
+    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin', 'previewParticipation']);
     print(result);
 
     return;
@@ -758,7 +810,7 @@ export async function main(argv = process.argv.slice(2)) {
   let currentParticipation = participationIdentity(state);
 
   const remember = async (view) => {
-    validateCurrent(view);
+    validateCurrent(view, activeArtifacts(state));
 
     return change((latest) => {
       if (

@@ -607,7 +607,15 @@ it('preserves selected game through first pairing and start recursion, then copi
   let queued = false;
 
   const server = createServer(async (request, response) => {
-    expect(request.headers['x-agent-game-protocols']).toBe('1,2');
+    expect(
+      request.headers['x-agent-game-protocols'],
+      JSON.stringify({
+        method: request.method,
+        path: request.url,
+        headerNames: Object.keys(request.headers),
+        userAgent: request.headers['user-agent'],
+      }),
+    ).toBe('1,2');
     let body = '';
 
     for await (const chunk of request) body += chunk;

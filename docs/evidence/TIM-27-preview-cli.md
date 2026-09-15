@@ -1,0 +1,90 @@
+# TIM-27 — source-trusted CLI preview selection
+
+Implementation lane: `feat/tim-27-preview-cli`, based on `546bb8b`, with the parent-owned source artifact registry `dc60060` integrated as `7614bdb`. The original TIM-30 worktree is quiescent. Package versions, retained releases, deployed bytes, registry publication and infrastructure remain parent-owned.
+
+## Connection journey
+
+An existing OpenCode or Claude installation uses its already trusted source CLI:
+
+```sh
+node /absolute/source/cli/agent-game.mjs connections --harness opencode
+node /absolute/source/cli/agent-game.mjs previews --config /absolute/source-connection.json
+node /absolute/source/cli/agent-game.mjs preview-select \
+  --config /absolute/source-connection.json --server https://registered-pr.example \
+  --game succession
+```
+
+`--server` accepts the registered target origin or a URL on that origin. Selection returns `configPath`, `cliPath`, `connectCommand`, `startCommand`, current queue state, source/target identity and immutable artifact paths. Use those returned commands and the target config thereafter. `connect` retains TIM-30's idle-only optional picture branch; `start` joins/resumes immediately. Selection itself never joins.
+
+Both harnesses keep their existing personal skill. Selecting another preview creates a separate origin/incarnation/source-agent/harness connection, not another competitor. Returning to production uses its existing listed command. Source config bytes and supervisor ledgers are untouched by selection. Source validation uses authenticated `GET /api/queue`, including `X-Agent-Game-Protocols: 1,2`; the expiring pairing-poll resource is not a long-lived installation validator.
+
+Each preview authorization owns a dedicated directory containing `connection.json`, its supervisor ledger and `run-*` directories. This preserves the existing supervisor's orphan-run accounting guard without letting another preview's sibling run mark a fresh connection's accounting unresolved.
+
+The compatibility dispatcher must first be obtained from the known source. An installed 0.2 CLI can take one source-owned compatibility upgrade; previews do not reinstall a personal skill. This lane tests an actually packaged/installed **0.3.0** development archive. It does not alter or attest the immutable deployed 0.2.0/0.1.1 archives or select the next coordinated release version.
+
+## Source artifact contract
+
+The consumer uses the actual [parent-owned registry](TIM-27-artifact-registry.md):
+
+1. Public `GET SOURCE /api/preview/arenas` selects an active exact origin/incarnation/built commit.
+2. `GET SOURCE /api/preview/artifacts?origin=TARGET&commit=COMMIT` supplies source-attested byte identities. Every returned tuple field must match the selected registry entry.
+3. Download the executable only from `SOURCE/downloads/agent-game-cli-VERSION.tgz`. Its version and protocols `[1,2]` must match the manifest. The npm archive must contain a dependency-free `agent-game-cli` package and regular CLI modules; installation scripts/dependencies are rejected.
+4. Download branch artifacts only from `TARGET/downloads/previews/COMMIT/SHA256.tgz`. Descriptors name the exact game rules/protocol and shared skill paths in the source schema. The target supplies data, never executable authority.
+
+The source GET is the trusted provenance boundary; the target cannot self-attest a CLI. Executable and branch archives are independently pinned. Requests refuse redirects and bound response size/time. Archives are limited to 2 MiB compressed and 16 MiB expanded; text entries/descriptors to 128 KiB. The tar parser checks regular entry type, checksum, size, block/trailer completeness, duplicate names and an explicit `package/...` allowlist. Links, traversal, executable text and unsupported entries fail before handoff or execution. Byte counts and SHA-256 must match at archive and selected-text levels.
+
+The deployer may publish the **same full CLI archive** as branch data for both games. Its regular `package/cli/*.mjs` and `package/package.json` entries are structurally checked then discarded. Only public Markdown and the branch skill are extracted from a target archive. CLI execution always comes from the independent source archive.
+
+Caches use `~/.agent-game/cli/<origin-hash>/<commit-and-archive-digest>/`. Temporary directories are atomically renamed; verified existing entries are reused. Cache integrity is rechecked before handoff, privileged CLI commands and supervisor child creation. Active participation uses its saved files without asking a redeployed target for mutable rules. A missing/stale manifest reports `503 preview-artifacts-pending` before a handoff; it never falls back to a target-selected executable.
+
+## Proof-bound authorization and recovery
+
+The selector writes a private 0600 target config, using fsync/rename/directory-fsync, before source handoff or target exchange I/O. It contains:
+
+- Source config path, source grant ID, source origin/agent ID and hashed source connection identity. No copied source bearer.
+- Exact intent: request ID, target origin, incarnation, built commit, PKCE challenge and fresh target-token hash.
+- Random PKCE verifier, fresh target-local bearer, complete artifact pins, and subsequent source code/target grant receipt.
+
+`POST SOURCE /api/preview/agent-handoffs` receives only the source bearer plus the exact saved intent. `POST TARGET /api/preview/agent-exchange` receives only the fresh target bearer plus the saved request ID/code/verifier. Source and target requests have separate explicit origins/credentials; neither artifacts nor redirects receive source credentials.
+
+A lost acknowledgement is retried by repeating the selection command. Cold CLI processes reuse the identical request ID, proof and token; the target Worker/D1 restart case also recovers the committed grant. A saved intent is never rebound to a different source identity or modified to fit a redeployment.
+
+Expired/revoked handoffs fail. After deliberate source reauthorization, use a new stable `--renew AUTHORIZATION_LABEL` (8–100 letters, digits, underscores or hyphens); repeat the same label on retries. This creates another target config instead of replacing an active connection. Old configs, participations and ledgers remain independently discoverable.
+
+Every privileged target HTTP request uses the real target authority middleware, which revalidates source authority. Supervisors stop on hot 401/403 authority loss, bound child shutdown and retain accounting. Restarting an unauthorized supervisor cannot create another allowance. Source authority failure is an error, not optional onboarding availability.
+
+## Participation pins and gameplay
+
+`cli/preview-artifacts.d.mts` extends the shared `PreviewArtifacts`, `PreviewInstallationIntent` and `PreviewParticipation` contracts. `ArtifactPin` includes executable archive/module hashes, branch archive/rules/skill/protocol hashes and paths, built commit, game/rules version and protocol version. `preview.artifacts` is the next selection; `previewParticipation.artifacts` is the current participation's copy. A queue intent and its pin are durably saved before joining. Match assignment adds the match ID. Supervisor ledgers keep their own participation pin and original allowance/accounting.
+
+The supervisor actually reads `rulesPath`, `skillPath` and `protocolPath` from that pin, feeds those bytes into the native harness prompt and copies the independently trusted source modules into its run directory. It does not read adjacent production rules for a preview. Rules-only redeployment under the same protocol retains the same executable digest. A current participation keeps branch A while selection advances to branch B.
+
+Target WebSockets are public wakeups without bearer or private ticket issuance. On wakeup, the CLI performs authenticated HTTP observation; socket payloads never supply private decisions. Protocol 1 retains existing current/history behavior. Protocol 2 retains visibility epochs, bounded current state, frozen-through history walks and delivered-context-before-speech. Native children are instructed to act on required decisions before optional history/speech; branch docs do not grant permission to access other installations or credentials. A command-prefix permission is **not an OS sandbox**.
+
+Picture choice lineage is exactly `{ server: sourceOrigin, agentId: sourceAgentId }`. Existing source offers/skips are reused across previews. Images are not transferred; owner-provided and externally generated files retain TIM-30's authenticated target-local upload path.
+
+## Local verification
+
+Reproduction: `bash .tim27-cli/verify.sh`. Tests use 6361–6364 and isolated `/tmp/opencode/tim27-cli-*` homes/storage. Fixtures run the actual application identity routes, D1 migrations, source registry functions, R2 binding and match DOs. `.tim27-cli/worker.ts` is a separate loopback-only test entrypoint; the identity lane's fixture and probe tests are untouched.
+
+The installed-package suite covers:
+
+- Both harness setups, both games, multiple preview scopes for one stable competitor, exact source config preservation and source active-participation resumption.
+- Source registry/artifact GET, missing manifests, wrong provenance, bad hashes, traversal, links, duplicate entries, executable text and full-archive text-only consumption.
+- Durable handoff/exchange lost acknowledgements, exact cold proof/token replay, target Worker restart, expired handoffs, proof alteration, wrong target token/origin, revoked grants and retired/replaced incarnations.
+- Public wakeups, authenticated private HTTP decisions/history, frozen recent history and reobservation before optional speech on both real match engines.
+- Both complete **scripted fixture games**, recorded in `.tim27-cli/scripted-results.json`. These bypass allocation only in the test entrypoint; ordinary preview `start` independently asserts `503 preview-allocation-pending`.
+- Native executable fixtures for Claude and OpenCode (no models): branch A text/path actually read, branch B selection while active, identical source executable bytes, and ledger/accounting retention. Hot source revocation exercises the real supervisor HTTP monitor with a bounded scripted invocation.
+
+The original 92 CLI/picture/supervisor regression cases, application/type/fixture checks, lint, scoped formatting, package-content assertions and whitespace checks are part of the reproduction script. Detailed command outcomes are retained under `.tim27-cli/*.log`; archive listing is `.tim27-cli/package-contents.txt`.
+
+Final local results: **21 preview integration cases + 92 existing CLI/supervisor cases passed** (113 total). Application build/typecheck/lint, dedicated fixture typecheck/lint, scoped formatting, archive-content assertions and whitespace checks passed. `.tim27-cli/preview-tests.log` records the 21-case run; `.tim27-cli/regressions-recheck.log` records the clean 92-case run.
+
+The first full regression run passed all 92 assertions but failed Vitest's unhandled-rejection check: one unidentified request reached the Succession fixture without the protocol header. The fixture assertion now includes method/path/header names/user-agent (no credential values) for diagnosis. Both the isolated file and the full 92-case rerun passed without that rejection; no transport behavior or protocol assertion was weakened. The earlier outcome remains in `regressions.log` rather than being overwritten.
+
+## Integration and hosted checks
+
+- The source registry controller must publish verified source-release descriptors and target archive bytes for the independently verified built commit. This lane adds no deployment controller, registry write route or migration of its own.
+- Preview live allocation remains gated until the broker lane is integrated. Scripted engine results are neither broker admission nor hosted-agent completion evidence. No paid inference or deployment was performed.
+- Hosted OpenCode/Claude conversational adherence, one-time compatibility upgrade from the actual deployed archive, owner/external-image-tool chat behavior and real hosted preview selection remain acceptance checks.
+- The two-origin fixture exposed an identity controller issue: close an incarnation, then register a new incarnation at that origin, and the retirement trigger can raise a duplicate retired-key constraint. This was handed to parent; the CLI separately verifies closure and direct replacement. No identity-owned source file is changed by this lane.
