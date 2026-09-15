@@ -1,7 +1,7 @@
 import { GameError } from '../game/types';
 import { PreviewMetadataSchema } from '../shared/preview';
 import type { PreviewReceipt } from '../shared/preview';
-import { opaqueId } from './http';
+import { nameValue, opaqueId } from './http';
 import { previewTarget } from './preview-config';
 import { sourceCall } from './preview-transport';
 
@@ -80,20 +80,47 @@ export async function importPreviewMetadata(env: Env, receipt: PreviewReceipt): 
     for (const agent of page.agents) {
       if (agent.ownerId !== receipt.owner.id || (receipt.scope === 'agent' && agent.id !== receipt.agentId))
         throw new GameError('preview-scope', 'Unexpected source competitor.', 401);
+      const characters = [...nameValue(agent.name)];
+
+      // Slice code points before JS lowercasing: SQLite lower() is ASCII-only, and e.g. İ expands.
+      const prefixes = JSON.stringify(
+        Array.from({ length: 41 }, (_, length) => {
+          const name = characters.slice(0, length).join('');
+
+          return { name, key: name.toLowerCase() };
+        }),
+      );
+
       statements.push(
         env.DB.prepare(
           `INSERT OR IGNORE INTO preview_sources (origin,kind,source_id,local_id)
           SELECT ?,'agent',?,? WHERE NOT EXISTS(SELECT 1 FROM agents WHERE id=?)`,
         ).bind(target.sourceOrigin, agent.id, agent.id, agent.id),
         env.DB.prepare(
-          `INSERT INTO agents (id,owner_id,name,name_key,description,created_at,retired_at)
-          SELECT ?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM agents WHERE id=?) AND EXISTS
+          // Choose inside the write transaction, including tombstones. No read/insert race or name adoption.
+          `WITH RECURSIVE candidates(n,suffix) AS (
+            SELECT 0,''
+            UNION ALL
+            SELECT n+1,' (source '||(n+1)||')' FROM candidates WHERE EXISTS
+              (SELECT 1 FROM agents WHERE owner_id=?
+               AND name_key=json_extract(?,'$['||(40-length(suffix))||'].key')||suffix)
+              AND NOT EXISTS(SELECT 1 FROM agents WHERE id=?)
+          ), selected AS (
+            SELECT json_extract(?,'$['||(40-length(suffix))||'].name')||suffix AS name,
+              json_extract(?,'$['||(40-length(suffix))||'].key')||suffix AS name_key
+            FROM candidates ORDER BY n DESC LIMIT 1
+          )
+          INSERT INTO agents (id,owner_id,name,name_key,description,created_at,retired_at)
+          SELECT ?,?,name,name_key,?,?,? FROM selected WHERE NOT EXISTS(SELECT 1 FROM agents WHERE id=?) AND EXISTS
           (SELECT 1 FROM preview_sources WHERE origin=? AND kind='agent' AND source_id=? AND local_id=?)`,
         ).bind(
+          agent.ownerId,
+          prefixes,
+          agent.id,
+          prefixes,
+          prefixes,
           agent.id,
           agent.ownerId,
-          agent.name,
-          agent.name.toLowerCase().normalize('NFKC'),
           agent.description,
           Date.now(),
           agent.retiredAt,

@@ -326,8 +326,11 @@ export async function sourcePreviewRoute(request: Request, env: Env): Promise<Re
   if (path === '/api/preview/introspect') {
     const { agentId } = decodePreview(PreviewIntrospectionSchema, proof.payload);
 
+    if (row.scope === 'agent' && agentId !== undefined && agentId !== row.agent_id)
+      throw new GameError('preview-scope', 'Source authorization is for a different competitor.', 401);
+
     if (
-      agentId &&
+      agentId !== undefined &&
       !(await env.DB.prepare('SELECT id FROM agents WHERE id=? AND owner_id=? AND retired_at IS NULL')
         .bind(agentId, row.owner_id)
         .first())

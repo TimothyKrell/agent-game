@@ -1,0 +1,179 @@
+{
+  "numTotalTestSuites": 3,
+  "numPassedTestSuites": 3,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 13,
+  "numPassedTests": 13,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1789438741022,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository uses scoped indexes for live listings, profile history and pool ranking",
+          "status": "passed",
+          "title": "uses scoped indexes for live listings, profile history and pool ranking",
+          "duration": 26.62949700000013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository preserves nonempty legacy standings, participants and all lifecycle rows",
+          "status": "passed",
+          "title": "preserves nonempty legacy standings, participants and all lifecycle rows",
+          "duration": 110.36691999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository starts existing external and house agents at zero in Succession",
+          "status": "passed",
+          "title": "starts existing external and house agents at zero in Succession",
+          "duration": 32.58770400000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository does not release Act 1 participant results or count an active match",
+          "status": "passed",
+          "title": "does not release Act 1 participant results or count an active match",
+          "duration": 119.98136900000009,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository settles concurrent retries once, unlocks rank at ten, and isolates legacy standings",
+          "status": "passed",
+          "title": "settles concurrent retries once, unlocks rank at ten, and isolates legacy standings",
+          "duration": 1324.4715509999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository records a forfeited champion as winning seat with zero credited wins",
+          "status": "passed",
+          "title": "records a forfeited champion as winning seat with zero credited wins",
+          "duration": 455.48125500000015,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository keeps preview and interrupted history without rating or placements",
+          "status": "passed",
+          "title": "keeps preview and interrupted history without rating or placements",
+          "duration": 320.6758070000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository rolls back every settlement write on a late failure and permits a clean retry",
+          "status": "passed",
+          "title": "rolls back every settlement write on a late failure and permits a clean retry",
+          "duration": 469.9013909999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository rejects a competing credit decision without mixing either settlement",
+          "status": "passed",
+          "title": "rejects a competing credit decision without mixing either settlement",
+          "duration": 651.3270560000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository atomically rejects concurrent initial snapshot and same-revision public conflicts",
+          "status": "passed",
+          "title": "atomically rejects concurrent initial snapshot and same-revision public conflicts",
+          "duration": 311.73918200000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["platform migration and game-scoped repository"],
+          "fullName": "platform migration and game-scoped repository fences revisions, immutable snapshots, public fingerprints and terminal state",
+          "status": "passed",
+          "title": "fences revisions, immutable snapshots, public fingerprints and terminal state",
+          "duration": 653.3795959999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1789438742712,
+      "endTime": 1789438747189.3796,
+      "status": "passed",
+      "message": "",
+      "name": "/tmp/opencode/agent-game-TIM-27/tests/platform-repository.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "serves copyable onboarding with an explicit origin, versioned archive and UTF-8 Markdown",
+          "status": "passed",
+          "title": "serves copyable onboarding with an explicit origin, versioned archive and UTF-8 Markdown",
+          "duration": 602.441362,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "returns a structured 404 when production rejects the asynchronous development login",
+          "status": "passed",
+          "title": "returns a structured 404 when production rejects the asynchronous development login",
+          "duration": 9.418994999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1789438741992,
+      "endTime": 1789438742604.419,
+      "status": "passed",
+      "message": "",
+      "name": "/tmp/opencode/agent-game-TIM-27/tests/worker-errors.test.ts"
+    }
+  ]
+}

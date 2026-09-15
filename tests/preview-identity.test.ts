@@ -2,6 +2,7 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createServer } from 'node:net';
+import { join } from 'node:path';
 import { createHash, generateKeyPairSync, randomBytes, randomUUID, sign } from 'node:crypto';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { chromium } from '@playwright/test';
@@ -49,6 +50,9 @@ let sourceToken: string;
 let sourceGrant: string;
 
 const observations: string[] = [];
+
+const evidenceDirectory =
+  process.env.TIM27_IDENTITY_EVIDENCE_DIR ?? `.tim27/runs/identity-${process.pid}-${randomUUID()}`;
 
 async function freePort(): Promise<number> {
   const server = createServer();
@@ -138,6 +142,13 @@ async function count(worker: Worker, table: string): Promise<number> {
   );
 
   return rows[0].n;
+}
+
+async function createCompetitor(worker: Worker, cookie: string, origin: string, name: string) {
+  const response = await post(worker, '/api/owner/agents', JSON.stringify({ name }), cookie, origin);
+  expect(response.status, await response.clone().text()).toBe(201);
+
+  return decoded(response, Schema.Struct({ id: Schema.String, name: Schema.String }));
 }
 
 async function crash(worker: Worker, phase: string): Promise<void> {
@@ -271,6 +282,7 @@ function signed(
 }
 
 beforeAll(async () => {
+  await mkdir(evidenceDirectory, { recursive: true });
   directory = await mkdtemp('/tmp/opencode/agent-game-identity-');
   sourceOrigin = `http://localhost:${await freePort()}`;
   targetOrigin = `http://127.0.0.1:${await freePort()}`;
@@ -342,9 +354,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await Promise.all([source?.stop(), target?.stop()]);
-  await mkdir('.tim27', { recursive: true });
   await writeFile(
-    '.tim27/identity-result.json',
+    join(evidenceDirectory, 'identity-result.json'),
     JSON.stringify(
       {
         sourceOrigin,
@@ -372,6 +383,30 @@ it('imports agent before owner with independent credentials, IDs, metadata and r
   expect(
     (await target.fetch('/api/queue', { headers: { authorization: `Bearer ${exchange.token}` } })).status,
   ).toBe(200);
+
+  const queueCount = async () =>
+    (await decoded(await target.fetch('/api/bootstrap'), Schema.Struct({ queueCount: Schema.Number })))
+      .queueCount;
+
+  expect(await queueCount()).toBe(0);
+
+  const admission = await post(
+    target,
+    '/api/queue',
+    JSON.stringify({ requestId: randomUUID(), gameId: 'secret-overlord' }),
+    '',
+    undefined,
+    exchange.token,
+  );
+
+  expect(admission.status).toBe(503);
+  expect(await admission.json()).toMatchObject({ error: { code: 'preview-allocation-pending' } });
+  expect(await queueCount()).toBe(0);
+  expect(
+    await (
+      await target.fetch('/api/queue', { headers: { authorization: `Bearer ${exchange.token}` } })
+    ).json(),
+  ).toMatchObject({ status: 'idle', requestId: null, matchId: null, joinedAt: null });
   expect(
     (await target.fetch('/api/queue', { headers: { authorization: `Bearer ${sourceToken}` } })).status,
   ).toBe(401);
@@ -624,6 +659,135 @@ it('recovers an atomically committed grant after lost acknowledgement and cold r
     'Target grant + lineage batch survives interrupted acknowledgement; retry recovers the same connection.',
   );
 }, 30000);
+
+it('suffixes real source/target name collisions atomically and preserves identities on repeated import', async () => {
+  const owner = await ownerExchange();
+  const targetCookie = cookies(await complete(owner));
+  const longNames = ['😀'.repeat(39) + '🚀', '😀'.repeat(39) + '🌍'];
+  const names = ['Shared name', ...longNames, 'İ' + 'A'.repeat(39)];
+
+  for (const name of names) await createCompetitor(target, targetCookie, targetOrigin, name);
+  const reserved = await createCompetitor(target, targetCookie, targetOrigin, 'Shared name (source 1)');
+  expect(
+    (await post(target, `/api/owner/agents/${reserved.id}/retire`, '{}', targetCookie, targetOrigin)).status,
+  ).toBe(200);
+
+  for (let index = 1; index <= 9; index++)
+    await createCompetitor(target, targetCookie, targetOrigin, '😀'.repeat(29) + ` (source ${index})`);
+
+  const rows = () =>
+    query(
+      target,
+      'SELECT id,name,name_key,retired_at FROM agents WHERE owner_id=? ORDER BY id',
+      [ownerId],
+      Schema.Array(
+        Schema.Struct({
+          id: Schema.String,
+          name: Schema.String,
+          name_key: Schema.String,
+          retired_at: Schema.NullOr(Schema.Number),
+        }),
+      ),
+    );
+
+  const localBefore = await rows();
+  const imported = [];
+
+  for (const name of names)
+    imported.push(
+      await createCompetitor(
+        source,
+        sourceCookie,
+        sourceOrigin,
+        name === 'Shared name' ? '  Ｓhared name  ' : name,
+      ),
+    );
+  expect(longNames.every((name) => name.length === 80 && [...name].length === 40)).toBe(true);
+  const token = `agk_${secret()}`;
+  await sql(
+    source,
+    'INSERT INTO agent_grants (id,agent_id,secret_hash,name,created_at,expires_at) VALUES (?,?,?,?,?,?)',
+    [
+      `connection_${randomUUID()}`,
+      imported[0].id,
+      hash(token),
+      'Collision source grant',
+      Date.now(),
+      Date.now() + 86400000,
+    ],
+  );
+  const exchanges = await Promise.all([ownerExchange(), ownerExchange(), ownerExchange()]);
+  const agent = await agentExchange(token);
+
+  const completions = await Promise.all([
+    ...exchanges.map((exchange) => complete(exchange)),
+    exchangeAgent(agent),
+  ]);
+
+  for (const response of completions) expect(response.status, await response.clone().text()).toBe(200);
+
+  const after = await rows();
+  expect(after.filter((row) => localBefore.some((local) => local.id === row.id))).toEqual(localBefore);
+  const additions = imported.map((item) => after.find((row) => row.id === item.id)!);
+  expect(additions[0].name).toBe('Shared name (source 2)');
+  expect(
+    additions
+      .slice(1, 3)
+      .map((row) => row.name)
+      .sort(),
+  ).toEqual([10, 11].map((index) => '😀'.repeat(28) + ` (source ${index})`));
+  expect(additions[3].name).toBe('İ' + 'A'.repeat(28) + ' (source 1)');
+
+  for (const row of additions) {
+    expect([...row.name].length).toBeLessThanOrEqual(40);
+    expect(row.name_key).toBe(row.name.normalize('NFKC').toLowerCase());
+
+    const provenance = await query(
+      target,
+      "SELECT local_id FROM preview_sources WHERE origin=? AND kind='agent' AND source_id=?",
+      [sourceOrigin, row.id],
+      Schema.Array(Schema.Struct({ local_id: Schema.String })),
+    );
+
+    expect(provenance).toEqual([{ local_id: row.id }]);
+  }
+
+  expect((await complete(await ownerExchange())).status).toBe(200);
+  expect((await exchangeAgent(await agentExchange(token))).status).toBe(200);
+  expect(await rows()).toEqual(after);
+  observations.push(
+    'Real creation APIs: local names/tombstones stay intact; concurrent owner/agent imports suffix source IDs, handle 80-code-unit names and Unicode keys, and repeat without duplicates.',
+  );
+});
+
+it('restricts signed agent introspection to its exact competitor while retaining owner roster scope', async () => {
+  const other = await createCompetitor(source, sourceCookie, sourceOrigin, 'Same owner different agent');
+  const agent = await agentExchange();
+  expect((await exchangeAgent(agent)).status).toBe(200);
+  const path = '/api/preview/introspect';
+
+  const inspect = (requestId: string, inspectedAgent?: string) =>
+    post(source, path, signed(path, JSON.stringify({ requestId, agentId: inspectedAgent })));
+
+  expect((await inspect(agent.requestId, agentId)).status).toBe(200);
+  expect((await inspect(agent.requestId)).status).toBe(200);
+  const wrong = await inspect(agent.requestId, other.id);
+  expect(wrong.status).toBe(401);
+  expect(await wrong.json()).toMatchObject({ error: { code: 'preview-scope' } });
+  expect((await inspect(agent.requestId, '')).status).toBe(401);
+  const owner = await ownerExchange();
+  expect((await complete(owner)).status).toBe(200);
+  expect((await inspect(owner.requestId, agentId)).status).toBe(200);
+  expect((await inspect(owner.requestId, other.id)).status).toBe(200);
+  expect((await inspect(owner.requestId, 'agent_missing')).status).toBe(401);
+  expect(
+    (await post(source, `/api/owner/agents/${other.id}/retire`, '{}', sourceCookie, sourceOrigin)).status,
+  ).toBe(200);
+  expect((await inspect(owner.requestId, other.id)).status).toBe(401);
+  observations.push(
+    'Correctly signed agent-scope introspection rejects another active same-owner competitor; owner roster scope keeps live eligibility checks.',
+  );
+});
 
 it('handles owner-first import, local identity collisions and paginated rosters without copying source history', async () => {
   const login = await post(
@@ -892,7 +1056,7 @@ it('exercises the actual two-origin browser cookie continuation', async () => {
     expect((await context.cookies(sourceOrigin)).some((cookie) => cookie.name.includes('preview-auth'))).toBe(
       false,
     );
-    await page.screenshot({ path: '.tim27/identity-browser.png' });
+    await page.screenshot({ path: join(evidenceDirectory, 'identity-browser.png') });
     observations.push(
       'Chromium: target start → source local Better Auth login → source authorization → fragment-stripped target completion → authenticated owner HTTP.',
     );
