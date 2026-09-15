@@ -1,5 +1,5 @@
 /** Real production primitives, local interaction fixtures. Vite-only, outside the build entry graph. */
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BookOpen } from 'lucide-react';
 import { Button } from '../src/client/ui/button';
@@ -18,6 +18,15 @@ function Foundations() {
   const [open, setOpen] = useState(true);
   const [submissions, setSubmissions] = useState(0);
   const focus = useRef<HTMLButtonElement>(null);
+  const [rulesOpen, setRulesOpen] = useState(true);
+  const chapterControl = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const collapse = () => setRulesOpen(false);
+    window.addEventListener('tim11-collapse', collapse);
+
+    return () => window.removeEventListener('tim11-collapse', collapse);
+  }, []);
 
   return (
     <main className="replay-ui" style={{ margin: '24px auto', maxWidth: 700 }}>
@@ -78,6 +87,39 @@ function Foundations() {
           </Dialog>
         </DialogContent>
       </Dialog>
+      <RuleHelpProvider>
+        <Button onClick={() => setRulesOpen(false)}>Collapse chapter externally</Button>
+        <RuleHelpTrigger
+          help={{
+            title: 'Coins',
+            summary: 'Pay for actions.',
+            description: 'Costs are not refunded.',
+            icon: <BookOpen />,
+          }}
+        >
+          Persistent coins rules
+        </RuleHelpTrigger>
+        <Collapsible open={rulesOpen} onOpenChange={setRulesOpen}>
+          <CollapsibleTrigger ref={chapterControl} render={<Button />}>
+            Rules chapter
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            {rulesOpen && (
+              <RuleHelpTrigger
+                fallbackFocus={chapterControl}
+                help={{
+                  title: 'Treasurer',
+                  summary: 'Claim to gain three coins.',
+                  description: 'A claim may be challenged.',
+                  icon: <BookOpen />,
+                }}
+              >
+                Treasurer rules
+              </RuleHelpTrigger>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+      </RuleHelpProvider>
     </main>
   );
 }

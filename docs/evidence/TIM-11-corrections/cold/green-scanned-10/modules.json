@@ -1,0 +1,36 @@
+{
+  "errors": [],
+  "modules": [
+    "http://127.0.0.1:6191/.tim11/foundations.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react.js?v=d117b83f",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react-dom_client.js?v=119bfcff",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/lucide-react.js?v=cefad940",
+    "http://127.0.0.1:6191/src/client/ui/button.tsx",
+    "http://127.0.0.1:6191/src/client/ui/collapsible.tsx",
+    "http://127.0.0.1:6191/src/client/ui/dialog.tsx",
+    "http://127.0.0.1:6191/src/client/ui/rule-help.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react_jsx-dev-runtime.js?v=d117b83f",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=9a8a3f39",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/@base-ui_react_collapsible.js?v=8202614b",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/@base-ui_react_dialog.js?v=ab644ced",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react-dom.js?v=d117b83f",
+    "http://127.0.0.1:6191/src/client/ui/popover.tsx",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/@base-ui_react_popover.js?v=72c399d3",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react_jsx-runtime.js?v=d117b83f",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9a8a3f39",
+    "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/useOpenInteractionType-D2wbWC_s.js?v=9a8a3f39"
+  ],
+  "navigations": [
+    "http://127.0.0.1:6191/.tim11/foundations.html"
+  ],
+  "responses": [
+    {
+      "url": "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react-dom_client.js?v=119bfcff",
+      "imports": "import { t as __commonJSMin } from \"/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=9a8a3f39\";\nimport { t as require_react } from \"/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react.js?v=d117b83f\";\nimport { t as require_react_dom } from \"/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react-dom.js?v=d117b83f\";\n//#region ../../../home/timothykrell/Code/agent-games/node_modules/scheduler/cjs/scheduler.development.js\n/**\n* @license React\n* scheduler.development.js\n*\n* Copyright (c) Meta Platforms, Inc. and affiliates.\n*\n* This source code is licensed under the MIT license found in the\n* LICENSE file in the root directory of this source tree.\n*/\nvar require_scheduler_development = /* @__PURE__ */ __commonJSMin(((exports) => {\n\t(function() {\n\t\tfunction performWorkUntilDeadline() {\n\t\t\tneedsPaint = !1;\n\t\t\tif (isMessageLoopRunning) {\n\t\t\t\tvar currentTime = exports.unstable_now();\n\t\t\t\tstartTime = currentTime;\n\t\t\t\tvar hasMoreWork = !0;\n"
+    },
+    {
+      "url": "http://127.0.0.1:6191/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/useOpenChangeComplete-DkrlQdAW.js?v=9a8a3f39",
+      "imports": "import { r as __toESM } from \"/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/rolldown-runtime-DC62tzP2.js?v=9a8a3f39\";\nimport { t as require_react } from \"/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react.js?v=d117b83f\";\nimport { t as require_react_dom } from \"/.tim11/cold-start/runs/green-scanned-10/vite-cache/deps/react-dom.js?v=d117b83f\";\n//#region ../../../home/timothykrell/Code/agent-games/node_modules/@base-ui/utils/safeReact.mjs\nvar import_react = /* @__PURE__ */ __toESM(require_react(), 1);\n/**\n* A clone of the React namespace for reading APIs that may be missing in older\n* supported React versions. Bundlers can rewrite direct `React.someNewApi`\n* reads into named imports, which breaks React 17. Reading from this cloned\n* object keeps those lookups optional.\n*\n* @see https://github.com/mui/material-ui/issues/41190#issuecomment-2040873379\n*/\nvar SafeReact = { ...import_react };\n//#endregion\n//#region ../../../home/timothykrell/Code/agent-games/node_modules"
+    }
+  ]
+}
