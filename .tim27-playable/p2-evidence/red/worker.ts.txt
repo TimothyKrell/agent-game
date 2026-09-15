@@ -6,17 +6,10 @@ import { configurePreviewBroker } from '../src/server/preview-broker-config';
 import { previewCapabilities } from '../src/server/preview-broker-client';
 import { parsePreviewArtifactManifest, registerPreviewArtifacts } from '../src/server/preview-artifacts';
 import { hashSecret, isLoopback, json, readJson } from '../src/server/http';
-import type { PreviewBrokerIntent, PreviewInference } from '../src/shared/preview-broker';
+import type { PreviewBrokerIntent } from '../src/shared/preview-broker';
 import type { MatchInitialization } from '../src/server/coordinator';
 import { HouseSeatObject as ApplicationHouseSeat } from '../src/server/house-seat';
 import type { HouseJob } from '../src/server/house-contract';
-
-const InferenceObservation = Schema.Struct({
-  id: Schema.String,
-  state: Schema.String,
-  dispatched: Schema.Boolean,
-  deferred: Schema.Boolean,
-});
 
 export class HouseSeatObject extends ApplicationHouseSeat {
   private fixtureRunning = false;
@@ -38,20 +31,20 @@ export class HouseSeatObject extends ApplicationHouseSeat {
         outcome: string | null;
         admission_reason: string | null;
         due_at: number;
-        broker_input: string | null;
-      }>('SELECT status,outcome,admission_reason,due_at,broker_input FROM jobs WHERE id=?', id)
+      }>('SELECT status,outcome,admission_reason,due_at FROM jobs WHERE id=?', id)
       .toArray()[0];
 
-    const input: PreviewInference | null = row?.broker_input ? JSON.parse(row.broker_input) : null;
+    // A returned source admission deferral is not active inference. The logical discussion may expire
+    // that optional retry; the production next-phase checks retire it. Never wait out its rate window.
+    const deferred = row?.status === 'pending' && row.admission_reason !== null && row.due_at > Date.now();
 
     return {
       status: row?.status ?? 'undelivered',
       outcome: row?.outcome ?? null,
-      // Diagnostic context only: this column is historical and is never a readiness condition.
       admissionReason: row?.admission_reason ?? null,
-      dueAt: row?.due_at ?? null,
-      attemptId: input ? JSON.stringify([input.allocationId, input.jobId, input.attempt]) : null,
+      deferred,
       running: this.fixtureRunning,
+      complete: !this.fixtureRunning && (row?.status === 'done' || deferred),
     };
   }
 }
@@ -61,48 +54,6 @@ export class PlayableCoordinator extends MatchmakingObject {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS playable_faults(key TEXT PRIMARY KEY,value TEXT)');
-    ctx.storage.sql.exec(
-      'CREATE TABLE IF NOT EXISTS playable_inference_observations(id TEXT PRIMARY KEY,result TEXT NOT NULL)',
-    );
-  }
-  beginPreviewInference(input: PreviewInference, fingerprint: string) {
-    const result = super.beginPreviewInference(input, fingerprint);
-    // Observe the actual authoritative RPC return; never substitute admission or dispatch behavior.
-    this.ctx.storage.sql.exec(
-      'INSERT OR REPLACE INTO playable_inference_observations VALUES (?,?)',
-      JSON.stringify([input.allocationId, input.jobId, input.attempt]),
-      JSON.stringify(result),
-    );
-
-    return result;
-  }
-  fixtureInference(ids: string[]) {
-    return ids.map((id) => {
-      const observed = this.ctx.storage.sql
-        .exec<{ result: string }>('SELECT result FROM playable_inference_observations WHERE id=?', id)
-        .toArray()[0];
-
-      const call = this.ctx.storage.sql
-        .exec<{ state: string; result: string | null }>(
-          'SELECT state,result FROM preview_broker_calls WHERE id=?',
-          id,
-        )
-        .toArray()[0];
-
-      const rpc: ReturnType<MatchmakingObject['beginPreviewInference']> | null = observed
-        ? JSON.parse(observed.result)
-        : null;
-
-      const result = rpc?.ok ? rpc.value.result : null;
-
-      return {
-        id,
-        state: call?.state ?? result?.state ?? 'unobserved',
-        dispatched: call?.state === 'dispatched' && call.result === null,
-        // No billed row may exist: even a prior returned denial cannot release an admitted attempt.
-        deferred: !call && result?.state === 'denied' && result.retryable && result.retryAt > Date.now(),
-      };
-    });
   }
   fixtureQuery(sql: string, values: (string | number | null)[]) {
     return this.ctx.storage.sql.exec(sql, ...values).toArray();
@@ -147,15 +98,9 @@ export class PlayableCoordinator extends MatchmakingObject {
 
 // Reuses accepted clock-only controls. Normal initialize/arm/house outbox all run in production code.
 export class PlayableMatch extends ClockMatch {
-  async fixtureDiscussion(phaseId: string): Promise<{
-    complete: boolean;
-    jobs: ({
-      id: string;
-      complete: boolean;
-      deferred: boolean;
-      source: typeof InferenceObservation.Type | null;
-    } & ReturnType<HouseSeatObject['fixtureJob']>)[];
-  }> {
+  async fixtureDiscussion(
+    phaseId: string,
+  ): Promise<{ complete: boolean; jobs: ({ id: string } & ReturnType<HouseSeatObject['fixtureJob']>)[] }> {
     const rows = this.ctx.storage.sql
       .exec<{ data: string }>(
         "SELECT data FROM outbox WHERE json_extract(data,'$.phaseId')=? AND id LIKE '%:chat:0'",
@@ -163,7 +108,7 @@ export class PlayableMatch extends ClockMatch {
       )
       .toArray();
 
-    const targetJobs = await Promise.all(
+    const jobs = await Promise.all(
       rows.map(async (row) => {
         const job: HouseJob = JSON.parse(row.data);
 
@@ -177,33 +122,6 @@ export class PlayableMatch extends ClockMatch {
         return { id: job.id, ...result };
       }),
     );
-
-    const ids = targetJobs.flatMap((job) => (job.attemptId ? [job.attemptId] : []));
-
-    // One read-only source observation for the whole phase. Production inference keeps its real
-    // signed HTTP/202/waitUntil path; source dispatch and completion are not inferred from target timers.
-    const response = await fetch(new URL('/fixture/inference-observations', this.env.PREVIEW_SOURCE_URL), {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ids }),
-    });
-
-    if (!response.ok) throw new Error('Cannot observe current source inference');
-    const observations = Schema.decodeUnknownSync(Schema.Array(InferenceObservation))(await response.json());
-
-    const jobs = targetJobs.map((job) => {
-      const source = observations.find((row) => row.id === job.attemptId) ?? null;
-
-      const deferred =
-        source?.deferred === true && job.status === 'pending' && job.dueAt !== null && job.dueAt > Date.now();
-
-      return {
-        ...job,
-        source,
-        deferred,
-        complete: !job.running && !source?.dispatched && (job.status === 'done' || deferred),
-      };
-    });
 
     return { complete: jobs.every((job) => job.complete), jobs };
   }
@@ -312,12 +230,6 @@ export default {
         const input = await readJson(request, SqlSchema);
 
         return json(await queue.fixtureQuery(input.sql, [...input.values]));
-      }
-
-      if (url.pathname === '/fixture/inference-observations') {
-        const input = await readJson(request, Schema.Struct({ ids: Schema.Array(Schema.String) }));
-
-        return json(await queue.fixtureInference([...input.ids]));
       }
 
       if (url.pathname === '/fixture/queue-alarm') {

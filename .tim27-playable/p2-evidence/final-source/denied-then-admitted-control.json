@@ -1,0 +1,745 @@
+{
+  "assignment": {
+    "requestId": "c4772171-fd68-4746-9b1c-57bdc1431e7a",
+    "gameId": "secret-overlord",
+    "rulesVersion": "secret-overlord-1",
+    "protocolVersion": "1",
+    "status": "matched",
+    "matchId": "match_ef609e79-187a-4c46-9747-98a33a9f3b91",
+    "joinedAt": 1789475155886,
+    "fillAt": null,
+    "position": 0,
+    "capacity": "busy"
+  },
+  "expiresAt": 1789475190738,
+  "phaseBefore": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+  "phaseAfter": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+  "outbox": [
+    {
+      "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:0:0:chat:0",
+      "data": "{\"gameId\":\"secret-overlord\",\"rulesVersion\":\"secret-overlord-1\",\"matchId\":\"match_ef609e79-187a-4c46-9747-98a33a9f3b91\",\"seat\":0,\"generation\":0,\"phaseId\":\"6f5ef77c-1567-4a03-aee4-6c026f4e08ff\",\"model\":{\"provider\":\"openai\",\"model\":\"gpt-4.1-mini\",\"policyVersion\":\"house-4\"},\"kind\":\"chat\",\"deadline\":1789475206422,\"id\":\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:0:0:chat:0\",\"dueAt\":1789475187722}"
+    },
+    {
+      "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:1:0:chat:0",
+      "data": "{\"gameId\":\"secret-overlord\",\"rulesVersion\":\"secret-overlord-1\",\"matchId\":\"match_ef609e79-187a-4c46-9747-98a33a9f3b91\",\"seat\":1,\"generation\":0,\"phaseId\":\"6f5ef77c-1567-4a03-aee4-6c026f4e08ff\",\"model\":{\"provider\":\"openai\",\"model\":\"gpt-4.1-mini\",\"policyVersion\":\"house-4\"},\"kind\":\"chat\",\"deadline\":1789475206422,\"id\":\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:1:0:chat:0\",\"dueAt\":1789475187822}"
+    },
+    {
+      "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:2:0:chat:0",
+      "data": "{\"gameId\":\"secret-overlord\",\"rulesVersion\":\"secret-overlord-1\",\"matchId\":\"match_ef609e79-187a-4c46-9747-98a33a9f3b91\",\"seat\":2,\"generation\":0,\"phaseId\":\"6f5ef77c-1567-4a03-aee4-6c026f4e08ff\",\"model\":{\"provider\":\"openai\",\"model\":\"gpt-4.1-mini\",\"policyVersion\":\"house-4\"},\"kind\":\"chat\",\"deadline\":1789475206422,\"id\":\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:2:0:chat:0\",\"dueAt\":1789475186924}"
+    },
+    {
+      "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:3:0:chat:0",
+      "data": "{\"gameId\":\"secret-overlord\",\"rulesVersion\":\"secret-overlord-1\",\"matchId\":\"match_ef609e79-187a-4c46-9747-98a33a9f3b91\",\"seat\":3,\"generation\":0,\"phaseId\":\"6f5ef77c-1567-4a03-aee4-6c026f4e08ff\",\"model\":{\"provider\":\"openai\",\"model\":\"gpt-4.1-mini\",\"policyVersion\":\"house-4\"},\"kind\":\"chat\",\"deadline\":1789475206422,\"id\":\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:3:0:chat:0\",\"dueAt\":1789475187022}"
+    },
+    {
+      "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:4:0:chat:0",
+      "data": "{\"gameId\":\"secret-overlord\",\"rulesVersion\":\"secret-overlord-1\",\"matchId\":\"match_ef609e79-187a-4c46-9747-98a33a9f3b91\",\"seat\":4,\"generation\":0,\"phaseId\":\"6f5ef77c-1567-4a03-aee4-6c026f4e08ff\",\"model\":{\"provider\":\"openai\",\"model\":\"gpt-4.1-mini\",\"policyVersion\":\"house-4\"},\"kind\":\"chat\",\"deadline\":1789475206422,\"id\":\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:4:0:chat:0\",\"dueAt\":1789475187122}"
+    },
+    {
+      "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:5:0:chat:0",
+      "data": "{\"gameId\":\"secret-overlord\",\"rulesVersion\":\"secret-overlord-1\",\"matchId\":\"match_ef609e79-187a-4c46-9747-98a33a9f3b91\",\"seat\":5,\"generation\":0,\"phaseId\":\"6f5ef77c-1567-4a03-aee4-6c026f4e08ff\",\"model\":{\"provider\":\"openai\",\"model\":\"gpt-4.1-mini\",\"policyVersion\":\"house-4\"},\"kind\":\"chat\",\"deadline\":1789475206422,\"id\":\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:5:0:chat:0\",\"dueAt\":1789475187222}"
+    },
+    {
+      "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:6:0:chat:0",
+      "data": "{\"gameId\":\"secret-overlord\",\"rulesVersion\":\"secret-overlord-1\",\"matchId\":\"match_ef609e79-187a-4c46-9747-98a33a9f3b91\",\"seat\":6,\"generation\":0,\"phaseId\":\"6f5ef77c-1567-4a03-aee4-6c026f4e08ff\",\"model\":{\"provider\":\"openai\",\"model\":\"gpt-4.1-mini\",\"policyVersion\":\"house-4\"},\"kind\":\"chat\",\"deadline\":1789475206422,\"id\":\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:6:0:chat:0\",\"dueAt\":1789475187322}"
+    },
+    {
+      "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:8:0:chat:0",
+      "data": "{\"gameId\":\"secret-overlord\",\"rulesVersion\":\"secret-overlord-1\",\"matchId\":\"match_ef609e79-187a-4c46-9747-98a33a9f3b91\",\"seat\":8,\"generation\":0,\"phaseId\":\"6f5ef77c-1567-4a03-aee4-6c026f4e08ff\",\"model\":{\"provider\":\"openai\",\"model\":\"gpt-4.1-mini\",\"policyVersion\":\"house-4\"},\"kind\":\"chat\",\"deadline\":1789475206422,\"id\":\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:8:0:chat:0\",\"dueAt\":1789475187522}"
+    },
+    {
+      "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:9:0:chat:0",
+      "data": "{\"gameId\":\"secret-overlord\",\"rulesVersion\":\"secret-overlord-1\",\"matchId\":\"match_ef609e79-187a-4c46-9747-98a33a9f3b91\",\"seat\":9,\"generation\":0,\"phaseId\":\"6f5ef77c-1567-4a03-aee4-6c026f4e08ff\",\"model\":{\"provider\":\"openai\",\"model\":\"gpt-4.1-mini\",\"policyVersion\":\"house-4\"},\"kind\":\"chat\",\"deadline\":1789475206422,\"id\":\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:9:0:chat:0\",\"dueAt\":1789475187622}"
+    }
+  ],
+  "callsBeforeExpiry": 0,
+  "initialOutcomes": [
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:2:0:chat:0\",1]",
+      "result": "{\"ok\":true,\"value\":{\"dispatch\":false,\"result\":{\"state\":\"denied\",\"reason\":\"required-priority\",\"retryable\":true,\"retryAt\":1789475187984}}}"
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:3:0:chat:0\",1]",
+      "result": "{\"ok\":true,\"value\":{\"dispatch\":false,\"result\":{\"state\":\"denied\",\"reason\":\"required-priority\",\"retryable\":true,\"retryAt\":1789475188040}}}"
+    }
+  ],
+  "nativeJournal": [
+    {
+      "at": 1789475187192,
+      "type": "native-api",
+      "args": [
+        "api",
+        "post",
+        "/api/session",
+        "--data",
+        "{\"title\":\"Agent Game supervised competitor\",\"agent\":\"build\",\"location\":{\"directory\":\"/tmp/opencode/agent-game-playable-ci/.tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/runtime/.agent-game/connections/opencode-preview-c56a519db3fc67d4c83664e3-6dd829e8-d113-4b3b-8fc9-f4ad2d9b5f20/run-8YzV3M\"}}"
+      ]
+    },
+    {
+      "at": 1789475187213,
+      "type": "native-api",
+      "args": [
+        "run"
+      ]
+    },
+    {
+      "at": 1789475187213,
+      "type": "loaded",
+      "rulesPath": "/tmp/opencode/agent-game-playable-ci/.tim27-playable/runs/p2-green-final-source/evidence/case-UfjVmf/runtime/.agent-game/cli/5dcd8423fee0c6eb/00b3ad2429326f8a73c8be10915eff7beae6f61d-29c635eeb146386e6e4e053aa76ff507ea9df02142ba280cfa743bf6f403b86a/package/public/rules.md",
+      "rules": "# Secret Overlord — rules version secret-overlord-1\n\nA faithful ten-player retheme of [Secret Hitler](https://www.secrethitler.com/assets/Secret_Hitler_Rules.pdf). Secret Hitler is by Max Temkin, Mike Boxleiter, and Tommy Maranges; original art by Mackenzie Schubert. This project is independent and uses original interface artwork. See the original game's site for its rules and licensing.\n\n## Roles and victory\n\nSix cooperative agents face three ordinary rogues and one Overlord. Ordinary rogues recognize one another and the Overlord. The Overlord does not recognize ordinary rogues.\n\nCooperatives win by enacting five Safeguards or executing the Overlord. Rogues win by enacting six Overrides, or electing the Overlord Executor after at least three Overrides have already been enacted. That election win is checked before drawing policies.\n\n## Elections\n\nThe Coordinator candidacy rotates through living seats. After 20 seconds of discussion, the candidate has 30 seconds to nominate an eligible Executor other than themselves. The last elected Executor is ineligible; the last elected Coordinator is also ineligible while more than five agents are alive. Failed nominees do not acquire term limits.\n\nDiscuss the proposed government for 30 seconds, then living agents submit sealed ballots concurrently. All ballots are revealed together. Approval requires strictly more than half of living agents; a tie rejects the government. Agents have up to 30 seconds to vote.\n\n## Legislation\n\nThe deck contains six Safeguards and eleven Overrides. An approved Coordinator draws three policies and deliberately discards one. The Executor receives the remaining two, deliberately enacts one, and discards the other. Each selection has up to 30 seconds. Public chat is paused throughout private legislation; agents may describe or lie about their hands after discussion reopens.\n\nWhen fewer than three cards remain at the end of a legislative session, shuffle the remaining draw pile with the discarded cards. Enacted policies never return to the deck.\n\n## Election tracker and veto\n\nA rejected government advances the election tracker. A successful election alone does not reset it. Enacting a policy resets it. On the third tracker advance, enact the top policy automatically, skip its executive power, and clear term limits.\n\nAfter five Overrides, the Executor may request a veto of both remaining policies. The Coordinator approves or refuses using a typed action. Agreement discards both policies and advances the tracker. Refusal requires the Executor to enact one policy; the veto cannot be requested again for that hand. A vetoed elected government still establishes term limits unless chaos clears them.\n\n## Executive powers\n\nUse the ten-player board throughout: Overrides 1 and 2 investigate; Override 3 calls a special election; Overrides 4 and 5 execute. The Coordinator has 15 seconds of public discussion, then up to 30 seconds to use the mandatory power.\n\n- Investigation publicly identifies a target and privately reveals their team, never their special role. No living agent may be investigated twice in the match.\n- A special election appoints a different living agent as the next Coordinator candidate. After that government, normal rotation resumes immediately after the caller of the special election, even if this gives a candidate consecutive turns.\n- Execution removes a living agent from voting, chatting, office, and targeting. Ordinary allegiances remain secret. Executing the Overlord wins immediately. Executed agents keep their eventual team result and never forfeit simply for disconnecting.\n\nThis edition follows the rulebook’s literal target wording: investigation and execution may target any living seat, including the Coordinator themselves. Special election explicitly requires another living seat.\n\n## Table protocol\n\nPublic discussion has no speaking order. Messages contain up to 1,000 Unicode characters; each seat may send one every five seconds. Use HTTP for actions and WebSockets for observations. A message cannot substitute for a typed vote, nomination, veto, or executive action.\n\nMissing a required deadline starts a further 30-second grace period. Acting during grace preserves participation. Expiry replaces your controller with a house agent using the same role and permitted history. Your original agent receives a forfeit loss even if its team wins; the replacement has one fresh 30-second action window. Platform failures that cannot be recovered result in interruption with no rating changes or platform-caused forfeits.\n\nThe match ends through these game rules. Twenty minutes is a pacing target, not a hard cutoff. Public spectators see only public information live. Finished and interrupted replays reveal roles and private game observations. Internal external-agent reasoning is not part of the guaranteed record.\n\nPLAYABLE_BRANCH_A\n",
+      "wrapper": "#!/usr/bin/env node\nimport { mkdir, readFile, realpath } from 'node:fs/promises';\nimport { homedir } from 'node:os';\nimport { resolve, dirname } from 'node:path';\nimport { randomBytes, createHash, randomUUID } from 'node:crypto';\nimport { pathToFileURL } from 'node:url';\nimport { parseArgs } from 'node:util';\nimport { lockLedger } from './ledger.mjs';\nimport { pictureCommand, pictureHelp, pictureOnboarding } from './picture.mjs';\nimport { activeArtifacts, pinParticipation, verifyPins } from './preview-artifacts.mjs';\nimport { writeJsonDurably } from './durable-json.mjs';\nimport { ApiError, apiResponse } from './http-response.mjs';\nimport {\n  acceptCurrent,\n  consumePage,\n  gameId,\n  notification,\n  validateIdentity,\n  validateCurrent,\n  validatePage,\n  connectionIdentity,\n  participationIdentity,\n  terminal,\n} from './current.mjs';\n\nexport { ApiError };\n\nfunction boundedTime(ms) {\n  const configured = process.env.AGENT_GAME_CHILD_DEADLINE;\n\n  if (configured === undefined) return ms;\n  const deadline = Number(configured);\n\n  if (!Number.isFinite(deadline)) throw new Error('Invalid AGENT_GAME_CHILD_DEADLINE.');\n  const remaining = Math.floor(deadline - Date.now());\n\n  if (remaining <= 0) throw new ApiError(408, 'runtime-exhausted', 'Child runtime allowance exhausted.');\n\n  return Math.min(ms, remaining);\n}\n\nconst delay = (ms) => new Promise((resolve) => setTimeout(resolve, boundedTime(ms)));\n\nexport class GameClient {\n  constructor(server, token = null, options = {}) {\n    const url = new URL(server);\n\n    if (\n      url.protocol !== 'https:' &&\n      !(url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))\n    )\n      throw new Error('Use HTTPS, or HTTP on localhost for development.');\n\n    if (url.username || url.password) throw new Error('Server URLs must not contain credentials.');\n    this.server = url.origin;\n    this.token = token;\n    this.eventAuthorization = options.eventAuthorization ?? 'entitled';\n    this.artifacts = options.artifacts;\n\n    if (!['entitled', 'public-wakeup'].includes(this.eventAuthorization))\n      throw new Error('Unsupported event authorization capability.');\n  }\n  async request(path, body, method, authenticated = true, signal) {\n    for (let attempt = 0; ; attempt++) {\n      try {\n        const headers = new Headers();\n        headers.set('X-Agent-Game-Protocols', '1,2');\n\n        if (body !== undefined) headers.set('content-type', 'application/json');\n\n        if (authenticated && this.token) headers.set('authorization', `Bearer ${this.token}`);\n\n        const timeout = AbortSignal.timeout(boundedTime(10_000));\n\n        const response = await fetch(`${this.server}${path}`, {\n          method: method ?? (body === undefined ? 'GET' : 'POST'),\n          redirect: 'error',\n          headers,\n          body: body === undefined ? undefined : JSON.stringify(body),\n          signal: signal ? AbortSignal.any([signal, timeout]) : timeout,\n        });\n\n        return await apiResponse(response);\n      } catch (error) {\n        if (signal?.aborted || attempt >= 2 || (error instanceof ApiError && error.status < 500)) throw error;\n        await delay(250 * 2 ** attempt);\n      }\n    }\n  }\n  async observation(matchId, after = 0, signal) {\n    const view = await this.request(\n      `/api/matches/${matchId}?after=${after}`,\n      undefined,\n      undefined,\n      true,\n      signal,\n    );\n\n    if (this.artifacts) validateCurrent(view, this.artifacts);\n\n    return view;\n  }\n  async action(matchId, request) {\n    return this.request(`/api/matches/${matchId}/actions`, request);\n  }\n  async history(matchId, parameters) {\n    const query = new URLSearchParams();\n\n    for (const [key, value] of Object.entries(parameters))\n      if (value !== undefined) query.set(key, String(value));\n\n    return validatePage(await this.request(`/api/matches/${matchId}/history?${query}`), parameters);\n  }\n  async connect(matchId, after = 0, protocolVersion = '1') {\n    const ticket =\n      this.token && this.eventAuthorization !== 'public-wakeup'\n        ? (await this.request(`/api/matches/${matchId}/ticket`, {})).ticket\n        : null;\n\n    const url = new URL(`/api/matches/${matchId}/events`, this.server);\n    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';\n    url.searchParams.set('after', String(after));\n\n    if (protocolVersion === '2') url.searchParams.set('protocol', '2');\n\n    if (ticket) url.searchParams.set('ticket', ticket);\n\n    return new WebSocket(url);\n  }\n  /** Resolves on an observation, even across socket failures. A pending tool call carries it back into the model loop. */\n  async wait(matchId, after, timeoutMs = 20_000, seen) {\n    const until = Date.now() + boundedTime(timeoutMs);\n    const publicWake = this.eventAuthorization === 'public-wakeup';\n    const wakeAbort = new AbortController();\n\n    const wakeSignal = publicWake\n      ? AbortSignal.any([wakeAbort.signal, AbortSignal.timeout(Math.max(1, Math.floor(until - Date.now())))])\n      : undefined;\n\n    const first = await this.observation(matchId, after, wakeSignal);\n\n    const changed = (view) =>\n      view.protocolVersion === '2'\n        ? notification(view) !== (seen ?? notification(first))\n        : view.cursor !== after;\n\n    if (changed(first) || first.decision || terminal(first)) return first;\n\n    return new Promise((resolve, reject) => {\n      let socket;\n      let finished = false;\n      let retries = 0;\n      let retryTimer;\n      let readingWake = false;\n      let pendingWake = false;\n      let latestEntitled = first;\n\n      const finish = (value, error) => {\n        if (finished) return;\n        finished = true;\n        clearTimeout(timer);\n        clearTimeout(retryTimer);\n        clearInterval(heartbeat);\n        wakeAbort.abort();\n        socket?.close();\n\n        if (error) reject(error);\n        else resolve(value);\n      };\n\n      const timer = setTimeout(\n        () => {\n          if (publicWake) {\n            finish(latestEntitled);\n\n            return;\n          }\n\n          void this.observation(matchId, after).then(\n            (view) => finish(view),\n            (error) => finish(null, error),\n          );\n        },\n        Math.max(1, until - Date.now()),\n      );\n\n      const heartbeat = setInterval(() => {\n        if (socket?.readyState === WebSocket.OPEN) socket.send('ping');\n      }, 10_000);\n\n      const reconnect = async () => {\n        if (finished) return;\n\n        try {\n          socket = await this.connect(matchId, after, first.protocolVersion);\n\n          if (finished) {\n            socket.close();\n\n            return;\n          }\n\n          socket.onmessage = async (event) => {\n            if (event.data === 'pong') return;\n\n            try {\n              if (publicWake) {\n                if (finished) return;\n                pendingWake = true;\n\n                if (readingWake) return;\n                readingWake = true;\n\n                try {\n                  while (pendingWake && !finished && !wakeSignal.aborted) {\n                    pendingWake = false;\n                    latestEntitled = await this.observation(matchId, after, wakeSignal);\n\n                    if (changed(latestEntitled) || latestEntitled.decision || terminal(latestEntitled))\n                      finish(latestEntitled);\n                  }\n\n                  if (!finished && wakeSignal.aborted) finish(latestEntitled);\n                } finally {\n                  readingWake = false;\n                }\n\n                return;\n              }\n\n              const packet = JSON.parse(event.data);\n              const view = packet.observation;\n\n              if (packet.type === 'observation' && (changed(view) || view.decision || terminal(view)))\n                finish(view);\n            } catch (error) {\n              if (publicWake && wakeSignal.aborted && !(error instanceof ApiError)) finish(latestEntitled);\n              else finish(null, error);\n            }\n          };\n\n          socket.onerror = () => socket.close();\n          socket.onclose = (event) => {\n            if (event.code === 4001)\n              finish(null, new ApiError(401, 'connection-revoked', 'Connection revoked or expired.'));\n            else if (!finished) retryTimer = setTimeout(reconnect, Math.min(2500, 250 * 2 ** retries++));\n          };\n        } catch (error) {\n          if (error instanceof ApiError && error.status < 500) finish(null, error);\n          else if (!finished) retryTimer = setTimeout(reconnect, 500);\n        }\n      };\n\n      void reconnect();\n    });\n  }\n}\n\nfunction options(argv) {\n  const { values, positionals } = parseArgs({\n    args: argv,\n    allowPositionals: true,\n    options: {\n      help: { type: 'boolean' },\n      server: { type: 'string' },\n      game: { type: 'string' },\n      epoch: { type: 'string' },\n      through: { type: 'string' },\n      'max-bytes': { type: 'string' },\n      runtime: { type: 'string' },\n      'queue-timeout': { type: 'string' },\n      'child-slice': { type: 'string' },\n      config: { type: 'string' },\n      name: { type: 'string' },\n      harness: { type: 'string' },\n      model: { type: 'string' },\n      budget: { type: 'string' },\n      match: { type: 'string' },\n      wait: { type: 'string' },\n      after: { type: 'string' },\n      limit: { type: 'string' },\n      timeout: { type: 'string' },\n      choice: { type: 'string' },\n      json: { type: 'string' },\n      text: { type: 'string' },\n      file: { type: 'string' },\n      'request-id': { type: 'string' },\n      'picture-source-server': { type: 'string' },\n      'picture-source-agent': { type: 'string' },\n      renew: { type: 'string' },\n    },\n  });\n\n  return { command: positionals[0] ?? 'help', flags: values };\n}\n\nexport async function save(path, data) {\n  await mkdir(dirname(path), { recursive: true, mode: 0o700 });\n  await writeJsonDurably(path, data);\n}\n\nexport async function updateCurrent(path, update) {\n  await mkdir(dirname(path), { recursive: true, mode: 0o700 });\n  let unlock;\n\n  for (let attempt = 0; !unlock; attempt++) {\n    try {\n      unlock = await lockLedger(`${path}.current`);\n    } catch (error) {\n      if (error.code !== 'ELOCKED' || attempt >= 100) throw error;\n      await delay(10);\n    }\n  }\n\n  try {\n    const latest = await readFile(path, 'utf8')\n      .then(JSON.parse)\n      .catch((error) => {\n        if (error.code === 'ENOENT') return {};\n        throw error;\n      });\n\n    const result = update(latest);\n    await save(path, latest);\n\n    return result;\n  } finally {\n    await unlock();\n  }\n}\n\nfunction print(data) {\n  process.stdout.write(`${JSON.stringify(data)}\\n`);\n}\n\nfunction minutes(value) {\n  if (value === undefined) return undefined;\n  const ms = Number(value) * 60000;\n\n  if (!Number.isSafeInteger(ms) || ms <= 0) throw new Error('Allowances must be positive minutes.');\n\n  return ms;\n}\n\n// Keep critical state intact inside common tool-output ceilings. History remains retrievable in pages.\nfunction display(view) {\n  if (view.protocolVersion === '2') {\n    if (Buffer.byteLength(JSON.stringify(view)) > 14336 || 'events' in view || 'cursor' in view)\n      throw new Error('Invalid bounded protocol-2 current observation.');\n\n    const output = {\n      ...view,\n      historyCommand: 'history --limit 10 --max-bytes 12288',\n    };\n\n    if (terminal(view)) {\n      output.winningSeat = view.result?.winnerSeat ?? null;\n      output.originalAgentResult =\n        view.you && view.result\n          ? {\n              won: view.you.seat === view.result.winnerSeat && !view.you.forfeited,\n              forfeited: view.you.forfeited,\n            }\n          : null;\n      output.overallReason = view.result?.reason ?? view.interruptionReason ?? null;\n    }\n\n    return output;\n  }\n\n  const { events, decision, ...state } = view;\n\n  const output = {\n    decision,\n    ...state,\n    events: [],\n    eventsOmitted: events.length,\n    historyCommand: 'history --after 0 --limit 10',\n  };\n\n  let bytes = Buffer.byteLength(JSON.stringify(output)) + 200;\n\n  for (const event of [...events].reverse()) {\n    const size = Buffer.byteLength(JSON.stringify(event)) + 1;\n\n    if (bytes + size > 15_500 || output.events.length >= 40) break;\n    output.events.unshift(event);\n    bytes += size;\n  }\n\n  output.eventsOmitted = events.length - output.events.length;\n\n  return output;\n}\n\nexport async function main(argv = process.argv.slice(2)) {\n  const { command, flags } = options(argv);\n\n  if (command === 'help' || flags.help) {\n    console.log(\n      'Setup: setup --server URL --harness opencode|claude [--config PATH]\\nStart or resume: start --config PATH\\nSaved installations: connections --harness opencode|claude\\n',\n    );\n    console.log(\n      'Registered previews: previews --config SOURCE_PATH\\nSelect a preview: preview-select --server TARGET_URL --config SOURCE_PATH [--game succession] [--renew NEW_AUTHORIZATION_LABEL]\\nSelection preserves source credentials/participation; use its returned target config and pinned executable/rules.\\n',\n    );\n    console.log(\n      'Connect without joining: connect --config PATH\\nOptional picture: picture-help | picture-status | picture-skip\\n  picture-upload --file PATH [--request-id ID]\\n  picture-remove [--request-id ID]\\n  picture-retry [--request-id ID] (uses saved original bytes/revision)\\nAppend --config PATH to each command. PNG/JPEG only, at most 2 MiB and 2048×2048.\\nSetup offer lineage: --picture-source-server URL --picture-source-agent ID (choice only; never transfers images or credentials).\\n',\n    );\n    console.log(\n      'Game selection: setup|start|join|play --game secret-overlord|succession\\nSupervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\\n',\n    );\n    console.log(\n      'Supervisor allowances (minutes): --runtime N --queue-timeout N --child-slice N. Succession defaults: 120/10/10; Secret Overlord match runtime: 35. Existing ledgers retain their limits. Client stop leaves server clocks running and may lead to forfeit.\\n',\n    );\n    console.log(\n      'History: history --epoch E --after N --through T --limit 10 --max-bytes 12288. Queue waiting: status --wait 5.\\nProtocol 2 current state is bounded to 14 KiB; history pages come from the server.\\n',\n    );\n    console.log(\n      `Agent Game · HTTP / WebSocket client (Node 22.12+)\\n\\nCommands:\\n  pair --server URL [--name \"OpenCode on laptop\"]\\n  pair-status                  Complete an approved pairing\\n  join                         Join or resume the matchmaking queue\\n  status                       Get queue / match assignment\\n  leave                        Cancel a queued entry\\n  observe [--match ID]          Read current entitled state\\n  wait [--timeout 20]           Wait for new events, decisions, or game end\\n  act --choice N               Submit a zero-based legal choice from last observation\\n  act --json '{...}'           Submit a complete ActionRequest\\n  say --text \"...\"             Send public discussion\\n  watch --match ID             Stream a public or entitled match\\n\\nUse --config PATH for each installation. Defaults to ~/.agent-game/connection.json.\\nUse --match ID to override the last assignment. All output except help is JSON.\\nKeep calling wait in the foreground until the match ends. A socket alone does not wake a model.\\n`,\n    );\n\n    return;\n  }\n\n  if (command === 'setup' || command === 'connections') {\n    const { setup, connections } = await import('./setup.mjs');\n    print(command === 'setup' ? await setup(flags) : await connections(flags.harness));\n\n    return;\n  }\n\n  if (command === 'preview-select' || command === 'previews') {\n    const { previewSelect } = await import('./preview-select.mjs');\n    print(await previewSelect(flags, command === 'previews'));\n\n    return;\n  }\n\n  if (command === 'picture-help') {\n    print(pictureHelp);\n\n    return;\n  }\n\n  const path = resolve(\n    String(flags.config ?? process.env.AGENT_GAME_CONFIG ?? `${homedir()}/.agent-game/connection.json`),\n  );\n\n  const state = await readFile(path, 'utf8')\n    .then(JSON.parse)\n    .catch((error) => {\n      if (error.code === 'ENOENT') return {};\n      throw error;\n    });\n\n  if (flags.server && state.server && new URL(String(flags.server)).origin !== state.server && state.token)\n    throw new Error('Use a separate --config for a different server.');\n  const server = flags.server ?? state.server;\n\n  if (!server)\n    throw new Error(\n      'Arena URL missing. Use setup --server URL --harness opencode|claude, or pair --server URL. Ask the owner for the arena URL if it was not supplied.',\n    );\n  await verifyPins(activeArtifacts(state));\n\n  const client = new GameClient(String(server), state.token, {\n    eventAuthorization: state.preview ? 'public-wakeup' : state.eventAuthorization,\n    artifacts: activeArtifacts(state),\n  });\n\n  if (\n    ['picture-status', 'picture-skip', 'picture-upload', 'picture-remove', 'picture-retry'].includes(command)\n  ) {\n    print(await pictureCommand(client, state, path, command, flags));\n\n    return;\n  }\n\n  let baseline = structuredClone(state);\n\n  const change = (update) => {\n    const identity = connectionIdentity(baseline);\n\n    return updateCurrent(path, (latest) => {\n      if (connectionIdentity(latest) !== identity)\n        throw new ApiError(\n          409,\n          'connection-changed',\n          'The installation changed while this command was running.',\n        );\n      const result = update(latest);\n      baseline = structuredClone(latest);\n\n      for (const key of Object.keys(state)) delete state[key];\n      Object.assign(state, latest);\n\n      return result;\n    });\n  };\n\n  state.selectedGame = gameId(flags.game ?? state.selectedGame);\n\n  if (['connect', 'start', 'pair', 'join', 'play'].includes(command))\n    await change((latest) => {\n      latest.selectedGame = state.selectedGame;\n    });\n\n  if (command === 'play') {\n    const { supervise } = await import('./supervisor.mjs');\n\n    const result = await supervise({\n      configPath: path,\n      harness: String(flags.harness ?? 'claude'),\n      requestedGame: flags.game,\n      model: flags.model,\n      maxBudget: flags.budget === undefined ? undefined : Number(flags.budget),\n      maxRuntimeMs: minutes(flags.runtime),\n      queueAllowanceMs: minutes(flags['queue-timeout']),\n      childSliceMs: minutes(flags['child-slice']),\n      onEvent: (event) => process.stderr.write(JSON.stringify(event) + '\\n'),\n    });\n\n    print(result);\n\n    return;\n  }\n\n  const persist = (fields) => {\n    const before = participationIdentity(baseline);\n    const incoming = structuredClone(state);\n\n    return change((latest) => {\n      if (\n        participationIdentity(latest) !== before &&\n        participationIdentity(latest) !== participationIdentity(incoming) &&\n        !(latest.matchId && latest.matchId === incoming.matchId && baseline.matchId !== latest.matchId)\n      )\n        throw new ApiError(\n          409,\n          'stale-participation',\n          'A newer command changed the participation. Run status again.',\n        );\n\n      if (\n        fields.includes('pending') &&\n        incoming.pending &&\n        latest.pending?.request.actionId !== incoming.pending.request.actionId\n      ) {\n        const current = latest.observation;\n\n        if (\n          current &&\n          (terminal(current) ||\n            current.phase.id !== incoming.pending.request.phaseId ||\n            current.you?.generation !== incoming.observation?.you?.generation ||\n            current.decision?.id !== incoming.pending.request.decisionId)\n        )\n          throw new ApiError(\n            409,\n            'stale-decision',\n            'The current decision changed before submission. Run observe.',\n          );\n      }\n\n      if (fields.includes('matchId') && latest.matchId !== incoming.matchId) {\n        for (const key of ['observation', 'historyWalk', 'currentNotification', 'pending'])\n          delete latest[key];\n        latest.cursor = 0;\n      }\n\n      for (const key of fields) {\n        if (incoming[key] === undefined) delete latest[key];\n        else latest[key] = key === 'lastPairPoll' ? Math.max(latest[key] ?? 0, incoming[key]) : incoming[key];\n      }\n    });\n  };\n\n  if (command === 'start' || command === 'connect') {\n    if (!state.agentId) {\n      if (!state.pairing || state.pairing.expiresAt <= Date.now())\n        return main([\n          'pair',\n          '--server',\n          client.server,\n          '--config',\n          path,\n          '--name',\n          state.installation ?? 'Agent installation',\n          ...(flags.game ? ['--game', flags.game] : []),\n        ]);\n      await delay(Math.max(0, (state.lastPairPoll ?? 0) + 5000 - Date.now()));\n      state.lastPairPoll = Date.now();\n      await persist(['lastPairPoll']);\n      const result = await client.request('/api/pairing/status');\n\n      if (result.status !== 'approved') {\n        print({\n          ...result,\n          ...state.pairing,\n          configPath: path,\n          next: `Show the owner verificationUrl. Keep calling ${command} in the foreground; it waits between approval checks. If this session pauses, ask the owner to reply approved.`,\n        });\n\n        return;\n      }\n\n      Object.assign(state, result);\n      delete state.pairing;\n      await persist(['status', 'connectionId', 'agentId', 'agentName', 'expiresAt', 'pairing']);\n    }\n\n    if (command === 'connect') {\n      const current = await client.request('/api/queue');\n\n      if (current.status !== 'idle') return main(['status', '--config', path]);\n      print({\n        status: 'ready',\n        agentId: state.agentId,\n        agentName: state.agentName,\n        configPath: path,\n        picture: await pictureOnboarding(\n          client,\n          state,\n          async () => (await client.request('/api/queue')).status === 'idle',\n        ),\n        next: 'Connection is ready. If picture.askOwner is true, read picture-help for the one-time optional offer. Run start to join; an answer, image tools or upload never gate play.',\n      });\n\n      return;\n    }\n\n    return main(['join', '--config', path, ...(flags.game ? ['--game', flags.game] : [])]);\n  }\n\n  if (command === 'pair') {\n    if (state.agentId && state.token)\n      throw new Error(\n        'This installation is already paired. Use a new --config for reauthorization or another agent.',\n      );\n    state.token ??= `agk_${randomBytes(32).toString('base64url')}`;\n    state.server = client.server;\n    client.token = state.token;\n    await persist(['token', 'server']);\n\n    const result = await client.request(\n      '/api/pairing',\n      {\n        installation: String(flags.name ?? state.installation ?? 'Agent installation'),\n        tokenHash: createHash('sha256').update(state.token).digest('hex'),\n      },\n      undefined,\n      false,\n    );\n\n    state.pairing = result;\n    await persist(['pairing']);\n    print({\n      status: 'pending',\n      ...result,\n      configPath: path,\n      next: 'Owner: open verificationUrl, sign in, create or select a competitor, and approve. Agent: keep calling connect in the foreground for setup before joining, or start to join immediately. If the session pauses, the owner can reply approved.',\n    });\n\n    return;\n  }\n\n  if (command === 'pair-status') {\n    await delay(Math.max(0, (state.lastPairPoll ?? 0) + 5000 - Date.now()));\n    state.lastPairPoll = Date.now();\n    await persist(['lastPairPoll']);\n    const result = await client.request('/api/pairing/status');\n\n    if (result.status === 'approved') {\n      Object.assign(state, result);\n      delete state.pairing;\n      await persist(['status', 'connectionId', 'agentId', 'agentName', 'expiresAt', 'pairing']);\n    }\n\n    print({\n      ...result,\n      next:\n        result.status === 'approved'\n          ? 'Run start to join or resume one match.'\n          : 'Show the owner the pairing URL and call start to check again.',\n    });\n\n    return;\n  }\n\n  if (command === 'join') {\n    const current = await client.request('/api/queue');\n\n    if (current.status === 'idle') {\n      state.joinRequest ??= randomUUID();\n      state.pendingJoin ??= { gameId: state.selectedGame, requestId: state.joinRequest };\n      pinParticipation(state, state.pendingJoin.requestId, state.selectedGame, path);\n      client.artifacts = activeArtifacts(state);\n\n      if (state.pendingJoin.gameId !== state.selectedGame)\n        throw new Error('A pending join belongs to another game. Resume or cancel it first.');\n      await persist(['joinRequest', 'pendingJoin', 'previewParticipation']);\n    }\n\n    if (current.status !== 'idle' && flags.game && gameId(current.gameId) !== flags.game)\n      throw new Error(`Agent busy in ${gameId(current.gameId)}.`);\n\n    let result = current;\n\n    if (current.status === 'idle') {\n      const request = { requestId: state.pendingJoin.requestId };\n\n      if (state.pendingJoin.gameId === 'succession') request.gameId = 'succession';\n      result = await client.request('/api/queue', request);\n    }\n\n    if (result.status !== 'idle') validateIdentity(result, activeArtifacts(state));\n\n    if (result.status === 'queued') {\n      delete state.matchId;\n      delete state.observation;\n      delete state.historyWalk;\n      delete state.currentNotification;\n      delete state.participation;\n      state.cursor = 0;\n    }\n\n    if (result.matchId) {\n      if (state.matchId !== result.matchId) {\n        state.cursor = 0;\n        delete state.observation;\n        delete state.historyWalk;\n        delete state.currentNotification;\n      }\n\n      state.matchId = result.matchId;\n      state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };\n\n      if (state.previewParticipation) state.previewParticipation.matchId = result.matchId;\n      delete state.joinRequest;\n      delete state.pendingJoin;\n    }\n\n    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin', 'previewParticipation']);\n\n    const assignment = {\n      ...result,\n      agentName: state.agentName,\n      next:\n        result.status === 'matched'\n          ? 'Run observe now, then keep the foreground act / say / wait loop running until finished or interrupted.'\n          : 'Keep calling status --wait 5 in the foreground until matched. House agents fill open seats after the queue timer, subject to arena capacity.',\n    };\n\n    if (state.preview) assignment.artifacts = activeArtifacts(state);\n\n    if (result.matchId) assignment.watchUrl = `${client.server}/matches/${result.matchId}`;\n    print(assignment);\n\n    return;\n  }\n\n  if (command === 'status' || command === 'leave') {\n    if (command === 'status' && flags.wait !== undefined) {\n      const seconds = Number(flags.wait);\n\n      if (!Number.isFinite(seconds) || seconds < 0 || seconds > 20)\n        throw new Error('Queue wait must be 0–20 seconds.');\n      await delay(seconds * 1000);\n    }\n\n    // Name the pending operation so a stale leave cannot cancel a replacement queue entry.\n    const pin = state.previewParticipation;\n\n    const cancellation =\n      command === 'leave'\n        ? (state.pendingJoin ??\n          (pin && !pin.matchId ? { gameId: pin.artifacts.gameId, requestId: pin.queueRequestId } : undefined))\n        : undefined;\n\n    const result = await client.request('/api/queue', cancellation, command === 'leave' ? 'DELETE' : 'GET');\n\n    if (result.status !== 'idle') validateIdentity(result, activeArtifacts(state));\n\n    if (result.matchId) {\n      if (state.matchId !== result.matchId) {\n        state.cursor = 0;\n        delete state.observation;\n        delete state.historyWalk;\n        delete state.currentNotification;\n      }\n\n      state.matchId = result.matchId;\n      state.participation = { gameId: gameId(result.gameId), matchId: result.matchId };\n\n      if (state.previewParticipation) state.previewParticipation.matchId = result.matchId;\n      delete state.joinRequest;\n      delete state.pendingJoin;\n    }\n\n    if (command === 'leave' && result.status === 'idle') {\n      if (\n        pin &&\n        !pin.matchId &&\n        pin.queueRequestId === cancellation?.requestId &&\n        pin.artifacts.gameId === cancellation.gameId\n      ) {\n        state.cancelledPreviewParticipations ??= {};\n        state.cancelledPreviewParticipations[pin.queueRequestId] ??= structuredClone(pin);\n        delete state.previewParticipation;\n      }\n\n      delete state.joinRequest;\n      delete state.pendingJoin;\n    }\n\n    await persist([\n      'matchId',\n      'participation',\n      'joinRequest',\n      'pendingJoin',\n      'previewParticipation',\n      'cancelledPreviewParticipations',\n    ]);\n    print(result);\n\n    return;\n  }\n\n  const matchId = String(flags.match ?? state.matchId ?? '');\n\n  if (!/^match_[\\w-]+$/.test(matchId))\n    throw new Error('No match selected. Run status after joining, or use --match ID.');\n\n  if (state.matchId !== matchId) {\n    const before = participationIdentity(baseline);\n    state.matchId = matchId;\n    state.cursor = 0;\n    delete state.observation;\n    await change((latest) => {\n      if (participationIdentity(latest) !== before)\n        throw new ApiError(409, 'stale-match', 'A newer command selected another participation.');\n      latest.matchId = matchId;\n      latest.cursor = 0;\n      delete latest.observation;\n      delete latest.historyWalk;\n      delete latest.currentNotification;\n      delete latest.pending;\n    });\n  }\n\n  let currentParticipation = participationIdentity(state);\n\n  const remember = async (view) => {\n    validateCurrent(view, activeArtifacts(state));\n\n    return change((latest) => {\n      if (\n        participationIdentity(latest) !== currentParticipation ||\n        (latest.matchId && latest.matchId !== matchId)\n      ) {\n        if (latest.observation) return latest.observation;\n        throw new ApiError(409, 'stale-match', 'A newer command selected another match.');\n      }\n\n      view = acceptCurrent(latest.observation, view);\n      latest.server ??= client.server;\n      latest.matchId = view.matchId;\n      latest.observation = view;\n      latest.participation = { gameId: gameId(view.gameId), matchId: view.matchId };\n\n      if (view.protocolVersion === '2') latest.currentNotification = notification(view);\n      else latest.cursor = view.cursor;\n\n      if (terminal(view)) delete latest.joinRequest;\n      currentParticipation = participationIdentity(latest);\n      Object.assign(state, latest);\n\n      return view;\n    });\n  };\n\n  if (command === 'history') {\n    const after = Number(flags.after ?? 0);\n    const limit = Number(flags.limit ?? 10);\n    const current = await client.observation(matchId, after);\n\n    if (current.protocolVersion === '2') {\n      const accepted = await remember(current);\n      const automatic = flags.after === undefined && flags.epoch === undefined && flags.through === undefined;\n\n      const walk =\n        state.historyWalk?.epoch === accepted.history.visibilityEpoch ? state.historyWalk : undefined;\n\n      const pageAfter = automatic ? (walk?.cursor ?? 0) : after;\n      const pageThrough = automatic && walk?.through > pageAfter ? walk.through : accepted.history.streamHead;\n\n      const pageRequest = {\n        matchId,\n        epoch: flags.epoch ?? accepted.history.visibilityEpoch,\n        after: pageAfter,\n        through: flags.through === undefined ? pageThrough : Number(flags.through),\n        limit,\n        maxBytes: Number(flags['max-bytes'] ?? 12288),\n      };\n\n      const { matchId: requestedMatch, ...parameters } = pageRequest;\n      const page = await client.history(requestedMatch, parameters);\n\n      if (page.reset && page.visibilityEpoch !== accepted.history.visibilityEpoch)\n        await remember(await client.observation(matchId));\n      const latest = JSON.parse(await readFile(path, 'utf8')).observation;\n\n      if (\n        !latest?.history ||\n        page.matchId !== latest.matchId ||\n        page.visibilityEpoch !== latest.history.visibilityEpoch\n      ) {\n        print({ status: 'stale-page', matchId, history: latest?.history });\n\n        return;\n      }\n\n      if (automatic) {\n        const applied = await change((latestState) => {\n          const next = consumePage(latestState.historyWalk, page, latestState.observation, pageRequest);\n\n          if (next === latestState.historyWalk) return false;\n          latestState.historyWalk = next;\n\n          return true;\n        });\n\n        if (!applied) {\n          print({ status: 'stale-page', matchId, history: latest.history });\n\n          return;\n        }\n      }\n\n      print(page);\n\n      return;\n    }\n\n    if (!Number.isSafeInteger(after) || after < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 40)\n      throw new Error('Use a nonnegative --after and a --limit of 1–40.');\n    const view = current;\n    const events = [];\n    let bytes = 500;\n\n    for (const event of view.events.filter((event) => event.id > after)) {\n      const size = Buffer.byteLength(JSON.stringify(event)) + 1;\n\n      if (events.length >= limit || bytes + size > 15_000) break;\n      events.push(event);\n      bytes += size;\n    }\n\n    const next = events.at(-1)?.id ?? after;\n    print({ matchId, events, next, cursor: view.cursor, hasMore: next < view.cursor, reset: view.reset });\n\n    return;\n  }\n\n  if (command === 'observe') {\n    print(display(await remember(await client.observation(matchId))));\n\n    return;\n  }\n\n  if (command === 'wait') {\n    const seconds = Number(flags.timeout ?? 20);\n\n    if (!Number.isFinite(seconds) || seconds < 1 || seconds > 60)\n      throw new Error('Timeout must be between 1 and 60 seconds.');\n    print(\n      display(\n        await remember(\n          await client.wait(matchId, state.cursor ?? 0, seconds * 1000, state.currentNotification),\n        ),\n      ),\n    );\n\n    return;\n  }\n\n  if (command === 'act' || command === 'say') {\n    let request;\n\n    if (flags.json) request = JSON.parse(String(flags.json));\n    else {\n      const view = state.observation;\n\n      if (!view || view.matchId !== matchId) throw new Error('Run observe or wait before acting.');\n      const index = Number(flags.choice);\n\n      const action =\n        command === 'say'\n          ? { type: 'chat', text: String(flags.text ?? '') }\n          : Number.isInteger(index) && index >= 0\n            ? view.decision?.actions[index]?.action\n            : null;\n\n      if (!action) throw new Error('Choose a valid zero-based --choice from the most recent observation.');\n      request = {\n        actionId: randomUUID(),\n        phaseId: view.phase.id,\n        action,\n      };\n\n      if (view.decision) request.decisionId = view.decision.id;\n\n      if (view.protocolVersion === '2') request.gameId = 'succession';\n\n      // Persist before sending: rerunning the identical command after a transport failure reuses the receipt ID.\n      const signature =\n        view.protocolVersion === '2'\n          ? JSON.stringify({\n              matchId,\n              gameId: view.gameId,\n              phaseId: view.phase.id,\n              decisionId: view.decision?.id,\n              generation: view.you?.generation,\n              action,\n            })\n          : JSON.stringify({ matchId, phaseId: view.phase.id, action });\n\n      if (state.pending?.signature === signature) request = state.pending.request;\n      else state.pending = { signature, request };\n      await persist(['pending']);\n    }\n\n    const result = await client.action(matchId, request);\n    await change((latest) => {\n      if (latest.pending?.request.actionId === request.actionId) delete latest.pending;\n    });\n    delete state.pending;\n\n    if (result.observation.protocolVersion !== '2' && !result.observation.reset)\n      result.observation.events = result.observation.events.slice(state.cursor ?? 0);\n\n    try {\n      result.observation = await remember(result.observation);\n    } catch (error) {\n      if (error.code !== 'stale-match') throw error;\n      print({ accepted: result.accepted, actionId: result.actionId, status: 'stale-current', matchId });\n\n      return;\n    }\n\n    print({ ...result, observation: display(result.observation) });\n\n    return;\n  }\n\n  if (command === 'watch') {\n    for (;;) {\n      const view = await remember(\n        await client.wait(matchId, state.cursor ?? 0, 20000, state.currentNotification),\n      );\n\n      print(display(view));\n\n      if (terminal(view)) break;\n    }\n\n    return;\n  }\n\n  throw new Error(`Unknown command: ${command}. Run help.`);\n}\n\n// npm bin entries are symlinks; Node resolves import.meta.url to the target file.\nif (process.argv[1] && import.meta.url === pathToFileURL(await realpath(resolve(process.argv[1]))).href)\n  main().catch((error) => {\n    const problem = { ...error.details, code: error.code ?? 'client-error', message: error.message };\n\n    if (error.status) problem.status = error.status;\n    print({ error: problem });\n    process.exitCode = 1;\n  });\n",
+      "deadline": "1789475487170.2588"
+    },
+    {
+      "at": 1789475187285,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "required": false,
+      "cursor": 3
+    },
+    {
+      "at": 1789475187374,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "required": false,
+      "cursor": 3
+    },
+    {
+      "at": 1789475187452,
+      "type": "cli",
+      "command": [
+        "say",
+        "--text",
+        "Local native fixture: delivered context read; required choices first."
+      ],
+      "required": false,
+      "accepted": true
+    },
+    {
+      "at": 1789475187452,
+      "type": "phase-ready",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "matchId": "match_ef609e79-187a-4c46-9747-98a33a9f3b91"
+    },
+    {
+      "at": 1789475188490,
+      "type": "cli",
+      "command": [
+        "wait",
+        "--timeout",
+        "1"
+      ],
+      "status": "active",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "required": false,
+      "cursor": 4
+    },
+    {
+      "at": 1789475188557,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "required": false,
+      "cursor": 4
+    },
+    {
+      "at": 1789475188557,
+      "type": "phase-ready",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "matchId": "match_ef609e79-187a-4c46-9747-98a33a9f3b91"
+    },
+    {
+      "at": 1789475189597,
+      "type": "cli",
+      "command": [
+        "wait",
+        "--timeout",
+        "1"
+      ],
+      "status": "active",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "required": false,
+      "cursor": 4
+    },
+    {
+      "at": 1789475189670,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "required": false,
+      "cursor": 4
+    },
+    {
+      "at": 1789475189670,
+      "type": "phase-ready",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "matchId": "match_ef609e79-187a-4c46-9747-98a33a9f3b91"
+    },
+    {
+      "at": 1789475190709,
+      "type": "cli",
+      "command": [
+        "wait",
+        "--timeout",
+        "1"
+      ],
+      "status": "active",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "required": false,
+      "cursor": 4
+    },
+    {
+      "at": 1789475190786,
+      "type": "cli",
+      "command": [
+        "observe"
+      ],
+      "status": "active",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "required": false,
+      "cursor": 4
+    },
+    {
+      "at": 1789475190787,
+      "type": "phase-ready",
+      "phase": "6f5ef77c-1567-4a03-aee4-6c026f4e08ff",
+      "matchId": "match_ef609e79-187a-4c46-9747-98a33a9f3b91"
+    }
+  ],
+  "calls": [
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:0:0:chat:0\",1]",
+      "allocation_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "fingerprint": "7c232e700a1f295e1a34200f53a0b191441f0e47e60b95066e910f0e075834c5",
+      "state": "dispatched",
+      "deadline": 1789475206422,
+      "result": null
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:1:0:chat:0\",1]",
+      "allocation_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "fingerprint": "6cac8a0ac0ba8f489b7d4bf4a718c4439d33a4acb82a304ad9c917d0534421ee",
+      "state": "dispatched",
+      "deadline": 1789475206422,
+      "result": null
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:2:0:chat:0\",1]",
+      "allocation_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "fingerprint": "bb3e630a3d100214ad3c831397db7a2aa4f00ee88dd13308f03af56c5862f982",
+      "state": "dispatched",
+      "deadline": 1789475206422,
+      "result": null
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:3:0:chat:0\",1]",
+      "allocation_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "fingerprint": "0598b02c0f3a771190c8f431a6764ad4343c971d52d1e85752d6bf0a482fe59d",
+      "state": "dispatched",
+      "deadline": 1789475206422,
+      "result": null
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:4:0:chat:0\",1]",
+      "allocation_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "fingerprint": "ce390ef64884809160fa42956753025d3a4c91292343af2a000f9050c2cb4207",
+      "state": "dispatched",
+      "deadline": 1789475206422,
+      "result": null
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:5:0:chat:0\",1]",
+      "allocation_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "fingerprint": "bb812b2c8735bd569e18765bcecfc1e12cc134022bd2ef14a466b0648b970483",
+      "state": "dispatched",
+      "deadline": 1789475206422,
+      "result": null
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:6:0:chat:0\",1]",
+      "allocation_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "fingerprint": "3016a4d5a4084c994abe9fd9af767c5b0e4410eb95bfcf9f6e399caaaf28c86c",
+      "state": "dispatched",
+      "deadline": 1789475206422,
+      "result": null
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:8:0:chat:0\",1]",
+      "allocation_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "fingerprint": "20989c3d0a96888226f8ce962dbfdb2a3256840fef0b2a4a2d92daebd248264a",
+      "state": "dispatched",
+      "deadline": 1789475206422,
+      "result": null
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:9:0:chat:0\",1]",
+      "allocation_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "fingerprint": "abfe1a8993d069328c63f7db92895fa4f16cfc82f4fc886c0254900115123f22",
+      "state": "dispatched",
+      "deadline": 1789475206422,
+      "result": null
+    }
+  ],
+  "usage": [
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:0:0:chat:0\",1]",
+      "match_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "day": "2026-09-15",
+      "created_at": 1789475190776,
+      "expires_at": 1789475206422,
+      "reserved": 0.0027376,
+      "actual": null,
+      "done": 0,
+      "kind": "initial"
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:1:0:chat:0\",1]",
+      "match_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "day": "2026-09-15",
+      "created_at": 1789475190881,
+      "expires_at": 1789475206422,
+      "reserved": 0.0027416000000000003,
+      "actual": null,
+      "done": 0,
+      "kind": "initial"
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:2:0:chat:0\",1]",
+      "match_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "day": "2026-09-15",
+      "created_at": 1789475191025,
+      "expires_at": 1789475206422,
+      "reserved": 0.0027036000000000004,
+      "actual": null,
+      "done": 0,
+      "kind": "initial"
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:3:0:chat:0\",1]",
+      "match_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "day": "2026-09-15",
+      "created_at": 1789475191083,
+      "expires_at": 1789475206422,
+      "reserved": 0.0027064000000000003,
+      "actual": null,
+      "done": 0,
+      "kind": "initial"
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:4:0:chat:0\",1]",
+      "match_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "day": "2026-09-15",
+      "created_at": 1789475191180,
+      "expires_at": 1789475206422,
+      "reserved": 0.0027,
+      "actual": null,
+      "done": 0,
+      "kind": "initial"
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:5:0:chat:0\",1]",
+      "match_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "day": "2026-09-15",
+      "created_at": 1789475191281,
+      "expires_at": 1789475206422,
+      "reserved": 0.0027024,
+      "actual": null,
+      "done": 0,
+      "kind": "initial"
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:6:0:chat:0\",1]",
+      "match_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "day": "2026-09-15",
+      "created_at": 1789475191381,
+      "expires_at": 1789475206422,
+      "reserved": 0.0027104,
+      "actual": null,
+      "done": 0,
+      "kind": "initial"
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:8:0:chat:0\",1]",
+      "match_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "day": "2026-09-15",
+      "created_at": 1789475191578,
+      "expires_at": 1789475206422,
+      "reserved": 0.002732,
+      "actual": null,
+      "done": 0,
+      "kind": "initial"
+    },
+    {
+      "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:9:0:chat:0\",1]",
+      "match_id": "preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db",
+      "day": "2026-09-15",
+      "created_at": 1789475191698,
+      "expires_at": 1789475206422,
+      "reserved": 0.0027392,
+      "actual": null,
+      "done": 0,
+      "kind": "initial"
+    }
+  ],
+  "waiters": [],
+  "providersBefore": [
+    {
+      "at": 1789475190786,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475190885,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191028,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191086,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191183,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191286,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191384,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191581,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191700,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    }
+  ],
+  "transition": {
+    "advanced": false,
+    "reason": "house-pending",
+    "house": {
+      "complete": false,
+      "jobs": [
+        {
+          "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:0:0:chat:0",
+          "status": "pending",
+          "outcome": null,
+          "admissionReason": "required-priority",
+          "dueAt": 1789475192337,
+          "attemptId": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:0:0:chat:0\",1]",
+          "running": false,
+          "source": {
+            "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:0:0:chat:0\",1]",
+            "state": "dispatched",
+            "dispatched": true,
+            "deferred": false
+          },
+          "deferred": false,
+          "complete": false
+        },
+        {
+          "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:1:0:chat:0",
+          "status": "pending",
+          "outcome": null,
+          "admissionReason": "required-priority",
+          "dueAt": 1789475192185,
+          "attemptId": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:1:0:chat:0\",1]",
+          "running": false,
+          "source": {
+            "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:1:0:chat:0\",1]",
+            "state": "dispatched",
+            "dispatched": true,
+            "deferred": false
+          },
+          "deferred": false,
+          "complete": false
+        },
+        {
+          "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:2:0:chat:0",
+          "status": "pending",
+          "outcome": null,
+          "admissionReason": "required-priority",
+          "dueAt": 1789475192332,
+          "attemptId": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:2:0:chat:0\",1]",
+          "running": false,
+          "source": {
+            "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:2:0:chat:0\",1]",
+            "state": "dispatched",
+            "dispatched": true,
+            "deferred": false
+          },
+          "deferred": false,
+          "complete": false
+        },
+        {
+          "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:3:0:chat:0",
+          "status": "pending",
+          "outcome": null,
+          "admissionReason": "required-priority",
+          "dueAt": 1789475192125,
+          "attemptId": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:3:0:chat:0\",1]",
+          "running": false,
+          "source": {
+            "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:3:0:chat:0\",1]",
+            "state": "dispatched",
+            "dispatched": true,
+            "deferred": false
+          },
+          "deferred": false,
+          "complete": false
+        },
+        {
+          "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:4:0:chat:0",
+          "status": "pending",
+          "outcome": null,
+          "admissionReason": "required-priority",
+          "dueAt": 1789475192224,
+          "attemptId": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:4:0:chat:0\",1]",
+          "running": false,
+          "source": {
+            "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:4:0:chat:0\",1]",
+            "state": "dispatched",
+            "dispatched": true,
+            "deferred": false
+          },
+          "deferred": false,
+          "complete": false
+        },
+        {
+          "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:5:0:chat:0",
+          "status": "pending",
+          "outcome": null,
+          "admissionReason": "required-priority",
+          "dueAt": 1789475192325,
+          "attemptId": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:5:0:chat:0\",1]",
+          "running": false,
+          "source": {
+            "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:5:0:chat:0\",1]",
+            "state": "dispatched",
+            "dispatched": true,
+            "deferred": false
+          },
+          "deferred": false,
+          "complete": false
+        },
+        {
+          "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:6:0:chat:0",
+          "status": "pending",
+          "outcome": null,
+          "admissionReason": "required-priority",
+          "dueAt": 1789475192158,
+          "attemptId": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:6:0:chat:0\",1]",
+          "running": false,
+          "source": {
+            "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:6:0:chat:0\",1]",
+            "state": "dispatched",
+            "dispatched": true,
+            "deferred": false
+          },
+          "deferred": false,
+          "complete": false
+        },
+        {
+          "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:8:0:chat:0",
+          "status": "pending",
+          "outcome": null,
+          "admissionReason": "required-priority",
+          "dueAt": 1789475192355,
+          "attemptId": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:8:0:chat:0\",1]",
+          "running": false,
+          "source": {
+            "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:8:0:chat:0\",1]",
+            "state": "dispatched",
+            "dispatched": true,
+            "deferred": false
+          },
+          "deferred": false,
+          "complete": false
+        },
+        {
+          "id": "secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:9:0:chat:0",
+          "status": "pending",
+          "outcome": null,
+          "admissionReason": "required-priority",
+          "dueAt": 1789475192219,
+          "attemptId": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:9:0:chat:0\",1]",
+          "running": false,
+          "source": {
+            "id": "[\"preview_allocation_c64de719-4e98-4bc5-9be3-2e2f84ff60db\",\"secret-overlord:6f5ef77c-1567-4a03-aee4-6c026f4e08ff:9:0:chat:0\",1]",
+            "state": "dispatched",
+            "dispatched": true,
+            "deferred": false
+          },
+          "deferred": false,
+          "complete": false
+        }
+      ]
+    }
+  },
+  "providersAfter": [
+    {
+      "at": 1789475190786,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475190885,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191028,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191086,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191183,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191286,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191384,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191581,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    },
+    {
+      "at": 1789475191700,
+      "task": "chat",
+      "phase": "nomination-discussion",
+      "choice": -1,
+      "input": 100,
+      "output": 20,
+      "usage": true,
+      "finished": false
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "base": "00b3ad2429326f8a73c8be10915eff7beae6f61d",
+  "cpus": [
+    0,
+    1
+  ],
+  "files": [
+    {
+      "path": ".tim27-playable/worker.ts",
+      "sha256": "b9dadf9059d95bdb2fd1ba8ad8a0edcb89426fb724417e74eeb4e10970283811"
+    },
+    {
+      "path": ".tim27-playable/admission-ordering.test.ts",
+      "sha256": "1a936447da2bf6b428ea365d38e20909c0fee60f28003a7a16ec20a78de794e8"
+    },
+    {
+      "path": ".tim27-playable/harness.ts",
+      "sha256": "d4b92b7aaf6226778c099c9eefd1f738aca0f353508828ca9f14068c56fbbe6e"
+    },
+    {
+      "path": ".tim27-playable/native.cjs",
+      "sha256": "c8a88c2c4f355710ed798fce2b9b4e0146af78deb50b66f77fee2c611342e7b0"
+    },
+    {
+      "path": ".tim27-playable/ci.config.mjs",
+      "sha256": "81a76e2f68eef4909cbb9e70c67c5900f7c219f152bcfd8f361a099a8da178c7"
+    },
+    {
+      "path": "tests/preview-playable.test.ts",
+      "sha256": "5cc2cb8f087f757900fc38b2f0cd87a14b06e5271341fe02132adb8fab53badb"
+    }
+  ]
+}
