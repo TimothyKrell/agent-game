@@ -1,0 +1,18 @@
+{
+  "runtime": "v24.21.0",
+  "implementation": "Unmodified src/server/coordinator.ts, native SQLite storage adapter; no inference or DO host.",
+  "separateCoordinators": {
+    "reservationEach": [4.5, 4.5],
+    "aggregateReserved": 9,
+    "configuredDailyEach": 5
+  },
+  "paidAllHouse": {
+    "requiredOverMatch": "match-budget",
+    "optionalOverHalf": "optional-budget",
+    "followupOverEighth": "followup-budget"
+  },
+  "mixed": {
+    "sixDollarRequiredEstimateAllowed": true,
+    "unknownAccountedUsd": 6
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "baseline": "73ca5627bfcd1a699650cd77d9c4e887a475ab06",
+  "checkedAt": "2026-09-14",
+  "runtime": "v24.21.0",
+  "sha256": {
+    "package-lock.json": "d878af6989c2a5a880a92f07921b7cf5109d36fbaffda9fbcc0db69ef9104034",
+    "alchemy.run.ts": "ba925ae7b53f497c3b532000bed68dea8a62720ecf19376217322735277083b9",
+    "src/server/auth.ts": "33cdf59698a61d55f1572782fc9045fe7ffa4992d37c525e556dcab13b30bcd3",
+    "src/server/pairing.ts": "e7160cbe3b42b88bb80be9ca4219c2b2654afb5a56505c82b344a84c03b1baa2",
+    "src/server/worker.ts": "ead5e16a4c36522febe803b4bc242d0175938178052b2d2870eae12b2b3b54cd",
+    "src/server/coordinator.ts": "9ad4d889a11e0b074306b21b1bdbdc6e226952a749735406b2af946b80da34c3",
+    "src/server/house-seat.ts": "6eccf5b3a299c88bbb9b4f73ae4461fbf57ac6b895c8a69da3e1e1a64fb1a4d3",
+    "migrations/0001_initial.sql": "d4c3cfa8b06239104d86a2fee27d69f875e252108cd9b13f883265debf26daff",
+    "migrations/0002_games.sql": "bd983817cfefc2e129a27439d757c18080b0562a97a6cd1c762ff81d42b12eb1",
+    "cli/agent-game.mjs": "1041e74a319fc79e99df237261120f42f80fec1c6d9f0ddd31174c7264f03701",
+    "cli/setup.mjs": "554e706a054acc1db6a4dc4e0643ff15e0beb369fd3d6bd60a306fab8757a288",
+    ".tim27/auth-probe.mjs": "cb06617840b1eb86453bc89aacc3dfa6c3e398fb2b9da4b2284c86bb32f3b9fe",
+    ".tim27/import-probe.mjs": "26ca5870844b20a9fdaddbd0eaa9f83d56c3e706928df77a91a8d606228dab7f",
+    ".tim27/runtime.test.mjs": "d9080aa70d3fcb604f7d021d387cf5f358f83588c9b7ce75351b9d76d2e2c655",
+    ".tim27/vitest.config.mts": "912407951ba46fab066fdcfd121d092fd1cd295f6218c03f2f7b477c8ca4b14a",
+    ".tim27/auth-result.json": "72cd7ba518473b64d2c6c6416469b4475b887f4601236c066049336003745897",
+    ".tim27/import-result.json": "7f610e7b55cac22532346a8bcb3605a72da356cc354b9ffad42b244eba888d0d",
+    ".tim27/runtime-result.json": "e03106bd60e744b1751167d882ae7607fbd179b490a3df0a9cc810f9b66d7af2",
+    "node_modules/better-auth/package.json": "665acd58638fe266fdb821ef3d253d5965008dddf392be0d24c917b2cfeeba39",
+    "node_modules/better-auth/dist/plugins/oauth-proxy/index.mjs": "e364c0d674e48680eeb0461c14781195e55c304ed13379ed8fbab82ffec8566e",
+    "node_modules/better-auth/dist/plugins/one-time-token/index.mjs": "f5705d5c5a99b633dad9f81dc34680ce6ed943a1f91bd3880bd839763e544aa1",
+    "node_modules/better-auth/dist/db/internal-adapter.mjs": "ead6bf2c1a3358d030f142623fc2876f018adb207f58522abfba325ffb16e34d",
+    "node_modules/better-auth/dist/cookies/index.mjs": "945bbb0bd0d77240bc74315c58f5ca74a62165ef605e30dfb336b34c0120665a"
+  }
+}
