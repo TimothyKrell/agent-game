@@ -8,6 +8,7 @@ import { accountUsage, loadLedger, lockLedger, remainingBudget, saveLedger } fro
 import { acceptCurrent, validateCurrent, validateIdentity, connectionIdentity } from './current.mjs';
 import { activeArtifacts, pinParticipation, pinnedDocuments, verifyPins } from './preview-artifacts.mjs';
 import { updateCurrent } from './agent-game.mjs';
+import { apiResponse } from './http-response.mjs';
 
 // Coordinator decision 2026-09-13; bounded resource profile, not a completion guarantee.
 // Evidence: docs/evidence/succession-supervisor.md.
@@ -125,10 +126,21 @@ async function persistAssignment(config, ledger, timeoutMs, connection) {
   }
 }
 
+function subprocessTimeout(remaining) {
+  if (!Number.isFinite(remaining)) throw new Error('Native subprocess timeout must be finite.');
+
+  return Math.max(0, Math.min(2_147_483_647, Math.floor(remaining)));
+}
+
 async function api(args, cwd, timeout) {
+  const duration = subprocessTimeout(timeout);
+
+  if (duration === 0)
+    throw Object.assign(new Error('Native subprocess deadline exhausted.'), { code: 'runtime-exhausted' });
+
   return promisify(execFile)('opencode2', ['api', ...args], {
     cwd,
-    timeout: Math.max(1, timeout),
+    timeout: duration,
     killSignal: 'SIGKILL',
   });
 }
@@ -158,6 +170,10 @@ export async function invokeHarness(input) {
 
   const deadline = Math.min(requestedDeadline, Date.now() + (input.timeoutMs ?? input.remainingRuntimeMs));
 
+  if (signal.aborted) return { outcome: 'user-stopped', sessionId };
+
+  if (subprocessTimeout(deadline - Date.now()) === 0) return { outcome: 'runtime-exhausted', sessionId };
+
   if (harness === 'opencode' && !sessionId) {
     const created = await api(
       [
@@ -172,7 +188,12 @@ export async function invokeHarness(input) {
       ],
       runDir,
       deadline - Date.now(),
-    );
+    ).catch((error) => {
+      if (error.code === 'runtime-exhausted' || subprocessTimeout(deadline - Date.now()) === 0) return null;
+      throw error;
+    });
+
+    if (!created) return { outcome: 'runtime-exhausted', sessionId };
 
     const data = JSON.parse(created.stdout).data;
 
@@ -183,6 +204,8 @@ export async function invokeHarness(input) {
   }
 
   if (signal.aborted) return { outcome: 'user-stopped', sessionId };
+
+  if (subprocessTimeout(deadline - Date.now()) === 0) return { outcome: 'runtime-exhausted', sessionId };
 
   const args =
     harness === 'claude'
@@ -237,17 +260,20 @@ export async function invokeHarness(input) {
   const stop = () => {
     if (harness === 'opencode')
       writes = writes
-        .then(() => interruptSession(sessionId, runDir, Math.max(1, Math.min(2000, deadline - Date.now()))))
+        .then(() => interruptSession(sessionId, runDir, Math.min(2000, deadline - Date.now())))
         .catch((error) => {
           interruptFailed = true;
           onEvent({ type: 'harness-diagnostic', harness, text: error.message });
         });
     killTree('SIGTERM');
-    stoppingTimer = setTimeout(() => killTree('SIGKILL'), Math.max(1, Math.min(2000, deadline - Date.now())));
+    stoppingTimer = setTimeout(
+      () => killTree('SIGKILL'),
+      subprocessTimeout(Math.min(2000, deadline - Date.now())),
+    );
   };
 
   signal.addEventListener('abort', stop, { once: true });
-  const force = setTimeout(() => killTree('SIGKILL'), Math.max(1, deadline - Date.now()));
+  const force = setTimeout(() => killTree('SIGKILL'), subprocessTimeout(deadline - Date.now()));
   child.stdout.on('data', (chunk) => {
     buffer += chunk.toString();
 
@@ -301,7 +327,7 @@ export async function invokeHarness(input) {
 
     await writes;
 
-    if (harness === 'opencode' && deadline > Date.now()) {
+    if (harness === 'opencode' && subprocessTimeout(deadline - Date.now()) > 0) {
       try {
         const response = await api(
           ['get', `/api/session/${encodeURIComponent(sessionId)}`],
@@ -348,15 +374,7 @@ async function request(connection, path, body, method, signal) {
     redirect: 'error',
   });
 
-  const data = await response.json();
-
-  if (!response.ok)
-    throw Object.assign(new Error(data.error?.message ?? `Arena HTTP ${response.status}`), {
-      status: response.status,
-      code: data.error?.code,
-    });
-
-  return data;
+  return apiResponse(response);
 }
 
 /** One durable allowance per participation. An operational stop never changes server lifecycle. */

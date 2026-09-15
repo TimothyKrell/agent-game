@@ -50,6 +50,7 @@ export interface PreviewConnection {
     code?: string;
   };
   previewParticipation?: ParticipationPin;
+  cancelledPreviewParticipations?: Record<string, ParticipationPin>;
 }
 
 export function sha256(value: string | Uint8Array): string;

@@ -9,6 +9,7 @@ import { lockLedger } from './ledger.mjs';
 import { pictureCommand, pictureHelp, pictureOnboarding } from './picture.mjs';
 import { activeArtifacts, pinParticipation, verifyPins } from './preview-artifacts.mjs';
 import { writeJsonDurably } from './durable-json.mjs';
+import { ApiError, apiResponse } from './http-response.mjs';
 import {
   acceptCurrent,
   consumePage,
@@ -22,18 +23,7 @@ import {
   terminal,
 } from './current.mjs';
 
-export class ApiError extends Error {
-  constructor(status, code, message, details = {}) {
-    super(message);
-    this.status = status;
-    this.code = code;
-    this.details = Object.fromEntries(
-      ['gameId', 'matchId', 'requiredProtocolVersion', 'rulesUrl', 'cliUrl', 'cliDownloadUrl'].flatMap(
-        (key) => (details[key] === undefined ? [] : [[key, details[key]]]),
-      ),
-    );
-  }
-}
+export { ApiError };
 
 function boundedTime(ms) {
   const configured = process.env.AGENT_GAME_CHILD_DEADLINE;
@@ -70,7 +60,7 @@ export class GameClient {
     if (!['entitled', 'public-wakeup'].includes(this.eventAuthorization))
       throw new Error('Unsupported event authorization capability.');
   }
-  async request(path, body, method, authenticated = true) {
+  async request(path, body, method, authenticated = true, signal) {
     for (let attempt = 0; ; attempt++) {
       try {
         const headers = new Headers();
@@ -80,33 +70,31 @@ export class GameClient {
 
         if (authenticated && this.token) headers.set('authorization', `Bearer ${this.token}`);
 
+        const timeout = AbortSignal.timeout(boundedTime(10_000));
+
         const response = await fetch(`${this.server}${path}`, {
           method: method ?? (body === undefined ? 'GET' : 'POST'),
           redirect: 'error',
           headers,
           body: body === undefined ? undefined : JSON.stringify(body),
-          signal: AbortSignal.timeout(boundedTime(10_000)),
+          signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
         });
 
-        const data = await response.json();
-
-        if (!response.ok)
-          throw new ApiError(
-            response.status,
-            data.error?.code,
-            data.error?.message ?? 'Request failed',
-            data.error,
-          );
-
-        return data;
+        return await apiResponse(response);
       } catch (error) {
-        if (attempt >= 2 || (error instanceof ApiError && error.status < 500)) throw error;
+        if (signal?.aborted || attempt >= 2 || (error instanceof ApiError && error.status < 500)) throw error;
         await delay(250 * 2 ** attempt);
       }
     }
   }
-  async observation(matchId, after = 0) {
-    const view = await this.request(`/api/matches/${matchId}?after=${after}`);
+  async observation(matchId, after = 0, signal) {
+    const view = await this.request(
+      `/api/matches/${matchId}?after=${after}`,
+      undefined,
+      undefined,
+      true,
+      signal,
+    );
 
     if (this.artifacts) validateCurrent(view, this.artifacts);
 
@@ -142,7 +130,14 @@ export class GameClient {
   /** Resolves on an observation, even across socket failures. A pending tool call carries it back into the model loop. */
   async wait(matchId, after, timeoutMs = 20_000, seen) {
     const until = Date.now() + boundedTime(timeoutMs);
-    const first = await this.observation(matchId, after);
+    const publicWake = this.eventAuthorization === 'public-wakeup';
+    const wakeAbort = new AbortController();
+
+    const wakeSignal = publicWake
+      ? AbortSignal.any([wakeAbort.signal, AbortSignal.timeout(Math.max(1, Math.floor(until - Date.now())))])
+      : undefined;
+
+    const first = await this.observation(matchId, after, wakeSignal);
 
     const changed = (view) =>
       view.protocolVersion === '2'
@@ -157,6 +152,8 @@ export class GameClient {
       let retries = 0;
       let retryTimer;
       let readingWake = false;
+      let pendingWake = false;
+      let latestEntitled = first;
 
       const finish = (value, error) => {
         if (finished) return;
@@ -164,6 +161,7 @@ export class GameClient {
         clearTimeout(timer);
         clearTimeout(retryTimer);
         clearInterval(heartbeat);
+        wakeAbort.abort();
         socket?.close();
 
         if (error) reject(error);
@@ -172,6 +170,12 @@ export class GameClient {
 
       const timer = setTimeout(
         () => {
+          if (publicWake) {
+            finish(latestEntitled);
+
+            return;
+          }
+
           void this.observation(matchId, after).then(
             (view) => finish(view),
             (error) => finish(null, error),
@@ -200,14 +204,23 @@ export class GameClient {
             if (event.data === 'pong') return;
 
             try {
-              if (this.eventAuthorization === 'public-wakeup') {
-                if (readingWake || finished) return;
+              if (publicWake) {
+                if (finished) return;
+                pendingWake = true;
+
+                if (readingWake) return;
                 readingWake = true;
 
                 try {
-                  const entitled = await this.observation(matchId, after);
+                  while (pendingWake && !finished && !wakeSignal.aborted) {
+                    pendingWake = false;
+                    latestEntitled = await this.observation(matchId, after, wakeSignal);
 
-                  if (changed(entitled) || entitled.decision || terminal(entitled)) finish(entitled);
+                    if (changed(latestEntitled) || latestEntitled.decision || terminal(latestEntitled))
+                      finish(latestEntitled);
+                  }
+
+                  if (!finished && wakeSignal.aborted) finish(latestEntitled);
                 } finally {
                   readingWake = false;
                 }
@@ -221,7 +234,8 @@ export class GameClient {
               if (packet.type === 'observation' && (changed(view) || view.decision || terminal(view)))
                 finish(view);
             } catch (error) {
-              finish(null, error);
+              if (publicWake && wakeSignal.aborted && !(error instanceof ApiError)) finish(latestEntitled);
+              else finish(null, error);
             }
           };
 
@@ -754,7 +768,16 @@ export async function main(argv = process.argv.slice(2)) {
       await delay(seconds * 1000);
     }
 
-    const result = await client.request('/api/queue', undefined, command === 'leave' ? 'DELETE' : 'GET');
+    // Name the pending operation so a stale leave cannot cancel a replacement queue entry.
+    const pin = state.previewParticipation;
+
+    const cancellation =
+      command === 'leave'
+        ? (state.pendingJoin ??
+          (pin && !pin.matchId ? { gameId: pin.artifacts.gameId, requestId: pin.queueRequestId } : undefined))
+        : undefined;
+
+    const result = await client.request('/api/queue', cancellation, command === 'leave' ? 'DELETE' : 'GET');
 
     if (result.status !== 'idle') validateIdentity(result, activeArtifacts(state));
 
@@ -775,11 +798,29 @@ export async function main(argv = process.argv.slice(2)) {
     }
 
     if (command === 'leave' && result.status === 'idle') {
+      if (
+        pin &&
+        !pin.matchId &&
+        pin.queueRequestId === cancellation?.requestId &&
+        pin.artifacts.gameId === cancellation.gameId
+      ) {
+        state.cancelledPreviewParticipations ??= {};
+        state.cancelledPreviewParticipations[pin.queueRequestId] ??= structuredClone(pin);
+        delete state.previewParticipation;
+      }
+
       delete state.joinRequest;
       delete state.pendingJoin;
     }
 
-    await persist(['matchId', 'participation', 'joinRequest', 'pendingJoin', 'previewParticipation']);
+    await persist([
+      'matchId',
+      'participation',
+      'joinRequest',
+      'pendingJoin',
+      'previewParticipation',
+      'cancelledPreviewParticipations',
+    ]);
     print(result);
 
     return;
