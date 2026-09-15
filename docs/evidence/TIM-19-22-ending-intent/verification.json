@@ -1,0 +1,44 @@
+{
+  "reviewBaseline": "ab8706c",
+  "focusCorrection": "54a3abd",
+  "canonicalFactsCorrection": "a59fbbc",
+  "acceptedHistoryDependency": "0fb03f8",
+  "widths": [1440, 390, 320],
+  "red": {
+    "failingCases": 2,
+    "portraitScrollDeltaPx": 12638,
+    "chapterScrollDeltaPx": 13817,
+    "focusStolenToDeclaration": 1301
+  },
+  "developmentNavigation": {
+    "passed": 27,
+    "remainingFailures": 0,
+    "evidence": ["development-final/results.json", "development-unmount/results.json"],
+    "note": "26 cases passed in the final full run; the unmount case passes after its destination-ready selector was corrected. The initial selector failure is retained."
+  },
+  "productionNavigation": { "passed": 27, "failed": 0 },
+  "developmentRoute": { "assertions": 87, "failures": 0 },
+  "productionRoute": { "assertions": 90, "failures": 0 },
+  "unitTests": { "passed": 73, "failed": 0 },
+  "modalAndChapterScrollDeltaPx": 0,
+  "uninterruptedSourceDeclaration": 1301,
+  "maxVisibleRecordsPerReader": 128,
+  "forwardRetainedRowDriftPx": 0.421875,
+  "canonicalArchiveEvents": 1306,
+  "preservedSource": {
+    "scenarioGroups": 20,
+    "ruleTerms": 36,
+    "publicEntries": 974,
+    "exactQuotes": 416,
+    "historicalEliminationCounts": 9
+  },
+  "typecheck": "passed",
+  "lint": "passed",
+  "scopedFormat": "passed",
+  "build": "passed",
+  "productionGraphAndDevExclusion": "passed",
+  "interceptedCanonicalBackend": true,
+  "deployedAuthorizationTest": false,
+  "laneChecksPassed": true,
+  "finalIndependentAcceptance": "pending-parent-review"
+}

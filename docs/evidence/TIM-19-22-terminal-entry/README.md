@@ -1,5 +1,7 @@
 # Dossier review · Terminal entry and Final move
 
+Follow-up: [pending ending-navigation ownership](../TIM-19-22-ending-intent/README.md) addresses the new async lifetime P2 found in independent review of `ab8706c`. The original terminal-entry evidence below is preserved.
+
 This follow-up completes the new presentation review finding against `4f7901b`. It follows:
 
 - `54a3abd`: shared RuleHelp closing-trigger focus correction, [red/green diagnosis and original nine regressions](../TIM-11-dossier-focus/README.md).

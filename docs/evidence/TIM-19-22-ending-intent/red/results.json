@@ -1,0 +1,235 @@
+{
+  "config": {
+    "argv": [
+      "/home/timothykrell/.vite-plus/js_runtime/node/24.21.0/bin/node",
+      "/tmp/opencode/agent-game-dossier/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      ".dossier/ending.config.ts"
+    ],
+    "configFile": "/tmp/opencode/agent-game-dossier/.dossier/ending.config.ts",
+    "rootDir": "/tmp/opencode/agent-game-dossier/.dossier",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-19-22-ending-intent/red",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/opencode/agent-game-dossier/.dossier",
+        "testIgnore": [],
+        "testMatch": [
+          "ending.spec.mjs"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../docs/evidence/TIM-19-22-ending-intent/red/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "ending.spec.mjs",
+      "file": "ending.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pending Final move respects later portrait ownership",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2361,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 3\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"event\": null,\u001b[39m\n\u001b[32m-   \"tag\": \"BUTTON\",\u001b[39m\n\u001b[32m-   \"text\": \"\",\u001b[39m\n\u001b[31m+   \"event\": \"story-226372697-1604\",\u001b[39m\n\u001b[31m+   \"tag\": \"ARTICLE\",\u001b[39m\n\u001b[31m+   \"text\": \"Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at \",\u001b[39m\n\u001b[2m  }\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 3\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"event\": null,\u001b[39m\n\u001b[32m-   \"tag\": \"BUTTON\",\u001b[39m\n\u001b[32m-   \"text\": \"\",\u001b[39m\n\u001b[31m+   \"event\": \"story-226372697-1604\",\u001b[39m\n\u001b[31m+   \"tag\": \"ARTICLE\",\u001b[39m\n\u001b[31m+   \"text\": \"Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at \",\u001b[39m\n\u001b[2m  }\u001b[22m\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:128:26",
+                    "location": {
+                      "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                      "column": 26,
+                      "line": 128
+                    },
+                    "snippet": "  126 |     const after = await state(page);\n  127 |     await info.attach('ownership', { body: JSON.stringify({ before, after, requests: control.requests }, null, 2), contentType: 'application/json' });\n> 128 |     expect(after.active).toEqual(before.active);\n      |                          ^\n  129 |     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);\n  130 |     expect(after.modalFocus).toBe(before.modalFocus);\n  131 |     expect(control.faults).toEqual([]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                        "column": 26,
+                        "line": 128
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 3\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"event\": null,\u001b[39m\n\u001b[32m-   \"tag\": \"BUTTON\",\u001b[39m\n\u001b[32m-   \"text\": \"\",\u001b[39m\n\u001b[31m+   \"event\": \"story-226372697-1604\",\u001b[39m\n\u001b[31m+   \"tag\": \"ARTICLE\",\u001b[39m\n\u001b[31m+   \"text\": \"Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at \",\u001b[39m\n\u001b[2m  }\u001b[22m\n\n  126 |     const after = await state(page);\n  127 |     await info.attach('ownership', { body: JSON.stringify({ before, after, requests: control.requests }, null, 2), contentType: 'application/json' });\n> 128 |     expect(after.active).toEqual(before.active);\n      |                          ^\n  129 |     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);\n  130 |     expect(after.modalFocus).toBe(before.modalFocus);\n  131 |     expect(control.faults).toEqual([]);\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:128:26"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:23:00.696Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkJVVFRPTiIsCiAgICAgICJldmVudCI6IG51bGwsCiAgICAgICJ0ZXh0IjogIiIKICAgIH0sCiAgICAibW9kYWxGb2N1cyI6IHRydWUsCiAgICAiZGlhbG9ncyI6IDEKICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMTI2MzgsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkFSVElDTEUiLAogICAgICAiZXZlbnQiOiAic3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgICAidGV4dCI6ICJBY3QgSUkgwrcgUm91bmQgMTIwMDoxNzozMSBVVENBZ2VudCA2RGVjbGFyZXMgSW5jb21lLkluY29tZUFnZW50IDY2Q29pbnMySW5mbHVlbmNlQWdlbnQgNiDCtyBDYXJkcyBhdCAiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMQogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTExNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTc4IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNDImdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjc0JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIKICBdCn0="
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-19-22-ending-intent/red/ending-pending-Final-move-respects-later-portrait-ownership/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-19-22-ending-intent/red/ending-pending-Final-move-respects-later-portrait-ownership/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                    "column": 26,
+                    "line": 128
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-c920bfa69ff2896e0bc0",
+          "file": "ending.spec.mjs",
+          "line": 108,
+          "column": 3
+        },
+        {
+          "title": "pending Final move respects later chapter ownership",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2899,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"event\": \"story-2609918634-36\",\u001b[39m\n\u001b[31m+   \"event\": \"story-226372697-1604\",\u001b[39m\n\u001b[2m    \"tag\": \"ARTICLE\",\u001b[22m\n\u001b[32m-   \"text\": \"Act I · Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age\",\u001b[39m\n\u001b[31m+   \"text\": \"Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at \",\u001b[39m\n\u001b[2m  }\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"event\": \"story-2609918634-36\",\u001b[39m\n\u001b[31m+   \"event\": \"story-226372697-1604\",\u001b[39m\n\u001b[2m    \"tag\": \"ARTICLE\",\u001b[22m\n\u001b[32m-   \"text\": \"Act I · Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age\",\u001b[39m\n\u001b[31m+   \"text\": \"Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at \",\u001b[39m\n\u001b[2m  }\u001b[22m\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:128:26",
+                    "location": {
+                      "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                      "column": 26,
+                      "line": 128
+                    },
+                    "snippet": "  126 |     const after = await state(page);\n  127 |     await info.attach('ownership', { body: JSON.stringify({ before, after, requests: control.requests }, null, 2), contentType: 'application/json' });\n> 128 |     expect(after.active).toEqual(before.active);\n      |                          ^\n  129 |     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);\n  130 |     expect(after.modalFocus).toBe(before.modalFocus);\n  131 |     expect(control.faults).toEqual([]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                        "column": 26,
+                        "line": 128
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"event\": \"story-2609918634-36\",\u001b[39m\n\u001b[31m+   \"event\": \"story-226372697-1604\",\u001b[39m\n\u001b[2m    \"tag\": \"ARTICLE\",\u001b[22m\n\u001b[32m-   \"text\": \"Act I · Election 100:00:01 UTCAgent 4Agent 4executedAgent 7 executes Agent 4.Coordinator: Agent 7Age\",\u001b[39m\n\u001b[31m+   \"text\": \"Act II · Round 1200:17:31 UTCAgent 6Declares Income.IncomeAgent 66Coins2InfluenceAgent 6 · Cards at \",\u001b[39m\n\u001b[2m  }\u001b[22m\n\n  126 |     const after = await state(page);\n  127 |     await info.attach('ownership', { body: JSON.stringify({ before, after, requests: control.requests }, null, 2), contentType: 'application/json' });\n> 128 |     expect(after.active).toEqual(before.active);\n      |                          ^\n  129 |     expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);\n  130 |     expect(after.modalFocus).toBe(before.modalFocus);\n  131 |     expect(control.faults).toEqual([]);\n    at /tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs:128:26"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-15T04:23:04.475Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ownership",
+                      "contentType": "application/json",
+                      "body": "ewogICJiZWZvcmUiOiB7CiAgICAieSI6IDAsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkFSVElDTEUiLAogICAgICAiZXZlbnQiOiAic3RvcnktMjYwOTkxODYzNC0zNiIsCiAgICAgICJ0ZXh0IjogIkFjdCBJIMK3IEVsZWN0aW9uIDEwMDowMDowMSBVVENBZ2VudCA0QWdlbnQgNGV4ZWN1dGVkQWdlbnQgNyBleGVjdXRlcyBBZ2VudCA0LkNvb3JkaW5hdG9yOiBBZ2VudCA3QWdlIgogICAgfSwKICAgICJtb2RhbEZvY3VzIjogZmFsc2UsCiAgICAiZGlhbG9ncyI6IDAKICB9LAogICJhZnRlciI6IHsKICAgICJ5IjogMTM4MTcsCiAgICAiYWN0aXZlIjogewogICAgICAidGFnIjogIkFSVElDTEUiLAogICAgICAiZXZlbnQiOiAic3RvcnktMjI2MzcyNjk3LTE2MDQiLAogICAgICAidGV4dCI6ICJBY3QgSUkgwrcgUm91bmQgMTIwMDoxNzozMSBVVENBZ2VudCA2RGVjbGFyZXMgSW5jb21lLkluY29tZUFnZW50IDY2Q29pbnMySW5mbHVlbmNlQWdlbnQgNiDCtyBDYXJkcyBhdCAiCiAgICB9LAogICAgIm1vZGFsRm9jdXMiOiBmYWxzZSwKICAgICJkaWFsb2dzIjogMAogIH0sCiAgInJlcXVlc3RzIjogWwogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNCIsCiAgICAiL2FwaS9ib290c3RyYXAiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9yb3VuZHM/ZXBvY2g9cm91dGUtZmluaXNoZWQiLAogICAgIi9hcGkvYWdlbnQtcGljdHVyZXM/YWdlbnRJZD1lbnRyYW50LTAmYWdlbnRJZD1lbnRyYW50LTEmYWdlbnRJZD1lbnRyYW50LTImYWdlbnRJZD1lbnRyYW50LTMmYWdlbnRJZD1lbnRyYW50LTQmYWdlbnRJZD1lbnRyYW50LTUmYWdlbnRJZD1lbnRyYW50LTYmYWdlbnRJZD1lbnRyYW50LTcmYWdlbnRJZD1lbnRyYW50LTgmYWdlbnRJZD1lbnRyYW50LTkiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTE3OCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTE3OCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyMTAmdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjQyJnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTI3NCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9jaGVja3BvaW50P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJnRocm91Z2g9MTExNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTExNCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTExNDYmdGhyb3VnaD0xMjQyJmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTI0MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEyNDImbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5LWFuY2hvcj9lcG9jaD1yb3V0ZS1maW5pc2hlZCZldmVudEtleT1zdG9yeS0yMjYzNzI2OTctMTYwNCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L3JvdW5kcz9lcG9jaD1yb3V0ZS1maW5pc2hlZCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0wIiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0wJnRocm91Z2g9MiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2NoZWNrcG9pbnQ/ZXBvY2g9cm91dGUtZmluaXNoZWQmdGhyb3VnaD0xMTc4IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMTc4JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIsCiAgICAiL2FwaS9tYXRjaGVzL3N0b3J5LW1hdGNoLTE0L2hpc3Rvcnk/ZXBvY2g9cm91dGUtZmluaXNoZWQmYWZ0ZXI9MTIxMCZ0aHJvdWdoPTEzMDYmbGltaXQ9MzImbWF4Qnl0ZXM9MTYzODQiLAogICAgIi9hcGkvbWF0Y2hlcy9zdG9yeS1tYXRjaC0xNC9oaXN0b3J5P2Vwb2NoPXJvdXRlLWZpbmlzaGVkJmFmdGVyPTEyNDImdGhyb3VnaD0xMzA2JmxpbWl0PTMyJm1heEJ5dGVzPTE2Mzg0IiwKICAgICIvYXBpL21hdGNoZXMvc3RvcnktbWF0Y2gtMTQvaGlzdG9yeT9lcG9jaD1yb3V0ZS1maW5pc2hlZCZhZnRlcj0xMjc0JnRocm91Z2g9MTMwNiZsaW1pdD0zMiZtYXhCeXRlcz0xNjM4NCIKICBdCn0="
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-19-22-ending-intent/red/ending-pending-Final-move-respects-later-chapter-ownership/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/opencode/agent-game-dossier/docs/evidence/TIM-19-22-ending-intent/red/ending-pending-Final-move-respects-later-chapter-ownership/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/opencode/agent-game-dossier/.dossier/ending.spec.mjs",
+                    "column": 26,
+                    "line": 128
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "98a303f5cc314caf2baa-72855e29549db6e232b6",
+          "file": "ending.spec.mjs",
+          "line": 108,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-15T04:23:00.265Z",
+    "duration": 8232.061,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

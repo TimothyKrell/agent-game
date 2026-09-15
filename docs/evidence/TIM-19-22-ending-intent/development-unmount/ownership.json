@@ -1,0 +1,30 @@
+[
+  {
+    "title": "unmount retires a held request; a fresh route visit can navigate",
+    "status": "passed",
+    "unmounted": {
+      "before": {
+        "y": 0,
+        "active": {
+          "tag": "A",
+          "event": null,
+          "text": "How to play"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      },
+      "after": {
+        "y": 0,
+        "active": {
+          "tag": "A",
+          "event": null,
+          "text": "How to play"
+        },
+        "modalFocus": false,
+        "dialogs": 0,
+        "visible": null
+      }
+    }
+  }
+]

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, Eye, Radio } from 'lucide-react';
 import type { Observation2 } from '../shared/succession';
 import { useAgentPictures } from './use-agent-pictures';
@@ -11,6 +11,12 @@ import { SuccessionBoard, SuccessionPrivacy } from './succession-board';
 import { SuccessionControls, SuccessionPhase } from './succession-controls';
 import { dossierEnding } from './dossier-ending';
 import { dossierRowId } from './dossier-row';
+import {
+  dossierNavigationEvents,
+  dossierNavigationIntent,
+  dossierReadingAnchor,
+} from './dossier-navigation-intent';
+import { STORY_WINDOW_SHIFT } from './succession-story-data';
 
 export function SuccessionMatch({ initial }: { initial: Observation2 }) {
   const match = useSuccessionMatch(initial, { history: false });
@@ -36,6 +42,51 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
   const terminal = useMemo(() => dossierEnding(actTwo.rows), [actTwo.rows]);
   const [savedEnding, setSavedEnding] = useState(terminal);
   const [requestedEnding, setRequestedEnding] = useState<ReturnType<typeof dossierEnding>>(null);
+  const endingIntent = useRef<ReturnType<typeof dossierNavigationIntent> | null>(null);
+  const readingOwner = useRef<1 | 2 | 'other' | null>(null);
+
+  useEffect(() => {
+    const claim = (event: Event) => {
+      const target = event.target;
+      let section = target instanceof Element ? target.closest('.dossier-chapter') : null;
+
+      const editing =
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          target.matches('textarea,select,input:not([type=checkbox]):not([type=radio])'));
+
+      const documentKey =
+        event instanceof KeyboardEvent &&
+        !editing &&
+        ['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown', ' '].includes(event.key);
+
+      // Document keyboard/scrollbar input can target body, rather than a row.
+      // Consult the actual visible reading surface; layout-induced scroll is not input.
+      if (
+        (documentKey && !(target instanceof Element && target.closest('[data-story-window]'))) ||
+        (!section &&
+          (target === document.body || target === document.documentElement) &&
+          ['wheel', 'touchmove'].includes(event.type))
+      ) {
+        section =
+          Array.from(document.querySelectorAll('.dossier-chapter')).find((section) => {
+            const reader = section.querySelector('[data-story-window]');
+            const box = reader?.getBoundingClientRect();
+
+            return box && box.bottom > 0 && box.top < innerHeight;
+          }) ?? null;
+        readingOwner.current = section?.getAttribute('aria-label') === 'Act I' ? 1 : section ? 2 : null;
+      } else
+        readingOwner.current = section?.getAttribute('aria-label') === 'Act I' ? 1 : section ? 2 : 'other';
+    };
+
+    const events = new AbortController();
+
+    for (const type of dossierNavigationEvents)
+      document.addEventListener(type, claim, { capture: true, passive: true, signal: events.signal });
+
+    return () => events.abort();
+  }, []);
   const ending = terminal ?? savedEnding;
 
   const currentEnding =
@@ -46,6 +97,14 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
   useEffect(() => {
     if (terminal) setSavedEnding(terminal);
   }, [terminal]);
+
+  useEffect(
+    () => () => {
+      endingIntent.current?.cancel();
+      endingIntent.current = null;
+    },
+    [view.matchId, view.history.visibilityEpoch, view.status],
+  );
 
   useEffect(() => {
     if (view.status !== 'active' || view.act !== 1) actOne.detach();
@@ -67,9 +126,13 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
     const element = row && document.getElementById(dossierRowId(row));
 
     if (!element) return;
+    const allowed = endingIntent.current?.complete();
+    endingIntent.current = null;
+    setRequestedEnding(null);
+
+    if (!allowed) return;
     element.scrollIntoView({ block: 'start', behavior: 'instant' });
     element.focus({ preventScroll: true });
-    setRequestedEnding(null);
   }, [requestedEnding, actOne, actTwo, chapters.open, view.matchId, view.history.visibilityEpoch]);
 
   const summary = useMemo(
@@ -141,9 +204,34 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
                 label: currentEnding?.label ?? 'Terminal record',
                 onRead: currentEnding
                   ? () => {
+                      endingIntent.current?.cancel();
+                      const reader = currentEnding.act === 1 ? actOne : actTwo;
+
+                      // A seek at the current window's center selects that same bounded
+                      // window. Supersede a canceled navigation without committing its tail.
+                      const retained = reader.rows.find(
+                        (row) =>
+                          row.source.cursor === Math.min(reader.after + STORY_WINDOW_SHIFT, reader.delivered),
+                      );
+
+                      const intent = dossierNavigationIntent(document, () => {
+                        setRequestedEnding(null);
+
+                        if (!retained) return;
+                        void reader.seek(retained.source.eventKey).then(() => {
+                          if (endingIntent.current !== intent) return;
+                          const current = reader.getAnchor();
+
+                          if (current?.eventKey === retained.source.eventKey && !current.focused)
+                            reader.rememberAnchor(dossierReadingAnchor(document, currentEnding.act));
+                        });
+                      });
+
+                      endingIntent.current = intent;
+                      readingOwner.current = currentEnding.act;
                       chapters.setOpen(currentEnding.act, true);
                       setRequestedEnding(currentEnding);
-                      void (currentEnding.act === 1 ? actOne : actTwo).seek(currentEnding.source.eventKey);
+                      void reader.seek(currentEnding.source.eventKey);
                     }
                   : undefined,
               }
@@ -173,12 +261,22 @@ export function SuccessionMatch({ initial }: { initial: Observation2 }) {
           const reader = chapter === 1 ? actOne : actTwo;
           const live = view.status === 'active' && view.act === chapter;
 
+          // Modal references own the viewport. A canceled seek may settle while one
+          // is open; boundary observers must not start a new read behind it.
+          const read = (load: () => Promise<void>) => () =>
+            document.querySelector('[role="dialog"]') ||
+            (readingOwner.current !== null && readingOwner.current !== chapter)
+              ? Promise.resolve()
+              : load();
+
           return (
             <SuccessionTimeline
               reader={{
                 ...reader,
                 following: live && reader.following,
-                follow: live ? reader.follow : reader.loadLater,
+                follow: read(live ? reader.follow : reader.loadLater),
+                loadEarlier: read(reader.loadEarlier),
+                loadLater: read(reader.loadLater),
               }}
               aria-label={`Act ${chapter === 1 ? 'I' : 'II'} record`}
               role="region"

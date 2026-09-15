@@ -466,8 +466,15 @@ try {
         if (before === fixture.eventsFor('finished').length) break;
         const tail = rows.last();
         const key = await tail.getAttribute('data-story-key');
-        await tail.evaluate((element) => element.scrollIntoView({ block: 'end', behavior: 'instant' }));
-        const offset = (await tail.boundingBox()).y;
+
+        // Capture the pre-replacement position in the same browser task as the scroll.
+        // A separate boundingBox round trip can arrive after a fast production read.
+        const offset = await tail.evaluate((element) => {
+          element.scrollIntoView({ block: 'end', behavior: 'instant' });
+
+          return element.getBoundingClientRect().top;
+        });
+
         await page.waitForFunction(
           ({ element, before }) =>
             Number(element.getAttribute('data-story-delivered')) > before &&

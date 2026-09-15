@@ -1,0 +1,21 @@
+{
+  "delivered": "1306",
+  "after": "1178",
+  "head": 1306,
+  "finalMove": 1,
+  "requests": [
+    "/api/matches/story-match-14",
+    "/api/bootstrap",
+    "/api/matches/story-match-14",
+    "/api/bootstrap",
+    "/api/matches/story-match-14/rounds?epoch=route-finished",
+    "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+    "/api/matches/story-match-14/rounds?epoch=route-finished",
+    "/api/agent-pictures?agentId=entrant-0&agentId=entrant-1&agentId=entrant-2&agentId=entrant-3&agentId=entrant-4&agentId=entrant-5&agentId=entrant-6&agentId=entrant-7&agentId=entrant-8&agentId=entrant-9",
+    "/api/matches/story-match-14/checkpoint?epoch=route-finished&through=1178",
+    "/api/matches/story-match-14/history?epoch=route-finished&after=1178&through=1306&limit=32&maxBytes=16384",
+    "/api/matches/story-match-14/history?epoch=route-finished&after=1210&through=1306&limit=32&maxBytes=16384",
+    "/api/matches/story-match-14/history?epoch=route-finished&after=1242&through=1306&limit=32&maxBytes=16384",
+    "/api/matches/story-match-14/history?epoch=route-finished&after=1274&through=1306&limit=32&maxBytes=16384"
+  ]
+}
