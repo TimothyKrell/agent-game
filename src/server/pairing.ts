@@ -1,6 +1,9 @@
 import { GameError } from '../game/types';
 import { hashSecret, opaqueId } from './http';
 import { ownedAgent } from './repository';
+import { previewEnabled } from './preview-config';
+import { previewAuthority } from './preview-authority';
+import type { PreviewAuthority } from './preview-authority';
 
 interface Pending {
   id: string;
@@ -76,7 +79,15 @@ export async function pairingDetails(env: Env, code: string) {
   };
 }
 
-export async function approvePairing(env: Env, ownerId: string, code: string, agentId: string) {
+export async function approvePairing(
+  env: Env,
+  ownerId: string,
+  code: string,
+  agentId: string,
+  authority: PreviewAuthority | null = null,
+) {
+  if (previewEnabled(env) && !authority)
+    throw new GameError('preview-authority', 'Preview pairing requires source owner authority.', 401);
   const agent = await ownedAgent(env, ownerId, agentId);
 
   if (agent.retired) throw new GameError('agent-retired', 'Choose an active agent.');
@@ -96,17 +107,36 @@ export async function approvePairing(env: Env, ownerId: string, code: string, ag
 
   const now = Date.now();
   const grantId = opaqueId('connection');
-  await env.DB.batch([
+
+  const statements = [
     env.DB.prepare(
       `INSERT INTO agent_grants (id, agent_id, secret_hash, name, created_at, expires_at)
       SELECT ?, ?, p.secret_hash, p.installation, ?, ? FROM pending_connections p JOIN agents a ON a.id = ?
       WHERE p.id = ? AND p.status = 'pending' AND p.expires_at > ? AND a.owner_id = ? AND a.retired_at IS NULL`,
-    ).bind(grantId, agentId, now, now + 90 * 86400_000, agentId, pending.id, now, ownerId),
+    ).bind(
+      grantId,
+      agentId,
+      now,
+      Math.min(now + 90 * 86400_000, authority?.expires_at ?? Infinity),
+      agentId,
+      pending.id,
+      now,
+      ownerId,
+    ),
     env.DB.prepare(
       `UPDATE pending_connections SET status = 'approved', agent_id = ?, grant_id = ?
       WHERE id = ? AND status = 'pending' AND expires_at > ? AND EXISTS(SELECT 1 FROM agent_grants WHERE id = ?)`,
     ).bind(agentId, grantId, pending.id, now, grantId),
-  ]);
+  ];
+
+  if (authority)
+    statements.push(
+      env.DB.prepare(
+        `INSERT INTO preview_authorities
+    SELECT 'grant',?,?,?,? WHERE EXISTS(SELECT 1 FROM agent_grants WHERE id=?)`,
+      ).bind(grantId, authority.handoff_id, authority.incarnation, authority.expires_at, grantId),
+    );
+  await env.DB.batch(statements);
 
   const result = await env.DB.prepare('SELECT agent_id FROM pending_connections WHERE id = ? AND status = ?')
     .bind(pending.id, 'approved')
@@ -148,6 +178,7 @@ export async function pollPairing(env: Env, request: Request) {
     .first<{ connectionId: string; agentId: string; agentName: string; expiresAt: number }>();
 
   if (!grant) throw new GameError('connection-revoked', 'The approved connection was revoked.', 401);
+  await previewAuthority(env, 'grant', grant.connectionId, grant.agentId);
 
   return { status: 'approved', ...grant };
 }

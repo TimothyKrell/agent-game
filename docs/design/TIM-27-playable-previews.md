@@ -4,6 +4,13 @@
 (accepted TIM-26 included). This is a proposed implementation contract
 for parent review, with local feasibility evidence, not a hosted acceptance record.
 
+**Identity implementation update:** the first source/target identity slice now has
+production modules, migration `0004_preview_identity.sql`, a target-only Better Auth
+plugin and real two-origin Worker/D1/Chromium evidence. See
+[identity bridge implementation/evidence](../evidence/TIM-27-identity-bridge.md) for the
+exact wire/controller interfaces and remaining slices. The original `.tim27` probes
+remain immutable historical feasibility evidence; new evidence uses `identity-*` paths.
+
 ## Chosen design
 
 Keep the **separate Alchemy stack per PR**. Add a small, trusted **source-issued handoff**
@@ -15,8 +22,8 @@ not sign in again, but automatic sign-in is not required.
 For deliberate live play, use the **production-selected house provider through a narrow
 source-side inference broker**, charging one shared admission ledger across production
 and all previews. Keep match engines, history, replay, queues and edits in each preview.
-Paid inference remains disabled until the production prerequisites and live-test budget
-authorization below are satisfied.
+Paid inference remains disabled until the production prerequisites and current
+live-test operating-ledger reconciliation below are satisfied.
 
 The owner journey is:
 
@@ -81,14 +88,18 @@ identity and that immutable match identity as separate fields.
 
 ### Trusted target registration
 
-The source keeps `preview_arenas`: exact origin, PR number, incarnation, current verified
-commit, target public key, active/closed state and capability versions. A trusted
+The source keeps `preview_arenas`: exact origin, incarnation, current verified
+commit, target public key and active/closed state. Discovery reports identity protocol
+version 1 and the `/preview` owner entry URL; live play is explicitly false in this
+slice. PR/artifact provenance and later capability activation belong to the trusted
+controller's lifecycle record. A trusted
 default-branch deployment controller updates this record after deploying verified
 artifacts; the PR Worker cannot register itself or another target.
 
 Target-to-source calls authenticate with an incarnation-specific **ECDSA P-256** key.
 Sign a versioned fixed-order tuple of method, exact source origin/path, target identity,
-timestamp, random request nonce and SHA-256 body digest. The source verifies against
+timestamp, random request nonce and exact JSON payload string (the ECDSA signature
+uses SHA-256 over this whole tuple). The source verifies against
 the registered key and atomically records the nonce; allow at most 60 seconds of request
 age and reject replay. Use Web Crypto, not new JWT/OAuth dependencies. Only that target's
 handoffs/delegations/allocations are addressable. An `Origin` header is not server
@@ -97,17 +108,21 @@ secret, provider key, or source bearer token.
 
 ### Owner flow
 
-1. Preview `POST /api/preview/owner-start`: enforce exact browser Origin, generate a
-   random browser state cookie and server-held verifier, persist a ten-minute pending
-   request, and register its S256 challenge with the source using target authentication.
-   Return a source `/preview/continue?request=<opaque-id>` URL.
+1. Preview `POST /api/preview/owner-start`: enforce exact browser Origin. The browser
+   persists a random request ID and independent browser proof before I/O; the target
+   persists encrypted verifier/session-token correlation before source I/O, and sets
+   the proof as a host-only HttpOnly cookie. Source authorization requests last ten
+   minutes; target pending intent/cookie last twenty to permit receipt recovery.
+   Register the RFC 7636 S256 challenge with target authentication and return a source
+   `/preview/continue?requestId=<opaque-id>` URL.
 2. The source page uses its existing Better Auth GitHub/Google sign-in, with a **source-
    local callback URL**. Resolve the existing owner through `ownerSession`. The source
    page identifies the target PR/origin and continues via a same-origin POST; no new
    competitor form. GET navigation alone does not issue authority.
 3. Source authorization records owner ID and **source session ID**, target/incarnation/
    commit, request ID, scope `preview:owner`, verifier challenge, expiry and an opaque
-   **60-second code hash**. Source derives identity from the session, never submitted
+   **60-second code hash**. Initial redemption must occur within that window; identical
+   proof-bound receipt recovery lasts ten minutes after consumption. Source derives identity from the session, never submitted
    email/handle/user IDs. Return only the code and state to the registered target's
    fixed `/preview/return` page in a fragment. Use `no-store`, `Referrer-Policy:
 no-referrer`, no third-party callback assets, and remove the fragment immediately.
@@ -162,10 +177,11 @@ participation through the existing `/api/queue` contract.
   an acknowledgement loss; it never obtains a second delegation. A different proof or
   request is rejected. Recheck live source authority on receipt retrieval too.
 - Target records `(source, incarnation, exchangeId)` → local grant/session ID atomically
-  with import/issuance state. Serialize completion per pending request. Repeated login
+  with issuance state. Serialize committed effects per pending request. Repeated login
   keeps one imported owner/competitor; repeated exchange reuses that grant. Session
   cookie retries reuse the saved target session only for the same browser-state proof.
-  Expired/consumed browser state requires a new login flow, not reusable sign-in links.
+  An expired proof window or locally revoked session requires a new login flow;
+  same-browser receipt retries within the window only recover the same session.
 - Better Auth session creation and application import are separate writes. Persist a
   completion state machine and preallocated token correlation. Better Auth 1.7.3
   `createSession` strips an overridden ID, but accepts a preallocated `token` when
@@ -445,13 +461,15 @@ already exist. Parent remains sole Linear writer and dependency/lockfile/integra
 
 ## Evidence and remaining acceptance
 
-Reproduce the three probes using [`.tim27/README.md`](../../.tim27/README.md). The auth
+Reproduce the three historical probes using [`.tim27/README.md`](../../.tim27/README.md). The auth
 probe runs actual Better Auth 1.7.3; import runs both real migrations; runtime probe
 executes the unchanged coordinator on native SQLite. No external model, hosted auth,
 deploy, package change, credential mutation or production write occurred. The exchange
-ledger is a model, not an audited network implementation. Cryptographic request signing,
-concurrent native D1 completion, public-wakeup CLI and cross-origin hosted flows remain
-unverified.
+ledger in those original probes is a model. The subsequent
+[identity implementation suite](../evidence/TIM-27-identity-bridge.md) exercises actual
+signed Worker-to-Worker requests, native D1 concurrent completion, crash recovery,
+Better Auth library-route revocation and two-origin Chromium cookies. Public-wakeup
+CLI integration, hosted provider callbacks and live inference remain unverified.
 
 Before hosted acceptance, capture:
 
@@ -478,9 +496,10 @@ Before hosted acceptance, capture:
   the broker seam. Synthetic provider tests establish transport/accounting; **none
   establish real-model dialogue quality, affordability or completion**.
 
-**Blocker assessment:** no platform/API blocker to implementing A–C with the locked
-dependencies. Hosted completion is blocked on trusted production bridge/lifecycle
-provisioning and broker integration plus explicit available trial funding. These are
+**Blocker assessment:** A–B identity code is ready for parent review with local evidence;
+C's selector remains a later serialized CLI slice. Hosted completion is blocked on
+reviewed bridge deployment, trusted lifecycle provisioning, CLI and broker integration,
+plus reconciliation of the actual available operating ledger. These are
 named prerequisites, not a reason to copy production credentials or fake a live match.
 
 ## Primary sources (retrieved 2026-09-14)

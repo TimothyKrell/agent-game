@@ -1,21 +1,15 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "agent-game-dev",
-  "main": "src/server/worker.ts",
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "preview-identity-integration",
+  "main": "fixtures/preview-identity-worker.ts",
   "compatibility_date": "2026-09-10",
   "compatibility_flags": ["nodejs_compat"],
-  "assets": {
-    "directory": "./dist/client",
-    "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/preview", "/preview/*", "/agents.md", "/rules.md"],
-  },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "agent-game",
-      "database_id": "00000000-0000-0000-0000-000000000001",
-      "migrations_dir": "migrations",
+      "database_name": "preview-identity-test",
+      "database_id": "00000000-0000-0000-0000-000000000027",
+      "migrations_dir": "../migrations",
     },
   ],
   "durable_objects": {
@@ -28,20 +22,16 @@
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["MatchObject", "MatchmakingObject", "HouseSeatObject"] },
   ],
-  "ai": { "binding": "AI", "remote": true },
   "vars": {
     "ENVIRONMENT": "development",
-    "APP_URL": "http://localhost:8790",
+    "APP_URL": "http://127.0.0.1:8790",
     "PREVIEW_SOURCE_URL": "",
     "HOUSE_PROVIDER": "preview",
-    "HOUSE_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-    "OPENAI_BASE_URL": "https://api.openai.com/v1",
+    "HOUSE_MODEL": "identity-zero-inference",
     "TIME_SCALE": "1",
     "QUEUE_WAIT_SECONDS": "30",
     "MAX_CONCURRENT_MATCHES": "3",
     "HOUSE_DAILY_BUDGET_USD": "5",
     "HOUSE_MATCH_RESERVATION_USD": "1.5",
-    "HOUSE_SUCCESSION_MATCH_RESERVATION_USD": "",
   },
-  "observability": { "enabled": true, "head_sampling_rate": 1 },
 }
