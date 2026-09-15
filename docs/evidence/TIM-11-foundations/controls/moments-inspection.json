@@ -1,0 +1,977 @@
+{
+  "checkedAt": "2026-09-15T01:08:11.580Z",
+  "checks": [
+    {
+      "name": "desktop: direct review link lands on dp-example-return",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: direct review link lands on dp-event-70072bde-05ae-4ee0-ade5-b0498646177b",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: direct review link lands on dp-example-execution-return",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: direct review link lands on dp-rule-index",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: earned bonus names all four correct historical agents",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: all bonuses show two to three starting coins",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Act I summary explicitly continues the match",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Executor inline role explanation",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: every elimination roster matches its historical event",
+      "passed": true,
+      "evidence": [
+        {
+          "id": 1064,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Echo",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Flux",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Echo",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Flux",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1257,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Echo",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Echo",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1704,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1798,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1877,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1927,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Katniss Everdeen"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Katniss Everdeen"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1969,
+          "expected": [
+            "Patch",
+            "Spark",
+            "Katniss Everdeen"
+          ],
+          "actual": [
+            "Patch",
+            "Spark",
+            "Katniss Everdeen"
+          ],
+          "matches": true
+        },
+        {
+          "id": 2000,
+          "expected": [
+            "Patch",
+            "Spark"
+          ],
+          "actual": [
+            "Patch",
+            "Spark"
+          ],
+          "matches": true
+        },
+        {
+          "id": 2013,
+          "expected": [
+            "Patch"
+          ],
+          "actual": [
+            "Patch"
+          ],
+          "matches": true
+        }
+      ]
+    },
+    {
+      "name": "desktop: elimination has prominent heading and whole-row treatment",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Quill exit leaves exactly four named agents",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: speech portrait is larger, left-aligned, with name below",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: action portrait is larger, left-aligned, with name below",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: all 36 rules have intentional icons",
+      "passed": true,
+      "evidence": [
+        {
+          "term": "Treasurer",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Thief",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Assassin",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Envoy",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Guard",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Coins",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Influence",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Income",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Tax",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Theft",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Assassination",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Exchange",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Coup",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Challenge",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Block",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Safeguard",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Override",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Veto",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Election tracker",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Execution",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Investigation",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Special election",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Round cap",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Coordinator",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Executor",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Overlord",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Cooperative",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Rogue",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Government",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Nomination",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Election",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Policy",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Chaos",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Term limits",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Executive power",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Elimination",
+          "svg": true,
+          "placeholder": false
+        }
+      ]
+    },
+    {
+      "name": "desktop: Coordinator help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Veto help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Election tracker help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Investigation help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Special election help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Round cap help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: ordinary execution names victim and nine remaining",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: execution does not reveal ordinary secret allegiance",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: execution foregrounds the victim and names the acting agent",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: Overlord execution ends Act I with eight survivors",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: both executed agents return",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "desktop: new gallery content fits document",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: direct review link lands on dp-example-return",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: direct review link lands on dp-event-70072bde-05ae-4ee0-ade5-b0498646177b",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: direct review link lands on dp-example-execution-return",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: direct review link lands on dp-rule-index",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: earned bonus names all four correct historical agents",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: all bonuses show two to three starting coins",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Act I summary explicitly continues the match",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Executor inline role explanation",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: every elimination roster matches its historical event",
+      "passed": true,
+      "evidence": [
+        {
+          "id": 1064,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Echo",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Flux",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Echo",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Flux",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1257,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Echo",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Echo",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1704,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Cipher",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1798,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Axiom",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1877,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Katniss Everdeen",
+            "Quill"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1927,
+          "expected": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Katniss Everdeen"
+          ],
+          "actual": [
+            "Velvet",
+            "Patch",
+            "Spark",
+            "Katniss Everdeen"
+          ],
+          "matches": true
+        },
+        {
+          "id": 1969,
+          "expected": [
+            "Patch",
+            "Spark",
+            "Katniss Everdeen"
+          ],
+          "actual": [
+            "Patch",
+            "Spark",
+            "Katniss Everdeen"
+          ],
+          "matches": true
+        },
+        {
+          "id": 2000,
+          "expected": [
+            "Patch",
+            "Spark"
+          ],
+          "actual": [
+            "Patch",
+            "Spark"
+          ],
+          "matches": true
+        },
+        {
+          "id": 2013,
+          "expected": [
+            "Patch"
+          ],
+          "actual": [
+            "Patch"
+          ],
+          "matches": true
+        }
+      ]
+    },
+    {
+      "name": "narrow: elimination has prominent heading and whole-row treatment",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Quill exit leaves exactly four named agents",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: speech portrait is larger, left-aligned, with name below",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: action portrait is larger, left-aligned, with name below",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: all 36 rules have intentional icons",
+      "passed": true,
+      "evidence": [
+        {
+          "term": "Treasurer",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Thief",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Assassin",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Envoy",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Guard",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Coins",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Influence",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Income",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Tax",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Theft",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Assassination",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Exchange",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Coup",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Challenge",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Block",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Safeguard",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Override",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Veto",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Election tracker",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Execution",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Investigation",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Special election",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Round cap",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Coordinator",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Executor",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Overlord",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Cooperative",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Rogue",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Government",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Nomination",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Election",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Policy",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Chaos",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Term limits",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Executive power",
+          "svg": true,
+          "placeholder": false
+        },
+        {
+          "term": "Elimination",
+          "svg": true,
+          "placeholder": false
+        }
+      ]
+    },
+    {
+      "name": "narrow: Coordinator help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Veto help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Election tracker help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Investigation help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Special election help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Round cap help remains visible and contained",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: ordinary execution names victim and nine remaining",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: execution does not reveal ordinary secret allegiance",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: execution foregrounds the victim and names the acting agent",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: Overlord execution ends Act I with eight survivors",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: both executed agents return",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "narrow: new gallery content fits document",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "name": "No application exceptions",
+      "passed": true,
+      "evidence": []
+    }
+  ],
+  "captures": [
+    "desktop-act-one-bonus.png",
+    "desktop-executor-help.png",
+    "desktop-quill-eliminated.png",
+    "desktop-large-speech-portrait.png",
+    "desktop-large-action-portrait.png",
+    "desktop-complete-rule-icons.png",
+    "desktop-act-one-execution.png",
+    "desktop-overlord-executed.png",
+    "narrow-act-one-bonus.png",
+    "narrow-executor-help.png",
+    "narrow-quill-eliminated.png",
+    "narrow-large-speech-portrait.png",
+    "narrow-large-action-portrait.png",
+    "narrow-complete-rule-icons.png",
+    "narrow-act-one-execution.png",
+    "narrow-overlord-executed.png"
+  ],
+  "errors": []
+}

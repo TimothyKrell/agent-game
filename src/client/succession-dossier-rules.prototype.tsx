@@ -1,7 +1,5 @@
 /** Retained dev style-guide reference: inline rule vocabulary and small, anchored explanations. */
-import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { Struct } from 'effect';
 import {
   ArrowRight,
@@ -28,12 +26,14 @@ import {
   UserRoundCog,
   Users,
   Vote,
-  X,
 } from 'lucide-react';
+import { RuleHelpTrigger } from './ui/rule-help';
 import { InfluenceBack } from './deco';
 import { AgentText } from './succession-dossier-profiles.prototype';
 import { capabilityRules } from './succession-replay-fixture.prototype';
 import type { Capability } from './succession-replay-fixture.prototype';
+
+export { RuleHelpProvider } from './ui/rule-help';
 
 const otherRules = {
   Coins: [
@@ -228,13 +228,6 @@ function ruleCopy(term: RuleTermName) {
   return otherRules[term];
 }
 
-type Help = { term: RuleTermName; anchor: HTMLButtonElement; pinned: boolean };
-
-const HelpContext = createContext({
-  show: (_term: RuleTermName, _anchor: HTMLButtonElement, _pinned: boolean) => {},
-  leave: () => {},
-});
-
 export function RuleTerm({
   term,
   children,
@@ -246,11 +239,12 @@ export function RuleTerm({
   value?: number;
   before?: number;
 }) {
-  const help = useContext(HelpContext);
+  const [summary, description] = ruleCopy(term);
 
   return (
-    <button
+    <RuleHelpTrigger
       type="button"
+      help={{ title: term, summary, description, icon: <RuleIcon term={term} /> }}
       className={`dp-term ${term === 'Coins' ? 'dp-term-coins' : ''} ${value !== undefined ? 'dp-resource-term' : ''}`}
       data-rule-term={term}
       aria-label={`${children ?? term} rules`}
@@ -259,12 +253,6 @@ export function RuleTerm({
           ? undefined
           : `${before !== undefined && before !== value ? `${before} to ` : ''}${value} ${term}`
       }
-      aria-haspopup="dialog"
-      onPointerEnter={(event) => {
-        if (event.pointerType === 'mouse') help.show(term, event.currentTarget, false);
-      }}
-      onPointerLeave={help.leave}
-      onClick={(event) => help.show(term, event.currentTarget, true)}
     >
       {term === 'Influence' && value !== undefined ? (
         <span className="dp-influence-cards" aria-hidden="true">
@@ -289,7 +277,7 @@ export function RuleTerm({
         </span>
       )}
       <span>{children ?? term}</span>
-    </button>
+    </RuleHelpTrigger>
   );
 }
 
@@ -340,160 +328,4 @@ export function RuleText({ text }: { text: string }) {
       <AgentText key={index} text={part} />
     );
   });
-}
-
-function HelpPopup({
-  help,
-  close,
-  enter,
-  leave,
-}: {
-  help: Help;
-  close: () => void;
-  enter: () => void;
-  leave: () => void;
-}) {
-  const popup = useRef<HTMLDialogElement & HTMLDivElement>(null);
-  const [effect, response] = ruleCopy(help.term);
-  useLayoutEffect(() => {
-    const element = popup.current;
-
-    if (!element) return;
-
-    if (help.pinned) element.showModal();
-    const anchor = help.anchor.getBoundingClientRect();
-    const box = element.getBoundingClientRect();
-    element.style.left = `${Math.max(12, Math.min(innerWidth - box.width - 12, anchor.left))}px`;
-    element.style.top = `${Math.max(12, Math.min(innerHeight - box.height - 12, anchor.bottom + 8))}px`;
-  }, [help]);
-
-  const body = (
-    <>
-      {help.pinned && (
-        <button autoFocus className="dp-help-close" aria-label="Close rules" onClick={close}>
-          <X size={18} />
-        </button>
-      )}
-      <div className="dp-help-title">
-        <RuleIcon term={help.term} />
-        <h2 id="dp-rule-title">{help.term}</h2>
-      </div>
-      <strong>{effect}</strong>
-      <p>{response}</p>
-      <small>{help.pinned ? 'Rule reference' : 'Click to keep open'}</small>
-    </>
-  );
-
-  return createPortal(
-    help.pinned ? (
-      <dialog
-        ref={popup}
-        className="dp-help"
-        onCancel={(event) => {
-          event.preventDefault();
-          close();
-        }}
-        onKeyDown={(event) => {
-          // This small reference dialog has one focusable control: its close button.
-          if (event.key === 'Tab') {
-            event.preventDefault();
-            event.currentTarget.querySelector('button')?.focus();
-          }
-        }}
-        onClick={(event) => {
-          const bounds = event.currentTarget.getBoundingClientRect();
-
-          if (
-            event.target === event.currentTarget &&
-            (event.clientX < bounds.left ||
-              event.clientX > bounds.right ||
-              event.clientY < bounds.top ||
-              event.clientY > bounds.bottom)
-          )
-            close();
-        }}
-        aria-labelledby="dp-rule-title"
-      >
-        {body}
-      </dialog>
-    ) : (
-      <div ref={popup} className="dp-help" role="tooltip" onPointerEnter={enter} onPointerLeave={leave}>
-        {body}
-      </div>
-    ),
-    document.body,
-  );
-}
-
-export function RuleHelpProvider({ children }: { children: ReactNode }) {
-  const [help, setHelp] = useState<Help | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hoverDismissed = useRef(false);
-
-  const enter = () => {
-    if (timer.current) clearTimeout(timer.current);
-  };
-
-  const close = () => {
-    enter();
-    hoverDismissed.current = true;
-    setHelp(null);
-
-    if (help?.pinned) requestAnimationFrame(() => help.anchor.focus({ preventScroll: true }));
-  };
-
-  const leave = () => {
-    enter();
-    timer.current = setTimeout(() => setHelp((current) => (current?.pinned ? current : null)), 140);
-  };
-
-  useEffect(() => {
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !help?.pinned) {
-        hoverDismissed.current = true;
-        setHelp(null);
-      }
-    };
-
-    const pointerMoved = () => {
-      hoverDismissed.current = false;
-    };
-
-    const scroll = () => setHelp((current) => (current?.pinned ? current : null));
-    document.addEventListener('keydown', escape);
-    document.addEventListener('pointermove', pointerMoved);
-    window.addEventListener('scroll', scroll);
-
-    return () => {
-      enter();
-      document.removeEventListener('keydown', escape);
-      document.removeEventListener('pointermove', pointerMoved);
-      window.removeEventListener('scroll', scroll);
-    };
-  }, [help?.pinned]);
-
-  return (
-    <HelpContext.Provider
-      value={{
-        show: (term, anchor, pinned) => {
-          enter();
-
-          if (!pinned && hoverDismissed.current) return;
-          setHelp((current) => (current?.pinned && !pinned ? current : { term, anchor, pinned }));
-        },
-        leave,
-      }}
-    >
-      {children}
-      {help && (
-        <HelpPopup
-          key={help.pinned ? 'dialog' : 'hover'}
-          help={help}
-          close={close}
-          enter={enter}
-          leave={leave}
-        />
-      )}
-    </HelpContext.Provider>
-  );
 }
