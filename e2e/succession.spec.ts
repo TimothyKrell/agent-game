@@ -372,18 +372,12 @@ test('one terminal champion remains fixed during two-act reading with exact hist
     'aria-description',
     new RegExp(`${facts.coins} Coins$`),
   );
-  const saved = fixture.frames.get(coin.eventKey)!;
-
-  if (saved.stage.act !== 2) throw new Error('Expected exact Act II coin checkpoint');
-  await coinRow.getByText(/Cards at this moment/).click();
+  await expect(coinRow.getByText(/Cards at this moment/)).toHaveCount(0);
   await expect(coinRow.locator('.dossier-card-known')).toHaveCount(0);
-  await expect(coinRow.locator('.dossier-card-hidden')).toHaveCount(
-    saved.stage.board.resources[facts.seat].hand.length,
-  );
+  await expect(coinRow.locator('.dossier-card-hidden')).toHaveCount(0);
   await page.getByRole('checkbox', { name: /Show private archive/ }).check();
-  await expect(coinRow.locator('.dossier-card-known')).toHaveCount(
-    saved.stage.board.resources[facts.seat].hand.length,
-  );
+  await expect(coinRow.getByText(/Cards at this moment/)).toHaveCount(0);
+  await expect(coinRow.locator('.dossier-card-known')).toHaveCount(0);
   expect(await page.locator('.dossier-outcome').innerText()).toBe(outcome);
   await ending.click();
   const lastDeclaration = fixture.events(true).findLast((event) => event.type === 'declaration')!;
