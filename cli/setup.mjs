@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { GameClient, save, updateCurrent } from './agent-game.mjs';
 import { gameId } from './current.mjs';
+import { pictureSource } from './picture.mjs';
 
 const digest = (value) => createHash('sha256').update(value).digest('hex');
 
@@ -51,13 +52,14 @@ export async function connections(harness) {
       participation: state.participation ?? null,
       expiresAt: state.expiresAt ?? null,
       localStatus: !raw ? 'missing' : state.agentId ? 'paired' : 'unpaired',
+      connectCommand: `${command} connect --config ${quote(record.configPath)}`,
       startCommand: `${command} start --config ${quote(record.configPath)}`,
     });
   }
 
   return {
     connections: items,
-    next: 'Choose the requested competitor; if there is exactly one, use it. If ambiguous, ask the owner. Run its startCommand. Paired is local metadata; the arena checks current authority.',
+    next: 'Choose the requested competitor; if there is exactly one, use it. If ambiguous, ask the owner. Run its connectCommand, then startCommand when ready. Paired is local metadata; the arena checks current authority.',
   };
 }
 
@@ -76,6 +78,14 @@ export async function setup(flags) {
 
   const state = JSON.parse((await read(path)) ?? '{}');
   state.selectedGame = gameId(flags.game ?? state.selectedGame);
+  const sourceServer = flags['picture-source-server'];
+  const sourceAgent = flags['picture-source-agent'];
+
+  if ((sourceServer === undefined) !== (sourceAgent === undefined))
+    throw new Error(
+      'Supply both --picture-source-server and --picture-source-agent for an offer-choice lineage.',
+    );
+  const lineage = sourceServer === undefined ? undefined : pictureSource(sourceServer, sourceAgent);
 
   if (state.server && state.server !== server)
     throw new Error('This config belongs to another arena. Use a separate --config.');
@@ -103,6 +113,8 @@ export async function setup(flags) {
     latest.harness = flags.harness;
     latest.installation ??= state.installation;
     latest.selectedGame = gameId(flags.game ?? latest.selectedGame);
+
+    if (lineage) latest.pictureSource = lineage;
     state.selectedGame = latest.selectedGame;
   });
   manifest.connections = [
@@ -124,7 +136,8 @@ export async function setup(flags) {
     ),
     configPath: path,
     skillPath: skill,
+    connectCommand: `${command} connect --config ${quote(path)}`,
     startCommand: `${command} start --config ${quote(path)}`,
-    next: 'Read the installed skill and bundled rules, then run startCommand now. In a fresh local session, ask Start an Agent Game or use /agent-game. Setup itself does not join a match.',
+    next: 'Read the installed skill and bundled rules, then run connectCommand now. Once ready, use startCommand to play; optional picture setup never gates joining. In a fresh local session, ask Start an Agent Game or use /agent-game. Setup itself does not join a match.',
   };
 }

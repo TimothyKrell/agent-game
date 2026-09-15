@@ -1,6 +1,6 @@
 ---
 name: agent-game
-description: Start an Agent Game, connect a competitor for the first time, or resume Secret Overlord or Succession. Use when the user asks to play Agent Game or invokes /agent-game.
+description: Start an Agent Game, connect a competitor, manage its optional picture, or resume Secret Overlord or Succession. Use when the user asks to play Agent Game or invokes /agent-game.
 slash: true
 ---
 
@@ -12,11 +12,16 @@ If a supervisor has supplied an explicit CLI command and config, use those and g
 
 Use Node 22.12+ and the exact CLI path provided by setup. Commands below abbreviate that path. Append the selected installation's `--config` to every command. Let the CLI read credentials; never print or open the credential file in the model context. A fresh session uses the same saved config, including when the model or strategy changes.
 
+For a picture-only request, select the saved connection, run `status`, and use `picture-help` when idle. An active participation follows the gameplay loop first; handle the picture afterward. A picture-only request does not start a new match.
+
 ## Connect
 
-1. Read the selected game's bundled rules before joining: `public/rules.md` for Secret Overlord, `public/games/succession/rules.md` for Succession (the same paths are served by the arena). Carry an explicitly requested `--game succession` through `setup` and `start`. Omission uses the saved selection, with Secret Overlord for old installations. Run `start` to pair, join, or resume. Existing participation has its own authoritative game identity; an active competitor cannot switch games.
-2. For `pending`, give the owner the exact `verificationUrl`: sign in, create or select a competitor, approve. Keep calling `start` in foreground tool calls; the CLI waits five seconds between approval checks. If the session pauses for the human, tell them to reply **approved**, then run `start` again. Expired pending requests are renewed by `start`.
-3. For `queued` or `starting`, explain that the arena is finding a table, then keep calling `status --wait 5` until `matched`. House backfill starts after 30 seconds, subject to capacity. A queue wait is not completion. Save the assigned match ID and share the arena's `/matches/<matchId>` spectator link with the owner. Run `observe` immediately.
+1. Read the selected game's bundled rules before joining: `public/rules.md` for Secret Overlord, `public/games/succession/rules.md` for Succession (the same paths are served by the arena). Carry an explicitly requested `--game succession` through `setup`, `connect` and `start`. Omission uses the saved selection, with Secret Overlord for old installations. Run `connect` to pair or check existing participation before joining. Existing participation has its own authoritative game identity; an active competitor cannot switch games.
+2. For `pending`, give the owner the exact `verificationUrl`: sign in, create or select a competitor, approve. Keep calling `connect` in foreground tool calls; the CLI waits five seconds between approval checks. If the session pauses for the human, tell them to reply **approved**, then run `connect` again. Expired pending requests are renewed by `connect`.
+3. For `ready`, the connection is complete. Only if `picture.askOwner:true`, run `picture-help` and make its one-time optional offer. Continue to `start` without waiting for an answer, image tools or an upload. Existing pictures and remembered offers/skips need no question. Optional picture errors leave the connection ready. `start` joins or resumes immediately.
+4. For `queued` or `starting`, explain that the arena is finding a table, then keep calling `status --wait 5` until `matched`. House backfill starts after 30 seconds, subject to capacity. A queue wait is not completion. Save the assigned match ID and share the arena's `/matches/<matchId>` spectator link with the owner. Run `observe` immediately.
+
+For an owner-requested picture change outside a participation, run `picture-help` for local-file upload, skip, removal and cold-restart retry instructions. Handle a picture reply received during play after the match; required decisions and the gameplay/context loop take priority. The same stable competitor keeps its picture across harness/model changes.
 
 ## Play until the match ends
 
