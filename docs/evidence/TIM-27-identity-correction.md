@@ -81,9 +81,9 @@ symptoms (2 failed / 14 skipped):
 node node_modules/vitest/vitest.mjs run tests/preview-identity.test.ts -t 'suffixes real|restricts signed'
 ```
 
-The retained [red report](../../.tim27/identity-correction-red.json) records expected
+The retained [red report](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-correction-red.json) records expected
 500→200 and 200→401 assertion failures. This deliberately failing pre-fix evidence
-is separate from the final [16-test passing report](../../.tim27/identity-correction/identity-vitest.json).
+is separate from the final [16-test passing report](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-correction/identity-vitest.json).
 
 Final capture command used:
 
@@ -101,7 +101,7 @@ TIM27_IDENTITY_EVIDENCE_DIR="$evidence" node node_modules/vitest/vitest.mjs run 
 Also passed:
 
 - **13 regressions** in `tests/platform-repository.test.ts` (11) and
-  `tests/worker-errors.test.ts` (2): [report](../../.tim27/identity-correction/regressions.json).
+  `tests/worker-errors.test.ts` (2): [report](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-correction/regressions.json).
 - `npm run typecheck`: all three configurations.
 - `node_modules/.bin/oxlint --deny-warnings .`: zero errors/warnings.
 - Prettier checks of changed TypeScript, docs and new capture/manifest files.
@@ -110,8 +110,8 @@ Also passed:
 All 16 identity tests use real persisted workerd/D1 and locked Better Auth. The
 suite still covers browser host-separated cookies, revocation, committed-write
 interruptions, concurrent completion, cold restarts and same-incarnation redeploy.
-The [result](../../.tim27/identity-correction/identity-result.json) and
-[Chromium image](../../.tim27/identity-correction/identity-browser.png) are new captures.
+The [result](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-correction/identity-result.json) and
+[Chromium image](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-correction/identity-browser.png) are new captures.
 No paid calls were made. Previously accepted deterministic-game evidence remains
 in its original files; those long smoke tests were not rerun for this focused fix.
 
@@ -122,7 +122,7 @@ node .tim27/identity-correction-provenance.mjs --check
 This verifies all 17 `.tim27` artifacts tracked by `7f7e447` byte-for-byte, including
 the 10 original feasibility artifacts and seven first-identity artifacts. It verifies
 the first manifest's 33 hashes against that commit's source or the unchanged locked
-installed dependency files. The new [manifest](../../.tim27/identity-correction-provenance.json)
+installed dependency files. The new [manifest](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27/identity-correction-provenance.json)
 pins the corrected implementation and new evidence separately. Neither prior
 provenance generator was run.
 

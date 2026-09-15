@@ -21,7 +21,7 @@ release. The exact retained deployed 0.2.0 archive remains separate.
 `0008_preview_generation.sql` and the source-owned `preview-generation.ts` helper.
 All trusted lifecycle writes now use durable operation fences. Completed-delivery
 failures are classified explicitly before retirement. See
-[generation evidence](../../.tim27-lifecycle/generation.md); the frozen original
+[generation evidence](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27-lifecycle/generation.md); the frozen original
 tuple-only red probes and earlier reports remain historical evidence.
 Hosted activation stays default-off pending independent integration review,
 deployed source capability/generation probes and the protected release cutover.
@@ -215,7 +215,7 @@ its decrypted key, and target broker settings.
   only an observed closed PR, changed head or newer tested run/attempt. GitHub
   503, source 503/timeout/malformed data and comment transport failure preserve
   even a completed healthy deployment. Missing readback remains not ready.
-  The [smoke schema correction](../../.tim27-lifecycle/smoke-schema.md) replaces
+  The [smoke schema correction](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim27-lifecycle/smoke-schema.md) replaces
   the prior global `AssertionError` rule with `PreviewSmokeInvalid`, produced only
   after typed observation decoding. Health, socket, assignment, match and archive
   shapes are checked before semantic assertions; setup/transport/JSON/schema and

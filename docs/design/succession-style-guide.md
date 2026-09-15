@@ -24,7 +24,7 @@ The `sample=components` guide uses the actual `DossierRow`, rule icons/help, car
 
 `sample=examples` remains the approved comparison, including the original illustrated portraits and original fictional scenario text. Its original 138 assertions are preserved. The full captured source remains available at `sample=match`, with all 974 public entries and 416 original quotations. None of the original source fixtures or evidence has been replaced.
 
-The shared guide's data lives in `tests/fixtures/dossier-recorded.ts` and `tests/fixtures/dossier-engine.ts`. The captured adapter reads historical public life/resources forward from source; it does not supply unavailable historical hands or pretend to be an engine. The independent engine fixtures provide primary temporal/privacy evidence. These imports are reachable only through the existing development-only route. `src/client/dossier-controls.prototype.tsx` and `/.dossier/browser.html` provide additional development-only interaction stress cases.
+The shared guide's data lives in `tests/fixtures/dossier-recorded.ts` and `tests/fixtures/dossier-engine.ts`. The captured adapter reads historical public life/resources forward from source; it does not supply unavailable historical hands or pretend to be an engine. The independent engine fixtures provide primary temporal/privacy evidence. These imports are reachable only through the existing development-only route. `src/client/dossier-controls.prototype.tsx` and `/tests/browser/dossier/browser.html` provide additional development-only interaction stress cases. Current browser-check commands are indexed in [maintained test support](../../tests/fixtures/README.md).
 
 The actual match route now composes `SuccessionDossier` with TIM-23's bounded reader through its chapter slot, while keeping the live decision composer authoritative. The local composition fixture is only a bounded presentation example. Shared interaction/history review corrections and final route acceptance are tracked in the [interface and evidence handoff](../evidence/TIM-19-22-components.md).
 
@@ -40,7 +40,7 @@ The actual match route now composes `SuccessionDossier` with TIM-23's bounded re
 
 Both the lazy import and route predicate in `src/client/main.tsx` are guarded by **`import.meta.env.DEV`**. Keep that build-time exclusion. The guide must not become a production route, be enabled by a production query flag, or ship its captured fixture/illustrative data or Agentation code in production assets.
 
-The production build excludes Dossier **prototype** selectors, captured match ID, example labels, test fixtures and Agentation. Production `dossier-*` selectors legitimately ship through the scoped stylesheet. The production component entry's import graph is also bundled independently and scanned. Direct `sample=components` and `/.dossier/browser.html` requests do not mount development content in the production preview.
+The production build excludes Dossier **prototype** selectors, captured match ID, example labels, test fixtures and Agentation. Production `dossier-*` selectors legitimately ship through the scoped stylesheet. The production component entry's import graph is also bundled independently and scanned. Direct `sample=components` and `/tests/browser/dossier/browser.html` requests do not mount development content in the production preview.
 
 ## Sources and accepted design
 

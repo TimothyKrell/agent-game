@@ -116,7 +116,7 @@ Retained scripts/configs/fixtures/captures are in `.tim28/`; local D1/R2 state a
 | `npm run typecheck`                                                                                                                                                  | All three TypeScript projects passed                                                                       |
 | `npm run lint`, `npm run format:check`, `npm run build`, `git diff --check`                                                                                          | Passed; full outputs retained in `.tim28` logs                                                             |
 
-Browser evidence: [desktop upload](../../../.tim28/captures/owner-upload-desktop.png), [narrow upload](../../../.tim28/captures/owner-upload-narrow.png), [retired removal](../../../.tim28/captures/owner-removed.png). The browser flow checks keyboard expansion, labelled input, excessive-file feedback, invalid replacement preserving the visible image, `aria-busy`, error/status announcements, actual image decoding, enlargement link, replacement, and retired-owner removal. Only isolated port `8828` / inspector `9228` and ephemeral Worker ports were used.
+Browser evidence: [desktop upload](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim28/captures/owner-upload-desktop.png), [narrow upload](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim28/captures/owner-upload-narrow.png), [retired removal](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim28/captures/owner-removed.png). The browser flow checks keyboard expansion, labelled input, excessive-file feedback, invalid replacement preserving the visible image, `aria-busy`, error/status announcements, actual image decoding, enlargement link, replacement, and retired-owner removal. Only isolated port `8828` / inspector `9228` and ephemeral Worker ports were used.
 
 The storage regression run printed Miniflare/workerd Cap'n Proto diagnostic messages during existing concurrent settlement tests; all 33 assertions passed. No paid/remote verification was attempted. Production R2 account enablement and deployment credentials were not inspected or changed; provisioning requires the existing deploy identity to have R2 bucket creation access. Local R2 required no account feature activation.
 
@@ -138,7 +138,7 @@ Correction based on `6434591`, after the parent integrated the initial implement
 ### Findings and reproduction
 
 1. The picture client parsed `response.json()` before classifying HTTP errors. Native HTTP tests reproduced non-JSON `401`, `403`, and `503` becoming `SyntaxError`; malformed `200` JSON also bypassed the unreadable-picture error. Wrong-shape `200` JSON manufactured status `502`, and structured errors dropped `details`. The initial run of `tests/agent-picture-api.test.ts` had **6 failures and 2 passes**.
-2. The owner control treated a confirmed receipt as current metadata and relied on `useLoad.refresh()` resolving to imply a successful refresh. A real dashboard/browser reproduction committed upload revision 1, lost its response, removed it at revision 2 through another authenticated request, replayed the old receipt, and failed the roster read. The control displayed the obsolete image URL and “Picture saved.” without a retry. The new browser assertion failed as expected. [Before correction](../../../.tim28/captures/correction-reconciliation-before.png).
+2. The owner control treated a confirmed receipt as current metadata and relied on `useLoad.refresh()` resolving to imply a successful refresh. A real dashboard/browser reproduction committed upload revision 1, lost its response, removed it at revision 2 through another authenticated request, replayed the old receipt, and failed the roster read. The control displayed the obsolete image URL and “Picture saved.” without a retry. The new browser assertion failed as expected. [Before correction](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim28/captures/correction-reconciliation-before.png).
 
 ### Corrected interfaces and behavior
 
@@ -154,7 +154,7 @@ Correction based on `6434591`, after the parent integrated the initial implement
 | Valid receipt followed by failed current metadata GET             | Confirm the change, hide the unconfirmed portrait, offer metadata-only retry                                               |
 | Metadata retry returns the newer missing revision                 | Display the removal even if the roster's `useLoad.refresh()` catches another failure; do not resend the confirmed mutation |
 
-[Metadata recovery required](../../../.tim28/captures/correction-metadata-required.png) · [Newer removal reconciled](../../../.tim28/captures/correction-metadata-reconciled.png).
+[Metadata recovery required](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim28/captures/correction-metadata-required.png) · [Newer removal reconciled](https://github.com/TimothyKrell/agent-game/blob/1f1177a323c1619766e356543038711524d578e7/.tim28/captures/correction-metadata-reconciled.png).
 
 ### Correction verification
 
