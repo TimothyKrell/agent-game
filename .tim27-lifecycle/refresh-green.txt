@@ -1,0 +1,53 @@
+
+ RUN  v4.1.11 /tmp/opencode/agent-game-preview-lifecycle
+
+ ↓ tests/preview-lifecycle-state.test.ts > persists encrypted identity with the actual Alchemy engine across a serialized cold restart and stable update
+ ↓ tests/preview-lifecycle-state.test.ts > retains a failed-revocation identity and mints a new incarnation only after source retirement/recreation
+ ↓ tests/preview-lifecycle-state.test.ts > fails closed for missing production capability outputs and forged target database aliases
+ ↓ tests/preview-lifecycle-state.test.ts > publishes real source GET artifacts and completes same-owner browser/agent handoffs through both actual Workers
+ ↓ tests/preview-lifecycle-state.test.ts > fences a delayed target configure after a newer commit wins the actual atomic D1 transaction
+ ↓ tests/preview-lifecycle-state.test.ts > fences a delayed source register after a newer commit wins the actual atomic D1 transaction
+ ↓ tests/preview-lifecycle-state.test.ts > recovers a lost source-register acknowledgement with the retained key and rejects stale publication after closure
+ ↓ tests/preview-lifecycle-state.test.ts > requires independent source revision/configuration and current target runtime before broker enablement, without any inference
+ ↓ tests/preview-lifecycle-state.test.ts > recovers a lost retirement acknowledgement without forgetting the incarnation or requiring an artifact
+stdout | tests/preview-lifecycle-state.test.ts > fences a delayed old close after a concurrent retirement and same-proof cold refresh creates a new incarnation
+Plan: 2 to create
+[PreviewAuth] create
+[PreviewIdentity] create
+
+[PreviewAuth] pending
+[PreviewAuth] creating
+[PreviewAuth] created
+[PreviewIdentity] pending
+[PreviewIdentity] creating
+
+stdout | tests/preview-lifecycle-state.test.ts > fences a delayed old close after a concurrent retirement and same-proof cold refresh creates a new incarnation
+[PreviewIdentity] created
+[PreviewAuth] created
+[PreviewIdentity] created
+
+Done: 4 succeeded
+
+stdout | tests/preview-lifecycle-state.test.ts > fences a delayed old close after a concurrent retirement and same-proof cold refresh creates a new incarnation
+Plan: 1 to update, 1 to noop
+[PreviewAuth] noop
+[PreviewIdentity] update
+
+[PreviewIdentity] pending
+[PreviewIdentity] updating
+
+stdout | tests/preview-lifecycle-state.test.ts > fences a delayed old close after a concurrent retirement and same-proof cold refresh creates a new incarnation
+[PreviewIdentity] updated
+[PreviewIdentity] updated
+
+Done: 2 succeeded
+
+ ✓ tests/preview-lifecycle-state.test.ts > fences a delayed old close after a concurrent retirement and same-proof cold refresh creates a new incarnation 3075ms
+ ↓ tests/preview-lifecycle-state.test.ts > refuses source capability/migration drift before publishing a key and safely destroys an incomplete create
+ ↓ tests/preview-lifecycle-state.test.ts > tombstones never-published state before destruction and rejects late old-incarnation cleanup after recreation
+ ↓ tests/preview-lifecycle-state.test.ts > keeps retry identity on source outage and closes immediately when eligibility changes after registration
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 12 skipped (13)
+   Start at  00:32:47
+   Duration  4.55s (transform 354ms, setup 0ms, import 1.39s, tests 3.08s, environment 0ms)

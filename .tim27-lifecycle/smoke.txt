@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /tmp/opencode/agent-game-preview-lifecycle
+
+ ✓ tests/preview-worker.test.ts > hosts an unranked scripted preview while keeping owner login disabled 44018ms
+ ✓ tests/preview-worker.test.ts > completes both actual Succession acts through house DO jobs and serves bounded archive replay 123462ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  00:28:40
+   Duration  171.05s (transform 264ms, setup 0ms, import 854ms, tests 170.13s, environment 0ms)
+
+JSON report written to /tmp/opencode/agent-game-preview-lifecycle/.tim27-lifecycle/smoke-tests.json
