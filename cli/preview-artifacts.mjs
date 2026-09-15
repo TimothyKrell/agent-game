@@ -383,6 +383,7 @@ export async function cacheArtifacts(manifest, gameId) {
 }
 
 export function activeArtifacts(state) {
+  // Confirmed canceled pins live in cancelledPreviewParticipations, outside the active/next selector.
   return state.previewParticipation?.artifacts ?? state.preview?.artifacts;
 }
 

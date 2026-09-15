@@ -23,10 +23,12 @@ export class GameClient {
     body?: ApiRequestBody | ActionRequest2,
     method?: string,
     authenticated?: boolean,
+    signal?: AbortSignal,
   ): Promise<T>;
   observation<T extends Observation | Observation2 = Observation>(
     matchId: string,
     after?: number,
+    signal?: AbortSignal,
   ): Promise<T>;
   history(
     matchId: string,

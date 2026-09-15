@@ -54,6 +54,8 @@ let lose = '';
 
 let corruptManifest = false;
 
+let cancelMode: 'normal' | 'denied' | 'lost' = 'normal';
+
 const assignments = new Map<
   string,
   {
@@ -87,6 +89,12 @@ export default {
     }
 
     if (url.pathname === '/fixture/traffic') return json(traffic);
+
+    if (url.pathname === '/fixture/cancel-mode') {
+      cancelMode = await readJson(request, Schema.Literals(['normal', 'denied', 'lost']));
+
+      return json({ cancelMode });
+    }
 
     if (url.pathname === '/fixture/corrupt-manifest-response') {
       corruptManifest = true;
@@ -183,9 +191,14 @@ export default {
       if (
         url.pathname.endsWith('agent-handoffs') ||
         url.pathname.endsWith('agent-exchange') ||
-        url.pathname.endsWith('/actions')
-      )
-        record.body = await request.clone().json();
+        url.pathname.endsWith('/actions') ||
+        (url.pathname === '/api/queue' && request.method === 'DELETE')
+      ) {
+        const body = await request.clone().text();
+
+        if (body) record.body = JSON.parse(body);
+      }
+
       traffic.push(record);
     }
 
@@ -213,7 +226,13 @@ export default {
       }
     }
 
+    if (url.pathname === '/api/queue' && request.method === 'DELETE' && cancelMode === 'denied')
+      return json({ error: { code: 'fixture-denied', message: 'Cancellation not authorized.' } }, 403);
+
     const response = await identity.fetch(request, env);
+
+    if (url.pathname === '/api/queue' && request.method === 'DELETE' && cancelMode === 'lost' && response.ok)
+      return json({ error: { code: 'fixture-lost-ack' } }, 503);
 
     if (corruptManifest && url.pathname === '/api/preview/artifacts' && response.ok) {
       corruptManifest = false;

@@ -12,11 +12,19 @@ import type { ArtifactPin } from '../cli/preview-artifacts.mjs';
 
 const run = promisify(execFile);
 
-const source = 'http://127.0.0.1:6361';
+const portBase = Number(process.env.TIM27_CLI_PORT_BASE ?? 6361);
 
-const target = 'http://127.0.0.1:6362';
+if (!Number.isInteger(portBase) || portBase < 1 || portBase > 65532)
+  throw new Error('TIM27_CLI_PORT_BASE must start a valid four-port range.');
 
-const other = 'http://127.0.0.1:6363';
+const source = `http://127.0.0.1:${portBase}`;
+
+const target = `http://127.0.0.1:${portBase + 1}`;
+
+const other = `http://127.0.0.1:${portBase + 2}`;
+
+const evidenceDirectory =
+  process.env.TIM27_CLI_EVIDENCE_DIR ?? `.tim27-cli/runs/cli-${process.pid}-${randomUUID()}`;
 
 const incarnation = 'cli-incarnation-1';
 
@@ -235,8 +243,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
   vi.unstubAllEnvs();
+  await mkdir(evidenceDirectory, { recursive: true });
   await writeFile(
-    '.tim27-cli/scripted-results.json',
+    resolve(evidenceDirectory, 'scripted-results.json'),
     JSON.stringify(
       {
         scope: 'Local scripted fixture allocations; broker admission and hosted agents are not exercised.',
@@ -305,6 +314,77 @@ it.each(['opencode', 'claude'])(
   },
   30_000,
 );
+
+for (const firstGame of ['secret-overlord', 'succession']) {
+  it.each(['normal', 'denied', 'lost'])(
+    `returns next-game pins after confirmed ${firstGame} cancellation (%s receipt)`,
+    async (mode) => {
+      const label = randomUUID();
+      const nextGame = firstGame === 'succession' ? 'secret-overlord' : 'succession';
+      const selected = await select('opencode', target, firstGame, label);
+      expect(selected.status).toBe('selected');
+      expect(await cli(selected.configPath, 'start')).toMatchObject({
+        error: { code: 'preview-allocation-pending' },
+      });
+      const pending = await saved(selected.configPath);
+      const trafficBefore = (await traffic(target)).length;
+      const ledger = 'existing allowance and accounting are retained\n';
+      await writeFile(`${selected.configPath}.supervisor.json`, ledger);
+
+      try {
+        if (mode !== 'normal') {
+          await post(target, '/fixture/cancel-mode', mode);
+          expect(await cli(selected.configPath, 'leave')).toMatchObject({ exitCode: 1 });
+          const unresolved = await saved(selected.configPath);
+          expect(unresolved.pendingJoin).toEqual(pending.pendingJoin);
+          expect(unresolved.previewParticipation).toEqual(pending.previewParticipation);
+          const whileUnresolved = await select('opencode', target, nextGame, label);
+          expect(whileUnresolved.artifacts).toEqual(pending.previewParticipation.artifacts);
+          await post(target, '/fixture/cancel-mode', 'normal');
+        }
+
+        expect(await cli(selected.configPath, 'leave')).toMatchObject({ status: 'idle' });
+        const next = await select('opencode', target, nextGame, label);
+        expect(next.artifacts.gameId).toBe(nextGame);
+
+        const cancellations = (await traffic(target))
+          .slice(trafficBefore)
+          .filter((request) => request.path === '/api/queue' && request.method === 'DELETE');
+
+        expect(cancellations.length).toBeGreaterThan(0);
+
+        for (const request of cancellations)
+          expect(request.body).toEqual({ gameId: firstGame, requestId: pending.pendingJoin.requestId });
+        const state = await saved(selected.configPath);
+        expect(next.artifacts).toEqual(state.preview.artifacts);
+        expect(next.cliPath).toBe(state.preview.artifacts.executablePath);
+        const rules = nextGame === 'succession' ? 'public/games/succession/rules.md' : 'public/rules.md';
+        expect(next.artifacts.rulesPath).toMatch(new RegExp(`/package/${rules}$`));
+        expect(await readFile(next.artifacts.rulesPath, 'utf8')).toBe(
+          `${await readFile(rules, 'utf8')}\nTIM27_BRANCH_A\n`,
+        );
+        expect(state.previewParticipation).toBeUndefined();
+        expect(state.pendingJoin).toBeUndefined();
+        expect(state.cancelledPreviewParticipations[pending.pendingJoin.requestId].artifacts).toEqual(
+          pending.previewParticipation.artifacts,
+        );
+        expect(await readFile(`${selected.configPath}.supervisor.json`, 'utf8')).toBe(ledger);
+        const canceled = await saved(selected.configPath);
+        expect(await cli(selected.configPath, 'leave')).toMatchObject({ status: 'idle' });
+        expect((await saved(selected.configPath)).cancelledPreviewParticipations).toEqual(
+          canceled.cancelledPreviewParticipations,
+        );
+        expect(await cli(selected.configPath, 'start')).toMatchObject({
+          error: { code: 'preview-allocation-pending' },
+        });
+        expect((await saved(selected.configPath)).previewParticipation.artifacts).toEqual(next.artifacts);
+      } finally {
+        await post(target, '/fixture/cancel-mode', 'normal');
+      }
+    },
+    30_000,
+  );
+}
 
 it.each(['secret-overlord', 'succession'])(
   'scopes independent previews to the same stable competitor and preserves an active source %s assignment',
