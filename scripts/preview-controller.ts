@@ -12,25 +12,13 @@ import {
   validateArtifact,
 } from './preview-artifact.ts';
 import { GitHub, PullRequest, PreviewEligibilityChanged, verifyManifestIdentity } from './preview-github.ts';
+import { PreviewReadbackInvalid, previewFailureEvidence, recordPreviewFailure } from './preview-failure.ts';
 import type { VerifiedRun } from './preview-github.ts';
 import { branchContentForTarget } from './preview-content.ts';
 import type { ValidatedBranchContent } from './preview-content.ts';
+import { previewTarget } from './preview-target.ts';
 
-export function previewTarget(prNumber: number, subdomain: string) {
-  requireCondition(
-    Number.isSafeInteger(prNumber) && prNumber > 0 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(subdomain),
-    'Invalid trusted preview target',
-  );
-  const stage = `pr-${prNumber}`;
-  const workerName = `agent-game-${stage}`;
-
-  return {
-    stage,
-    workerName,
-    origin: `https://${workerName}.${subdomain}.workers.dev`,
-    policy: 'scripted-zero-budget-unranked' as const,
-  };
-}
+export { previewTarget } from './preview-target.ts';
 
 export function deliveryProof(
   verified: VerifiedRun,
@@ -194,7 +182,7 @@ export async function controllerRetirement(env: NodeJS.ProcessEnv) {
   const event = Schema.decodeUnknownSync(
     Schema.Struct({
       action: Schema.Literal('completed'),
-      repository: Schema.Struct({ full_name: Schema.String, default_branch: Schema.String }),
+      repository: Schema.Struct({ id: Schema.Int, full_name: Schema.String, default_branch: Schema.String }),
       workflow_run: Schema.Struct({ id: Schema.Int, run_attempt: Schema.Int }),
     }),
   )(JSON.parse((await readStable(env.GITHUB_EVENT_PATH ?? '', 8 * 1024 * 1024)).toString('utf8')));
@@ -217,8 +205,22 @@ export async function controllerRetirement(env: NodeJS.ProcessEnv) {
     number: Number(env.PR_NUMBER),
     runId: event.workflow_run.id,
     runAttempt: event.workflow_run.run_attempt,
-    shouldRetire: async (prHeadSha: string) => {
-      if (env.PREVIEW_DELIVERY_COMPLETED === 'true') return true;
+    shouldRetire: async (identity: { prHeadSha: string; builtCommit: string; incarnation: string }) => {
+      const failure = await previewFailureEvidence(env);
+
+      if (
+        failure &&
+        failure.repository === repository &&
+        failure.prNumber === Number(env.PR_NUMBER) &&
+        failure.runId === event.workflow_run.id &&
+        failure.runAttempt === event.workflow_run.run_attempt &&
+        failure.controllerRun === env.GITHUB_RUN_ID &&
+        failure.controllerAttempt === env.GITHUB_RUN_ATTEMPT &&
+        failure.prHeadSha === identity.prHeadSha &&
+        failure.builtCommit === identity.builtCommit &&
+        failure.incarnation === identity.incarnation
+      )
+        return true;
       const github = new GitHub(repository, env.GH_TOKEN ?? '');
 
       const pr = Schema.decodeUnknownSync(PullRequest)(
@@ -229,14 +231,37 @@ export async function controllerRetirement(env: NodeJS.ProcessEnv) {
         pr.number === Number(env.PR_NUMBER) &&
           pr.head.repo.full_name === repository &&
           pr.base.repo.full_name === repository &&
+          pr.head.repo.id === event.repository.id &&
+          pr.base.repo.id === event.repository.id &&
+          commitPattern.test(pr.head.sha) &&
+          ['open', 'closed'].includes(pr.state) &&
           pr.base.ref === event.repository.default_branch,
         'Failure retirement PR identity changed',
       );
 
-      // Transient delivery/GitHub failures retain the same pending key. Only an
-      // observed invalidation (or failed smoke/readback after completed deploy)
-      // retires it. A failed read itself grants no destructive authority.
-      return pr.state === 'closed' || pr.head.sha !== prHeadSha;
+      if (pr.state === 'closed' || pr.head.sha !== identity.prHeadSha) return true;
+
+      try {
+        const current = await github.verify(
+          {
+            repository,
+            repositoryId: event.repository.id,
+            runId: event.workflow_run.id,
+            attempt: event.workflow_run.run_attempt,
+          },
+          env.GITHUB_SHA!,
+        );
+
+        requireCondition(
+          current.prNumber === Number(env.PR_NUMBER),
+          'Failure retirement run association changed',
+        );
+
+        return false;
+      } catch (error) {
+        if (error instanceof PreviewEligibilityChanged) return true;
+        throw error;
+      }
     },
   };
 }
@@ -485,7 +510,7 @@ async function main() {
         !process.env.CLOUDFLARE_API_TOKEN && !process.env.PREVIEW_DEPLOY_TOKEN,
         'Source readiness must be read back without deployer credentials',
       );
-      const { bridgeSettings } = await import('./preview-lifecycle-state.ts');
+      const { bridgeSettings } = await import('./preview-settings.ts');
 
       const { previewArtifactPublication, verifySourcePublicationReadback, verifySourceArenaReadback } =
         await import('./preview-publication.ts');
@@ -542,4 +567,18 @@ async function main() {
   }
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) await main();
+if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
+  try {
+    await main();
+  } catch (error) {
+    if (process.argv[2] === 'publish') {
+      if (error instanceof PreviewReadbackInvalid)
+        await recordPreviewFailure('source-readback-invalid', process.env);
+
+      if (error instanceof PreviewEligibilityChanged)
+        await recordPreviewFailure('eligibility-changed', process.env);
+    }
+
+    throw error;
+  }
+}

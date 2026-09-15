@@ -51,6 +51,12 @@ import {
 import { PreviewEligibilityChanged, verifyRecords } from '../scripts/preview-github';
 import { records, expected } from './fixtures/preview-github';
 import { canonical, sha256 } from '../scripts/preview-artifact';
+import {
+  executePreviewGeneration,
+  preparePreviewGeneration,
+  readPreviewGeneration,
+} from '../src/server/preview-generation';
+import { registerPreviewArtifacts } from '../src/server/preview-artifacts';
 
 let fixture: Awaited<ReturnType<typeof lifecycleFixture>>;
 
@@ -107,12 +113,13 @@ function stack(state: StateService, attempt = 1, empty = false) {
         builtCommit: fixture.artifact.manifest.builtCommit,
         prHeadSha: fixture.artifact.manifest.prHeadSha,
         controllerRun: `local-${attempt}`,
+        targetDatabaseId: fixture.targetDatabaseId,
       });
 
       return {
         incarnation: identity.incarnation,
         publicKey: identity.publicKey,
-        databaseId: lifecycleTargetId,
+        databaseId: fixture.targetDatabaseId,
         workerName: 'agent-game-pr-27',
         url: lifecycleTargetOrigin,
       };
@@ -420,6 +427,18 @@ it('publishes real source GET artifacts and completes same-owner browser/agent h
     fixture.fetcher,
   );
   await expect(verifySourcePublicationReadback(publication, fixture.fetcher)).rejects.toThrow('unavailable');
+
+  // The still-running target signs with its retained old key; source tombstoning
+  // denies that authority before any target resource/key is removed.
+  const retiredExchange = await post(
+    lifecycleTargetOrigin,
+    '/api/preview/agent-exchange',
+    JSON.stringify({ ...grant, verifier }),
+    '',
+    targetToken,
+  );
+
+  expect(retiredExchange.status).toBe(401);
   await apply(state, 2, true);
   expect(await retainedIdentity(state, 'pr-27')).toBeUndefined();
   await writeFile(
@@ -692,6 +711,11 @@ it('requires independent source revision/configuration and current target runtim
   expect(await verifySourceArenaReadback(publication, fixture.fetcher)).toBe(false);
   await expect(
     registerLifecycle(state, verifiedRun(), fixture.artifact, enabled, async () => {}, fixture.fetcher),
+  ).rejects.toThrow('payload changed');
+  await retireLifecycle(state, 'pr-27', identity, fixture.env, async () => {}, fixture.fetcher);
+  await apply(state, 2);
+  await expect(
+    registerLifecycle(state, verifiedRun(), fixture.artifact, enabled, async () => {}, fixture.fetcher),
   ).rejects.toThrow('broker/provider');
   await configureSourcePreviewBroker(state, enabled, 'e'.repeat(40), false, fixture.fetcher);
   expect(
@@ -796,7 +820,9 @@ it('tombstones never-published state before destruction and rejects late old-inc
     .filter((call) => call.body.batch.some((query) => query.sql.includes('INSERT INTO preview_arenas')));
 
   expect(writes).toHaveLength(1);
-  expect(writes[0].body.batch).toHaveLength(3);
+  expect(writes[0].body.batch).toHaveLength(6);
+  expect(writes[0].body.batch[1].sql).toContain('INSERT INTO preview_generation_operations');
+  expect(writes[0].body.batch[2].sql).toContain('INSERT INTO preview_generations');
   await apply(state, 2, true);
   await apply(state, 2);
 
@@ -851,4 +877,113 @@ it('keeps retry identity on source outage and closes immediately when eligibilit
       .bind(lifecycleTargetOrigin, identity.incarnation)
       .first('incarnation'),
   ).toBe(identity.incarnation);
+});
+
+it('refuses an older applied delivery receipt after an identical tuple receives a newer source generation', async () => {
+  const state = await stateStore();
+  await apply(state, 2);
+
+  const publication = await registerLifecycle(
+    state,
+    verifiedRun(),
+    fixture.artifact,
+    fixture.env,
+    async () => {},
+    fixture.fetcher,
+  );
+
+  const identity = (await retainedIdentity(state, 'pr-27'))!.identity;
+  const source = previewD1(identity.accountId, identity.sourceDatabaseId, 'synthetic', fixture.fetcher);
+  const current = await readPreviewGeneration(source, identity.targetOrigin);
+  const intent = current.intent;
+  expect(intent?.kind).toBe('source-publish');
+
+  if (intent?.kind !== 'source-publish') throw new Error('Expected publication receipt');
+  const next = await preparePreviewGeneration(current.generation, intent);
+  await executePreviewGeneration(source, next, intent, async (DB) => {
+    await registerPreviewArtifacts(
+      { DB, APP_URL: identity.sourceOrigin, ENVIRONMENT: 'production', PREVIEW_SOURCE_URL: '' },
+      intent.manifest,
+      { atomicGuard: true },
+    );
+  });
+  await verifySourcePublicationReadback(publication, fixture.fetcher);
+  await expect(
+    registerLifecycle(state, verifiedRun(), fixture.artifact, fixture.env, async () => {}, fixture.fetcher),
+  ).rejects.toThrow('current generation');
+  await expect(
+    retireLifecycle(state, 'pr-27', identity, fixture.env, async () => {}, fixture.fetcher),
+  ).rejects.toThrow('no longer owned by this delivery');
+  expect((await retainedIdentity(state, 'pr-27'))!.identity.retired).toBe(false);
+  expect((await readPreviewGeneration(source, identity.targetOrigin)).operationId).toBe(next.operationId);
+});
+
+it('retains source generation across trusted database replacement and requires a fresh key/incarnation', async () => {
+  const state = await stateStore();
+  await apply(state, 2);
+  await registerLifecycle(
+    state,
+    verifiedRun(),
+    fixture.artifact,
+    fixture.env,
+    async () => {},
+    fixture.fetcher,
+  );
+  const before = (await retainedIdentity(state, 'pr-27'))!.identity;
+  await retireLifecycle(state, 'pr-27', before, fixture.env, async () => {}, fixture.fetcher);
+  const source = previewD1(before.accountId, before.sourceDatabaseId, 'synthetic', fixture.fetcher);
+  const closed = await readPreviewGeneration(source, before.targetOrigin);
+  await fixture.replaceTargetDatabase();
+  await apply(state, 2);
+  const recreated = (await retainedIdentity(state, 'pr-27'))!.identity;
+  expect(recreated.targetDatabaseId).not.toBe(before.targetDatabaseId);
+  expect(recreated.incarnation).not.toBe(before.incarnation);
+  expect(recreated.publicKey).not.toBe(before.publicKey);
+
+  const publication = await registerLifecycle(
+    state,
+    verifiedRun(),
+    fixture.artifact,
+    fixture.env,
+    async () => {},
+    fixture.fetcher,
+  );
+
+  expect((await readPreviewGeneration(source, before.targetOrigin)).generation).toBe(closed.generation + 2);
+  expect(
+    (
+      await readPreviewGeneration(
+        previewD1(before.accountId, fixture.targetDatabaseId, 'synthetic', fixture.fetcher),
+        before.targetOrigin,
+      )
+    ).generation,
+  ).toBe(1);
+  await expect(
+    retireLifecycle(state, 'pr-27', before, fixture.env, async () => {}, fixture.fetcher),
+  ).rejects.toThrow('generation changed');
+  await verifySourcePublicationReadback(publication, fixture.fetcher);
+});
+
+it('requires deployed generation capability before creating identity state and never falls back to tuple-only writes', async () => {
+  const state = await stateStore();
+  await fixture.sourceDB.exec('DROP TABLE preview_generations');
+  await expect(apply(state, 2)).rejects.toThrow('generation schema');
+  expect(await retainedIdentity(state, 'pr-27')).toBeUndefined();
+  expect(await fixture.sourceDB.prepare('SELECT COUNT(*) AS n FROM preview_arenas').first('n')).toBe(0);
+});
+
+it('rejects stale same-incarnation cleanup after a newer retained run takes ownership', async () => {
+  const state = await stateStore();
+  await apply(state, 2);
+  const before = (await retainedIdentity(state, 'pr-27'))!.identity;
+  await apply(state, 3);
+  const current = (await retainedIdentity(state, 'pr-27'))!.identity;
+  expect(current.incarnation).toBe(before.incarnation);
+  await expect(
+    retireLifecycle(state, 'pr-27', before, fixture.env, async () => {}, fixture.fetcher),
+  ).rejects.toThrow('generation changed');
+  expect((await retainedIdentity(state, 'pr-27'))!.identity.retired).toBe(false);
+  expect(
+    await fixture.sourceDB.prepare('SELECT COUNT(*) AS n FROM preview_generation_operations').first('n'),
+  ).toBe(0);
 });

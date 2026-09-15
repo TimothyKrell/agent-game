@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { mkdir, mkdtemp, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
@@ -99,6 +100,8 @@ export async function lifecycleFixture(options: { targetMigrations?: boolean } =
     }),
   );
 
+  let targetDatabaseId = lifecycleTargetId;
+
   const targetOptions = (
     auth: string,
     deployed?: { bindings: Record<string, string>; scriptPath: string; assets: typeof common.assets },
@@ -107,7 +110,7 @@ export async function lifecycleFixture(options: { targetMigrations?: boolean } =
       ...common,
       scriptPath: deployed?.scriptPath ?? common.scriptPath,
       assets: deployed?.assets ?? common.assets,
-      d1Databases: { DB: lifecycleTargetId },
+      d1Databases: { DB: targetDatabaseId },
       d1Persist: resolve(directory, 'target-db'),
       r2Persist: resolve(directory, 'target-r2'),
       bindings: {
@@ -161,7 +164,7 @@ export async function lifecycleFixture(options: { targetMigrations?: boolean } =
     const databaseId = parsed.pathname.split('/')[7];
 
     const database =
-      databaseId === lifecycleSourceId ? sourceDB : databaseId === lifecycleTargetId ? targetDB : undefined;
+      databaseId === lifecycleSourceId ? sourceDB : databaseId === targetDatabaseId ? targetDB : undefined;
 
     if (
       parsed.origin !== 'https://api.cloudflare.com' ||
@@ -200,12 +203,21 @@ export async function lifecycleFixture(options: { targetMigrations?: boolean } =
     get targetDB() {
       return targetDB;
     },
+    get targetDatabaseId() {
+      return targetDatabaseId;
+    },
     executable,
     fetcher,
     requests,
     setTargetAuth: async (auth: string) => {
       await target.setOptions(targetOptions(auth));
       targetDB = await target.getD1Database('DB');
+    },
+    replaceTargetDatabase: async () => {
+      targetDatabaseId = randomUUID();
+      await target.setOptions(targetOptions(lifecycleAuth));
+      targetDB = await target.getD1Database('DB');
+      await applyPlatformMigrations(targetDB);
     },
     deployTarget: async (deployed: NonNullable<Parameters<typeof targetOptions>[1]>) => {
       await target.setOptions(targetOptions(deployed.bindings.BETTER_AUTH_SECRET, deployed));

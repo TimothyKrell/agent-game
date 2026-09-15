@@ -2,7 +2,7 @@ import { Option, Schema } from 'effect';
 import { GameError } from '../game/types';
 import { PreviewArtifactManifestSchema, type PreviewArtifactManifest } from '../shared/preview-artifacts';
 import { previewEnabled, previewOrigin } from './preview-config';
-import type { PreviewSourceEnvironment } from './preview-config';
+import type { PreviewDatabase, PreviewSourceEnvironment } from './preview-config';
 
 function artifactOrigin(value: string, env: Pick<Env, 'ENVIRONMENT'>): string {
   try {
@@ -67,15 +67,46 @@ const currentManifest = `SELECT p.manifest_json FROM preview_artifacts p
   JOIN preview_arenas a ON a.origin=p.origin AND a.incarnation=p.incarnation AND a.commit_id=p.commit_id
   WHERE p.origin=? AND p.commit_id=? AND a.closed_at IS NULL`;
 
+/** Fenced controllers include this in the SAME transaction as registration,
+ * generation advance and publication. json_tree compares semantic JSON values
+ * (including empty containers), preserving legacy JSON-key-order retries. */
+export function previewArtifactGuard(db: PreviewDatabase, manifest: PreviewArtifactManifest) {
+  const encoded = JSON.stringify(manifest);
+
+  return db
+    .prepare(
+      `SELECT CASE WHEN
+    EXISTS(SELECT 1 FROM preview_arenas WHERE origin=? AND incarnation=? AND commit_id=? AND closed_at IS NULL) AND
+    NOT EXISTS(SELECT 1 FROM preview_artifacts p WHERE origin=? AND incarnation=? AND commit_id=? AND (
+      EXISTS(SELECT fullkey,type,atom FROM json_tree(p.manifest_json) EXCEPT SELECT fullkey,type,atom FROM json_tree(?)) OR
+      EXISTS(SELECT fullkey,type,atom FROM json_tree(?) EXCEPT SELECT fullkey,type,atom FROM json_tree(p.manifest_json))
+    )) THEN 1 ELSE json('preview-artifact-conflict') END AS accepted`,
+    )
+    .bind(
+      manifest.targetOrigin,
+      manifest.incarnation,
+      manifest.commit,
+      manifest.targetOrigin,
+      manifest.incarnation,
+      manifest.commit,
+      encoded,
+      encoded,
+    );
+}
+
 /** Trusted controller entry point only. There is deliberately no HTTP publication route. */
 export async function registerPreviewArtifacts(
   env: PreviewSourceEnvironment,
   input: PreviewArtifactManifest,
+  options: { atomicGuard?: boolean } = {},
 ): Promise<PreviewArtifactManifest> {
   const manifest = parsePreviewArtifactManifest(env, JSON.stringify(input));
   const encoded = JSON.stringify(manifest);
 
-  const [, selected] = await env.DB.batch<{ manifest_json: string }>([
+  const guards = options.atomicGuard ? [previewArtifactGuard(env.DB, manifest)] : [];
+
+  const results = await env.DB.batch<{ manifest_json: string }>([
+    ...guards,
     env.DB.prepare(
       `INSERT OR IGNORE INTO preview_artifacts (origin,incarnation,commit_id,manifest_json)
       SELECT origin,incarnation,commit_id,? FROM preview_arenas
@@ -84,6 +115,7 @@ export async function registerPreviewArtifacts(
     env.DB.prepare(currentManifest).bind(manifest.targetOrigin, manifest.commit),
   ]);
 
+  const selected = results[guards.length + 1];
   const row = selected.results[0];
 
   if (!row) throw new GameError('preview-target', 'The artifact target revision is not registered.', 409);

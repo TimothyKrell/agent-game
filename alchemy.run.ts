@@ -87,6 +87,7 @@ export const arenaResources = (env: NodeJS.ProcessEnv, commandArguments = proces
             builtCommit: env.PREVIEW_BUILT_COMMIT ?? '',
             prHeadSha: env.PR_HEAD_SHA ?? '',
             controllerRun: `${env.GITHUB_RUN_ID}:${env.GITHUB_RUN_ATTEMPT}`,
+            targetDatabaseId: db.databaseId,
           })
         : undefined;
 

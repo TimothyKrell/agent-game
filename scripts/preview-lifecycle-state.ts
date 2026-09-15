@@ -11,6 +11,10 @@ import { previewD1, databaseIdPattern } from './preview-d1.ts';
 import { verifySourceExecutable } from './preview-publication.ts';
 import type { SourceExecutable } from './preview-publication.ts';
 import { boundedResponse } from './preview-github.ts';
+import { PreviewGenerationOperationSchema, readPreviewGeneration } from '../src/server/preview-generation.ts';
+import { bridgeSettings } from './preview-settings.ts';
+
+export { bridgeSettings } from './preview-settings.ts';
 
 export const lifecycleResourceId = 'PreviewIdentity';
 
@@ -27,34 +31,6 @@ const TargetOutput = Schema.Struct({
   url: Schema.String,
 });
 
-const Released = Schema.Struct({
-  sourceOrigin: Schema.String,
-  executable: Schema.Struct({
-    url: Schema.String,
-    sha256: Schema.String,
-    bytes: Schema.Number,
-    version: Schema.String,
-    protocols: Schema.Tuple([Schema.Literal(1), Schema.Literal(2)]),
-  }),
-});
-
-export function bridgeSettings(env: NodeJS.ProcessEnv) {
-  if (env.PREVIEW_IDENTITY_ENABLED !== 'true') return undefined;
-  const text = env.PREVIEW_SOURCE_RELEASE ?? '';
-  requireCondition(
-    Buffer.byteLength(text) <= 4096 && text.length > 0,
-    'Configure the independently released source CLI pin before enabling preview identity',
-  );
-  const settings = Schema.decodeUnknownSync(Released)(JSON.parse(text), { onExcessProperty: 'error' });
-  const origin = new URL(settings.sourceOrigin);
-  requireCondition(
-    origin.protocol === 'https:' && origin.origin === settings.sourceOrigin,
-    'Invalid trusted source origin',
-  );
-
-  return settings;
-}
-
 export interface PreviewIdentityState {
   version: 1;
   accountId: string;
@@ -69,7 +45,25 @@ export interface PreviewIdentityState {
   runAttempt: number;
   builtCommit: string;
   prHeadSha: string;
+  targetDatabaseId?: string;
+  delivery?: typeof DeliveryOperations.Type;
+  retirement?: typeof RetirementOperations.Type;
 }
+
+const DeliveryOperations = Schema.Struct({
+  owner: Schema.String,
+  targetDatabaseId: Schema.String.check(Schema.isPattern(databaseIdPattern)),
+  target: PreviewGenerationOperationSchema,
+  register: PreviewGenerationOperationSchema,
+  publish: PreviewGenerationOperationSchema,
+});
+
+const RetirementOperations = Schema.Struct({
+  source: PreviewGenerationOperationSchema,
+  targetDatabaseId: Schema.optional(Schema.String.check(Schema.isPattern(databaseIdPattern))),
+  target: Schema.optional(PreviewGenerationOperationSchema),
+  superseded: Schema.optional(Schema.Array(PreviewGenerationOperationSchema)),
+});
 
 const IdentityState = Schema.Struct({
   version: Schema.Literal(1),
@@ -85,6 +79,9 @@ const IdentityState = Schema.Struct({
   runAttempt: Schema.Number,
   builtCommit: Schema.String.check(Schema.isPattern(/^[a-f0-9]{40}$/)),
   prHeadSha: Schema.String.check(Schema.isPattern(/^[a-f0-9]{40}$/)),
+  targetDatabaseId: Schema.optional(Schema.String.check(Schema.isPattern(databaseIdPattern))),
+  delivery: Schema.optional(DeliveryOperations),
+  retirement: Schema.optional(RetirementOperations),
 });
 
 export interface IdentityProps {
@@ -95,6 +92,7 @@ export interface IdentityProps {
   controllerRun: string;
   builtCommit: string;
   prHeadSha: string;
+  targetDatabaseId?: string;
 }
 
 export type PreviewIdentity = Resource<'AgentGame.PreviewIdentity', IdentityProps, PreviewIdentityState>;
@@ -124,6 +122,7 @@ export async function targetResources(state: StateService, prNumber: number, ide
   requireCondition(
     target.workerName === `agent-game-pr-${prNumber}` &&
       target.url === identity.targetOrigin &&
+      target.databaseId === identity.targetDatabaseId &&
       target.databaseId !== identity.sourceDatabaseId,
     'Target output differs from verified isolated stage',
   );
@@ -178,6 +177,7 @@ export const previewIdentityProvider = (env: NodeJS.ProcessEnv, fetcher: typeof 
             const accountId = env.CLOUDFLARE_ACCOUNT_ID ?? '';
             const source = await sourceResources(state, settings.sourceOrigin);
             const db = previewD1(accountId, source.databaseId, env.CLOUDFLARE_API_TOKEN ?? '', fetcher);
+            await readPreviewGeneration(db, news.targetOrigin);
             await sourceCapabilities(source.sourceOrigin, news.targetOrigin, settings.executable, fetcher);
 
             const capabilities = await db.batch([
@@ -217,6 +217,12 @@ export const previewIdentityProvider = (env: NodeJS.ProcessEnv, fetcher: typeof 
                 .first();
 
               if (!output.retired && !retired) {
+                requireCondition(
+                  !output.targetDatabaseId ||
+                    !news.targetDatabaseId ||
+                    output.targetDatabaseId === news.targetDatabaseId,
+                  'Retire the current incarnation before replacing its target database',
+                );
                 await openPreview(
                   { BETTER_AUTH_SECRET: Redacted.value(news.authSecret) },
                   Redacted.value(output.encryptedKey),
@@ -228,6 +234,7 @@ export const previewIdentityProvider = (env: NodeJS.ProcessEnv, fetcher: typeof 
                   runAttempt: news.runAttempt,
                   builtCommit: news.builtCommit,
                   prHeadSha: news.prHeadSha,
+                  targetDatabaseId: news.targetDatabaseId ?? output.targetDatabaseId,
                 };
               }
             }
@@ -251,6 +258,7 @@ export const previewIdentityProvider = (env: NodeJS.ProcessEnv, fetcher: typeof 
               runAttempt: news.runAttempt,
               builtCommit: news.builtCommit,
               prHeadSha: news.prHeadSha,
+              targetDatabaseId: news.targetDatabaseId,
             };
           }),
         // The controller retires the exact source incarnation BEFORE entering the

@@ -97,11 +97,10 @@ jobs:
         run: node scripts/preview-controller.ts publish
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Retire this delivery incarnation if smoke or publication failed
+      - name: Finalize only confirmed delivery invalidation
         if: failure()
         run: node scripts/preview-controller.ts retire
         env:
-          PREVIEW_DELIVERY_COMPLETED: ${{ steps.lifecycle.outcome == 'success' }}
           GH_TOKEN: ${{ github.token }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           PREVIEW_DEPLOY_TOKEN: ${{ secrets.TRUSTED_PREVIEW_CLOUDFLARE_API_TOKEN }}
@@ -115,5 +114,6 @@ jobs:
             .agent-game/preview-manifest.json
             .agent-game/preview-registration.json
             .agent-game/preview-smoke.json
+            .agent-game/preview-failure.json
           include-hidden-files: true
           retention-days: 30

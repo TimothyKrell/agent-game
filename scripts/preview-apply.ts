@@ -5,7 +5,7 @@ import type { CompiledStack } from 'alchemy/Stack';
 import { State } from 'alchemy/State';
 import type { controllerClosure, controllerDelivery, controllerRetirement } from './preview-controller.ts';
 import { bridgeSettings, retainedIdentity } from './preview-lifecycle-state.ts';
-import { registerLifecycle, retireLifecycle } from './preview-lifecycle.ts';
+import { assertRetirementCurrent, registerLifecycle, retireLifecycle } from './preview-lifecycle.ts';
 import { requireCondition } from './preview-artifact.ts';
 
 export type PreviewOperation =
@@ -43,10 +43,22 @@ export const applyPreview = <A>(
         retained &&
         retained.identity.runId === retirement.runId &&
         retained.identity.runAttempt === retirement.runAttempt &&
-        (yield* Effect.promise(() => retirement.shouldRetire(retained.identity.prHeadSha)))
+        (yield* Effect.promise(() => retirement.shouldRetire(retained.identity)))
       )
         yield* Effect.promise(() =>
-          retireLifecycle(state, stage, retained.identity, env, async () => {}, fetcher),
+          retireLifecycle(
+            state,
+            stage,
+            retained.identity,
+            env,
+            async () => {
+              requireCondition(
+                await retirement.shouldRetire(retained.identity),
+                'Delivery invalidation is no longer confirmed',
+              );
+            },
+            fetcher,
+          ),
         );
 
       return;
@@ -55,12 +67,26 @@ export const applyPreview = <A>(
     const recheck = invocation.authority.recheck;
 
     if (retained && (invocation.operation === 'destroy' || !bridgeSettings(env)))
-      yield* Effect.promise(() => retireLifecycle(state, stage, retained.identity, env, recheck, fetcher));
+      yield* Effect.promise(() =>
+        retireLifecycle(
+          state,
+          stage,
+          retained.identity,
+          env,
+          recheck,
+          fetcher,
+          invocation.operation === 'destroy' && env.GITHUB_EVENT_NAME === 'workflow_dispatch',
+        ),
+      );
     yield* Effect.promise(recheck);
 
     const plan =
       invocation.operation === 'destroy' ? yield* Plan.destroy(compiled) : yield* Plan.make(compiled);
 
+    yield* Effect.promise(recheck);
+
+    if (retained && (invocation.operation === 'destroy' || !bridgeSettings(env)))
+      yield* Effect.promise(() => assertRetirementCurrent(state, stage, retained.identity, env, fetcher));
     yield* apply(plan);
 
     if (invocation.operation === 'deploy' && bridgeSettings(env)) {
