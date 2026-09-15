@@ -54,3 +54,20 @@ git diff --check
 Results: **7 production consumer + 7 real owner/Worker + 13 existing feed/sitewide + 10 lookup browser scenarios passed**, plus **36 scoped Vitest tests**. Preview uses 6371, Worker/inspector 6372/6373, and the exclusion scanner 6374. The owner and legacy configs share the same exclusive local Worker pair; run those two commands sequentially. Local state stays in ignored `.tim29/runs/worker/`. Wrangler 4.129.1 runs `--local` with the existing TIM-28 test Worker and binding shapes, a fresh D1/R2 namespace, scripted house provider and no AI binding.
 
 The production scanner adapts the accepted TIM-11 boundary check into owned ports/output paths, preserves original evidence, and asserts the guide sources match `6b83e92` byte for byte. See `.tim29/production.json` and `.tim29/captures/`. Visual fixture portraits use a known decodable PNG; missing/broken states exercise the shared graphical fallback.
+
+## Home summary entrant completion
+
+```bash
+npm run build > .tim29/summary-build.log 2>&1
+npx vitest run tests/summary-entrants.test.ts tests/platform-repository.test.ts tests/agent-picture-data.test.ts tests/client-api.test.ts tests/agent-picture-api.test.ts tests/agent-picture-lifecycle.test.ts > .tim29/summary-tests.log 2>&1
+npx playwright test --config .tim29/summary-playwright.config.ts > .tim29/summary-browser.log 2>&1
+npx playwright test --config .tim29/correction-playwright.config.ts --output .tim29/test-results/summary-lookup > .tim29/summary-lookup-browser.log 2>&1
+npx playwright test --config .tim29/legacy-playwright.config.ts --output .tim29/test-results/summary-legacy > .tim29/summary-legacy-browser.log 2>&1
+node .tim29/check-summary-production.mjs > .tim29/summary-production.log 2>&1
+npm run typecheck > .tim29/summary-typecheck.log 2>&1
+npm run lint > .tim29/summary-lint.log 2>&1
+npm run format:check > .tim29/summary-format-check.log 2>&1
+git diff --check
+```
+
+Results: **53 Vitest tests**, **7 real-Worker Home + 10 lookup + 13 feed/sitewide browser scenarios**. The summary Worker uses 6372/6373 and isolated state in `.tim29/runs/summaries/`; run it sequentially with the legacy config, which uses the same ports. Native selection-cancellation verification uses an OS-assigned proxy port. The production scanner uses 6374 and writes separate `.tim29/summary-production.json` / `.tim29/summary-captures/` artifacts, retaining all prior adoption evidence. Only the three approved production files (`src/shared/api.ts`, `src/server/repository.ts`, `src/client/main.tsx`) change; additional files are local fixtures, tests and evidence.
