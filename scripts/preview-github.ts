@@ -42,6 +42,14 @@ export const Job = Schema.Struct({
   name: Schema.String,
   status: Schema.String,
   conclusion: Schema.NullOr(Schema.String),
+  steps: Schema.Array(
+    Schema.Struct({
+      name: Schema.String,
+      number: Schema.Number,
+      status: Schema.String,
+      conclusion: Schema.NullOr(Schema.String),
+    }),
+  ),
 });
 
 export const Artifact = Schema.Struct({
@@ -107,6 +115,47 @@ export interface ExpectedRun {
   attempt: number;
 }
 
+function testedIdentity(jobs: readonly (typeof Job.Type)[], run: typeof Run.Type) {
+  const matches = jobs.filter((job) => job.name === 'Verify');
+  requireCondition(matches.length === 1, 'Missing/duplicate Verify identity job');
+  const job = matches[0];
+  requireCondition(
+    Number.isSafeInteger(job.id) &&
+      job.id > 0 &&
+      job.run_id === run.id &&
+      job.run_attempt === run.run_attempt &&
+      job.head_sha === run.head_sha &&
+      job.status === 'completed' &&
+      job.conclusion === 'success',
+    'Invalid Verify identity job',
+  );
+  const steps = job.steps.filter((step) => step.name.startsWith('Preview identity '));
+  requireCondition(steps.length === 1, 'Missing/duplicate tested identity step');
+  const step = steps[0];
+  // First user step, immediately after GitHub's "Set up job". Pin its position
+  // as well as its exact name: no PR command runs before this metadata exists.
+  requireCondition(
+    step.number === 2 &&
+      job.steps.filter((item) => item.number === 2).length === 1 &&
+      step.status === 'completed' &&
+      step.conclusion === 'success',
+    'Invalid tested identity step',
+  );
+
+  const identity = /^Preview identity v1 merge=([a-f0-9]{40}) base=([a-f0-9]{40}) head=([a-f0-9]{40})$/.exec(
+    step.name,
+  );
+
+  requireCondition(identity !== null, 'Invalid tested identity metadata');
+
+  return {
+    merge: identity[1],
+    base: identity[2],
+    head: identity[3],
+    step: { jobId: job.id, number: step.number, name: step.name },
+  };
+}
+
 export function verifyRecords(records: VerificationRecords, expected: ExpectedRun) {
   const { repository, workflow, run, pr } = records;
   requireCondition(
@@ -147,6 +196,7 @@ export function verifyRecords(records: VerificationRecords, expected: ExpectedRu
     'Ambiguous run PR',
   );
   const association = run.pull_requests[0];
+  const tested = testedIdentity(records.jobs, run);
   requireCondition(
     association.number === pr.number &&
       association.head.sha === pr.head.sha &&
@@ -161,8 +211,11 @@ export function verifyRecords(records: VerificationRecords, expected: ExpectedRu
   );
   requireCondition(
     records.mergeCommit !== pr.head.sha &&
+      records.mergeCommit === tested.merge &&
+      tested.head === pr.head.sha &&
+      tested.base !== tested.head &&
       records.parents.length === 2 &&
-      records.parents[0] === pr.base.sha &&
+      records.parents[0] === tested.base &&
       records.parents[1] === pr.head.sha,
     'Invalid tested merge ancestry',
   );
@@ -230,6 +283,8 @@ export function verifyRecords(records: VerificationRecords, expected: ExpectedRu
     prNumber: pr.number,
     prHeadSha: pr.head.sha,
     builtCommit: records.mergeCommit,
+    testedBaseSha: tested.base,
+    identityStep: tested.step,
     runHeadSha: run.head_sha,
     runId: run.id,
     runAttempt: run.run_attempt,
@@ -317,19 +372,9 @@ export class GitHub {
 
     requireCondition(commitPattern.test(pr.head.sha), 'Invalid PR head');
 
-    const merge = Schema.decodeUnknownSync(Schema.Struct({ object: Schema.Struct({ sha: Schema.String }) }))(
-      await this.json(`${prefix}/git/ref/pull/${pr.number}/merge`),
-    ).object.sha;
-
-    requireCondition(commitPattern.test(merge), 'Invalid merge ref');
-
-    const parents = Schema.decodeUnknownSync(
-      Schema.Struct({ parents: Schema.Array(Schema.Struct({ sha: Schema.String })) }),
-    )(await this.json(`${prefix}/git/commits/${merge}`)).parents.map((parent) => parent.sha);
-
     // Finite inventories fail closed at the page boundary instead of silently
     // accepting a truncated list. Current CI has < 20 jobs/artifacts.
-    const [jobs, artifacts, runs, blobs] = await Promise.all([
+    const [jobs, artifacts, runs] = await Promise.all([
       this.json(`${prefix}/actions/runs/${run.id}/attempts/${expected.attempt}/jobs?per_page=100`).then(
         Schema.decodeUnknownSync(Schema.Struct({ total_count: Schema.Number, jobs: Schema.Array(Job) })),
       ),
@@ -345,17 +390,6 @@ export class GitHub {
           Schema.Struct({ total_count: Schema.Number, workflow_runs: Schema.Array(Run) }),
         ),
       ),
-      Promise.all(
-        producerPaths.map(async (path) => {
-          const [trusted, built] = await Promise.all(
-            [controllerCommit, merge].map(async (ref) =>
-              Schema.decodeUnknownSync(BlobInfo)(await this.json(`${prefix}/contents/${path}?ref=${ref}`)),
-            ),
-          );
-
-          return trusted.type === 'file' && built.type === 'file' && trusted.sha === built.sha;
-        }),
-      ),
     ]);
 
     requireCondition(
@@ -366,6 +400,37 @@ export class GitHub {
       'Truncated GitHub inventory',
     );
 
+    // Never consult the moving pull/merge ref or the untrusted manifest for
+    // build identity. This metadata belongs to the exact successful job attempt.
+    const tested = testedIdentity(jobs.jobs, run);
+
+    const [commit, blobs] = await Promise.all([
+      this.json(`${prefix}/git/commits/${tested.merge}`).then(
+        Schema.decodeUnknownSync(
+          Schema.Struct({ parents: Schema.Array(Schema.Struct({ sha: Schema.String })) }),
+        ),
+      ),
+      Promise.all(
+        producerPaths.map(async (path) => {
+          // Also pin the workflow at the independently run-associated PR head.
+          // A modified workflow cannot nominate an alternate trusted merge to
+          // make its own forged identity-step name look authoritative.
+          const refs =
+            path === '.github/workflows/ci.yml'
+              ? [controllerCommit, tested.merge, pr.head.sha]
+              : [controllerCommit, tested.merge];
+
+          const values = await Promise.all(
+            refs.map(async (ref) =>
+              Schema.decodeUnknownSync(BlobInfo)(await this.json(`${prefix}/contents/${path}?ref=${ref}`)),
+            ),
+          );
+
+          return values.every((blob) => blob.type === 'file' && blob.sha === values[0].sha);
+        }),
+      ),
+    ]);
+
     return verifyRecords(
       {
         repository,
@@ -375,8 +440,8 @@ export class GitHub {
         jobs: jobs.jobs,
         artifacts: artifacts.artifacts,
         runs: runs.workflow_runs,
-        mergeCommit: merge,
-        parents,
+        mergeCommit: tested.merge,
+        parents: commit.parents.map((parent) => parent.sha),
         producerMatches: blobs.every(Boolean),
       },
       expected,

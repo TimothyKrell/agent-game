@@ -50,6 +50,12 @@ export function deliveryProof(
 // npm scripts, PR config, dynamic imports, or an executable from the quarantine.
 export function runAlchemy(operation: 'deploy' | 'destroy', prNumber: number, env: NodeJS.ProcessEnv) {
   requireCondition(Number.isSafeInteger(prNumber) && prNumber > 0, 'Invalid PR stage');
+
+  if (operation === 'deploy')
+    requireCondition(env.PREVIEW_DEPLOY_ENABLED === 'true', 'Trusted preview activation is disabled');
+  requireCondition(!!env.PREVIEW_DEPLOY_TOKEN?.trim(), 'Missing trusted preview environment credential');
+  // Alchemy's conventional variable is set only here from the distinct cutover
+  // secret. Neither a legacy repository token nor cached CLI auth is a fallback.
   execFileSync(
     'bun',
     [
@@ -65,7 +71,12 @@ export function runAlchemy(operation: 'deploy' | 'destroy', prNumber: number, en
     {
       cwd: process.cwd(),
       stdio: 'inherit',
-      env: { ...env, PREVIEW_OPERATION: operation },
+      env: {
+        ...env,
+        PREVIEW_DEPLOY_TOKEN: undefined,
+        CLOUDFLARE_API_TOKEN: env.PREVIEW_DEPLOY_TOKEN,
+        PREVIEW_OPERATION: operation,
+      },
     },
   );
 }
@@ -100,26 +111,46 @@ async function main() {
 
   requireCondition(
     event.repository.full_name === repository &&
-      process.env.GITHUB_REF === `refs/heads/${event.repository.default_branch}`,
+      process.env.GITHUB_REF === `refs/heads/${event.repository.default_branch}` &&
+      process.env.GITHUB_WORKFLOW_REF ===
+        `${repository}/.github/workflows/preview-${operation === 'cleanup' || operation === 'removed' ? 'cleanup' : 'deploy'}.yml@refs/heads/${event.repository.default_branch}`,
     'Controller must run from default branch',
   );
 
   if (operation === 'cleanup' || operation === 'removed') {
-    requireCondition(process.env.GITHUB_EVENT_NAME === 'pull_request_target', 'Wrong cleanup event');
+    const payload = JSON.parse(eventBytes.toString('utf8'));
+    let number: number;
 
-    const close = Schema.decodeUnknownSync(
-      Schema.Struct({ action: Schema.Literal('closed'), number: Schema.Number }),
-    )(JSON.parse(eventBytes.toString('utf8')));
+    if (process.env.GITHUB_EVENT_NAME === 'workflow_dispatch') {
+      const input = Schema.decodeUnknownSync(
+        Schema.Struct({ inputs: Schema.Struct({ 'pr-number': Schema.String }) }),
+      )(payload).inputs['pr-number'];
+
+      requireCondition(/^[1-9]\d*$/.test(input), 'Invalid manual cleanup PR');
+      number = Number(input);
+    } else {
+      requireCondition(process.env.GITHUB_EVENT_NAME === 'pull_request_target', 'Wrong cleanup event');
+      number = Schema.decodeUnknownSync(
+        Schema.Struct({ action: Schema.Literal('closed'), number: Schema.Number }),
+      )(payload).number;
+    }
+
+    requireCondition(
+      Number.isSafeInteger(number) && number > 0 && String(number) === process.env.PR_NUMBER,
+      'Cleanup PR differs from concurrency lock',
+    );
 
     const pr = Schema.decodeUnknownSync(PullRequest)(
-      await github.json(`repos/${repository}/pulls/${close.number}`),
+      await github.json(`repos/${repository}/pulls/${number}`),
     );
 
     requireCondition(
-      pr.number === close.number &&
+      pr.number === number &&
         pr.state === 'closed' &&
         pr.head.repo.id === event.repository.id &&
         pr.base.repo.id === event.repository.id &&
+        pr.head.repo.full_name === repository &&
+        pr.base.repo.full_name === repository &&
         pr.base.ref === event.repository.default_branch,
       'PR reopened, fork, or wrong base; cleanup refused',
     );
@@ -136,6 +167,7 @@ async function main() {
   }
 
   requireCondition(process.env.GITHUB_EVENT_NAME === 'workflow_run', 'Wrong deployment event');
+  requireCondition(process.env.PREVIEW_DEPLOY_ENABLED === 'true', 'Trusted preview activation is disabled');
 
   const trigger = Schema.decodeUnknownSync(
     Schema.Struct({
@@ -171,7 +203,7 @@ async function main() {
 
   if (operation === 'prepare') {
     requireCondition(
-      !process.env.CLOUDFLARE_API_TOKEN,
+      !process.env.CLOUDFLARE_API_TOKEN && !process.env.PREVIEW_DEPLOY_TOKEN,
       'Quarantine must be prepared without deployer credentials',
     );
     const temporary = resolve(process.env.RUNNER_TEMP ?? '');

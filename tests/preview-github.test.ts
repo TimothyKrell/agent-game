@@ -196,6 +196,63 @@ describe('trusted GitHub delivery eligibility', () => {
     expect(() => verifyRecords(record, expected)).toThrow();
   });
 
+  it.each([
+    [
+      'missing identity',
+      (r: VerificationRecords) => {
+        r.jobs = r.jobs.map((job) => ({ ...job, steps: [] }));
+      },
+    ],
+    [
+      'duplicate identity',
+      (r: VerificationRecords) => {
+        r.jobs = r.jobs.map((job) => ({ ...job, steps: [...job.steps, ...job.steps] }));
+      },
+    ],
+    [
+      'identity after PR tooling',
+      (r: VerificationRecords) => {
+        r.jobs = r.jobs.map((job) => ({ ...job, steps: job.steps.map((step) => ({ ...step, number: 3 })) }));
+      },
+    ],
+    [
+      'failed identity',
+      (r: VerificationRecords) => {
+        r.jobs = r.jobs.map((job) => ({
+          ...job,
+          steps: job.steps.map((step) => ({ ...step, conclusion: 'failure' })),
+        }));
+      },
+    ],
+    [
+      'wrong tested SHA',
+      (r: VerificationRecords) => {
+        r.mergeCommit = '4'.repeat(40);
+      },
+    ],
+    [
+      'unrelated historical base',
+      (r: VerificationRecords) => {
+        r.parents = ['4'.repeat(40), head];
+      },
+    ],
+    [
+      'forged marker SHA with unrelated parents',
+      (r: VerificationRecords) => {
+        r.mergeCommit = '4'.repeat(40);
+        r.jobs = r.jobs.map((job) => ({
+          ...job,
+          steps: job.steps.map((step) => ({ ...step, name: step.name.replace(merge, r.mergeCommit) })),
+        }));
+        r.parents = [head, base];
+      },
+    ],
+  ] as const)('rejects %s rather than accepting artifact or current-ref claims', (_name, change) => {
+    const record = records();
+    change(record);
+    expect(() => verifyRecords(record, expected)).toThrow();
+  });
+
   it('queries live API inventories again, rejecting a synchronization between checks', async () => {
     const record = records();
     const paths: string[] = [];
@@ -232,6 +289,81 @@ describe('trusted GitHub delivery eligibility', () => {
     await expect(api.verify(expected, base)).rejects.toThrow();
     expect(paths.filter((path) => path === '/pulls/27')).toHaveLength(2);
     expect(paths).toContain('/actions/runs/100/attempts/2/jobs');
+  });
+
+  it('pins the original tested merge across base advancement before delivery, before publication and on a full rerun', async () => {
+    const record = records();
+    const paths: string[] = [];
+    const newBase = '4'.repeat(40);
+    const newMerge = '5'.repeat(40);
+    let currentMerge = newMerge;
+    record.pr = { ...record.pr, base: { ...record.pr.base, sha: newBase } };
+
+    const api = new GitHub(expected.repository, 'synthetic-token', async (url) => {
+      const parsed = new URL(String(url));
+      const path = parsed.pathname.replace('/repos/TimothyKrell/agent-game', '');
+      paths.push(path + parsed.search);
+
+      if (path.startsWith('/contents/')) {
+        expect([base, merge, head]).toContain(parsed.searchParams.get('ref'));
+
+        return Response.json({ type: 'file', sha: base });
+      }
+
+      const responses = new Map<string, object>([
+        ['', record.repository],
+        ['/actions/workflows/ci.yml', record.workflow],
+        ['/actions/runs/100', record.run],
+        ['/pulls/27', record.pr],
+        ['/git/ref/pull/27/merge', { object: { sha: currentMerge } }],
+        [`/git/commits/${merge}`, { parents: [{ sha: base }, { sha: head }] }],
+        [`/git/commits/${currentMerge}`, { parents: [{ sha: record.pr.base.sha }, { sha: head }] }],
+        [
+          `/actions/runs/100/attempts/${record.run.run_attempt}/jobs`,
+          { total_count: record.jobs.length, jobs: record.jobs },
+        ],
+        [
+          '/actions/runs/100/artifacts',
+          { total_count: record.artifacts.length, artifacts: record.artifacts },
+        ],
+        ['/actions/workflows/9/runs', { total_count: record.runs.length, workflow_runs: record.runs }],
+      ]);
+
+      if (!responses.has(path)) throw new Error(`Unexpected API call: ${path}`);
+
+      return Response.json(responses.get(path));
+    });
+
+    const original = {
+      version: 1 as const,
+      repository: expected.repository,
+      runId: 100,
+      runAttempt: 2,
+      prHeadSha: head,
+      builtCommit: merge,
+      entry: 'worker/worker.js' as const,
+      files: [],
+    };
+
+    const prepared = await api.verify(expected, base);
+    expect(prepared.builtCommit).toBe(merge);
+    verifyManifestIdentity(original, prepared);
+    currentMerge = '6'.repeat(40);
+    record.pr = { ...record.pr, base: { ...record.pr.base, sha: '7'.repeat(40) } };
+    const published = await api.verify(expected, base);
+    expect(deliveryProof(published, 'b'.repeat(64), base, 'tk-d86')).toEqual(
+      deliveryProof(prepared, 'b'.repeat(64), base, 'tk-d86'),
+    );
+    record.run = { ...record.run, run_attempt: 3 };
+    record.jobs = record.jobs.map((job) => ({ ...job, id: job.id + 100, run_attempt: 3 }));
+    record.runs = [record.run];
+    record.artifacts = [{ ...record.artifacts[0], id: 701, name: 'preview-bundle-100-3' }];
+    const rerun = await api.verify({ ...expected, attempt: 3 }, base);
+    verifyManifestIdentity({ ...original, runAttempt: 3 }, rerun);
+    expect(rerun.builtCommit).toBe(merge);
+    expect(paths.some((path) => path.startsWith('/git/ref/'))).toBe(false);
+    record.pr = { ...record.pr, head: { ...record.pr.head, sha: newBase } };
+    await expect(api.verify({ ...expected, attempt: 3 }, base)).rejects.toThrow();
   });
 
   it('uses the exact artifact ID and never forwards the GitHub token to blob storage', async () => {

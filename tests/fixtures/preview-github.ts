@@ -58,6 +58,17 @@ export function records(): VerificationRecords {
       head_sha: head,
       status: 'completed',
       conclusion: 'success',
+      steps:
+        name === 'Verify'
+          ? [
+              {
+                name: `Preview identity v1 merge=${merge} base=${base} head=${head}`,
+                number: 2,
+                status: 'completed',
+                conclusion: 'success',
+              },
+            ]
+          : [],
     })),
     artifacts: [
       {

@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { chmod, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Schema } from 'effect';
@@ -10,6 +10,7 @@ import { verifyRecords } from '../scripts/preview-github.ts';
 import { records, expected, base, head, merge } from './fixtures/preview-github';
 
 const Step = Schema.Struct({
+  name: Schema.optional(Schema.String),
   run: Schema.optional(Schema.String),
   uses: Schema.optional(Schema.String),
   env: Schema.optional(Schema.Record(Schema.String, Schema.String)),
@@ -19,6 +20,7 @@ const Step = Schema.Struct({
 });
 
 const Job = Schema.Struct({
+  if: Schema.optional(Schema.String),
   steps: Schema.Array(Step),
   'timeout-minutes': Schema.Number,
   concurrency: Schema.optional(
@@ -46,6 +48,14 @@ it('validates YAML credential boundaries, pinned default checkout, complete CI j
   expect(ciText).toContain('shard: [1, 2, 3]');
   expect(deployText).toContain('workflow_run:');
   expect(deployText).toContain('types: [completed]');
+  expect(deploy.jobs.deploy.if).toContain("vars.TRUSTED_PREVIEW_DEPLOY_ENABLED == 'true'");
+  expect(deployText).not.toContain('secrets.CLOUDFLARE_API_TOKEN');
+  expect(cleanupText).not.toContain('secrets.CLOUDFLARE_API_TOKEN');
+  expect(cleanupText).toContain('workflow_dispatch:');
+  expect(ci.jobs.verify.steps[0]).toMatchObject({
+    name: 'Preview identity v1 merge=${{ github.sha }} base=${{ github.event.pull_request.base.sha }} head=${{ github.event.pull_request.head.sha }}',
+    run: ':',
+  });
   expect(cleanupText).toContain('pull_request_target:');
 
   for (const workflow of [deploy, cleanup]) {
@@ -60,8 +70,10 @@ it('validates YAML credential boundaries, pinned default checkout, complete CI j
         expect(step.run ?? '').not.toMatch(/npm run|npx|produce-preview|wrangler deploy|git checkout/);
         expect(step.uses ?? '').not.toMatch(/cache|download-artifact|\.\/\.github\/actions/);
 
-        if (step.env?.CLOUDFLARE_API_TOKEN)
+        if (step.env?.PREVIEW_DEPLOY_TOKEN) {
           expect(step.run).toMatch(/^node scripts\/preview-controller\.ts (deploy|cleanup)$/);
+          expect(step.env.PREVIEW_DEPLOY_TOKEN).toBe('${{ secrets.TRUSTED_PREVIEW_CLOUDFLARE_API_TOKEN }}');
+        }
       }
     }
   }
@@ -72,7 +84,7 @@ it('validates YAML credential boundaries, pinned default checkout, complete CI j
     queue: 'max',
   });
   expect(cleanup.jobs.cleanup.concurrency).toEqual({
-    group: 'preview-${{ github.event.number }}',
+    group: 'preview-${{ github.event.number || inputs.pr-number }}',
     'cancel-in-progress': false,
     queue: 'max',
   });
@@ -81,7 +93,7 @@ it('validates YAML credential boundaries, pinned default checkout, complete CI j
     (step) => step.run === 'node scripts/preview-controller.ts prepare',
   );
 
-  const privileged = deploy.jobs.deploy.steps.findIndex((step) => step.env?.CLOUDFLARE_API_TOKEN);
+  const privileged = deploy.jobs.deploy.steps.findIndex((step) => step.env?.PREVIEW_DEPLOY_TOKEN);
   expect(prepared).toBeGreaterThan(-1);
   expect(privileged).toBeGreaterThan(prepared);
   const stack = await readFile('alchemy.run.ts', 'utf8');
@@ -124,7 +136,8 @@ it('executes the trusted command wrapper with hostile PR scripts present without
         ...process.env,
         PATH: trusted,
         PREVIEW_ARTIFACT_DIR: quarantine,
-        CLOUDFLARE_API_TOKEN: 'synthetic-canary',
+        PREVIEW_DEPLOY_ENABLED: 'true',
+        PREVIEW_DEPLOY_TOKEN: 'synthetic-canary',
       },
     },
   );
@@ -182,3 +195,129 @@ it('posts honest tested-merge/artifact status and includes R2 in cleanup comment
   execFileSync(process.execPath, ['scripts/preview-comment.mjs', 'removed'], { env });
   expect(await readFile(output, 'utf8')).toContain('R2 picture bucket');
 });
+
+it.each([
+  ['missing activation', '', 'synthetic-new-token'],
+  ['disabled activation', 'false', 'synthetic-new-token'],
+  ['missing new secret despite legacy token', 'true', ''],
+])('refuses a privileged subprocess with %s', async (_label, enabled, token) => {
+  await mkdir('.tim27-deploy/runs', { recursive: true });
+  const scratch = await mkdtemp(resolve('.tim27-deploy/runs/gate-'));
+  const capture = resolve(scratch, 'CALLED');
+  await writeFile(
+    resolve(scratch, 'bun'),
+    `#!${process.execPath}\nimport {writeFileSync} from 'node:fs'; writeFileSync(${JSON.stringify(capture)}, 'called');`,
+  );
+  await chmod(resolve(scratch, 'bun'), 0o700);
+
+  const child = spawnSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '-e',
+      `import {runAlchemy} from ${JSON.stringify(resolve('scripts/preview-controller.ts'))}; runAlchemy('deploy', 27, process.env);`,
+    ],
+    {
+      cwd: scratch,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PATH: scratch,
+        PREVIEW_DEPLOY_ENABLED: enabled,
+        PREVIEW_DEPLOY_TOKEN: token,
+        CLOUDFLARE_API_TOKEN: 'synthetic-legacy-token',
+      },
+    },
+  );
+
+  expect(child.status).not.toBe(0);
+  expect(child.stderr).toMatch(/activation|credential/);
+  await expect(readFile(capture)).rejects.toThrow();
+});
+
+it.each([
+  ['manual closed PR with deployment disabled', 'workflow_dispatch', '27', 'closed', 'main', true, true],
+  ['automatic close with deployment disabled', 'pull_request_target', '27', 'closed', 'main', true, true],
+  ['manual open PR', 'workflow_dispatch', '27', 'open', 'main', true, false],
+  ['manual fork', 'workflow_dispatch', '27', 'closed', 'main', false, false],
+  ['manual branch override', 'workflow_dispatch', '27', 'closed', 'feature', true, false],
+  ['noncanonical lock identity', 'workflow_dispatch', '027', 'closed', 'main', true, false],
+  ['shell-injection input', 'workflow_dispatch', '27;touch CALLED', 'closed', 'main', true, false],
+] as const)(
+  'validates live state before cleanup: %s',
+  async (_name, eventName, number, state, branch, sameRepo, accepted) => {
+    await mkdir('.tim27-deploy/runs', { recursive: true });
+    const scratch = await mkdtemp(resolve('.tim27-deploy/runs/manual-cleanup-'));
+    const capture = resolve(scratch, 'invocation.json');
+    const eventPath = resolve(scratch, 'event.json');
+    const controller = resolve('scripts/preview-controller.ts');
+    const fixture = records();
+    await writeFile(
+      eventPath,
+      canonical({
+        repository: fixture.repository,
+        ...(eventName === 'workflow_dispatch'
+          ? { inputs: { 'pr-number': number } }
+          : { action: 'closed', number: 27 }),
+      }),
+    );
+
+    const pr = {
+      ...fixture.pr,
+      state,
+      head: {
+        ...fixture.pr.head,
+        repo: sameRepo ? fixture.pr.head.repo : { id: 99, full_name: 'attacker/fork' },
+      },
+    };
+
+    await writeFile(
+      resolve(scratch, 'bun'),
+      `#!${process.execPath}\nimport {writeFileSync} from 'node:fs'; writeFileSync(${JSON.stringify(capture)}, JSON.stringify({argv:process.argv.slice(2),tokenCorrect:process.env.CLOUDFLARE_API_TOKEN === 'synthetic-new-token',inputTokenRemoved:!process.env.PREVIEW_DEPLOY_TOKEN}));`,
+    );
+    await chmod(resolve(scratch, 'bun'), 0o700);
+    const script = `globalThis.fetch = async (url) => { if (String(url) !== 'https://api.github.com/repos/${expected.repository}/pulls/27') throw new Error('Unexpected API call'); return Response.json(${JSON.stringify(pr)}); }; process.argv = [process.execPath, ${JSON.stringify(controller)}, 'cleanup']; await import(${JSON.stringify(controller)});`;
+
+    const child = spawnSync(process.execPath, ['--input-type=module', '-e', script], {
+      cwd: scratch,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PATH: scratch,
+        GITHUB_EVENT_PATH: eventPath,
+        GITHUB_EVENT_NAME: eventName,
+        GITHUB_SHA: base,
+        GITHUB_REF: `refs/heads/${branch}`,
+        GITHUB_WORKFLOW_REF: `${expected.repository}/.github/workflows/preview-cleanup.yml@refs/heads/${branch}`,
+        GITHUB_REPOSITORY: expected.repository,
+        GH_TOKEN: 'synthetic-github-token',
+        WORKERS_SUBDOMAIN: 'tk-d86',
+        PR_NUMBER: number,
+        PREVIEW_DEPLOY_ENABLED: 'false',
+        PREVIEW_DEPLOY_TOKEN: 'synthetic-new-token',
+        CLOUDFLARE_API_TOKEN: 'synthetic-legacy-token',
+      },
+    });
+
+    if (accepted) {
+      expect(child.status, child.stderr).toBe(0);
+      expect(JSON.parse(await readFile(capture, 'utf8'))).toEqual({
+        argv: [
+          resolve(scratch, 'node_modules/alchemy/bin/alchemy.ts'),
+          'destroy',
+          resolve(scratch, 'alchemy.run.ts'),
+          '--stage',
+          'pr-27',
+          '--profile',
+          'agent-game',
+          '--yes',
+        ],
+        tokenCorrect: true,
+        inputTokenRemoved: true,
+      });
+    } else {
+      expect(child.status).not.toBe(0);
+      await expect(readFile(capture)).rejects.toThrow();
+    }
+  },
+);

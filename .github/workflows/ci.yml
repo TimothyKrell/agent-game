@@ -20,6 +20,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
+      # GitHub records this evaluated name in the attempt's job/step API before
+      # PR code runs. A rerun preserves the original event SHA and base/head.
+      - name: Preview identity v1 merge=${{ github.sha }} base=${{ github.event.pull_request.base.sha }} head=${{ github.event.pull_request.head.sha }}
+        if: github.event_name == 'pull_request'
+        run: ':'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
