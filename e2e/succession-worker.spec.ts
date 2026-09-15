@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { Schema } from 'effect';
 import { HistoryPage2Schema, Observation2Schema } from '../src/shared/succession';
 import { HistoryCheckpoint2Schema } from '../src/shared/history-checkpoint';
+import { captureHistoryResponses } from './fixtures/history-response-capture';
 import {
   expectBoundedRecord,
   expectReadingControls,
@@ -20,31 +21,15 @@ test('real Worker exhibition plays both acts and opens the bounded archive in th
   await observeDossierBounds(page);
   const errors: string[] = [];
   const historyReads: { url: string; bytes: number; events: number }[] = [];
-  const cancelledHistory: { url: string; reason: string }[] = [];
-  const captureErrors: string[] = [];
-  const reads: Promise<void>[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  page.on('requestfailed', (request) => {
-    if (!new URL(request.url()).pathname.endsWith('/history')) return;
-    cancelledHistory.push({ url: request.url(), reason: request.failure()?.errorText ?? 'Unknown failure' });
-  });
-  // A bounded reader can cancel a response after headers arrive. Measure complete native requests;
-  // attempting Network.getResponseBody on those abandoned responses is a CDP instrumentation error.
-  page.on('requestfinished', (request) => {
-    if (!new URL(request.url()).pathname.endsWith('/history')) return;
-    reads.push(
-      (async () => {
-        const response = await request.response();
 
-        if (!response?.ok()) throw new Error(`History response failed: ${request.url()}`);
-        const bytes = await response.body();
-        const data = Schema.decodeUnknownSync(HistoryPage2Schema)(JSON.parse(bytes.toString()));
-        historyReads.push({ url: response.url(), bytes: bytes.length, events: data.events.length });
-      })().catch((error: Error) => {
-        captureErrors.push(error.message);
-      }),
-    );
+  const capture = captureHistoryResponses(page, async (response) => {
+    const bytes = await response.body();
+    const data = Schema.decodeUnknownSync(HistoryPage2Schema)(JSON.parse(bytes.toString()));
+    historyReads.push({ url: response.url(), bytes: bytes.length, events: data.events.length });
   });
+
+  const { cancelled: cancelledHistory, errors: captureErrors } = capture;
   await page.goto('/?gameId=succession');
   await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveValue('succession');
   await page.getByRole('button', { name: 'Start local exhibition', exact: true }).click();
@@ -90,9 +75,8 @@ test('real Worker exhibition plays both acts and opens the bounded archive in th
     body: JSON.stringify(terminal, null, 2),
     contentType: 'application/json',
   });
-  await Promise.all(reads);
   const liveBounds = await expectObservedDossierBounds(page);
-  await page.reload();
+  await capture.navigate(() => page.reload());
   await expect(record(page, 2)).toHaveAttribute('data-story-delivered', String(terminal.history.streamHead));
   await expect(page.getByRole('button', { name: /^(Final move|Terminal record)$/ })).toBeEnabled();
   const through = Number(await record(page, 2).getAttribute('data-story-after'));
@@ -131,10 +115,31 @@ test('real Worker exhibition plays both acts and opens the bounded archive in th
   await expect(actOne.locator('.dossier-private').first()).toBeVisible();
   expect(await page.locator('.dossier-outcome').innerText()).toBe(outcome);
   await page.screenshot({ path: testInfo.outputPath('real-worker-archive.png'), fullPage: true });
-  await Promise.all(reads);
+  await capture.drain();
+  await testInfo.attach('worker-capture-lifecycle.json', {
+    body: JSON.stringify(
+      { requests: capture.lifecycle, boundaries: capture.boundaries, errors: captureErrors },
+      null,
+      2,
+    ),
+    contentType: 'application/json',
+  });
   expect(historyReads.length).toBeGreaterThan(0);
   expect(historyReads.every((read) => read.events <= 32 && read.bytes <= 16_384)).toBe(true);
   expect(captureErrors).toEqual([]);
+  expect(capture.lifecycle.every((request) => request.outcome !== 'pending')).toBe(true);
+  expect(capture.lifecycle.filter((request) => request.outcome === 'captured')).toHaveLength(
+    historyReads.length,
+  );
+
+  for (const generation of [0, 1]) {
+    expect(
+      capture.lifecycle.some(
+        (request) => request.generation === generation && request.outcome === 'captured',
+      ),
+    ).toBe(true);
+  }
+
   expect(cancelledHistory.every((read) => read.reason === 'net::ERR_ABORTED')).toBe(true);
   expect(errors).toEqual([]);
   const bounds = await expectObservedDossierBounds(page);
