@@ -1,0 +1,12 @@
+{
+  "scannedAssets": 3,
+  "entryBundleBytes": 253528,
+  "productionComponentImportGraphClean": true,
+  "directGuideExcluded": true,
+  "directFixtureExcluded": true,
+  "noPrototypeOrAgentationRequests": true,
+  "integratedProductionRoute": true,
+  "dossierIncluded": true,
+  "readerIncluded": true,
+  "integrationBoundary": "Route browser acceptance is recorded separately in route-production/checks.json; parent owns pending TIM-23 review corrections."
+}

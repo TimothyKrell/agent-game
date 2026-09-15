@@ -19,6 +19,7 @@ import type {
   DossierRow,
 } from './succession-dossier-data.prototype';
 import './succession-dossier.prototype.css';
+import DossierGuide from './dossier-guide.prototype';
 
 function CardRecord({ cards }: { cards: DossierCards }) {
   return (
@@ -471,6 +472,7 @@ function DossierContent() {
         </div>
       </div>
       <nav className="dp-preview-nav" aria-label="Preview datasets">
+        <button onClick={() => selectSample('components')}>Shared production components</button>
         <button aria-pressed={!examples} onClick={() => selectSample('match')}>
           Recorded match
         </button>
@@ -612,6 +614,10 @@ function DossierContent() {
 }
 
 export default function SuccessionDossierPrototype() {
+  const url = new URL(useLocation());
+
+  if (url.searchParams.get('sample') === 'components') return <DossierGuide />;
+
   return (
     <AgentPictureProvider>
       <RuleHelpProvider>

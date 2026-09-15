@@ -1232,7 +1232,7 @@ function App() {
       </React.Suspense>
     );
   else if (path.startsWith('/matches/'))
-    content = <MatchRoute key={path} id={path.split('/')[2]} fullHistory={path.endsWith('/history')} />;
+    content = <MatchRoute key={path} id={path.split('/')[2]} />;
   else if (path === '/leaderboard') content = <Leaderboard />;
   else if (path === '/how-to-play') content = <Rules />;
   else if (path.startsWith('/agents/')) content = <Profile key={path} id={path.split('/')[2]} />;
