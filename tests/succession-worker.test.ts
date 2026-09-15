@@ -89,6 +89,7 @@ function captureFailure(error: Error): Promise<void> {
     directory,
     matches: [...progress.values()],
     queues: [...queues.values()],
+    recentDriverSteps: driverSteps.slice(-12),
   };
 
   const current = worker;
@@ -161,6 +162,7 @@ beforeEach(async (context) => {
   firstFailure = undefined;
   progress.clear();
   queues.clear();
+  driverSteps.length = 0;
   provider = 'openai';
   const root = resolve(process.env.GAME_FIXTURE_EVIDENCE_DIR ?? join(tmpdir(), 'agent-game-fixtures'));
   await mkdir(root, { recursive: true });
@@ -192,7 +194,12 @@ afterEach(async ({ task }) => {
 
     for (const socket of sockets) socket.close();
     sockets.clear();
-    await worker?.stop();
+
+    try {
+      await writeFile(join(directory, 'driver-steps.json'), JSON.stringify(driverSteps));
+    } finally {
+      await worker?.stop();
+    }
   }
 });
 
@@ -253,6 +260,9 @@ function action(view: Observation2): ActionRequest2 {
 
   const preferred = [
     'coup',
+    // These journeys require settlement, not twelve rounds of coin accumulation. Use the
+    // published lower-cost attack when available; every decision still goes through HTTP.
+    'assassinate',
     'tax',
     'pass',
     'income',
@@ -327,6 +337,17 @@ function drive(...args: Parameters<typeof driveSteps>): ReturnType<typeof driveS
   return owned(() => driveSteps(...args));
 }
 
+const driverSteps: {
+  at: number;
+  matchId: string;
+  phase: string;
+  head: number;
+  publicReadMs: number;
+  seatReadsMs: number;
+  readWindowMs: number;
+  decisions: number;
+}[] = [];
+
 async function driveSteps(
   matchId: string,
   controllers: FixtureController[],
@@ -336,9 +357,36 @@ async function driveSteps(
   const deadline = Date.now() + timeout;
 
   while (Date.now() < deadline) {
-    const publicView = await data<Observation2>(`/api/matches/${matchId}`);
+    const started = Date.now();
+    let publicReadMs = 0;
+    let seatReadsMs = 0;
+    // These are independent entitled reads. Await every response before choosing an action or
+    // advancing a clock, without paying a second serial transport round trip for each phase.
+
+    const [publicView, seats] = await Promise.all([
+      data<Observation2>(`/api/matches/${matchId}`).then((view) => {
+        publicReadMs = Date.now() - started;
+
+        return view;
+      }),
+      views(matchId, controllers).then((views) => {
+        seatReadsMs = Date.now() - started;
+
+        return views;
+      }),
+    ]);
+
     progress.set(matchId, currentMatch(publicView));
-    const seats = await views(matchId, controllers);
+    driverSteps.push({
+      at: Date.now(),
+      matchId,
+      phase: publicView.phase.kind,
+      head: publicView.history.streamHead,
+      publicReadMs,
+      seatReadsMs,
+      readWindowMs: Date.now() - started,
+      decisions: seats.filter((view) => view.decision).length,
+    });
     expect(Buffer.byteLength(JSON.stringify(publicView))).toBeLessThanOrEqual(14_336);
     expect(publicView.status, publicView.interruptionReason ?? '').not.toBe('interrupted');
 

@@ -33,7 +33,11 @@ let captureTakeoverFailure: (() => Promise<void>) | undefined;
 interface TakeoverProgress {
   stage: string;
   queue?: typeof QueueStatusSchema.Type;
-  match?: Pick<typeof ObservationSchema.Type, 'matchId' | 'status' | 'phase' | 'cursor' | 'seats'>;
+  match?: Pick<
+    typeof ObservationSchema.Type,
+    'matchId' | 'status' | 'phase' | 'cursor' | 'seats' | 'winReason'
+  >;
+  lastEvents?: typeof ObservationSchema.Type.events;
 }
 
 const worker = {
@@ -462,7 +466,11 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
         phase: view.phase,
         cursor: view.cursor,
         seats: view.seats,
+        winReason: view.winReason,
       };
+      progress.lastEvents = view.events.slice(-16);
+
+      expect(view.status, view.winReason ?? 'Portrait fixture interrupted').not.toBe('interrupted');
 
       if (view.status === 'finished') break;
       await pause(100, undefined, { signal });
