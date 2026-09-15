@@ -7,13 +7,21 @@ import { parsePreviewArtifactManifest, registerPreviewArtifacts } from '../src/s
 import type { HouseJob } from '../src/server/house-contract';
 import { previewAction } from '../src/game/preview';
 import { previewSuccessionAction } from '../src/game/succession/preview';
+import { completionChoice } from './succession-choice';
 import { ObservationSchema } from '../src/shared/api';
 import { Observation2Schema } from '../src/shared/succession';
 import { requireGameProtocol, selectedGame } from '../src/server/protocol';
 
 export class MatchObject extends ScriptedMatch {
   async fixtureHouseStep() {
+    // Drain newly published house-only work before returning to the external CLI.
+    // A discussion still needs the next explicit clock RPC; human decisions are never submitted here.
+    while (await this.fixtureHouseBatch()) {}
+  }
+
+  private async fixtureHouseBatch() {
     const jobs = this.ctx.storage.sql.exec<{ data: string }>('SELECT data FROM outbox').toArray();
+    let submitted = false;
 
     for (const row of jobs) {
       const job: HouseJob = JSON.parse(row.data);
@@ -21,24 +29,36 @@ export class MatchObject extends ScriptedMatch {
       if (job.kind !== 'action') continue;
       const context = await this.houseObservation(job.seat, job.generation, job.phaseId);
 
-      if (!context) continue;
+      if (!context?.observation.decision || context.observation.decision.id !== job.decisionId) continue;
 
-      const action =
+      const succession =
         job.gameId === 'succession'
-          ? previewSuccessionAction(
-              Schema.decodeUnknownSync(Observation2Schema)(context.observation),
-              () => 0,
-            )
-          : previewAction(Schema.decodeUnknownSync(ObservationSchema)(context.observation));
+          ? Schema.decodeUnknownSync(Observation2Schema)(context.observation)
+          : null;
 
-      if (action)
-        await this.submitHouse(job, {
+      const preferred = succession ? completionChoice(succession) : undefined;
+
+      const action = succession
+        ? preferred === undefined
+          ? previewSuccessionAction(succession, () => 0)
+          : succession.decision!.actions[preferred].action
+        : previewAction(Schema.decodeUnknownSync(ObservationSchema)(context.observation));
+
+      if (action) {
+        const result = await this.submitHouse(job, {
+          gameId: job.gameId,
           actionId: `fixture-${job.id}`,
           phaseId: job.phaseId,
           decisionId: job.decisionId,
           action,
         });
+
+        if (!result.ok) throw new Error(result.error.message);
+        submitted = true;
+      }
     }
+
+    return submitted;
   }
 }
 

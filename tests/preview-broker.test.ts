@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, appendFile, cp } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createServer } from 'node:http';
@@ -78,7 +78,15 @@ let missingUsage = false;
 
 let providerTokens = 100;
 
-const captures: { model: string; maxTokens: number; aborted: boolean; authorization: boolean }[] = [];
+const captures: {
+  model: string;
+  maxTokens: number;
+  aborted: boolean;
+  authorization: boolean;
+  startedAt: number;
+  closedAt: number | null;
+  delay: number;
+}[] = [];
 
 const observations: string[] = [];
 
@@ -109,19 +117,24 @@ function createProvider() {
       const prompt = JSON.parse(body.input.find((message) => message.role === 'user')!.content[0].text);
       const input = Schema.decodeUnknownSync(Schema.Struct({ task: Schema.String }))(prompt);
 
-      const capture = {
+      const capture: (typeof captures)[number] = {
         model: body.model,
         maxTokens: body.max_output_tokens,
         aborted: false,
         authorization: request.headers.authorization === 'Bearer fixture-only-broker-key',
+        startedAt: Date.now(),
+        closedAt: null,
+        delay: providerDelay,
       };
 
       captures.push(capture);
       response.on('close', () => {
+        capture.closedAt = Date.now();
+
         if (!response.writableFinished) capture.aborted = true;
       });
 
-      if (providerDelay) await new Promise((resolve) => setTimeout(resolve, providerDelay));
+      if (capture.delay) await new Promise((resolve) => setTimeout(resolve, capture.delay));
 
       if (response.destroyed) return;
       response.writeHead(200, { 'content-type': 'application/json' });
@@ -553,6 +566,7 @@ function useFixture(name: string) {
           directory,
           observations,
           providerRequests: captures.length,
+          captures,
           allSourceModel: captures.every((capture) => capture.model === 'gpt-4.1-mini'),
           allSourceOutputBound: captures.every((capture) => capture.maxTokens === 512),
           allSourceCredentials: captures.every((capture) => capture.authorization),
@@ -563,6 +577,9 @@ function useFixture(name: string) {
         2,
       ) + '\n',
     );
+
+    if (process.env.TIM27_BROKER_EVIDENCE_DIR)
+      await cp(directory, join(evidence, 'runtime'), { recursive: true });
   });
 }
 
@@ -863,69 +880,108 @@ describe.sequential('shared production and preview competition', () => {
       PreviewBrokerReceiptSchema,
     );
 
-    const input = inference(receipt);
-    const before = captures.length;
-    providerDelay = 100;
+    try {
+      const input = inference(receipt);
+      const before = captures.length;
+      providerDelay = 100;
 
-    const responses = await Promise.all(
-      Array.from({ length: 4 }, () =>
-        broker(arenas[0], 'inference', { ...input, model: 'untrusted-model', actual: 0, estimate: 0 }),
-      ),
-    );
+      const responses = await Promise.all(
+        Array.from({ length: 4 }, () =>
+          broker(arenas[0], 'inference', { ...input, model: 'untrusted-model', actual: 0, estimate: 0 }),
+        ),
+      );
 
-    for (const response of responses) expect(response.status).toBe(202);
-    const result = await settle(arenas[0], input);
-    expect(result).toMatchObject({
-      state: 'completed',
-      value: { choice: 0 },
-      inputTokens: 100,
-      outputTokens: 20,
-      accountedUsd: 0.000072,
-    });
-    expect(captures.length - before).toBe(1);
-    expect(await settle(arenas[0], input)).toEqual(result);
-    expect(
-      (
-        await broker(arenas[0], 'inference', {
-          ...input,
-          prompt: JSON.stringify({ task: 'action', changed: true }),
-        })
-      ).status,
-    ).toBe(409);
-    expect((await broker(arenas[0], 'inference', { ...input, attempt: 3 })).status).toBe(400);
-    expect((await broker(arenas[1], 'inference', input)).status).toBe(401);
-    expect(JSON.stringify(result)).not.toMatch(/fixture-only-broker-key|agk_|encrypted_key/);
-    providerDelay = 0;
-    missingUsage = true;
-    expect(await settle(arenas[0], inference(receipt))).toMatchObject({
-      state: 'completed',
-      inputTokens: null,
-      outputTokens: null,
-    });
-    missingUsage = false;
-    providerDelay = 2500;
-    expect(await settle(arenas[0], inference(receipt, { deadline: Date.now() + 1800 }))).toEqual({
-      state: 'failed',
-    });
-    providerDelay = 0;
-    await close(arenas[0], receipt.allocationId);
+      for (const response of responses) expect(response.status).toBe(202);
+      const result = await settle(arenas[0], input);
+      expect(result).toMatchObject({
+        state: 'completed',
+        value: { choice: 0 },
+        inputTokens: 100,
+        outputTokens: 20,
+        accountedUsd: 0.000072,
+      });
+      expect(captures.length - before).toBe(1);
+      expect(await settle(arenas[0], input)).toEqual(result);
+      expect(
+        (
+          await broker(arenas[0], 'inference', {
+            ...input,
+            prompt: JSON.stringify({ task: 'action', changed: true }),
+          })
+        ).status,
+      ).toBe(409);
+      expect((await broker(arenas[0], 'inference', { ...input, attempt: 3 })).status).toBe(400);
+      expect((await broker(arenas[1], 'inference', input)).status).toBe(401);
+      expect(JSON.stringify(result)).not.toMatch(/fixture-only-broker-key|agk_|encrypted_key/);
+      providerDelay = 0;
+      missingUsage = true;
+      expect(await settle(arenas[0], inference(receipt))).toMatchObject({
+        state: 'completed',
+        inputTokens: null,
+        outputTokens: null,
+      });
+      missingUsage = false;
+      providerDelay = 2500;
+      const cancelled = inference(receipt, { deadline: Date.now() + 1800 });
+      expect((await broker(arenas[0], 'inference', cancelled)).status).toBe(202);
+      // Expiry can truthfully report unknown while generateHouse cancellation is still settling.
+      // Wait for this attempt's real source completion; never manufacture a result or release its estimate.
+      await waitFor(async () => {
+        const rows = await query(
+          source,
+          'SELECT c.state,c.deadline,c.result,u.actual,u.reserved,u.done FROM preview_broker_calls c JOIN usage u ON u.id=c.id WHERE c.id=?',
+          [JSON.stringify([cancelled.allocationId, cancelled.jobId, cancelled.attempt])],
+          Schema.Array(
+            Schema.Struct({
+              state: Schema.String,
+              deadline: Schema.Number,
+              result: Schema.NullOr(Schema.String),
+              actual: Schema.NullOr(Schema.Number),
+              reserved: Schema.Number,
+              done: Schema.Number,
+            }),
+          ),
+          true,
+        );
 
-    const usage = await query(
-      source,
-      'SELECT actual,reserved,done FROM usage WHERE match_id=?',
-      [receipt.allocationId],
-      Schema.Array(
-        Schema.Struct({ actual: Schema.NullOr(Schema.Number), reserved: Schema.Number, done: Schema.Number }),
-      ),
-      true,
-    );
+        await appendFile(
+          `${evidence}/cancellation-progress.jsonl`,
+          JSON.stringify({ at: Date.now(), cancelled, rows }) + '\n',
+        );
 
-    expect(usage).toHaveLength(3);
-    expect(usage.filter((row) => row.actual === null)).toHaveLength(2);
-    expect(usage.every((row) => row.done === 1 && row.reserved > 0)).toBe(true);
-    observations.push(
-      'Real source generateHouse HTTP: concurrent calls bill once, saved response retry, model/output authority, unknown/aborted usage retains estimates.',
-    );
+        return rows.length === 1 && rows[0].result !== null;
+      });
+      expect(await settle(arenas[0], cancelled)).toEqual({
+        state: 'failed',
+      });
+      providerDelay = 0;
+      await close(arenas[0], receipt.allocationId);
+
+      const usage = await query(
+        source,
+        'SELECT actual,reserved,done FROM usage WHERE match_id=?',
+        [receipt.allocationId],
+        Schema.Array(
+          Schema.Struct({
+            actual: Schema.NullOr(Schema.Number),
+            reserved: Schema.Number,
+            done: Schema.Number,
+          }),
+        ),
+        true,
+      );
+
+      expect(usage).toHaveLength(3);
+      expect(usage.filter((row) => row.actual === null)).toHaveLength(2);
+      expect(usage.every((row) => row.done === 1 && row.reserved > 0)).toBe(true);
+      observations.push(
+        'Real source generateHouse HTTP: concurrent calls bill once, saved response retry, model/output authority, unknown/aborted usage retains estimates.',
+      );
+    } finally {
+      providerDelay = 0;
+      missingUsage = false;
+      await close(arenas[0], receipt.allocationId);
+    }
   });
 
   it('recovers lost allocation acknowledgements and source cold restart without allocating again', async () => {

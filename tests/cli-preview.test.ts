@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, mkdir, readFile, writeFile, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, appendFile, readdir, rm, cp } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
@@ -10,6 +10,8 @@ import { unstable_dev } from 'wrangler';
 import { Schema } from 'effect';
 import { artifacts, hash } from '../.tim27-cli/artifacts';
 import type { ArtifactPin } from '../cli/preview-artifacts.mjs';
+import { completionChoice } from '../.tim27-cli/succession-choice';
+import { Observation2Schema } from '../src/shared/succession';
 
 const run = promisify(execFile);
 
@@ -53,6 +55,27 @@ const configs: Record<string, string> = {};
 
 const completions: object[] = [];
 
+interface OperationTrace {
+  operation: string;
+  startedAt: number;
+  completedAt?: number;
+  id?: string;
+  path?: string;
+  matchId?: string;
+  status?: string;
+  act?: number;
+  phase?: { id: string; kind: string };
+  head?: number;
+  decisionId?: string;
+  accepted?: boolean;
+  exitCode?: number;
+}
+
+async function trace(record: OperationTrace) {
+  await mkdir(evidenceDirectory, { recursive: true });
+  await appendFile(resolve(evidenceDirectory, 'operations.jsonl'), JSON.stringify(record) + '\n');
+}
+
 type FixtureRequest =
   | string
   | Awaited<ReturnType<typeof artifacts>>['manifest']
@@ -65,11 +88,18 @@ type FixtureRequest =
   | Record<string, never>;
 
 async function post(origin: string, path: string, body: FixtureRequest, owner = false) {
+  const startedAt = Date.now();
+  const clock = path.startsWith('/fixture/clock/');
+
+  if (clock) await trace({ operation: 'clock', path, startedAt });
+
   const response = await fetch(`${origin}${path}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', origin, cookie: owner ? cookie : '' },
     body: JSON.stringify(body),
   });
+
+  if (clock) await trace({ operation: 'clock', path, startedAt, completedAt: Date.now() });
 
   expect(response.ok, await response.clone().text()).toBe(true);
 
@@ -94,6 +124,10 @@ async function traffic(origin: string) {
 }
 
 async function cli(config: string, ...args: string[]) {
+  const startedAt = Date.now();
+  const id = randomUUID();
+  await trace({ id, operation: args[0], startedAt });
+
   try {
     const output = await run(process.execPath, [bin, ...args, '--config', config], {
       cwd: directory,
@@ -105,11 +139,29 @@ async function cli(config: string, ...args: string[]) {
       },
     });
 
-    return JSON.parse(output.stdout);
+    const result = JSON.parse(output.stdout);
+    const view = result.observation ?? result;
+    await trace({
+      id,
+      operation: args[0],
+      startedAt,
+      completedAt: Date.now(),
+      matchId: view.matchId,
+      status: view.status,
+      act: view.act,
+      phase: view.phase,
+      head: view.history?.streamHead ?? view.cursor,
+      decisionId: view.decision?.id,
+      accepted: result.accepted,
+    });
+
+    return result;
   } catch (error) {
     const failure = Schema.decodeUnknownSync(Schema.Struct({ stdout: Schema.String, code: Schema.Number }))(
       error,
     );
+
+    await trace({ id, operation: args[0], startedAt, completedAt: Date.now(), exitCode: failure.code });
 
     return { ...JSON.parse(failure.stdout), exitCode: failure.code };
   }
@@ -257,6 +309,15 @@ afterAll(async () => {
     ) + '\n',
   );
   await Promise.all(workers.map((worker) => worker.stop()));
+
+  if (process.env.TIM27_CLI_EVIDENCE_DIR)
+    await Promise.all(
+      workers.map((_, index) =>
+        cp(`${directory}/storage-${index}`, resolve(evidenceDirectory, `storage-${index}`), {
+          recursive: true,
+        }),
+      ),
+    );
   await rm(directory, { recursive: true, force: true });
 });
 
@@ -601,6 +662,8 @@ it.each(['secret-overlord', 'succession'])(
     });
 
     expect(view.decision, JSON.stringify(view)).not.toBeNull();
+
+    const decisionActs = new Set<number>(game === 'succession' ? [view.act] : []);
     expect(await cli(selected.configPath, 'act', '--choice', '0')).toMatchObject({ accepted: true });
 
     if (game === 'succession') {
@@ -630,7 +693,14 @@ it.each(['secret-overlord', 'succession'])(
 
     for (let step = 0; step < 700 && view.status === 'active'; step++) {
       if (view.decision) {
-        const receipt = await cli(selected.configPath, 'act', '--choice', '0');
+        if (game === 'succession') decisionActs.add(view.act);
+
+        const choice =
+          game === 'succession'
+            ? (completionChoice(Schema.decodeUnknownSync(Observation2Schema)(view)) ?? 0)
+            : 0;
+
+        const receipt = await cli(selected.configPath, 'act', '--choice', String(choice));
         expect(receipt.accepted, JSON.stringify(receipt)).toBe(true);
         decisions++;
         view = receipt.observation;
@@ -692,6 +762,9 @@ it.each(['secret-overlord', 'succession'])(
 
     expect(spoken).toBe(true);
     expect(view.status, JSON.stringify(view)).toBe('finished');
+    expect(view.you.forfeited).toBe(false);
+
+    if (game === 'succession') expect([...decisionActs].sort()).toEqual([1, 2]);
     completions.push({
       game,
       status: view.status,
