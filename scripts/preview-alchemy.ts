@@ -1,9 +1,6 @@
 import { Effect, Layer, ConfigProvider } from 'effect';
-import * as Plan from 'alchemy/Plan';
-import { apply } from 'alchemy/Apply';
 import { Stage } from 'alchemy/Stage';
 import { AuthProviders } from 'alchemy/Auth/AuthProvider';
-import { State } from 'alchemy/State';
 import { AlchemyContext } from 'alchemy/AlchemyContext';
 import { CredentialsStoreLive } from 'alchemy/Auth/Credentials';
 import { ProfileLive } from 'alchemy/Auth/Profile';
@@ -15,8 +12,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import stack from '../alchemy.run.ts';
 import { controllerClosure, controllerDelivery, controllerRetirement } from './preview-controller.ts';
-import { bridgeSettings, retainedIdentity } from './preview-lifecycle-state.ts';
-import { registerLifecycle, retireLifecycle } from './preview-lifecycle.ts';
+import { applyPreview } from './preview-apply.ts';
 import { canonical, requireCondition } from './preview-artifact.ts';
 
 /** Fixed default-branch Alchemy API runner; keys never leave this process. */
@@ -47,49 +43,20 @@ async function main() {
 
   const engine = Effect.gen(function* () {
     const compiled = yield* stack;
-    yield* Effect.gen(function* () {
-      const state = yield* yield* State;
-      const retained = yield* Effect.promise(() => retainedIdentity(state, stage));
 
-      if (retirement) {
-        if (
-          retained &&
-          retained.identity.runId === retirement.runId &&
-          retained.identity.runAttempt === retirement.runAttempt &&
-          (yield* Effect.promise(() => retirement.shouldRetire(retained.identity.prHeadSha)))
-        )
-          yield* Effect.promise(() => retireLifecycle(state, stage, retained.identity, env, async () => {}));
+    const invocation = delivery
+      ? { operation: 'deploy' as const, authority: delivery }
+      : closure
+        ? { operation: 'destroy' as const, authority: closure }
+        : { operation: 'retire' as const, authority: retirement! };
 
-        return;
-      }
+    const publication = yield* applyPreview(compiled, invocation, env);
 
-      if (retained && (closure || !bridgeSettings(env))) {
-        yield* Effect.promise(() =>
-          retireLifecycle(state, stage, retained.identity, env, closure?.recheck ?? delivery!.recheck),
-        );
-      }
-
-      yield* Effect.promise(closure?.recheck ?? delivery!.recheck);
-      const plan = closure ? yield* Plan.destroy(compiled) : yield* Plan.make(compiled);
-      yield* apply(plan);
-
-      if (delivery && bridgeSettings(env)) {
-        yield* Effect.promise(async () => {
-          const publication = await registerLifecycle(
-            state,
-            delivery.verified,
-            delivery.artifact,
-            env,
-            delivery.recheck,
-          );
-
-          // Public manifest only. Readiness is assigned in the following
-          // credential-free workflow step after actual source GET readback.
-          await mkdir('.agent-game', { recursive: true });
-          await writeFile('.agent-game/preview-registration.json', canonical(publication), { mode: 0o600 });
-        });
-      }
-    }).pipe(Effect.provide(compiled.services));
+    if (publication)
+      yield* Effect.promise(async () => {
+        await mkdir('.agent-game', { recursive: true });
+        await writeFile('.agent-game/preview-registration.json', canonical(publication), { mode: 0o600 });
+      });
   }).pipe(Effect.provideService(Stage, stage), Effect.provideService(AuthProviders, {}));
 
   // Mirrors the locked CLI's platform/profile setup, with an environment-only

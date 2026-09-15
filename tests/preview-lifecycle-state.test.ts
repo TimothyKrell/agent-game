@@ -48,7 +48,7 @@ import {
   configureSourcePreviewBroker,
   configureTargetPreviewBroker,
 } from '../scripts/preview-broker-lifecycle';
-import { verifyRecords } from '../scripts/preview-github';
+import { PreviewEligibilityChanged, verifyRecords } from '../scripts/preview-github';
 import { records, expected } from './fixtures/preview-github';
 import { canonical, sha256 } from '../scripts/preview-artifact';
 
@@ -423,7 +423,7 @@ it('publishes real source GET artifacts and completes same-owner browser/agent h
   await apply(state, 2, true);
   expect(await retainedIdentity(state, 'pr-27')).toBeUndefined();
   await writeFile(
-    '.tim27-lifecycle/integration.json',
+    '.tim27-lifecycle/runs/integration.json',
     canonical({
       localOnly: true,
       syntheticGitHubIdentity: true,
@@ -586,6 +586,47 @@ it('recovers a lost source-register acknowledgement with the retained key and re
     registerLifecycle(state, verifiedRun(), fixture.artifact, fixture.env, async () => {}, fixture.fetcher),
   ).rejects.toThrow('generation changed');
   await expect(verifySourcePublicationReadback(publication, fixture.fetcher)).rejects.toThrow('unavailable');
+});
+
+it('keeps the registered incarnation through a transient GitHub read failure and retries with the same key', async () => {
+  const state = await stateStore();
+  await apply(state, 2);
+  const identity = (await retainedIdentity(state, 'pr-27'))!.identity;
+  let checks = 0;
+  await expect(
+    registerLifecycle(
+      state,
+      verifiedRun(),
+      fixture.artifact,
+      fixture.env,
+      async () => {
+        if (++checks === 4) throw new Error('Synthetic GitHub connection failure');
+      },
+      fixture.fetcher,
+    ),
+  ).rejects.toThrow('connection failure');
+  const pending = (await retainedIdentity(state, 'pr-27'))!.identity;
+  expect(pending.retired).toBe(false);
+  expect(pending.incarnation).toBe(identity.incarnation);
+  expect(Redacted.value(pending.encryptedKey)).toBe(Redacted.value(identity.encryptedKey));
+  expect(
+    await fixture.sourceDB
+      .prepare('SELECT closed_at FROM preview_arenas WHERE origin=?')
+      .bind(lifecycleTargetOrigin)
+      .first('closed_at'),
+  ).toBeNull();
+
+  const publication = await registerLifecycle(
+    state,
+    verifiedRun(),
+    fixture.artifact,
+    fixture.env,
+    async () => {},
+    fixture.fetcher,
+  );
+
+  expect(publication.incarnation).toBe(identity.incarnation);
+  await verifySourcePublicationReadback(publication, fixture.fetcher);
 });
 
 it('requires independent source revision/configuration and current target runtime before broker enablement, without any inference', async () => {
@@ -798,7 +839,7 @@ it('keeps retry identity on source outage and closes immediately when eligibilit
       fixture.artifact,
       fixture.env,
       async () => {
-        if (++count === 4) throw new Error('Synthetic synchronized head');
+        if (++count === 4) throw new PreviewEligibilityChanged('Synthetic synchronized head');
       },
       fixture.fetcher,
     ),

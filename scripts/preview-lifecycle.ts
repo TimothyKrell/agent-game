@@ -30,7 +30,7 @@ import {
   verifySourceExecutable,
   verifySourceArenaReadback,
 } from './preview-publication.ts';
-import type { VerifiedRun } from './preview-github.ts';
+import { PreviewEligibilityChanged, type VerifiedRun } from './preview-github.ts';
 import { configureTargetPreviewBroker } from './preview-broker-lifecycle.ts';
 
 export async function assertLifecycleGeneration(
@@ -199,89 +199,90 @@ export async function registerLifecycle(
     closed_at: null,
   };
 
-  await recheck();
-  await assertLifecycleGeneration(state, target.stage, identity);
-  await previewTransaction(
-    targetEnv.DB,
-    [targetGuard(targetEnv.DB, beforeTarget, desiredSource)],
-    [
-      (DB) =>
-        configurePreviewTarget({ ...targetEnv, DB }, identity.incarnation, identity.builtCommit, privateKey),
-    ],
-  );
-  requireCondition(
-    canonical(await targetRevision(targetEnv.DB)) ===
-      canonical({ incarnation: identity.incarnation, commit_id: identity.builtCommit }),
-    'Target configuration readback differs',
-  );
-  await recheck();
-  await assertLifecycleGeneration(state, target.stage, identity);
-  await configureTargetPreviewBroker(
-    source.DB,
-    targetEnv.DB,
-    sourceOutput.sourceCommit,
-    identity.incarnation,
-    identity.builtCommit,
-    env.PREVIEW_BROKER_ENABLED === 'true',
-  );
-  await recheck();
-  await assertLifecycleGeneration(state, target.stage, identity);
-  await previewTransaction(
-    source.DB,
-    [sourceGuard(source.DB, identity.targetOrigin, beforeSource, desiredSource)],
-    [
-      (DB) =>
-        registerPreviewTarget(
-          { ...source, DB },
-          {
-            origin: identity.targetOrigin,
-            incarnation: identity.incarnation,
-            commit: identity.builtCommit,
-            publicKey: identity.publicKey,
-          },
-        ),
-    ],
-  );
-
-  // Persisted identity predates every side effect, including a lost register
-  // acknowledgement. Staleness retires this exact generation before returning.
   try {
     await recheck();
-  } catch (error) {
-    await retireLifecycle(state, target.stage, identity, env, async () => {}, fetcher);
-    throw error;
-  }
-
-  await assertLifecycleGeneration(state, target.stage, identity);
-  requireCondition(
-    canonical(await sourceRevision(source.DB, identity.targetOrigin)) === canonical(desiredSource),
-    'Source identity readback differs',
-  );
-  const executable = await verifySourceExecutable(identity.sourceOrigin, settings.executable, fetcher);
-
-  const publication = previewArtifactPublication(verified, artifact, {
-    subdomain: env.WORKERS_SUBDOMAIN ?? '',
-    sourceOrigin: identity.sourceOrigin,
-    incarnation: identity.incarnation,
-    executable,
-  });
-
-  if (env.PREVIEW_BROKER_ENABLED === 'true')
+    await assertLifecycleGeneration(state, target.stage, identity);
+    await previewTransaction(
+      targetEnv.DB,
+      [targetGuard(targetEnv.DB, beforeTarget, desiredSource)],
+      [
+        (DB) =>
+          configurePreviewTarget(
+            { ...targetEnv, DB },
+            identity.incarnation,
+            identity.builtCommit,
+            privateKey,
+          ),
+      ],
+    );
     requireCondition(
-      await verifySourceArenaReadback(publication, fetcher),
-      'Source broker/provider is not ready for live target publication',
+      canonical(await targetRevision(targetEnv.DB)) ===
+        canonical({ incarnation: identity.incarnation, commit_id: identity.builtCommit }),
+      'Target configuration readback differs',
+    );
+    await recheck();
+    await assertLifecycleGeneration(state, target.stage, identity);
+    await configureTargetPreviewBroker(
+      source.DB,
+      targetEnv.DB,
+      sourceOutput.sourceCommit,
+      identity.incarnation,
+      identity.builtCommit,
+      env.PREVIEW_BROKER_ENABLED === 'true',
+    );
+    await recheck();
+    await assertLifecycleGeneration(state, target.stage, identity);
+    await previewTransaction(
+      source.DB,
+      [sourceGuard(source.DB, identity.targetOrigin, beforeSource, desiredSource)],
+      [
+        (DB) =>
+          registerPreviewTarget(
+            { ...source, DB },
+            {
+              origin: identity.targetOrigin,
+              incarnation: identity.incarnation,
+              commit: identity.builtCommit,
+              publicKey: identity.publicKey,
+            },
+          ),
+      ],
     );
 
-  await recheck();
-  await assertLifecycleGeneration(state, target.stage, identity);
-  await registerPreviewArtifacts(source, parsePreviewArtifactManifest(source, JSON.stringify(publication)));
-
-  try {
+    // Persisted identity predates every side effect, including a lost register
+    // acknowledgement. Staleness retires this exact generation before returning.
     await recheck();
+
+    await assertLifecycleGeneration(state, target.stage, identity);
+    requireCondition(
+      canonical(await sourceRevision(source.DB, identity.targetOrigin)) === canonical(desiredSource),
+      'Source identity readback differs',
+    );
+    const executable = await verifySourceExecutable(identity.sourceOrigin, settings.executable, fetcher);
+
+    const publication = previewArtifactPublication(verified, artifact, {
+      subdomain: env.WORKERS_SUBDOMAIN ?? '',
+      sourceOrigin: identity.sourceOrigin,
+      incarnation: identity.incarnation,
+      executable,
+    });
+
+    if (env.PREVIEW_BROKER_ENABLED === 'true')
+      requireCondition(
+        await verifySourceArenaReadback(publication, fetcher),
+        'Source broker/provider is not ready for live target publication',
+      );
+
+    await recheck();
+    await assertLifecycleGeneration(state, target.stage, identity);
+    await registerPreviewArtifacts(source, parsePreviewArtifactManifest(source, JSON.stringify(publication)));
+
+    await recheck();
+
+    return publication;
   } catch (error) {
-    await retireLifecycle(state, target.stage, identity, env, async () => {}, fetcher);
+    if (error instanceof PreviewEligibilityChanged)
+      await retireLifecycle(state, target.stage, identity, env, async () => {}, fetcher);
     throw error;
   }
-
-  return publication;
 }

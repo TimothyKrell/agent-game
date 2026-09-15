@@ -26,7 +26,7 @@ const Query = Schema.Struct({
 export const LifecycleBatch = Schema.Struct({ batch: Schema.Array(Query) });
 
 /** Both unmodified application Workers, real databases and real Cloudflare-shaped transport. */
-export async function lifecycleFixture() {
+export async function lifecycleFixture(options: { targetMigrations?: boolean } = {}) {
   await mkdir('.tim27-lifecycle/runs', { recursive: true });
   const directory = await mkdtemp(resolve('.tim27-lifecycle/runs/worker-'));
   const artifactDirectory = resolve(directory, 'artifact');
@@ -99,17 +99,24 @@ export async function lifecycleFixture() {
     }),
   );
 
-  const targetOptions = (auth: string) =>
+  const targetOptions = (
+    auth: string,
+    deployed?: { bindings: Record<string, string>; scriptPath: string; assets: typeof common.assets },
+  ) =>
     convertV4MiniflareOptions({
       ...common,
+      scriptPath: deployed?.scriptPath ?? common.scriptPath,
+      assets: deployed?.assets ?? common.assets,
       d1Databases: { DB: lifecycleTargetId },
       d1Persist: resolve(directory, 'target-db'),
+      r2Persist: resolve(directory, 'target-r2'),
       bindings: {
         ...bindings,
         APP_URL: lifecycleTargetOrigin,
         ENVIRONMENT: 'preview',
         PREVIEW_SOURCE_URL: lifecycleSourceOrigin,
         BETTER_AUTH_SECRET: auth,
+        ...deployed?.bindings,
       },
       outboundService: async (request) => {
         if (new URL(request.url).origin !== lifecycleSourceOrigin)
@@ -128,7 +135,8 @@ export async function lifecycleFixture() {
   const sourceDB = await source.getD1Database('DB');
   let targetDB = await target.getD1Database('DB');
   await applyPlatformMigrations(sourceDB);
-  await applyPlatformMigrations(targetDB);
+
+  if (options.targetMigrations !== false) await applyPlatformMigrations(targetDB);
   const requests: { databaseId: string; body: typeof LifecycleBatch.Type }[] = [];
 
   const fetcher: typeof fetch = async (url, init) => {
@@ -197,6 +205,10 @@ export async function lifecycleFixture() {
     requests,
     setTargetAuth: async (auth: string) => {
       await target.setOptions(targetOptions(auth));
+      targetDB = await target.getD1Database('DB');
+    },
+    deployTarget: async (deployed: NonNullable<Parameters<typeof targetOptions>[1]>) => {
+      await target.setOptions(targetOptions(deployed.bindings.BETTER_AUTH_SECRET, deployed));
       targetDB = await target.getD1Database('DB');
     },
     env: {

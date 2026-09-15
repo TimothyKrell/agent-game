@@ -11,7 +11,7 @@ import {
   snapshotArtifact,
   validateArtifact,
 } from './preview-artifact.ts';
-import { GitHub, PullRequest, verifyManifestIdentity } from './preview-github.ts';
+import { GitHub, PullRequest, PreviewEligibilityChanged, verifyManifestIdentity } from './preview-github.ts';
 import type { VerifiedRun } from './preview-github.ts';
 import { branchContentForTarget } from './preview-content.ts';
 import type { ValidatedBranchContent } from './preview-content.ts';
@@ -115,11 +115,10 @@ export async function controllerDelivery(env: NodeJS.ProcessEnv) {
     verified,
     artifact,
     proof,
-    recheck: async () =>
-      requireCondition(
-        canonical(await github.verify(expected, controllerCommit)) === canonical(verified),
-        'PR/run changed before lifecycle write',
-      ),
+    recheck: async () => {
+      if (canonical(await github.verify(expected, controllerCommit)) !== canonical(verified))
+        throw new PreviewEligibilityChanged('PR/run changed before lifecycle write');
+    },
   };
 }
 
