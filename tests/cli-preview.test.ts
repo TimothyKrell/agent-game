@@ -8,9 +8,9 @@ import { generateKeyPairSync, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { unstable_dev } from 'wrangler';
 import { Schema } from 'effect';
-import { artifacts, hash } from '../.tim27-cli/artifacts';
+import { artifacts, hash } from './fixtures/cli-preview/artifacts';
 import type { ArtifactPin } from '../cli/preview-artifacts.mjs';
-import { completionChoice } from '../.tim27-cli/succession-choice';
+import { completionChoice } from './fixtures/cli-preview/succession-choice';
 import { Observation2Schema } from '../src/shared/succession';
 
 const run = promisify(execFile);
@@ -27,7 +27,7 @@ const target = `http://127.0.0.1:${portBase + 1}`;
 const other = `http://127.0.0.1:${portBase + 2}`;
 
 const evidenceDirectory =
-  process.env.TIM27_CLI_EVIDENCE_DIR ?? `.tim27-cli/runs/cli-${process.pid}-${randomUUID()}`;
+  process.env.TIM27_CLI_EVIDENCE_DIR ?? `test-results/cli-preview/cli-${process.pid}-${randomUUID()}`;
 
 const incarnation = 'cli-incarnation-1';
 
@@ -199,8 +199,8 @@ const match = async (response: Response) =>
   Schema.decodeUnknownSync(Schema.Struct({ matchId: Schema.String }))(await response.json());
 
 async function startWorker(origin: string, index: number) {
-  return unstable_dev('.tim27-cli/worker.ts', {
-    config: '.tim27-cli/wrangler.jsonc',
+  return unstable_dev('tests/fixtures/cli-preview/worker.ts', {
+    config: 'tests/fixtures/cli-preview/wrangler.jsonc',
     local: true,
     persist: true,
     persistTo: `${directory}/storage-${index}`,
@@ -253,7 +253,7 @@ beforeAll(async () => {
       'preview-cli-test',
       '--local',
       '--config',
-      '.tim27-cli/wrangler.jsonc',
+      'tests/fixtures/cli-preview/wrangler.jsonc',
       '--persist-to',
       store,
     ]);

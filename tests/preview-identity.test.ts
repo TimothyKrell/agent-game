@@ -52,7 +52,8 @@ let sourceGrant: string;
 const observations: string[] = [];
 
 const evidenceDirectory =
-  process.env.TIM27_IDENTITY_EVIDENCE_DIR ?? `.tim27/runs/identity-${process.pid}-${randomUUID()}`;
+  process.env.TIM27_IDENTITY_EVIDENCE_DIR ??
+  `test-results/preview-identity/identity-${process.pid}-${randomUUID()}`;
 
 async function freePort(): Promise<number> {
   const server = createServer();

@@ -267,7 +267,7 @@ export async function runnerFixture() {
         provideFreshArtifactStore,
         Effect.provideService(Stage, 'pr-27'),
         Effect.provideService(AlchemyContext, {
-          dotAlchemy: '.tim27-lifecycle/runs/runner',
+          dotAlchemy: 'test-results/preview-lifecycle/runner',
           dev: false,
           adopt: false,
         }),

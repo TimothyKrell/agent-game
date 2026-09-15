@@ -36,8 +36,8 @@ let source: string;
 let manifest: Manifest;
 
 beforeAll(async () => {
-  await mkdir('.tim27-deploy/runs', { recursive: true });
-  scratch = await mkdtemp(resolve('.tim27-deploy/runs/artifact-'));
+  await mkdir('test-results/preview-deploy', { recursive: true });
+  scratch = await mkdtemp(resolve('test-results/preview-deploy/artifact-'));
   source = resolve(scratch, 'build');
   execFileSync(process.execPath, ['scripts/produce-preview-artifact.ts', source], {
     env: {

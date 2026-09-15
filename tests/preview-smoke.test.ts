@@ -35,7 +35,7 @@ it('preserves a healthy completed preview after protocol-bearing health {} smoke
   ).json();
 
   await writeFile(
-    '.tim27-lifecycle/runs/smoke-health-schema.json',
+    'test-results/preview-lifecycle/smoke-health-schema.json',
     JSON.stringify(
       {
         smoke,
@@ -208,7 +208,7 @@ it('completes both scripted games with the actual Node smoke and native HTTP/soc
     { gameId: 'secret-overlord', status: 'finished' },
     { gameId: 'succession', status: 'finished' },
   ]);
-  await writeFile('.tim27-lifecycle/runs/smoke-schema-games.json', result.stdout);
+  await writeFile('test-results/preview-lifecycle/smoke-schema-games.json', result.stdout);
   await expect(fixture.failure()).rejects.toThrow('ENOENT');
   await fixture.finalize();
   expect((await retainedIdentity(fixture.runner.state, 'pr-27'))!.identity.retired).toBe(false);

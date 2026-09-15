@@ -146,8 +146,8 @@ it('rejects preview delivery when core checks pass but extended verification is 
 });
 
 it('executes the trusted command wrapper with hostile PR scripts present without selecting their config or command', async () => {
-  await mkdir('.tim27-deploy/runs', { recursive: true });
-  const trusted = await mkdtemp(resolve('.tim27-deploy/runs/command-'));
+  await mkdir('test-results/preview-deploy', { recursive: true });
+  const trusted = await mkdtemp(resolve('test-results/preview-deploy/command-'));
   const quarantine = resolve(trusted, 'quarantine');
   await mkdir(quarantine);
   await writeFile(
@@ -199,8 +199,8 @@ it('executes the trusted command wrapper with hostile PR scripts present without
 });
 
 it('posts honest tested-merge/artifact status and includes R2 in cleanup comments', async () => {
-  await mkdir('.tim27-deploy/runs', { recursive: true });
-  const scratch = await mkdtemp(resolve('.tim27-deploy/runs/comment-'));
+  await mkdir('test-results/preview-deploy', { recursive: true });
+  const scratch = await mkdtemp(resolve('test-results/preview-deploy/comment-'));
   const output = resolve(scratch, 'comment.json');
   const proofPath = resolve(scratch, 'proof.json');
   await writeFile(
@@ -267,8 +267,8 @@ it.each([
   ['disabled activation', 'false', 'synthetic-new-token'],
   ['missing new secret despite legacy token', 'true', ''],
 ])('refuses a privileged subprocess with %s', async (_label, enabled, token) => {
-  await mkdir('.tim27-deploy/runs', { recursive: true });
-  const scratch = await mkdtemp(resolve('.tim27-deploy/runs/gate-'));
+  await mkdir('test-results/preview-deploy', { recursive: true });
+  const scratch = await mkdtemp(resolve('test-results/preview-deploy/gate-'));
   const capture = resolve(scratch, 'CALLED');
   await writeFile(
     resolve(scratch, 'bun'),
@@ -312,8 +312,8 @@ it.each([
 ] as const)(
   'validates live state before cleanup: %s',
   async (_name, eventName, number, state, branch, sameRepo, accepted) => {
-    await mkdir('.tim27-deploy/runs', { recursive: true });
-    const scratch = await mkdtemp(resolve('.tim27-deploy/runs/manual-cleanup-'));
+    await mkdir('test-results/preview-deploy', { recursive: true });
+    const scratch = await mkdtemp(resolve('test-results/preview-deploy/manual-cleanup-'));
     const capture = resolve(scratch, 'invocation.json');
     const eventPath = resolve(scratch, 'event.json');
     const controller = resolve('scripts/preview-controller.ts');

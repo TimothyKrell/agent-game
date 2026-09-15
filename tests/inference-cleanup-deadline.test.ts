@@ -64,7 +64,7 @@ async function scenario(timing: 'ready' | 'future' | 'arriving', fail: boolean, 
     );
 
     const body = await response.text();
-    const directory = `.tim7/${process.env.TIM26_CLEANUP_NAME ?? 'cleanup-deadline'}`;
+    const directory = `test-results/inference/${process.env.TIM26_CLEANUP_NAME ?? 'cleanup-deadline'}`;
     await mkdir(directory, { recursive: true });
     await writeFile(
       `${directory}/${timing}-${fail ? 'failure' : 'success'}${cold ? '-cold' : ''}.json`,

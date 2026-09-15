@@ -31,7 +31,7 @@ type FailureMode =
 export async function controllerFixture() {
   const runner = await runnerFixture();
   const publication = await runner.run(runner.delivery());
-  const directory = await mkdtemp(resolve('.tim27-lifecycle/runs/controller-'));
+  const directory = await mkdtemp(resolve('test-results/preview-lifecycle/controller-'));
   await mkdir(resolve(directory, '.agent-game'));
   await mkdir(resolve(directory, 'bin'));
   await symlink(resolve('scripts'), resolve(directory, 'scripts'));

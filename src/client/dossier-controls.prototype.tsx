@@ -8,7 +8,7 @@ import type { DossierPictures } from './dossier-identity';
 import type { StoryModel, StorySeat } from './succession-story-types';
 import type { DossierStatus } from './dossier-summary';
 import './client.css';
-import pictureFixture from '../../.tim28/fixture.jpg';
+import pictureFixture from '../../tests/fixtures/agent-pictures/fixture.jpg';
 
 const pictures: DossierPictures = new Map([
   [

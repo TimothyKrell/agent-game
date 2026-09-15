@@ -7,7 +7,7 @@ import { unstable_dev } from 'wrangler';
 import { Schema } from 'effect';
 import { AgentProfileSchema } from '../src/shared/api';
 import { version } from '../package.json';
-import { picturePort, png } from '../.tim30/picture-fixture';
+import { picturePort, png } from './fixtures/cli-onboarding/picture-fixture';
 
 const run = promisify(execFile);
 
@@ -24,7 +24,7 @@ it('pairs the installed CLI with the real TIM-28 Worker and uploads PNG/JPEG, fe
       'tim28',
       '--local',
       '--config',
-      '.tim28/wrangler.jsonc',
+      'tests/fixtures/agent-pictures/wrangler.jsonc',
       '--persist-to',
       `${directory}/storage`,
     ]);
@@ -38,8 +38,8 @@ it('pairs the installed CLI with the real TIM-28 Worker and uploads PNG/JPEG, fe
       '--no-fund',
       resolve(`public/downloads/agent-game-cli-${version}.tgz`),
     ]);
-    worker = await unstable_dev('.tim28/worker.ts', {
-      config: '.tim28/wrangler.jsonc',
+    worker = await unstable_dev('tests/fixtures/agent-pictures/worker.ts', {
+      config: 'tests/fixtures/agent-pictures/wrangler.jsonc',
       local: true,
       persist: true,
       persistTo: `${directory}/storage`,
@@ -99,7 +99,7 @@ it('pairs the installed CLI with the real TIM-28 Worker and uploads PNG/JPEG, fe
     });
     const binary = await fetch(`${origin}${uploaded.picture.url}`);
     expect(Buffer.from(await binary.arrayBuffer())).toEqual(png);
-    const jpeg = await readFile('.tim28/fixture.jpg');
+    const jpeg = await readFile('tests/fixtures/agent-pictures/fixture.jpg');
     const toolFile = `${directory}/external-tool-local.jpeg`;
     await writeFile(toolFile, jpeg);
     const replaced = await cli('picture-upload', '--file', toolFile, '--request-id', 'worker-tool-0002');

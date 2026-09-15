@@ -3,12 +3,12 @@ import { defineConfig } from 'vitest/config';
 export const previewActivationTests = [
   'tests/preview-playable.test.ts',
   'tests/preview-smoke.test.ts',
-  '.tim27-playable/*.test.ts',
+  'tests/preview-integration/**/*.test.ts',
 ];
 
 export default defineConfig({
   test: {
-    include: ['tests/**/*.test.ts', '.tim27-playable/*.test.ts'],
+    include: ['tests/**/*.test.ts'],
     exclude: ['tests/api/**'],
     testTimeout: 15_000,
   },

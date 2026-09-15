@@ -20,5 +20,5 @@
 
 /* No Preflight. Add sources only when their consumers migrate. */
 @import 'tailwindcss/utilities.css' layer(utilities) prefix(tw) source(none);
-@source '../../.tim11/cascade.html';
+@source '../../dev/foundations/cascade.html';
 @source './ui';

@@ -47,7 +47,8 @@ const secret = () => randomBytes(32).toString('base64url');
 
 const hash = (text: string) => createHash('sha256').update(text).digest('hex');
 
-const evidenceRoot = process.env.TIM27_BROKER_EVIDENCE_DIR ?? `.tim27-broker/runs/native-${randomUUID()}`;
+const evidenceRoot =
+  process.env.TIM27_BROKER_EVIDENCE_DIR ?? `test-results/preview-broker/native-${randomUUID()}`;
 
 let evidence: string;
 

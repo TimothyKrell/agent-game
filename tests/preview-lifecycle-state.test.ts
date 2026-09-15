@@ -137,7 +137,7 @@ async function apply(state: StateService, attempt = 1, remove = false) {
       provideFreshArtifactStore,
       Effect.provideService(State, Effect.succeed(state)),
       Effect.provideService(AlchemyContext, {
-        dotAlchemy: '.tim27-lifecycle/runs/alchemy',
+        dotAlchemy: 'test-results/preview-lifecycle/alchemy',
         dev: false,
         adopt: false,
       }),
@@ -442,7 +442,7 @@ it('publishes real source GET artifacts and completes same-owner browser/agent h
   await apply(state, 2, true);
   expect(await retainedIdentity(state, 'pr-27')).toBeUndefined();
   await writeFile(
-    '.tim27-lifecycle/runs/integration.json',
+    'test-results/preview-lifecycle/integration.json',
     canonical({
       localOnly: true,
       syntheticGitHubIdentity: true,
