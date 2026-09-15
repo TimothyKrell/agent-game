@@ -26,6 +26,18 @@ The independent reviewer reran 27 verifier tests and preserved the changing-base
 
 ## Artifact coordination seam
 
-Parent commit **dc60060** adds source-published immutable artifact identities, migration0006 and read-only discovery. It passed **16 local D1/registry/repository cases** and static/build checks; independent review is running. The exact consumer/controller interface is in `TIM-27-artifact-registry.md`. Broker migration0005 is reserved separately. Publication requires the independently verified built commit and trusted source executable descriptor; no target-supplied executable becomes source-trusted.
+Parent commit **dc60060** adds source-published immutable artifact identities, migration0006 and read-only discovery. It passed **16 local D1/registry/repository cases** and static/build checks; independent Standards and Spec reviews each found zero new issues. The reviewer also reproduced a pre-existing close→fresh-incarnation trigger failure. Parent additive migration0007 in **54fc037** fixes that root cause while preserving0004. The reviewer confirmed closure after parent **17 registry/repository cases and 16 actual two-origin identity cases** passed.
+
+The exact consumer/controller interface is in `TIM-27-artifact-registry.md`. Broker migration0005 is reserved separately. Publication requires the independently verified built commit and trusted source executable descriptor; no target-supplied executable becomes source-trusted.
 
 This document records local integration, not hosted deployment, real-model gameplay or operating-budget reconciliation. Those remain coordinated acceptance work after the source/target, broker, CLI and trusted controller paths are combined and reviewed.
+
+## Identity/source-registry recovery archive
+
+The completed original identity worktree is archived at `/home/timothykrell/Code/agent-games-archive/TIM-27-identity-2026-09-15/`: **692 source/evidence entries and 1,511 parent/reviewer entries**, all member hashes verified. The bundle preserves both the original identity branch through4c2a97f and integration through54fc037, including parent artifact metadata and retirement corrections. Unchanged-source inventory, bundle verification and independent source recovery passed.
+
+- `worktree-evidence.tar.gz`: 37,357,485 bytes; SHA-256 `794a661916d21ff5cfe075bc4b390014fbffd029da161e9b8720aeb13f37a852`.
+- `lead-review-evidence.tar.gz`: 100,884,706 bytes; SHA-256 `460bdebbc997cf2282eaf0281e95d8df92d35035ae3153e68415e2a0aa5358ff`.
+- `repository.bundle`: SHA-256 `a67b3db7896c7cf86782d5845198bb6b6c823c8d28727388b4d0781eb7b6b3d6`.
+
+The active broker, CLI and trusted-deployment worktrees are separate. The completed identity worktree and merged local branch were retired after the final unchanged-source audit. This does not mark the overall TIM-27 issue complete.
