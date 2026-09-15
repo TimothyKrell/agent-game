@@ -216,6 +216,7 @@ interface Working {
   turnOwner: StoryValue<number | null>;
   executivePower: StoryRow['executivePower'];
   action: StoryValue<StoryAction>;
+  completed: Pick<StoryRow, 'action' | 'resolution' | 'turnOwner'> | null;
   resolution: StoryValue<StoryResolution>;
   loss: StoryValue<{ seat: number; reason: 'failed-claim' | 'failed-challenge' | 'action-effect' }>;
   targetLoss: StoryValue<number>;
@@ -230,6 +231,7 @@ function working(baseline?: Snapshot): Working {
     executor: unavailable('missing-baseline'),
     turnOwner: unavailable('missing-baseline'),
     action: unavailable('not-recorded'),
+    completed: null,
     executivePower: unavailable('missing-baseline'),
     resolution: unavailable('not-yet-resolved'),
     loss: unavailable('not-recorded'),
@@ -279,6 +281,7 @@ function invalidate(state: Working, reason: Missing): void {
   state.turnOwner = unavailable(reason);
   state.executivePower = unavailable(reason);
   state.action = unavailable(reason);
+  state.completed = null;
   state.resolution = unavailable(reason);
   state.loss = unavailable(reason);
   state.targetLoss = unavailable(reason);
@@ -876,6 +879,19 @@ export function buildSuccessionStory(input: StoryWindow): StoryModel {
 
     const fact = readStoryFact(event);
 
+    // One command can publish next-turn phase state before its private response/hand updates.
+    // Keep that causal tail separate from the active board, and expire it at the next activity.
+    const trailing =
+      fact.kind === 'reaction' || (fact.kind === 'private-cards' && fact.operation === 'hand-updated');
+
+    if (
+      !trailing &&
+      fact.kind !== 'audit' &&
+      fact.kind !== 'finished' &&
+      !(fact.kind === 'phase' && ['discussion', 'act-2:discussion'].includes(fact.phase))
+    )
+      state.completed = null;
+
     if (fact.kind === 'unavailable') {
       issues.push({ kind: 'incomplete-payload', after: event.id - 1, through: event.id });
       // Unknown rule facts may mutate resources. Do not carry stale known values across them.
@@ -914,6 +930,12 @@ export function buildSuccessionStory(input: StoryWindow): StoryModel {
     row.action = state.action;
     row.resolution = state.resolution;
 
+    if (trailing && state.completed) {
+      row.action = state.completed.action;
+      row.resolution = state.completed.resolution;
+      row.turnOwner = state.completed.turnOwner;
+    }
+
     const involved = [
       'declaration',
       'challenge-resolved',
@@ -939,6 +961,8 @@ export function buildSuccessionStory(input: StoryWindow): StoryModel {
     rows.push(structuredClone(row));
 
     if (fact.kind === 'turn-ended' || fact.kind === 'finished') {
+      if (state.action.status !== 'unavailable')
+        state.completed = { action: row.action, resolution: row.resolution, turnOwner: row.turnOwner };
       state.action = unavailable('not-applicable');
       state.resolution = unavailable('not-yet-resolved');
       state.loss = unavailable('not-recorded');
