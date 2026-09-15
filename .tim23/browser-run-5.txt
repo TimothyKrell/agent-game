@@ -1,0 +1,55 @@
+
+Running 6 tests using 1 worker
+
+  ✓  1 e2e/continuous-story.spec.ts:160:1 › reads 2,048 canonical messages forward/backward through eviction and revisits with a finite DOM (8.4s)
+  ✓  2 e2e/continuous-story.spec.ts:223:1 › holds geometry and focus across prepend, chapter closure, live growth and narrow keyboard reading (655ms)
+  ✘  3 e2e/continuous-story.spec.ts:277:1 › pauses hidden reading, follows successive frozen live heads, and recovers a network retry from an empty record (5.7s)
+  ✓  4 e2e/continuous-story.spec.ts:311:1 › uses document scrolling and retains a focused row across automatic prepending (605ms)
+  ✓  5 e2e/continuous-story.spec.ts:328:1 › keeps actual command mutation receipts independent of cancelled reading and newer authoritative current (382ms)
+  ✓  6 e2e/continuous-story.spec.ts:361:1 › fences pending reads on match A–B–A, keeps independent readers and recovers errors and epochs (1.1s)
+
+
+  1) e2e/continuous-story.spec.ts:277:1 › pauses hidden reading, follows successive frozen live heads, and recovers a network retry from an empty record
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  getByLabel('primary timeline', { exact: true })
+    Expected: "400"
+    Received: "364"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveAttribute" getByLabel('primary timeline', { exact: true }) with timeout 5000ms
+      - waiting for getByLabel('primary timeline', { exact: true })
+        - locator resolved to <div tabindex="0" aria-busy="true" data-story-window="" data-story-after="172" data-story-delivered="300" aria-label="primary timeline">…</div>
+        - unexpected value "300"
+        13 × locator resolved to <div tabindex="0" aria-busy="false" data-story-window="" data-story-after="236" data-story-delivered="364" aria-label="primary timeline">…</div>
+           - unexpected value "364"
+
+
+      305 |   control.fail = false;
+      306 |   await timeline(page).getByRole('button', { name: 'Retry', exact: true }).click();
+    > 307 |   await expect(timeline(page)).toHaveAttribute('data-story-delivered', '400');
+          |                                ^
+      308 |   expect(faults).toEqual([]);
+      309 | });
+      310 |
+        at /tmp/opencode/agent-game-TIM-23/e2e/continuous-story.spec.ts:307:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .tim23/browser-results/continuous-story-pauses-hi-8d287--retry-from-an-empty-record/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .tim23/browser-results/continuous-story-pauses-hi-8d287--retry-from-an-empty-record/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .tim23/browser-results/continuous-story-pauses-hi-8d287--retry-from-an-empty-record/trace.zip
+    Usage:
+
+        npx playwright show-trace .tim23/browser-results/continuous-story-pauses-hi-8d287--retry-from-an-empty-record/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/continuous-story.spec.ts:277:1 › pauses hidden reading, follows successive frozen live heads, and recovers a network retry from an empty record
+  5 passed (20.2s)

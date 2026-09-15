@@ -15,6 +15,7 @@ import type { MatchSnapshot } from '../game/contracts';
 import type { SecretOverlordState } from '../game/secret-overlord';
 import type { Evolution, SuccessionState } from '../game/succession/types';
 import { replayFrameSuccession } from '../game/succession/replay';
+import { observeSuccession } from '../game/succession/observation';
 import { decodeReplayCheckpoint } from '../game/succession/persistence';
 import { GameError } from '../game/types';
 import type { GameEvent, Observation } from '../game/types';
@@ -23,6 +24,7 @@ import type { RpcResult, TransportActionRequest } from '../shared/api';
 import { ActionRequest2Schema } from '../shared/succession';
 import type { HistoryPage2, Observation2, ReplayFrame2 } from '../shared/succession';
 import type { HistoryAnchor2, RoundIndex2 } from '../shared/history';
+import type { HistoryCheckpoint2 } from '../shared/history-checkpoint';
 import type { AgentPrincipal } from './auth';
 import type { HouseJob, HouseModelConfig } from './house-contract';
 import type { MatchInitialization } from './matchmaking';
@@ -756,6 +758,75 @@ export class MatchObject extends DurableObject<Env> {
     }
   }
 
+  async checkpoint(
+    principal: AgentPrincipal | null,
+    epoch: string | undefined,
+    through: number,
+    protocols: string,
+  ): Promise<RpcResult<HistoryCheckpoint2 | HistoryPage2>> {
+    try {
+      let state = this.load();
+      let audience = this.historyAudience(state, principal, protocols);
+
+      if (state.gameId !== 'succession') throw new Error('Invalid checkpoint game');
+
+      if (audience.terminal) {
+        await gameRegistry.succession.verifyReplayArchive(state);
+        // Archive verification awaits crypto. Recheck grant revocation and current entitlement afterward.
+        state = this.load();
+        audience = this.historyAudience(state, principal, protocols);
+      }
+
+      const metadata = this.history.metadata(audience);
+
+      if (epoch !== metadata.visibilityEpoch)
+        return { ok: true, value: this.history.page(state.id, audience, { epoch }) };
+      const position = this.history.checkpointPosition(audience, through);
+
+      const row = this.ctx.storage.sql
+        .exec<{ data: string }>(
+          'SELECT data FROM replay_frames WHERE id <= ? ORDER BY id DESC LIMIT 1',
+          position.eventId,
+        )
+        .toArray()[0];
+
+      let baseline: HistoryCheckpoint2['baseline'] = null;
+
+      if (row) {
+        const saved = decodeReplayCheckpoint(JSON.parse(row.data));
+
+        if (audience.terminal) baseline = replayFrameSuccession(saved, through, metadata.visibilityEpoch);
+        else {
+          const observation = observeSuccession(saved, audience.seat, {
+            visibilityEpoch: metadata.visibilityEpoch,
+            streamHead: through,
+          });
+
+          observation.decision = null;
+          observation.chat = { ...observation.chat, open: false, nextSpeakAt: null };
+
+          if (!position.privateEntitled) observation.private = null;
+          baseline = observation;
+        }
+      }
+
+      const value: HistoryCheckpoint2 = {
+        protocolVersion: '2',
+        gameId: 'succession',
+        matchId: state.id,
+        visibilityEpoch: metadata.visibilityEpoch,
+        through,
+        baseline,
+      };
+
+      if (jsonBytes(value) > 34_816) throw new Error('Historical checkpoint exceeds its bounded envelope');
+
+      return { ok: true, value };
+    } catch (error) {
+      return { ok: false, error: fault(error) };
+    }
+  }
+
   async replay(
     principal: AgentPrincipal | null,
     epoch: string | undefined,
@@ -810,11 +881,6 @@ export class MatchObject extends DurableObject<Env> {
       const state = this.load();
       const audience = this.historyAudience(state, principal, protocols);
 
-      if (!audience.terminal)
-        throw new GameError(
-          'replay-not-ready',
-          'The complete round index is available after overall termination.',
-        );
       const metadata = this.history.metadata(audience);
 
       if (epoch !== metadata.visibilityEpoch)
@@ -828,16 +894,21 @@ export class MatchObject extends DurableObject<Env> {
 
       if (rows.length > 42) throw new Error('Round index exceeds the rules bound');
 
-      const rounds = rows.map((row): RoundIndex2['rounds'][number] => {
+      const rounds = rows.flatMap((row): RoundIndex2['rounds'] => {
         if (row.act !== 1 && row.act !== 2) throw new Error('Invalid indexed act');
+        const through = audience.terminal ? row.through_id : this.history.anchor(audience, row.event_key);
 
-        return {
-          key: `act-${row.act}:${row.act === 1 ? 'election' : 'table'}-${row.round}`,
-          act: row.act,
-          round: row.round,
-          through: row.through_id,
-          eventKey: row.event_key,
-        };
+        if (through === null) return [];
+
+        return [
+          {
+            key: `act-${row.act}:${row.act === 1 ? 'election' : 'table'}-${row.round}`,
+            act: row.act,
+            round: row.round,
+            through,
+            eventKey: row.event_key,
+          },
+        ];
       });
 
       return {

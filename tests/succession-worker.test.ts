@@ -9,6 +9,11 @@ import type { GameId } from '../src/game/contracts';
 import { previewAction } from '../src/game/preview';
 import type { QueueStatus } from '../src/shared/api';
 import type { FixtureController, FixtureInspection } from './fixtures/succession-worker';
+import { Schema } from 'effect';
+import { HistoryCheckpoint2Schema } from '../src/shared/history-checkpoint';
+import type { HistoryCheckpoint2 } from '../src/shared/history-checkpoint';
+import type { RoundIndex2 } from '../src/shared/history';
+import { buildSuccessionStory } from '../src/client/succession-story';
 
 type RunningWorker = Awaited<ReturnType<typeof unstable_dev>>;
 
@@ -199,6 +204,19 @@ async function views(matchId: string, controllers: FixtureController[]): Promise
   return Promise.all(
     controllers.map((controller) => data<Observation2>(`/api/matches/${matchId}`, controller)),
   );
+}
+
+async function checkpoint(
+  view: Observation2,
+  controller?: FixtureController,
+  through = view.history.streamHead,
+): Promise<HistoryCheckpoint2> {
+  const value = await data(
+    `/api/matches/${view.matchId}/checkpoint?epoch=${view.history.visibilityEpoch}&through=${through}`,
+    controller,
+  );
+
+  return Schema.decodeUnknownSync(HistoryCheckpoint2Schema)(value);
 }
 
 async function drive(
@@ -615,6 +633,25 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     const beforePublic = await data<Observation2>(`/api/matches/${matchId}`);
     const beforeOther = await data<Observation2>(`/api/matches/${matchId}`, controllers[1]);
     const firstVote = action(voting.seats[0]);
+    const historicalPublic = await checkpoint(beforePublic);
+    const historicalSeat = await checkpoint(voting.seats[0], controllers[0]);
+    expect(historicalPublic.baseline).toMatchObject({
+      private: null,
+      you: null,
+      decision: null,
+      chat: { open: false },
+      commitment: { reveal: null },
+    });
+    expect(historicalPublic.baseline && 'archive' in historicalPublic.baseline).toBe(false);
+    expect(historicalSeat.baseline?.private).toEqual(voting.seats[0].private);
+    expect((await checkpoint(beforePublic, undefined, 0)).through).toBe(0);
+    expect(
+      (
+        await request(
+          `/api/matches/${matchId}/replay?epoch=${beforePublic.history.visibilityEpoch}&through=0`,
+        )
+      ).status,
+    ).toBe(409);
 
     const downgraded = await request('/api/queue', controllers[0], {
       headers: { 'X-Agent-Game-Protocols': '' },
@@ -642,6 +679,8 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     expect(unrelated.frames).toHaveLength(1);
     expect(await data(`/api/matches/${matchId}`)).toEqual(beforePublic);
     expect(await data(`/api/matches/${matchId}`, controllers[1])).toEqual(beforeOther);
+    expect(await checkpoint(beforePublic)).toEqual(historicalPublic);
+    expect(await checkpoint(voting.seats[0], controllers[0])).toEqual(historicalSeat);
     await Promise.all(
       voting.seats.slice(1, 9).map((view, index) => submit(matchId, controllers[index + 1], action(view))),
     );
@@ -663,11 +702,29 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     );
 
     expect((await request(`/api/matches/${matchId}`, alternate)).status).toBe(403);
+    expect(
+      (
+        await request(
+          `/api/matches/${matchId}/checkpoint?epoch=${beforePublic.history.visibilityEpoch}&through=0`,
+          alternate,
+        )
+      ).status,
+    ).toBe(403);
     unrelated.socket.close();
     expect((await data<Observation2>(`/api/matches/${matchId}`, controllers[1])).you?.forfeited).toBe(false);
     const returned = await drive(matchId, controllers, (view) => view.act === 2);
     expect(returned.publicView).toMatchObject({ status: 'active', result: null, finishedAt: null });
     expect(returned.publicView.seats.every((seat) => seat.alive && seat.influence === 2)).toBe(true);
+
+    const liveIndex = await data<RoundIndex2>(
+      `/api/matches/${matchId}/rounds?epoch=${returned.publicView.history.visibilityEpoch}`,
+    );
+
+    const returnLandmark = liveIndex.rounds.find((round) => round.act === 2)!;
+    const liveReturn = await checkpoint(returned.publicView, undefined, returnLandmark.through);
+    expect(liveReturn.baseline?.seats.every((seat) => seat.alive && seat.influence === 2)).toBe(true);
+    expect(liveReturn.baseline?.private).toBeNull();
+    expect(await checkpoint(beforePublic)).toEqual(historicalPublic);
 
     for (const seat of returned.publicView.seats)
       expect(seat.coins).toBe(2 + (returned.publicView.act1Result?.bonuses[seat.number] ?? -1));
@@ -832,11 +889,46 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     expect(oldBoard).toMatchObject({ act: 1, status: 'active', result: null });
     expect(returnBoard).toMatchObject({ act: 2, status: 'active', result: null });
     expect(returnBoard.seats.every((seat) => seat.alive && seat.influence === 2)).toBe(true);
+    expect((await checkpoint(finished.publicView, undefined, secondAct.id)).baseline).toEqual(returnBoard);
+    expect(
+      await data(
+        `/api/matches/${matchId}/checkpoint?epoch=${beforePublic.history.visibilityEpoch}&through=0`,
+      ),
+    ).toMatchObject({ reset: true, events: [] });
+
+    for (const event of events.filter((entry) =>
+      ['executed', 'influence-lost', 'act-started'].includes(entry.type),
+    )) {
+      const before = await checkpoint(finished.publicView, undefined, event.id - 1);
+      const at = await checkpoint(finished.publicView, undefined, event.id);
+
+      const model = buildSuccessionStory({
+        scope: { matchId, visibilityEpoch: reset.visibilityEpoch },
+        after: event.id - 1,
+        through: event.id,
+        baseline: before.baseline ?? undefined,
+        events: [event],
+      });
+
+      expect(
+        model.end.map((seat) => (seat.alive.status === 'unavailable' ? null : seat.alive.value)),
+      ).toEqual(at.baseline?.seats.map((seat) => seat.alive));
+    }
+
     const finalSnapshot = await data<Settlement>(`/__fixture/matches/${matchId}/settlement`);
     await submit(matchId, controllers[0], firstVote);
     expect(await data(`/__fixture/matches/${matchId}/settlement`)).toEqual(finalSnapshot);
     expect(spectator.frames.every((frame) => Buffer.byteLength(frame) <= 16_384)).toBe(true);
     expect(watching.frames.every((frame) => Buffer.byteLength(frame) <= 16_384)).toBe(true);
+    await data(`/__fixture/matches/${matchId}/revoke?grantId=${controllers[0].grantId}`);
+    expect(
+      (
+        await request(
+          `/api/matches/${matchId}/checkpoint?epoch=${reset.visibilityEpoch}&through=0`,
+          controllers[0],
+        )
+      ).status,
+    ).toBe(403);
   }, 180_000);
 
   it('runs mixed house fill through resurrection, actual timeout takeover, restart and final forfeit credit', async () => {
@@ -854,6 +946,8 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
     );
 
     const obsolete = action(externalTurn.seats[0]);
+    const beforeTakeover = await checkpoint(externalTurn.seats[0], controllers[0]);
+    expect(beforeTakeover.baseline?.private).not.toBeNull();
     await clock(matchId, externalTurn.publicView, 'grace');
 
     const forfeited = await until(
@@ -863,6 +957,8 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
 
     expect(forfeited.private).toBeNull();
     expect(forfeited.status).toBe('active');
+    expect(await checkpoint(externalTurn.seats[0], controllers[0])).toEqual(beforeTakeover);
+    expect((await checkpoint(forfeited, controllers[0])).baseline?.private).toBeNull();
     expect(
       (
         await request(`/api/matches/${matchId}/actions`, controllers[0], {
