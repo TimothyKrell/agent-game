@@ -1,0 +1,21 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "agent-game-coding-finale-lab",
+  "main": "./worker.ts",
+  "compatibility_date": "2026-09-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "vars": { "LAB_TOKEN": "" },
+  "containers": [
+    { "class_name": "FinaleSandbox", "image": "./Dockerfile", "instance_type": "lite", "max_instances": 12 },
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "FINALES", "class_name": "FinaleObject" },
+      { "name": "SANDBOXES", "class_name": "FinaleSandbox" },
+    ],
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["FinaleObject", "FinaleSandbox"] }],
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+}

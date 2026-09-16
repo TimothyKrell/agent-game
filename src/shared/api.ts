@@ -4,6 +4,10 @@ import type { ActionRequest, Observation, Role } from '../game/types';
 import type { GameDescriptor, GameId } from '../game/contracts';
 import type { ActionRequest2, IndividualResult2 } from './succession';
 import { Action2Schema, Observation2Schema } from './succession';
+import { ProgramSchema } from '../game/coding-finale/types';
+import { RoutingInputSchema } from '../game/coding-finale/routing';
+import { IndividualResult3Schema } from './coding-finale';
+import type { ActionRequest3, IndividualResult3 } from './coding-finale';
 
 export const AuthProviderSchema = Schema.Literals(['github', 'google']);
 
@@ -30,11 +34,31 @@ export const ActionRequestSchema = Schema.Struct({
 });
 
 export const TransportActionRequestSchema = Schema.Struct({
-  gameId: Schema.optional(Schema.Literals(['secret-overlord', 'succession'])),
+  gameId: Schema.optional(Schema.Literals(['secret-overlord', 'succession', 'coding-finale'])),
   actionId: Schema.String,
   phaseId: Schema.String,
   decisionId: Schema.optional(Schema.String),
-  action: Action2Schema,
+  action: Schema.Union([
+    Action2Schema,
+    Schema.Struct({
+      type: Schema.Literal('submit-program'),
+      challengeId: Schema.String,
+      tier: Schema.Literals([1, 2]),
+      program: ProgramSchema.check(
+        Schema.makeFilter((value) => new TextEncoder().encode(value.source).length <= 32768),
+      ),
+    }),
+  ]),
+});
+
+export const CodingPracticeSchema = Schema.Struct({
+  program: ProgramSchema.check(
+    Schema.makeFilter((value) => new TextEncoder().encode(value.source).length <= 32768),
+  ),
+  inputs: Schema.mutable(Schema.Array(RoutingInputSchema)).check(
+    Schema.isMinLength(1),
+    Schema.isMaxLength(8),
+  ),
 });
 
 export type TransportActionRequest = typeof TransportActionRequestSchema.Type;
@@ -56,17 +80,17 @@ export const PairStartSchema = Schema.Struct({ installation: Schema.String, toke
 
 export const PairApproveSchema = Schema.Struct({ code: Schema.String, agentId: Schema.String });
 
-export const GameIdSchema = Schema.Literals(['secret-overlord', 'succession']);
+export const GameIdSchema = Schema.Literals(['secret-overlord', 'succession', 'coding-finale']);
 
 export const GameSelectionSchema = Schema.Struct({ gameId: Schema.optional(GameIdSchema) });
 
 export const GameDescriptorSchema: Schema.Codec<GameDescriptor> = Schema.Struct({
   gameId: GameIdSchema,
   displayName: Schema.String,
-  rulesVersion: Schema.Literals(['secret-overlord-1', 'succession-1']),
-  ratingPoolId: Schema.Literals(['secret-overlord-1', 'succession-1']),
+  rulesVersion: Schema.Literals(['secret-overlord-1', 'succession-1', 'coding-finale-1']),
+  ratingPoolId: Schema.Literals(['secret-overlord-1', 'succession-1', 'coding-finale-1']),
   ratingVersion: Schema.Literals(['team-elo-1', 'winner-softmax-1']),
-  protocolVersion: Schema.Literals(['1', '2']),
+  protocolVersion: Schema.Literals(['1', '2', '3']),
   playerCount: Schema.Literal(10),
   rulesUrl: Schema.String,
   ratingUrl: Schema.String,
@@ -97,6 +121,7 @@ export const QueueCancelSchema = Schema.Struct({
 export type ApiRequestBody =
   | ActionRequest
   | ActionRequest2
+  | ActionRequest3
   | { gameId?: GameId }
   | typeof NameSchema.Type
   | typeof PairStartSchema.Type
@@ -189,13 +214,18 @@ export interface SuccessionSummary {
   winReason: string | null;
 }
 
-export type GameMatchSummary = MatchSummary | SuccessionSummary;
+export interface CodingFinaleSummary extends Omit<SuccessionSummary, 'gameId' | 'result'> {
+  gameId: 'coding-finale';
+  result: IndividualResult3 | null;
+}
+
+export type GameMatchSummary = MatchSummary | SuccessionSummary | CodingFinaleSummary;
 
 export interface QueueStatus {
   requestId?: string | null;
   gameId?: GameId | null;
-  rulesVersion?: 'secret-overlord-1' | 'succession-1' | null;
-  protocolVersion?: '1' | '2' | null;
+  rulesVersion?: 'secret-overlord-1' | 'succession-1' | 'coding-finale-1' | null;
+  protocolVersion?: '1' | '2' | '3' | null;
   status: 'idle' | 'queued' | 'starting' | 'matched';
   matchId: string | null;
   joinedAt: number | null;
@@ -232,7 +262,7 @@ export interface ApiFault {
   status: number;
   gameId?: GameId;
   matchId?: string;
-  requiredProtocolVersion?: '2';
+  requiredProtocolVersion?: '2' | '3';
   rulesUrl?: string;
   cliUrl?: string;
 }
@@ -348,13 +378,25 @@ export const SuccessionSummarySchema = Schema.Struct({
   winReason: Schema.NullOr(Schema.String),
 }) satisfies Schema.Codec<SuccessionSummary>;
 
-export const GameMatchSummarySchema = Schema.Union([SuccessionSummarySchema, MatchSummarySchema]);
+export const CodingFinaleSummarySchema = Schema.Struct({
+  ...SuccessionSummarySchema.fields,
+  gameId: Schema.Literal('coding-finale'),
+  result: Schema.NullOr(IndividualResult3Schema),
+}) satisfies Schema.Codec<CodingFinaleSummary>;
+
+export const GameMatchSummarySchema = Schema.Union([
+  CodingFinaleSummarySchema,
+  SuccessionSummarySchema,
+  MatchSummarySchema,
+]);
 
 export const QueueStatusSchema = Schema.Struct({
   requestId: Schema.optional(Schema.NullOr(Schema.String)),
   gameId: Schema.optional(Schema.NullOr(GameIdSchema)),
-  rulesVersion: Schema.optional(Schema.NullOr(Schema.Literals(['secret-overlord-1', 'succession-1']))),
-  protocolVersion: Schema.optional(Schema.NullOr(Schema.Literals(['1', '2']))),
+  rulesVersion: Schema.optional(
+    Schema.NullOr(Schema.Literals(['secret-overlord-1', 'succession-1', 'coding-finale-1'])),
+  ),
+  protocolVersion: Schema.optional(Schema.NullOr(Schema.Literals(['1', '2', '3']))),
   status: Schema.Literals(['idle', 'queued', 'starting', 'matched']),
   matchId: Schema.NullOr(Schema.String),
   joinedAt: Schema.NullOr(Schema.Number),
@@ -439,6 +481,7 @@ export const GameAgentHistorySchema = Schema.Struct({
   history: Schema.mutable(
     Schema.Array(
       Schema.Union([
+        Schema.Struct({ ...CodingFinaleSummarySchema.fields, ...ParticipationFields }),
         Schema.Struct({ ...MatchSummarySchema.fields, ...ParticipationFields }),
         Schema.Struct({
           ...SuccessionSummarySchema.fields,
@@ -475,7 +518,7 @@ export const ErrorResponseSchema = Schema.Struct({
     status: Schema.optional(Schema.Number),
     gameId: Schema.optional(GameIdSchema),
     matchId: Schema.optional(Schema.String),
-    requiredProtocolVersion: Schema.optional(Schema.Literals(['1', '2'])),
+    requiredProtocolVersion: Schema.optional(Schema.Literals(['1', '2', '3'])),
     rulesUrl: Schema.optional(Schema.String),
     cliUrl: Schema.optional(Schema.String),
   }),

@@ -13,8 +13,13 @@ beforeAll(async () => {
     port: 0,
     inspectorPort: 0,
     logLevel: 'error',
-    vars: { ENVIRONMENT: 'production', APP_URL: origin },
-    experimental: { forceLocal: true, disableExperimentalWarning: true, watch: false },
+    vars: { ENVIRONMENT: 'production', APP_URL: origin, CODING_MAX_CONCURRENT_MATCHES: '0' },
+    experimental: {
+      forceLocal: true,
+      disableExperimentalWarning: true,
+      watch: false,
+      enableContainers: false,
+    },
   });
 }, 30_000);
 
@@ -27,7 +32,7 @@ it('serves copyable onboarding with an explicit origin, versioned archive and UT
   expect(response.status).toBe(200);
   expect(response.headers.get('content-type')).toBe('text/markdown; charset=utf-8');
   const text = await response.text();
-  expect(text).toContain(`/downloads/agent-game-cli-0.3.0.tgz`);
+  expect(text).toContain(`/downloads/agent-game-cli-0.4.0.tgz`);
   expect(text).toMatch(/https?:\/\/[^\s]+\/agents\.md/);
   expect(text).toContain('/agent-game');
   expect(text).not.toContain('{{');

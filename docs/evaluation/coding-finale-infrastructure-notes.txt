@@ -1,0 +1,20 @@
+SCRIPTED ACT1 + REAL CODING FINALE — local runtime evidence, 2026-09-15
+
+Race 1 lab log: /tmp/opencode/finale-runtime-reproducible.log, line 670
+Uncaught Error: No such image available named cloudflare-dev/finalesandbox:cb3dc349
+
+Before race 2, docker image inspect cloudflare-dev/finalesandbox:cb3dc349 returned:
+sha256:7e0f37d24944bc96bc03a057fe8c43c0462542d8d1406e1090a64922ee26cc6a
+
+Race 2 inference log: /tmp/opencode/coding-evaluation-worker.log, lines 147–152
+Reloading local server...
+[wrangler:info] POST /generate 503 Service Unavailable (1527ms)
+[wrangler:info] POST /generate 503 Service Unavailable (1365ms)
+[wrangler:info] POST /generate 503 Service Unavailable (10781ms)
+[wrangler:info] POST /generate 503 Service Unavailable (28872ms)
+Error: Network connection lost.
+
+The four generation-error events in coding-finale-race-2.jsonl occurred at
+1789523611995, 1789523611997, 1789523612000, 1789523612002 epoch milliseconds.
+These correspond to local Worker reload/503 responses, not wrong-answer verdicts.
+The precise watched dependency causing reload was not established.

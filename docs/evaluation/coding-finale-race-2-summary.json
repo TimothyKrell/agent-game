@@ -1,0 +1,197 @@
+{
+  "label": "SCRIPTED ACT1 + REAL CODING FINALE",
+  "race": 2,
+  "matchId": "2e518124-7c50-44e0-a624-7fa1d5cab21c",
+  "startedAt": 1789523469191,
+  "finishedObservedAt": 1789523722841,
+  "winner": {
+    "winnerSeat": 0,
+    "credited": true,
+    "reason": "tier-two",
+    "submission": 12
+  },
+  "winningReceiptSeconds": 253.332,
+  "knownUsageUsd": 0.06326968699999999,
+  "unknownUsageReservedUsd": 0.058606868,
+  "accountedUsd": 0.121876555,
+  "inputTokens": 82534,
+  "outputTokens": 50874,
+  "calls": 60,
+  "completedCalls": 56,
+  "interruptedCalls": 4,
+  "practiceRuns": 28,
+  "practiceMedianMs": 56,
+  "formalPostCount": 26,
+  "uniqueReceipts": 12,
+  "duplicates": 14,
+  "filesAtStart": {
+    "src/server/coding-house.ts": "80700c07313c53a63e0239397d4fa34f751b64c8d9cd6a7d869b4b9833936852",
+    "src/server/house-model.ts": "513daffb41feadbde584816d1a2f1143a8fd7901a96ccf5bbac71aed12a1c0c0",
+    "scripts/coding-evaluation-worker.ts": "aaf156215bc9c05beea8f28cba1b1d2c310b8b477270ba57d00b1fbd9d1d2e6f",
+    "scripts/coding-experiments.mjs": "cbaa32f5f98b24c2ed538cc868dd81d2ef149e7ee115bfe1aaf6d8b715d42d05"
+  },
+  "filesAtEnd": {
+    "src/server/coding-house.ts": "80700c07313c53a63e0239397d4fa34f751b64c8d9cd6a7d869b4b9833936852",
+    "src/server/house-model.ts": "513daffb41feadbde584816d1a2f1143a8fd7901a96ccf5bbac71aed12a1c0c0",
+    "scripts/coding-evaluation-worker.ts": "aaf156215bc9c05beea8f28cba1b1d2c310b8b477270ba57d00b1fbd9d1d2e6f",
+    "scripts/coding-experiments.mjs": "cbaa32f5f98b24c2ed538cc868dd81d2ef149e7ee115bfe1aaf6d8b715d42d05"
+  },
+  "contestants": [
+    {
+      "seat": 0,
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "calls": 20,
+      "completedCalls": 19,
+      "medianCompletedCallMs": 12386,
+      "practiceRuns": 10,
+      "accountedUsd": 0.01328014,
+      "completedTier": 2,
+      "submissions": [
+        {
+          "sequence": 2,
+          "seat": 0,
+          "tier": 1,
+          "receivedAt": 1789523507039,
+          "status": "judged",
+          "verdict": "wrong-answer",
+          "elapsedSeconds": 37.848
+        },
+        {
+          "sequence": 9,
+          "seat": 0,
+          "tier": 1,
+          "receivedAt": 1789523661391,
+          "status": "judged",
+          "verdict": "passed",
+          "elapsedSeconds": 192.2
+        },
+        {
+          "sequence": 11,
+          "seat": 0,
+          "tier": 2,
+          "receivedAt": 1789523686562,
+          "status": "judged",
+          "verdict": "wrong-answer",
+          "elapsedSeconds": 217.371
+        },
+        {
+          "sequence": 12,
+          "seat": 0,
+          "tier": 2,
+          "receivedAt": 1789523722523,
+          "status": "judged",
+          "verdict": "passed",
+          "elapsedSeconds": 253.332
+        }
+      ]
+    },
+    {
+      "seat": 2,
+      "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      "calls": 10,
+      "completedCalls": 9,
+      "medianCompletedCallMs": 26163,
+      "practiceRuns": 4,
+      "accountedUsd": 0.049159440000000006,
+      "completedTier": 1,
+      "submissions": [
+        {
+          "sequence": 3,
+          "seat": 2,
+          "tier": 1,
+          "receivedAt": 1789523522535,
+          "status": "judged",
+          "verdict": "passed",
+          "elapsedSeconds": 53.344
+        },
+        {
+          "sequence": 6,
+          "seat": 2,
+          "tier": 2,
+          "receivedAt": 1789523600550,
+          "status": "judged",
+          "verdict": "wrong-answer",
+          "elapsedSeconds": 131.359
+        }
+      ]
+    },
+    {
+      "seat": 3,
+      "model": "@cf/zai-org/glm-4.7-flash",
+      "calls": 20,
+      "completedCalls": 19,
+      "medianCompletedCallMs": 11465,
+      "practiceRuns": 10,
+      "accountedUsd": 0.012916400000000003,
+      "completedTier": 0,
+      "submissions": [
+        {
+          "sequence": 1,
+          "seat": 3,
+          "tier": 1,
+          "receivedAt": 1789523500413,
+          "status": "judged",
+          "verdict": "wrong-answer",
+          "elapsedSeconds": 31.222
+        },
+        {
+          "sequence": 7,
+          "seat": 3,
+          "tier": 1,
+          "receivedAt": 1789523602173,
+          "status": "judged",
+          "verdict": "wrong-answer",
+          "elapsedSeconds": 132.982
+        },
+        {
+          "sequence": 8,
+          "seat": 3,
+          "tier": 1,
+          "receivedAt": 1789523633834,
+          "status": "judged",
+          "verdict": "wrong-answer",
+          "elapsedSeconds": 164.643
+        }
+      ]
+    },
+    {
+      "seat": 7,
+      "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      "calls": 10,
+      "completedCalls": 9,
+      "medianCompletedCallMs": 24989,
+      "practiceRuns": 4,
+      "accountedUsd": 0.046520575,
+      "completedTier": 0,
+      "submissions": [
+        {
+          "sequence": 4,
+          "seat": 7,
+          "tier": 1,
+          "receivedAt": 1789523534449,
+          "status": "judged",
+          "verdict": "runtime-error",
+          "elapsedSeconds": 65.258
+        },
+        {
+          "sequence": 5,
+          "seat": 7,
+          "tier": 1,
+          "receivedAt": 1789523582164,
+          "status": "judged",
+          "verdict": "wrong-answer",
+          "elapsedSeconds": 112.973
+        },
+        {
+          "sequence": 10,
+          "seat": 7,
+          "tier": 1,
+          "receivedAt": 1789523669847,
+          "status": "judged",
+          "verdict": "wrong-answer",
+          "elapsedSeconds": 200.656
+        }
+      ]
+    }
+  ]
+}

@@ -475,4 +475,65 @@ describe('platform migration and game-scoped repository', () => {
       env.DB.prepare('UPDATE matches SET result_applied=0 WHERE id=?').bind(active.id).run(),
     ).rejects.toThrow('match-terminal-integrity');
   });
+
+  it('indexes coding summaries and settles all ten original seats exactly once in an independent pool', async () => {
+    const state = await fixture('coding-final');
+
+    if (state.summary.gameId !== 'succession') throw new Error('Expected modern fixture');
+    const previousSuccession = await findAgent(env, 'external', 'succession');
+    state.snapshot = { ...state.snapshot, ...gameDescriptor('coding-finale') };
+    state.result = {
+      kind: 'individual',
+      winnerSeat: 0,
+      credited: true,
+      reason: 'tier-two',
+      submission: 7,
+      act1: { team: 'cooperative', reason: 'safeguards' },
+    };
+    state.summary = {
+      ...state.summary,
+      gameId: 'coding-finale',
+      result: state.result,
+      winReason: 'tier-two',
+    };
+
+    const credit = {
+      ...settlement(state),
+      gameId: 'coding-finale' as const,
+      ratingPoolId: 'coding-finale-1',
+    };
+
+    expect(await findAgent(env, 'external', 'coding-finale')).toMatchObject({ rating: 1000, games: 0 });
+    await Promise.all([finalizeRatings(env, state, 9, credit), finalizeRatings(env, state, 9, credit)]);
+    expect(await findAgent(env, 'external', 'coding-finale')).toMatchObject({
+      rating: 1028.8,
+      games: 1,
+      wins: 1,
+      placements: 1,
+    });
+    expect(await findAgent(env, 'external', 'succession')).toEqual(previousSuccession);
+    expect((await env.DB.prepare('SELECT * FROM agents ORDER BY id').all()).results).toEqual(legacyAgents);
+    expect(
+      await env.DB.prepare(
+        "SELECT sum(games) games,sum(wins) wins,sum(placements) placements FROM agent_game_stats WHERE game_id='coding-finale'",
+      ).first(),
+    ).toEqual({ games: 10, wins: 1, placements: 10 });
+    expect((await matchList(env, false, 20, 'coding-finale'))[0]).toMatchObject({
+      gameId: 'coding-finale',
+      result: state.result,
+      entrants: expect.arrayContaining([{ number: 0, agentId: 'external', name: 'Contender' }]),
+    });
+    expect((await agentHistory(env, 'external', 'coding-finale'))[0]).toMatchObject({
+      won: true,
+      delta: 28.8,
+      agentResult: { winningSeat: true, creditedWin: true },
+      act1: { role: 'cooperative', winner: 'cooperative' },
+    });
+    expect(await listAgents(env, { gameId: 'coding-finale' })).toHaveLength(1);
+    const conflicting = structuredClone(credit);
+    conflicting.ratingPoolId = 'succession-1';
+    await expect(finalizeRatings(env, state, 9, conflicting)).rejects.toMatchObject({
+      code: 'integrity-error',
+    });
+  });
 });

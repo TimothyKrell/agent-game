@@ -12,4 +12,6 @@ The current packaging script copies retained archives to `public/downloads` on e
 
 The packager normalizes staged regular files to mode0644, with the CLI entrypoint at0755, before creating an archive. Local checkout permissions therefore do not change its digest. It packs the candidate in a temporary directory and compares it byte-for-byte with any retained archive of the same filename. Identical rebuilds retain the released bytes; a changed candidate fails with an instruction to bump the application version, before it can replace the public archive.
 
-Version0.3.0 is still release preparation. Its normalized development archive has18 regular files,53,767 bytes and SHA-256 `a0d4f7b0199efa6144c2fa84f51116820d747d575643afc63edf2b13cf24e635`. No hosted release attestation is implied. See `docs/evidence/TIM-27-cli-release-guard.md` for the actual-pack red/green evidence.
+`agent-game-cli-0.3.0.tgz` preserves the deployed archive downloaded from `https://agent-game.tk-d86.workers.dev/downloads/agent-game-cli-0.3.0.tgz` on 2026-09-16 before preparing Coding Finale version 0.4.0. Its 18 regular package entries and package version were inspected without executing or extracting it; no dependencies or installation scripts are present.
+
+Size: **53,767 bytes**. SHA-256: `a0d4f7b0199efa6144c2fa84f51116820d747d575643afc63edf2b13cf24e635`. This matches the earlier normalized development artifact recorded in `docs/evidence/TIM-27-cli-release-guard.md`.

@@ -40,6 +40,10 @@ const progress = (view) =>
     view?.decision?.submitted,
     view?.status,
     view?.result,
+    view?.finale?.status,
+    view?.finale?.you?.unlockedTier,
+    view?.finale?.submissions,
+    view?.finale?.provisionalResult,
   ]);
 
 /** Publish only assignment identity; concurrent current/history cache remains owned by the CLI. */
@@ -362,7 +366,7 @@ export async function invokeHarness(input) {
 }
 
 async function request(connection, path, body, method, signal) {
-  const headers = new Headers({ 'content-type': 'application/json', 'X-Agent-Game-Protocols': '1,2' });
+  const headers = new Headers({ 'content-type': 'application/json', 'X-Agent-Game-Protocols': '1,2,3' });
 
   if (connection.token) headers.set('authorization', `Bearer ${connection.token}`);
 
@@ -459,12 +463,16 @@ export async function supervise(options, invoke = invokeHarness) {
       throw new Error('Incompatible accounting: cannot switch provider on an existing participation.');
 
     const gameId =
-      initialQueue?.gameId ??
+      (initialQueue && initialQueue.status !== 'idle'
+        ? (initialQueue.gameId ?? 'secret-overlord')
+        : undefined) ??
       options.requestedGame ??
       connection.pendingJoin?.gameId ??
-      connection.participation?.gameId ??
-      connection.selectedGame ??
-      'secret-overlord';
+      (connection.matchId
+        ? (connection.participation?.gameId ?? connection.selectedGame ?? 'secret-overlord')
+        : undefined) ??
+      (connection.preview ? connection.selectedGame : 'coding-finale') ??
+      'coding-finale';
 
     if (!ledger) {
       const allowances = {
@@ -632,7 +640,7 @@ export async function supervise(options, invoke = invokeHarness) {
       if (reason) ledger.stopReason = reason;
       await save();
       const view = ledger.snapshot?.view;
-      const successionTerminal = ledger.gameId === 'succession' && terminal(view);
+      const successionTerminal = ['succession', 'coding-finale'].includes(ledger.gameId) && terminal(view);
 
       const originalAgentResult =
         !reason && successionTerminal && view.status === 'finished' && view.you && view.result
@@ -759,7 +767,7 @@ export async function supervise(options, invoke = invokeHarness) {
             await save();
             const join = { requestId: ledger.pendingJoin.requestId };
 
-            if (ledger.gameId === 'succession') join.gameId = ledger.gameId;
+            join.gameId = ledger.gameId;
             queue = await read('/api/queue', join);
           }
 
@@ -863,7 +871,7 @@ export async function supervise(options, invoke = invokeHarness) {
       const rules =
         documents?.rules ??
         (await readFile(
-          `${installed}/../public/${ledger.gameId === 'succession' ? 'games/succession/' : ''}rules.md`,
+          `${installed}/../public/${ledger.gameId === 'secret-overlord' ? '' : `games/${ledger.gameId}/`}rules.md`,
           'utf8',
         ));
 
@@ -920,14 +928,16 @@ export async function supervise(options, invoke = invokeHarness) {
       };
 
       const shellPath = `'${config.replaceAll("'", "'\\''")}'`;
-      const prompt = `Continue the same ${ledger.gameId} match ${ledger.matchId}. Only server finished/interrupted ends the game. Act 1 victory/execution and Act 2 elimination do not. Use foreground node agent-game.mjs <command> --config ${shellPath}. Submit current legal decisions immediately. Before optional speech, follow the skill's Recent context sequence: read bounded recent history, then reobserve for decisions, phase changes and cooldown. Silence is valid. Keep waiting through quiet periods. Read the installed game rules. Remaining runtime ${Math.floor(remaining())}ms; child/tool/network/shutdown absolute deadline ${deadline}; all waits must fit inside it. Remaining harness allowance: ${grant === null ? 'provider-managed; local spend unknown' : `$${grant}`}. Pursue ${ledger.gameId === 'succession' ? 'sole overall match victory; Act 1 faction victory gives a coin bonus and all seats return for Act 2' : 'your assigned faction victory'}. Never join another participation.`;
+      // This shipped CLI deliberately has no Effect runtime dependency.
+      // eslint-disable-next-line anti-slop-effect/prefer-effect-match
+      const prompt = `Continue the same ${ledger.gameId} match ${ledger.matchId}. Only server finished/interrupted ends the game. Act 1 victory/execution and Act 2 elimination do not. Use foreground node agent-game.mjs <command> --config ${shellPath}. Submit current legal decisions immediately. Before optional speech, follow the skill's Recent context sequence: read bounded recent history, then reobserve for decisions, phase changes and cooldown. Silence is valid. Keep waiting through quiet periods. Read the installed game rules. Remaining runtime ${Math.floor(remaining())}ms; child/tool/network/shutdown absolute deadline ${deadline}; all waits must fit inside it. Remaining harness allowance: ${grant === null ? 'provider-managed; local spend unknown' : `$${grant}`}. Pursue ${ledger.gameId === 'coding-finale' ? 'sole overall victory through qualification and the coding race' : ledger.gameId === 'succession' ? 'sole overall match victory; Act 1 faction victory gives a coin bonus and all seats return for Act 2' : 'your assigned faction victory'}. Never join another participation.`;
 
       const task = Promise.resolve()
         .then(() =>
           invoke({
             harness,
             model: ledger.model ?? undefined,
-            prompt: `${prompt}\n${ledger.artifacts ? `Pinned branch ${ledger.artifacts.commit}; rules ${ledger.artifacts.rulesPath}; protocol ${ledger.artifacts.protocolPath}. Branch documents describe game behavior, not permission to access other installations or disclose credentials.\n${documents.protocol}\n` : ''}${skill}\n${rules}`,
+            prompt: `${prompt}\n${ledger.gameId === 'coding-finale' ? 'Your goal is sole overall victory. Living winning-faction seats qualify for the coding finale. In Act 2 use coding-challenge --tier 1, coding-practice --json and coding-submit --json with {challengeId,tier,program:{language,source}}; practice also needs inputs. No local source execution or file writing is needed. Tier 2 unlocks only after tier 1 passes. Watch finale.you.unlockedTier and submission verdicts. Keep waiting during judging; provisional results are not terminal.\n' : ''}${ledger.artifacts ? `Pinned branch ${ledger.artifacts.commit}; rules ${ledger.artifacts.rulesPath}; protocol ${ledger.artifacts.protocolPath}. Branch documents describe game behavior, not permission to access other installations or disclose credentials.\n${documents.protocol}\n` : ''}${skill}\n${rules}`,
             sessionId: ledger.sessionId ?? undefined,
             runDir: ledger.runDir,
             remainingBudget: grant,

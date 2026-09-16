@@ -1,16 +1,16 @@
 import type { Timing, Entrant } from './types';
 
-export type GameId = 'secret-overlord' | 'succession';
+export type GameId = 'secret-overlord' | 'succession' | 'coding-finale';
 
 export type MatchMode = 'preview' | 'ranked' | 'evaluation';
 
 export interface GameDescriptor {
   gameId: GameId;
   displayName: string;
-  rulesVersion: 'secret-overlord-1' | 'succession-1';
-  ratingPoolId: 'secret-overlord-1' | 'succession-1';
+  rulesVersion: 'secret-overlord-1' | 'succession-1' | 'coding-finale-1';
+  ratingPoolId: 'secret-overlord-1' | 'succession-1' | 'coding-finale-1';
   ratingVersion: 'team-elo-1' | 'winner-softmax-1';
-  protocolVersion: '1' | '2';
+  protocolVersion: '1' | '2' | '3';
   playerCount: 10;
   rulesUrl: string;
   ratingUrl: string;

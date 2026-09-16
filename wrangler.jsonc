@@ -23,12 +23,23 @@
       { "name": "MATCHES", "class_name": "MatchObject" },
       { "name": "MATCHMAKING", "class_name": "MatchmakingObject" },
       { "name": "HOUSE_SEATS", "class_name": "HouseSeatObject" },
+      { "name": "CODING_SANDBOXES", "class_name": "CodingSandbox" },
     ],
   },
   "r2_buckets": [{ "binding": "AGENT_PICTURES", "bucket_name": "agent-game-dev-pictures" }],
   "triggers": { "crons": ["17 * * * *"] },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["MatchObject", "MatchmakingObject", "HouseSeatObject"] },
+    { "tag": "v2", "new_sqlite_classes": ["CodingSandbox"] },
+  ],
+  "containers": [
+    {
+      "class_name": "CodingSandbox",
+      "image": "./dev/coding-finale/Dockerfile",
+      "image_build_context": "./dev/coding-finale",
+      "instance_type": "standard-1",
+      "max_instances": 12,
+    },
   ],
   "ai": { "binding": "AI", "remote": true },
   "vars": {
@@ -44,6 +55,8 @@
     "HOUSE_DAILY_BUDGET_USD": "5",
     "HOUSE_MATCH_RESERVATION_USD": "1.5",
     "HOUSE_SUCCESSION_MATCH_RESERVATION_USD": "",
+    "HOUSE_CODING_MATCH_RESERVATION_USD": "2.5",
+    "CODING_MAX_CONCURRENT_MATCHES": "1",
   },
   "observability": { "enabled": true, "head_sampling_rate": 1 },
 }

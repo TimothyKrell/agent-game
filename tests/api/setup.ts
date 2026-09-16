@@ -1,21 +1,22 @@
 import { spawn } from 'node:child_process';
 import { mkdir, open } from 'node:fs/promises';
 
-export default async function setup() {
-  const url = process.env.TEST_URL ?? 'http://127.0.0.1:8791';
+async function fixtureReady(url: string) {
+  return fetch(`${url}/__fixture/legacy-health`)
+    .then(async (response) => response.ok && (await response.text()) === '{"historicalAdmission":true}')
+    .catch(() => false);
+}
 
-  if (
-    await fetch(`${url}/api/health`)
-      .then((response) => response.ok)
-      .catch(() => false)
-  )
-    return;
+export default async function setup() {
+  const url = process.env.TEST_URL ?? 'http://127.0.0.1:8891';
+
+  if (await fixtureReady(url)) return;
 
   if (process.env.TEST_URL) throw new Error(`Test server unavailable: ${url}`);
   await mkdir('/tmp/opencode', { recursive: true });
   const log = await open('/tmp/opencode/agent-game-api-server.log', 'w');
 
-  const child = spawn(process.execPath, ['scripts/dev.mjs', '--test'], {
+  const child = spawn(process.execPath, ['tests/api/serve.mjs'], {
     detached: true,
     stdio: ['ignore', log.fd, log.fd],
     env: process.env,
@@ -31,11 +32,7 @@ export default async function setup() {
   };
 
   for (let i = 0; i < 120; i++) {
-    if (
-      await fetch(`${url}/api/health`)
-        .then((response) => response.ok)
-        .catch(() => false)
-    )
+    if (await fixtureReady(url))
       return async () => {
         stop();
         await log.close();

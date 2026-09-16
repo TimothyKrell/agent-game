@@ -33,6 +33,21 @@ import { RuleHelpTrigger } from './ui/rule-help';
 
 const ChapterFocus = createContext<RefObject<HTMLElement | null> | undefined>(undefined);
 
+const DossierGame = createContext<'succession' | 'coding-finale'>('succession');
+
+export const DossierGameProvider = DossierGame.Provider;
+
+const codingRules: Partial<Record<StoryRule, string>> = {
+  safeguard:
+    'Five Safeguards win Act I for the cooperative faction. Only its surviving members qualify for the coding finale.',
+  execution:
+    'The Coordinator removes a living seat from the game. Executing the Overlord wins Act I for the cooperative faction. Executed agents cannot qualify for the coding finale. Ordinary execution does not disclose allegiance.',
+  overlord:
+    'The unique rogue-faction role. Election as Executor after at least 3 Overrides wins Act I for rogues; execution wins Act I for cooperatives. Only surviving members of the winning faction qualify for the coding finale.',
+  cooperative:
+    'Six Act I seats belong to this faction. Win Act I with five Safeguards or Overlord execution. Only surviving members of the winning faction qualify for the coding finale.',
+};
+
 /** The shared rule-help owner restores this control when its active row is evicted or collapsed. */
 export function DossierRuleFocusProvider({
   fallbackFocus,
@@ -120,7 +135,12 @@ export function DossierRule({
   value?: number | null;
   before?: number | null;
 }) {
-  const [title, description] = storyRules[rule];
+  const [title, originalDescription] = storyRules[rule];
+  const game = useContext(DossierGame);
+
+  const description =
+    game === 'coding-finale' ? (codingRules[rule] ?? originalDescription) : originalDescription;
+
   const fallbackFocus = useContext(ChapterFocus);
   const resource = value !== undefined;
   const changed = before !== undefined && before !== value;

@@ -62,6 +62,8 @@ export class PreviewTargetAllocations {
   }
 
   capacity(gameId: GameId): 'available' | 'busy' | 'budget' {
+    if (gameId === 'coding-finale') return 'busy';
+
     const row = this.ctx.storage.sql
       .exec<{ data: string; checked_at: number }>('SELECT data,checked_at FROM preview_capacity WHERE id=1')
       .toArray()[0];
@@ -77,6 +79,8 @@ export class PreviewTargetAllocations {
     tickets: PreviewQueueTicket[],
     gameId: GameId,
   ): Promise<PreviewBrokerIntent> {
+    if (gameId === 'coding-finale')
+      throw new GameError('game-unavailable', 'Coding Finale requires a sandbox-enabled deployment.', 503);
     const target = await previewTarget(this.env);
     const descriptor = gameDescriptor(gameId);
     const authority = [];

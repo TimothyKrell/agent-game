@@ -1,6 +1,8 @@
 import { readFile, writeFile, mkdtemp } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import { resolve } from 'node:path';
+import { localEgress } from '../dev/coding-finale/local-egress.mjs';
 
 const test = process.argv.includes('--test');
 
@@ -28,6 +30,8 @@ run('npm', ['run', 'build']);
 
 run('npx', ['wrangler', 'd1', 'migrations', 'apply', 'agent-game', '--local', '--persist-to', persistence]);
 
+const egress = await localEgress(resolve('.agent-game/finale-egress'));
+
 const child = spawn(
   'npx',
   [
@@ -44,11 +48,17 @@ const child = spawn(
     `APP_URL:http://127.0.0.1:${port}`,
     '--var',
     `TIME_SCALE:${process.env.TIME_SCALE ?? (test ? '0.02' : '1')}`,
-    ...['HOUSE_PROVIDER', 'HOUSE_MODEL', 'MAX_CONCURRENT_MATCHES', 'HOUSE_MATCH_RESERVATION_USD'].flatMap(
-      (key) => (process.env[key] ? ['--var', `${key}:${process.env[key]}`] : []),
-    ),
+    ...[
+      'HOUSE_PROVIDER',
+      'HOUSE_MODEL',
+      'MAX_CONCURRENT_MATCHES',
+      'HOUSE_MATCH_RESERVATION_USD',
+      'HOUSE_CODING_MATCH_RESERVATION_USD',
+      'CODING_MAX_CONCURRENT_MATCHES',
+      'HOUSE_DAILY_BUDGET_USD',
+    ].flatMap((key) => (process.env[key] ? ['--var', `${key}:${process.env[key]}`] : [])),
   ],
-  { stdio: 'inherit', env: process.env },
+  { stdio: 'inherit', env: { ...process.env, ...egress } },
 );
 
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => child.kill(signal));

@@ -8,7 +8,7 @@ import { DossierPictureProvider, dossierName, dossierValue } from './dossier-ide
 import type { DossierPictures } from './dossier-identity';
 import { DossierRow } from './dossier-row';
 import { dossierVisible } from './dossier-cards';
-import { DossierRuleFocusProvider } from './dossier-rules';
+import { DossierGameProvider, DossierRuleFocusProvider } from './dossier-rules';
 import { DossierOutcome, dossierOutcomeTitle } from './dossier-summary';
 import type { DossierStatus } from './dossier-summary';
 import { useSuccessionDossierReader } from './use-succession-dossier-reader';
@@ -23,6 +23,8 @@ export interface DossierChapterSlot {
 }
 
 export interface SuccessionDossierProps {
+  /** Reuses the Act I reader without Succession's return/bonus or Act II rules. */
+  game?: 'succession' | 'coding-finale';
   model: StoryModel;
   status: DossierStatus;
   act: 1 | 2;
@@ -63,6 +65,7 @@ export function useDossierChapters(status: DossierStatus, act: 1 | 2): DossierCh
 }
 
 function DossierContent({
+  game = 'succession',
   model,
   status,
   act,
@@ -91,7 +94,7 @@ function DossierContent({
   const faction = dossierValue(model.chapters.act1);
   const tracks = dossierValue(model.chapters.finalTracks);
   // Canonical recorded Act II creation allocation, independent of any current seat balances/hands.
-  const returns = dossierValue(model.chapters.returns);
+  const returns = game === 'succession' ? dossierValue(model.chapters.returns) : undefined;
 
   const recipients = returns?.flatMap((seat) =>
     seat.bonus === 1 ? [dossierName(seat.entrant, seat.seat)] : [],
@@ -99,18 +102,27 @@ function DossierContent({
 
   const renderRow = (row: StoryRow) =>
     row.fact.kind === 'audit' || !dossierVisible(row.visibility, showArchive) ? null : (
-      <DossierRow key={row.key} row={row} entrants={entrants} archive={showArchive} returns={returns} />
+      <DossierRow
+        key={row.key}
+        row={row}
+        entrants={entrants}
+        archive={showArchive}
+        returns={returns}
+        game={game}
+      />
     );
 
   return (
     <div className="dossier replay-ui">
-      <DossierOutcome
-        chapters={model.chapters}
-        status={status}
-        act={act}
-        entrants={entrants}
-        ending={ending}
-      />
+      {game === 'succession' && (
+        <DossierOutcome
+          chapters={model.chapters}
+          status={status}
+          act={act}
+          entrants={entrants}
+          ending={ending}
+        />
+      )}
       {currentState}
       <div className="dossier-reading-options">
         {archiveAvailable && (
@@ -128,7 +140,7 @@ function DossierContent({
         )}
         <span>Hover or tap a highlighted rule term</span>
       </div>
-      {([1, 2] as const).map((chapter) => {
+      {(game === 'coding-finale' ? ([1] as const) : ([1, 2] as const)).map((chapter) => {
         const open = chapters.open[chapter];
 
         const title =
@@ -232,7 +244,9 @@ export function SuccessionDossier(props: SuccessionDossierProps) {
   return (
     <DossierPictureProvider pictures={props.pictures ?? noPictures} onImageError={props.onImageError}>
       <RuleHelpProvider>
-        <DossierContent key={props.model.scope.matchId} {...props} />
+        <DossierGameProvider value={props.game ?? 'succession'}>
+          <DossierContent key={props.model.scope.matchId} {...props} />
+        </DossierGameProvider>
       </RuleHelpProvider>
     </DossierPictureProvider>
   );

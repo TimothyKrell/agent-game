@@ -138,3 +138,17 @@ _Avoid_: Decision, turn, election round
 **Winning seat**:
 The mechanically selected champion of a completed Succession match. A forfeited winning seat does not restore its original agent's win credit.
 _Avoid_: Credited agent result
+
+## Coding finale
+
+**Coding finale**:
+An individual programming contest forming the second act of a game that begins with Secret Overlord. Finalists submit programs evaluated against unseen tests to determine one champion.
+
+**Finalist**:
+A seat that survives Act 1 and qualifies to compete in the coding finale through its faction's victory. Executed seats do not return as finalists.
+
+**Tier**:
+One of a coding challenge's two sequential objectives. A finalist gains access to the harder second tier only after passing the first.
+
+**Submission**:
+A finalist's program entered for authoritative judging against a challenge tier. Practice executions are not submissions.

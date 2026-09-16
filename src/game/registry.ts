@@ -21,6 +21,17 @@ import { replayFrame } from './replay';
 import { gameDescriptor } from './descriptors';
 import { previewAction, previewSpeech } from './preview';
 import { previewSuccessionAction, previewSuccessionSpeech } from './succession/preview';
+import type { ActionRequest3, Observation3 } from '../shared/coding-finale';
+import {
+  createCodingFinale,
+  evolveCodingFinale,
+  inspectCodingFinale,
+  observeCodingFinale,
+  settleCodingFinale,
+  decodeCodingFinale,
+  summaryCodingFinale,
+} from './coding-finale/game';
+import type { CodingFinaleState, CodingFinaleCommand } from './coding-finale/game';
 
 export { GAME_DESCRIPTORS, gameDescriptor } from './descriptors';
 
@@ -35,21 +46,25 @@ export type {
 export interface StateByGame {
   'secret-overlord': SecretOverlordState;
   succession: SuccessionState;
+  'coding-finale': CodingFinaleState;
 }
 
 export interface ActionByGame {
   'secret-overlord': ActionRequest;
   succession: ActionRequest2;
+  'coding-finale': ActionRequest3;
 }
 
 export interface ObservationByGame {
   'secret-overlord': Observation;
   succession: Observation2;
+  'coding-finale': Observation3;
 }
 
 export interface CommandByGame {
   'secret-overlord': SecretOverlordCommand;
   succession: SuccessionCommand;
+  'coding-finale': CodingFinaleCommand;
 }
 
 export type AnyMatchState = StateByGame[GameId];
@@ -58,8 +73,22 @@ export type GameEvolutionInput = {
   [G in GameId]: { gameId: G; state: StateByGame[G]; command: CommandByGame[G] };
 }[GameId];
 
-/** Closed two-adapter registry; hosts own authentication, history, and persistence transactions. */
+/** Closed adapter registry; hosts own authentication, history, and persistence transactions. */
 export const gameRegistry = {
+  'coding-finale': {
+    create: createCodingFinale,
+    evolve: evolveCodingFinale,
+    inspect: inspectCodingFinale,
+    observe: observeCodingFinale,
+    settle: settleCodingFinale,
+    decode: decodeCodingFinale,
+    summary: summaryCodingFinale,
+    replay: observeCodingFinale,
+    replayFrame: observeCodingFinale,
+    previewAction: (view: Observation3) => (view.actOne ? previewAction(view.actOne) : null),
+    previewSpeech: (view: Observation3, persona: string) =>
+      view.actOne ? previewSpeech(view.actOne, persona) : '',
+  },
   'secret-overlord': {
     create: createSecretOverlord,
     evolve: evolveSecretOverlord,
@@ -89,14 +118,20 @@ export const gameRegistry = {
 };
 
 export function inspectGame(state: AnyMatchState) {
+  if (state.gameId === 'coding-finale') return inspectCodingFinale(state);
+
   return state.gameId === 'succession' ? inspectSuccession(state) : inspectSecretOverlord(state);
 }
 
 export function settleGame(state: AnyMatchState) {
+  if (state.gameId === 'coding-finale') return settleCodingFinale(state);
+
   return state.gameId === 'succession' ? settleSuccession(state) : settleSecretOverlord(state);
 }
 
 export function evolveGame(input: GameEvolutionInput, random?: RandomContext) {
+  if (input.gameId === 'coding-finale') return evolveCodingFinale(input.state, input.command, random);
+
   return input.gameId === 'succession'
     ? evolveSuccession(input.state, input.command, random)
     : evolveSecretOverlord(input.state, input.command);
@@ -105,14 +140,18 @@ export function evolveGame(input: GameEvolutionInput, random?: RandomContext) {
 export function observeGame(
   state: AnyMatchState,
   seat: number | null = null,
-  options: { history?: HistoryMetadata2; after?: number; houseController?: boolean } = {},
+  options: { history?: HistoryMetadata2; after?: number; houseController?: boolean; serverNow?: number } = {},
 ) {
+  if (state.gameId === 'coding-finale') return observeCodingFinale(state, seat, options);
+
   return state.gameId === 'succession'
     ? observeSuccession(state, seat, options.history, options.houseController)
     : observeSecretOverlord(state, seat, options.after, options.houseController);
 }
 
 export async function createGame(id: string, entrants: Entrant[], now: number, snapshot: MatchSnapshot) {
+  if (snapshot.gameId === 'coding-finale') return createCodingFinale(id, entrants, now, { snapshot });
+
   if (snapshot.gameId === 'succession') return createSuccession(id, entrants, now, { snapshot });
   const state = createSecretOverlord(id, entrants, now, snapshot);
 
@@ -130,6 +169,8 @@ export function decodeGameState(
   )(value);
 
   if (identity.gameId === 'succession') return decodeSuccessionState(value);
+
+  if (identity.gameId === 'coding-finale') return decodeCodingFinale(value);
 
   if (
     (identity.gameId === undefined || identity.gameId === 'secret-overlord') &&
@@ -205,6 +246,7 @@ export function summarySuccession(state: SuccessionState) {
 export interface SummaryByGame {
   'secret-overlord': ReturnType<typeof summarySecretOverlord>;
   succession: ReturnType<typeof summarySuccession>;
+  'coding-finale': ReturnType<typeof summaryCodingFinale>;
 }
 
 export type ResultByGame = {
@@ -212,5 +254,7 @@ export type ResultByGame = {
 };
 
 export function summaryGame(state: AnyMatchState) {
+  if (state.gameId === 'coding-finale') return summaryCodingFinale(state);
+
   return state.gameId === 'succession' ? summarySuccession(state) : summarySecretOverlord(state);
 }

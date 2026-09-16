@@ -1,12 +1,14 @@
-import { Schema } from 'effect';
+import { Match, Schema } from 'effect';
 import { ObservationSchema } from '../shared/api';
 import { Observation2Schema } from '../shared/succession';
+import { Observation3Schema } from '../shared/coding-finale';
 import { SecretOverlordMatch } from './secret-overlord-match';
 import { SuccessionMatch } from './succession-match';
+import { CodingFinaleMatch } from './coding-finale-match';
 import { ResourceState } from './ui/resource-state';
 import { useLoad } from './use-load';
 
-const MatchObservationSchema = Schema.Union([ObservationSchema, Observation2Schema]);
+const MatchObservationSchema = Schema.Union([ObservationSchema, Observation2Schema, Observation3Schema]);
 
 export function MatchRoute({ id }: { id: string }) {
   const { data, error, fault, refresh } = useLoad(
@@ -16,9 +18,9 @@ export function MatchRoute({ id }: { id: string }) {
 
   if (!data) return <ResourceState title="Match record" error={error} fault={fault} retry={refresh} />;
 
-  return data.protocolVersion === '2' ? (
-    <SuccessionMatch initial={data} />
-  ) : (
-    <SecretOverlordMatch initial={data} />
+  return Match.value(data).pipe(
+    Match.when({ protocolVersion: '3' }, (view) => <CodingFinaleMatch initial={view} />),
+    Match.when({ protocolVersion: '2' }, (view) => <SuccessionMatch initial={view} />),
+    Match.orElse((view) => <SecretOverlordMatch initial={view} />),
   );
 }

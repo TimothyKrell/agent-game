@@ -85,6 +85,9 @@ function harness(legacy = false) {
     HOUSE_MODEL: 'test',
     HOUSE_MATCH_RESERVATION_USD: '1',
     HOUSE_SUCCESSION_MATCH_RESERVATION_USD: '1',
+    HOUSE_CODING_MATCH_RESERVATION_USD: '2.5',
+    CODING_MAX_CONCURRENT_MATCHES: '1',
+    CODING_SANDBOXES: {},
     HOUSE_DAILY_BUDGET_USD: '10',
     ENVIRONMENT: 'development',
     DB: {
@@ -190,6 +193,79 @@ function harness(legacy = false) {
 }
 
 describe('one physical coordinator with game-scoped candidates', () => {
+  it('admits only new coding games while preserving legacy matched receipts', async () => {
+    const h = harness();
+
+    const principal = {
+      agentId: 'new',
+      ownerId: 'owner-new',
+      grantId: 'grant-new',
+      expiresAt: Date.now() + 60000,
+    };
+
+    for (const game of ['secret-overlord', 'succession'] as const) {
+      expect(await h.queue.join(principal, 'request-new', game)).toMatchObject({
+        ok: false,
+        error: { code: 'game-closed' },
+      });
+      expect(await h.queue.exhibition(game)).toMatchObject({ ok: false, error: { code: 'game-closed' } });
+    }
+
+    expect(await h.queue.join(principal, 'request-new')).toMatchObject({
+      ok: true,
+      value: { gameId: 'coding-finale', protocolVersion: '3' },
+    });
+    h.db
+      .prepare('INSERT INTO joins(id,game_id,match_id) VALUES (?,?,?)')
+      .run('old:request-old', 'succession', 'legacy-match');
+    expect(await h.queue.join({ ...principal, agentId: 'old' }, 'request-old', 'succession')).toMatchObject({
+      ok: true,
+      value: { matchId: 'legacy-match', gameId: 'succession' },
+    });
+  });
+
+  it('reserves bounded sandbox capacity until completion, without starving existing legacy queues', async () => {
+    const h = harness();
+    h.ticket('coding-first', 'coding-finale');
+    await h.queue.alarm();
+    expect(h.initialized[0]).toMatchObject({
+      gameId: 'coding-finale',
+      reservationUsd: 2.5,
+      snapshot: { protocolVersion: '3', ratingPoolId: 'coding-finale-1' },
+    });
+    h.ticket('coding-second', 'coding-finale');
+    h.ticket('legacy-pending', 'succession');
+    await h.queue.alarm();
+    expect(h.initialized).toHaveLength(2);
+    expect(h.queue.status('coding-second')).toMatchObject({ status: 'queued', capacity: 'busy' });
+    expect(h.queue.status('legacy-pending').status).toBe('matched');
+    await h.queue.complete(h.initialized[0].id);
+    await h.queue.alarm();
+    expect(h.initialized).toHaveLength(3);
+    expect(h.queue.status('coding-second').status).toBe('matched');
+  });
+
+  it('keeps sandbox-disabled and invalid-capacity environments unavailable', async () => {
+    for (const limit of ['0', '4', 'NaN', '0.5']) {
+      const h = harness();
+      h.env.CODING_MAX_CONCURRENT_MATCHES = limit;
+      h.ticket('disabled', 'coding-finale');
+      await h.queue.alarm();
+      expect(h.initialized).toHaveLength(0);
+      expect(h.queue.status('disabled').capacity).toBe('busy');
+      expect(await h.queue.exhibition()).toMatchObject({ ok: false, error: { code: 'capacity' } });
+    }
+
+    const h = harness();
+    Reflect.deleteProperty(h.env, 'CODING_SANDBOXES');
+    expect(
+      await h.queue.join(
+        { agentId: 'missing', ownerId: 'owner', grantId: 'grant', expiresAt: Date.now() + 60000 },
+        'request-missing',
+      ),
+    ).toMatchObject({ ok: false, error: { code: 'game-unavailable' } });
+  });
+
   it('keeps ordinary queue scaling in both the reported fill time and actual readiness', async () => {
     const h = harness();
     h.env.TIME_SCALE = '0.1';

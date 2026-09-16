@@ -30,7 +30,7 @@ it('restarts the actual Worker during a required decision and recovers durable s
   };
 
   const start = async () => {
-    child = spawn(process.execPath, ['scripts/dev.mjs', '--test'], {
+    child = spawn(process.execPath, ['tests/api/serve.mjs'], {
       detached: true,
       stdio: ['ignore', log.fd, log.fd],
       env: { ...process.env, PORT: '8811', TIME_SCALE: '0.1', PERSIST_TO: `${directory}/storage` },
@@ -92,7 +92,9 @@ it('restarts the actual Worker during a required decision and recovers durable s
     });
 
     await ownerPost('/api/owner/pairing/approve', { code: pairing.code, agentId: agent.id });
-    await client.request('/api/queue', { requestId: randomUUID() });
+    const requestId = randomUUID();
+    await client.request('/__fixture/legacy-ticket', { requestId });
+    await client.request('/api/queue', { requestId, gameId: 'secret-overlord' });
     let queue: QueueStatus;
 
     do {

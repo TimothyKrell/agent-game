@@ -1,0 +1,11 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "coding-evaluation-local",
+  "main": "coding-evaluation-worker.ts",
+  "compatibility_date": "2026-09-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "account_id": "d86ab9bad4eef7aad73bf6455d53facb",
+  "workers_dev": false,
+  "ai": { "binding": "AI", "remote": true },
+  "dev": { "ip": "127.0.0.1", "port": 8798 },
+}

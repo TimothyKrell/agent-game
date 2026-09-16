@@ -6,12 +6,19 @@ import { useUnderlineMotion } from './motion';
 export const gameNames = {
   'secret-overlord': 'Secret Overlord',
   succession: 'Succession',
+  'coding-finale': 'Coding Finale',
 };
+
+const pageGames = ['coding-finale', 'secret-overlord', 'succession'] as const;
+
+function isPageGame(value: string | null): value is GameId {
+  return value !== null && pageGames.some((game) => game === value);
+}
 
 export function gamePath(path: string, game: GameId, parameter = 'gameId'): string {
   const url = new URL(path, location.origin);
 
-  if (game === 'secret-overlord') url.searchParams.delete(parameter);
+  if (game === 'coding-finale') url.searchParams.delete(parameter);
   else url.searchParams.set(parameter, game);
 
   return `${url.pathname}${url.search}${url.hash}`;
@@ -21,12 +28,13 @@ export function gamePath(path: string, game: GameId, parameter = 'gameId'): stri
 export function usePageGame(parameter = 'gameId') {
   const url = new URL(useLocation());
   const value = url.searchParams.get(parameter);
-  const game: GameId = value === 'succession' ? 'succession' : 'secret-overlord';
+  const explicit = isPageGame(value);
+  const game: GameId = explicit ? value : 'coding-finale';
 
   return {
     game,
-    explicit: value === 'secret-overlord' || value === 'succession',
-    invalid: value !== null && value !== 'secret-overlord' && value !== 'succession',
+    explicit,
+    invalid: value !== null && !explicit,
     select: (next: GameId) => navigate(gamePath(location.href, next, parameter), { scroll: false }),
   };
 }
@@ -43,8 +51,9 @@ export function GameSelect({ choice, label }: { choice: GameChoice; label: strin
         id={id}
         value={choice.invalid ? '' : choice.game}
         onChange={(event) => {
-          if (event.target.value === 'secret-overlord' || event.target.value === 'succession')
-            choice.select(event.target.value);
+          const game = event.target.value;
+
+          if (isPageGame(game)) choice.select(game);
         }}
       >
         {choice.invalid && (
@@ -52,8 +61,11 @@ export function GameSelect({ choice, label }: { choice: GameChoice; label: strin
             Choose a game
           </option>
         )}
-        <option value="secret-overlord">Secret Overlord</option>
-        <option value="succession">Succession</option>
+        {pageGames.map((game) => (
+          <option value={game} key={game}>
+            {gameNames[game]}
+          </option>
+        ))}
       </select>
     </div>
   );
@@ -65,7 +77,7 @@ export function GameTabs({ choice, panelId }: { choice: GameChoice; panelId: str
 
   return (
     <div className="rules-game-tabs" role="tablist" aria-label="Game rules" ref={underline}>
-      {(['secret-overlord', 'succession'] as const).map((game, index) => (
+      {pageGames.map((game, index) => (
         <button
           key={game}
           role="tab"
@@ -79,11 +91,12 @@ export function GameTabs({ choice, panelId }: { choice: GameChoice; panelId: str
           onKeyDown={(event) => {
             if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
             event.preventDefault();
-            let next = 1 - index;
+            let next = event.key === 'ArrowLeft' ? index - 1 : index + 1;
 
             if (event.key === 'Home') next = 0;
 
-            if (event.key === 'End') next = 1;
+            if (event.key === 'End') next = pageGames.length - 1;
+            next = (next + pageGames.length) % pageGames.length;
             event.currentTarget.parentElement?.querySelectorAll('button')[next]?.focus();
           }}
         >

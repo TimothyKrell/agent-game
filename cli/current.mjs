@@ -4,13 +4,20 @@ import { createHash } from 'node:crypto';
 export const terminal = (view) => ['finished', 'interrupted'].includes(view?.status);
 
 export function gameId(value = 'secret-overlord') {
-  if (!['secret-overlord', 'succession'].includes(value)) throw new Error(`Unsupported game: ${value}`);
+  if (!['secret-overlord', 'succession', 'coding-finale'].includes(value))
+    throw new Error(`Unsupported game: ${value}`);
 
   return value;
 }
 
 export function validateIdentity(value, artifacts) {
   const id = gameId(value.gameId);
+
+  if (
+    (value.protocolVersion === '3' || id === 'coding-finale') &&
+    (id !== 'coding-finale' || value.protocolVersion !== '3' || value.rulesVersion !== 'coding-finale-1')
+  )
+    throw new Error('Unsupported Coding Finale protocol/rules. Upgrade the CLI.');
 
   if (value.protocolVersion === '2' && id !== 'succession')
     throw new Error('Protocol 2 requires an explicit Succession identity.');
@@ -38,7 +45,7 @@ export function validateCurrent(value, artifacts) {
   if (!['active', 'finished', 'interrupted'].includes(value.status))
     throw new Error('Unsupported server lifecycle.');
 
-  if (value.protocolVersion !== '2') return;
+  if (!['2', '3'].includes(value.protocolVersion)) return;
 
   if (
     Buffer.byteLength(JSON.stringify(value)) > 14336 ||
@@ -75,7 +82,7 @@ export function acceptCurrent(previous, next) {
   if (terminal(previous) && previous.history?.visibilityEpoch !== next.history?.visibilityEpoch)
     return previous;
 
-  if (previous.protocolVersion === '2' && next.protocolVersion === '2') {
+  if (['2', '3'].includes(previous.protocolVersion) && previous.protocolVersion === next.protocolVersion) {
     if (previous.act > next.act) return previous;
     const oldGeneration = previous.you?.generation ?? previous.you?.controller?.generation;
     const newGeneration = next.you?.generation ?? next.you?.controller?.generation;
@@ -128,8 +135,10 @@ export function validatePage(page, parameters) {
   const cursor = page.events?.at(-1)?.id ?? page.after;
 
   if (
-    page.protocolVersion !== '2' ||
-    page.gameId !== 'succession' ||
+    !(
+      (page.protocolVersion === '2' && page.gameId === 'succession') ||
+      (page.protocolVersion === '3' && page.gameId === 'coding-finale')
+    ) ||
     Buffer.byteLength(JSON.stringify(page)) > maximum ||
     !Array.isArray(page.events) ||
     page.events.length > limit ||

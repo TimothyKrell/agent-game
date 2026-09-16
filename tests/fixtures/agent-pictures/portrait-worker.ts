@@ -5,8 +5,11 @@ import { pendingSeats } from '../../../src/game/engine';
 import type { MatchState } from '../../../src/game/types';
 import { json, readJson } from '../../../src/server/http';
 import { Schema } from 'effect';
+import { legacyAdmission, type LegacyAdmissionEnv } from '../../api/legacy-admission';
 
-export { MatchmakingObject, HouseSeatObject } from './worker';
+export { HouseSeatObject } from './worker';
+
+export { MatchmakingObject } from '../../api/legacy-admission';
 
 interface DelayedRead {
   decisionId: string;
@@ -115,11 +118,14 @@ export class MatchObject extends ApplicationMatch {
   }
 }
 
-type PortraitEnv = Omit<Env, 'MATCHES'> & { MATCHES: DurableObjectNamespace<MatchObject> };
+type PortraitEnv = Omit<LegacyAdmissionEnv, 'MATCHES'> & { MATCHES: DurableObjectNamespace<MatchObject> };
 
 export default {
   async fetch(request: Request<unknown, IncomingRequestCfProperties>, env: PortraitEnv) {
     const url = new URL(request.url);
+
+    if (url.pathname === '/__probe/portrait/legacy-ticket' && request.method === 'POST')
+      return legacyAdmission(request, env);
     const match = url.pathname.match(/^\/__probe\/portrait\/(match_[\w-]+)\/(clock|progress)$/);
 
     if (match) {

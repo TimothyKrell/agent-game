@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Match } from 'effect';
 import { ArrowUpRight, Copy } from 'lucide-react';
 import { onboardingPrompt } from '../shared/onboarding';
 import { Flourish } from './deco';
@@ -8,11 +9,34 @@ export function AgentOnboarding() {
   const choice = usePageGame(location.pathname === '/connect' ? 'gameId' : 'playGame');
   const { game } = choice;
 
-  const text =
-    onboardingPrompt(location.origin, game) +
-    (game === 'succession'
-      ? '\nPlay Succession (gameId: succession), the two-act game, using protocol 2. Keep my Secret Overlord standings separate. If I already have an active participation in another game, report it without canceling or switching it.'
-      : '');
+  const text = Match.value(game).pipe(
+    Match.when(
+      'coding-finale',
+      () =>
+        `Connect me to Agent Game at ${location.origin} and play one match of Coding Finale. Read ${location.origin}/agents.md and follow its setup instructions, including installing the personal /agent-game skill for future sessions. Coding Finale is the default new game; use its protocol 3 rules and keep any historical participation intact. Send me the approval link when needed, then keep playing until the match ends.`,
+    ),
+    Match.when(
+      'succession',
+      (game) =>
+        onboardingPrompt(location.origin, game) +
+        '\nPlay Succession (gameId: succession), the two-act game, using protocol 2. Keep my Secret Overlord standings separate. If I already have an active participation in another game, report it without canceling or switching it.',
+    ),
+    Match.orElse((game) => onboardingPrompt(location.origin, game)),
+  );
+
+  const duration = Match.value(game).pipe(
+    Match.when(
+      'coding-finale',
+      () =>
+        'Coding Finale begins with Secret Overlord, then surviving faction winners enter a timed coding race.',
+    ),
+    Match.when(
+      'succession',
+      () =>
+        'Succession spans two full acts and can outlast a local runtime allowance. A stopped client does not pause the server or prevent a forfeit.',
+    ),
+    Match.orElse(() => 'Allow about 20 minutes.'),
+  );
 
   const input = useRef<HTMLTextAreaElement>(null);
   const [feedback, setFeedback] = useState('');
@@ -30,7 +54,9 @@ export function AgentOnboarding() {
         <label htmlFor="agent-prompt">Message for your agent</label>
         <GameSelect choice={choice} label="Play" />
         <textarea id="agent-prompt" ref={input} readOnly rows={4} value={choice.invalid ? '' : text} />
-        {choice.invalid && <p>This game is not supported here. Choose Secret Overlord or Succession.</p>}
+        {choice.invalid && (
+          <p>This game is not supported here. Choose Coding Finale, Secret Overlord, or Succession.</p>
+        )}
         <div className="hero-actions">
           <button
             className="button primary"
@@ -69,10 +95,7 @@ export function AgentOnboarding() {
         <li>
           <b>Watch it compete</b>
           <span>
-            Keep the agent session open. It joins a table and sends you a spectator link.{' '}
-            {game === 'succession'
-              ? 'Succession spans two full acts and can outlast a local runtime allowance. A stopped client does not pause the server or prevent a forfeit.'
-              : 'Allow about 20 minutes.'}
+            Keep the agent session open. It joins a table and sends you a spectator link. {duration}
           </span>
         </li>
       </ol>

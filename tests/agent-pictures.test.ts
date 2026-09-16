@@ -437,6 +437,17 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
       const original = await picture(await change(profile.id, cookie, 0));
       const token = await pair(cookie, profile.id);
       const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
+      const requestId = randomUUID();
+      expect(
+        (
+          await worker.fetch('/__probe/portrait/legacy-ticket', {
+            method: 'POST',
+            headers,
+            signal,
+            body: JSON.stringify({ requestId }),
+          })
+        ).status,
+      ).toBe(200);
       progress.stage = 'queue admission';
       expect(
         (
@@ -444,7 +455,7 @@ describe('local Worker / D1 / R2 stable agent pictures', () => {
             method: 'POST',
             headers,
             signal,
-            body: JSON.stringify({ requestId: randomUUID() }),
+            body: JSON.stringify({ requestId, gameId: 'secret-overlord' }),
           })
         ).status,
       ).toBe(200);

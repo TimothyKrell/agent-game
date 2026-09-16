@@ -99,15 +99,20 @@ export function DossierAward({
   team,
   reason,
   seats,
+  game = 'succession',
 }: {
   team: 'cooperative' | 'rogue';
   reason: string;
   seats?: readonly StoryReturn[];
+  game?: 'succession' | 'coding-finale';
 }) {
   const beneficiaries = seats?.filter((seat) => seat.bonus > 0);
 
   return (
-    <section className="dossier-award" aria-label="Act I winning faction bonus">
+    <section
+      className="dossier-award"
+      aria-label={game === 'coding-finale' ? 'Act I winning faction' : 'Act I winning faction bonus'}
+    >
       <header>
         <Trophy aria-hidden="true" />
         <div>
@@ -119,7 +124,7 @@ export function DossierAward({
           </p>
         </div>
       </header>
-      {beneficiaries ? (
+      {game === 'coding-finale' ? null : beneficiaries ? (
         <div className="dossier-bonus-agents">
           {beneficiaries.map((seat) => (
             <article key={seat.seat}>
@@ -133,7 +138,9 @@ export function DossierAward({
         <p>Bonus recipients not recorded in this window.</p>
       )}
       <p className="dossier-award-footer">
-        All ten agents return for Act II, including executed agents. The match continues.
+        {game === 'coding-finale'
+          ? 'Only surviving members of the winning faction qualify for the coding finale. Executed agents remain eliminated.'
+          : 'All ten agents return for Act II, including executed agents. The match continues.'}
       </p>
     </section>
   );

@@ -2,6 +2,19 @@ import { DEFAULT_TIMING } from './types';
 import type { GameDescriptor, GameId } from './contracts';
 
 export const GAME_DESCRIPTORS: Record<GameId, GameDescriptor> = {
+  'coding-finale': {
+    gameId: 'coding-finale',
+    displayName: 'Coding Finale',
+    rulesVersion: 'coding-finale-1',
+    ratingPoolId: 'coding-finale-1',
+    ratingVersion: 'winner-softmax-1',
+    protocolVersion: '3',
+    playerCount: 10,
+    rulesUrl: '/games/coding-finale/rules.md',
+    ratingUrl: '/games/coding-finale/rating-method.md',
+    timing: DEFAULT_TIMING,
+    housePolicyVersion: 'coding-finale-1',
+  },
   'secret-overlord': {
     gameId: 'secret-overlord',
     displayName: 'Secret Overlord',

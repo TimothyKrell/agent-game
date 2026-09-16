@@ -19,6 +19,9 @@ export function summaryFixture(gameId: GameId, index: number, active = true): Ga
     winReason: active ? null : 'Historical completion',
   } satisfies Partial<GameMatchSummary>;
 
+  if (gameId === 'coding-finale')
+    return { ...common, gameId, act: 2, result: null, act1Winner: 'cooperative', livingCount: 6 };
+
   return gameId === 'succession'
     ? { ...common, gameId, act: 2, result: null, act1Winner: 'cooperative', livingCount: 8 }
     : { ...common, gameId, safeguards: 2, overrides: 3, winner: active ? null : 'cooperative' };

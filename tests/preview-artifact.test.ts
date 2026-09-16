@@ -212,13 +212,7 @@ describe('real application preview artifact', () => {
           protocol: game.protocolVersion,
           rulesVersion: game.rulesVersion,
         })),
-      ).toEqual(
-        manifest.branchContent.games.map((game) => ({
-          gameId: game.gameId,
-          protocol: game.protocol,
-          rulesVersion: game.rulesVersion,
-        })),
-      );
+      ).toEqual([{ gameId: 'coding-finale', protocol: '3', rulesVersion: 'coding-finale-1' }]);
       expect((await request('/rules.md')).status).toBe(200);
       expect((await request(`/downloads/agent-game-cli-${version}.tgz`)).status).toBe(200);
       const contentResponse = await request(manifest.branchContent.archivePath.slice('assets'.length));

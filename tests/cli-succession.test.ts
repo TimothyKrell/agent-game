@@ -635,7 +635,7 @@ function successionPairingFixture() {
         return;
       }
 
-      expect(request.headers['x-agent-game-protocols'], JSON.stringify(context)).toBe('1,2');
+      expect(request.headers['x-agent-game-protocols'], JSON.stringify(context)).toBe('1,2,3');
       let body = '';
 
       for await (const chunk of request) body += chunk;
@@ -746,7 +746,7 @@ it('preserves selected game through first pairing and start recursion, then copi
     ]) {
       const headers = new Headers();
 
-      if (path!.startsWith('/api/')) headers.set('X-Agent-Game-Protocols', '1,2');
+      if (path!.startsWith('/api/')) headers.set('X-Agent-Game-Protocols', '1,2,3');
 
       const probe = await fetch(`http://127.0.0.1:${address.port}${path}`, {
         method: body === undefined ? 'GET' : 'POST',
@@ -761,7 +761,7 @@ it('preserves selected game through first pairing and start recursion, then copi
       probes.push({ path: path!, status: probe.status, apiRequests: bodies.length });
     }
 
-    await cli('start');
+    await cli('start', '--game', 'succession');
     expect(bodies.find((item) => item.path === '/api/queue' && item.data.requestId)?.data).toMatchObject({
       gameId: 'succession',
     });
@@ -811,7 +811,7 @@ it.each([undefined, '1'])(
     const completion = fixture.close();
     await expect(completion).rejects.toThrow(/POST \/api\/queue/);
     await expect(completion).rejects.toMatchObject({
-      errors: [{ cause: { name: 'AssertionError', actual: header, expected: '1,2' } }],
+      errors: [{ cause: { name: 'AssertionError', actual: header, expected: '1,2,3' } }],
     });
     expect(response).toMatch(/^HTTP\/1.1 500 /);
     expect(response).toContain('fixture-handler-failed');
@@ -835,7 +835,7 @@ it('propagates an asynchronous pairing body-parse failure after a complete HTTP 
   const fixture = successionPairingFixture();
   await new Promise<void>((done) => fixture.server.listen(0, '127.0.0.1', done));
   const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(fixture.server.address());
-  const request = `POST /api/queue HTTP/1.1\r\nHost: 127.0.0.1:${address.port}\r\nConnection: close\r\nX-Agent-Game-Protocols: 1,2\r\nContent-Type: application/json\r\nContent-Length: 1\r\n\r\n{`;
+  const request = `POST /api/queue HTTP/1.1\r\nHost: 127.0.0.1:${address.port}\r\nConnection: close\r\nX-Agent-Game-Protocols: 1,2,3\r\nContent-Type: application/json\r\nContent-Length: 1\r\n\r\n{`;
   let response;
 
   try {
@@ -850,7 +850,7 @@ it('propagates an asynchronous pairing body-parse failure after a complete HTTP 
     expect(fixture.bodies).toEqual([]);
 
     const queue = await fetch(`http://127.0.0.1:${address.port}/api/queue`, {
-      headers: { 'X-Agent-Game-Protocols': '1,2' },
+      headers: { 'X-Agent-Game-Protocols': '1,2,3' },
       signal: AbortSignal.timeout(1000),
     });
 

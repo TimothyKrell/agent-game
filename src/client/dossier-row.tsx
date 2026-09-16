@@ -226,6 +226,7 @@ function FactEvidence({ row, entrants }: { row: StoryRow; entrants: DossierEntra
 }
 
 export interface DossierRowProps {
+  game?: 'succession' | 'coding-finale';
   row: StoryRow;
   entrants: DossierEntrants;
   archive: boolean;
@@ -233,7 +234,7 @@ export interface DossierRowProps {
 }
 
 /** A single canonical record. Caller owns list/window anchors; this component owns no history. */
-export function DossierRow({ row, entrants, archive, returns }: DossierRowProps) {
+export function DossierRow({ row, entrants, archive, returns, game }: DossierRowProps) {
   if (!dossierVisible(row.visibility, archive)) return null;
   const fact = row.fact;
 
@@ -327,7 +328,7 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
                 </p>
               )}
               {fact.kind === 'act-ended' && (
-                <DossierAward team={fact.team} reason={fact.reason} seats={returns} />
+                <DossierAward team={fact.team} reason={fact.reason} seats={returns} game={game} />
               )}
             </>
           )}

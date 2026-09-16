@@ -45,17 +45,32 @@ assert.deepEqual(bootstrap.authProviders.toSorted(), ['github', 'google']);
 
 const games = await (await check('/api/games', 200)).json();
 
-assert.deepEqual(games.map((game) => game.gameId).sort(), ['secret-overlord', 'succession']);
+assert.deepEqual(
+  games.map((game) => game.gameId),
+  ['coding-finale'],
+);
 
-const succession = await (await check('/api/bootstrap?gameId=succession', 200)).json();
+assert.equal(games[0].displayName, 'Coding Finale');
 
-assert.equal(bootstrap.gameId, 'secret-overlord');
+assert.equal(games[0].protocolVersion, '3');
 
-assert.equal(succession.gameId, 'succession');
+assert.equal(games[0].rulesUrl, '/games/coding-finale/rules.md');
 
-assert.ok(succession.live.every((match) => match.gameId === 'succession'));
+assert.equal(bootstrap.gameId, 'coding-finale');
 
-assert.ok(succession.recent.every((match) => match.gameId === 'succession'));
+assert.deepEqual(bootstrap.games, games);
+
+assert.ok(bootstrap.live.every((match) => match.gameId === 'coding-finale'));
+
+assert.ok(bootstrap.recent.every((match) => match.gameId === 'coding-finale'));
+
+for (const gameId of ['secret-overlord', 'succession']) {
+  const historical = await (await check(`/api/bootstrap?gameId=${gameId}`, 200)).json();
+  assert.equal(historical.gameId, gameId);
+  assert.deepEqual(historical.games, games);
+  assert.ok(historical.live.every((match) => (match.gameId ?? 'secret-overlord') === gameId));
+  assert.ok(historical.recent.every((match) => (match.gameId ?? 'secret-overlord') === gameId));
+}
 
 const houses = await (await check('/api/agents?house=true', 200)).json();
 
@@ -72,6 +87,11 @@ for (const path of ['/agents.md', '/protocol.md', '/rules.md', '/rating-method.m
 
 for (const path of ['rules.md', 'protocol.md', 'rating-method.md'])
   await check(`/games/succession/${path}`, 200);
+
+for (const path of ['rules.md', 'protocol.md', 'rating-method.md']) {
+  const document = await (await check(`/games/coding-finale/${path}`, 200)).text();
+  assert.ok(document.startsWith('# Coding Finale'), `Coding Finale ${path} content`);
+}
 
 const legacyArchive = Buffer.from(
   await (await check('/downloads/agent-game-cli-0.1.1.tgz', 200)).arrayBuffer(),
@@ -91,6 +111,10 @@ assert.equal(onboarding.headers.get('content-type'), 'text/markdown; charset=utf
 const instructions = await onboarding.text();
 
 assert.ok(instructions.includes(`${server}/agents.md`));
+
+assert.ok(instructions.includes('play one match of Coding Finale'));
+
+assert.ok(instructions.includes(`${server}/games/coding-finale/protocol.md`));
 
 assert.ok(!instructions.includes('{{') && !instructions.includes('<arena-host>'));
 
@@ -137,6 +161,16 @@ try {
   assert.ok(
     (await readFile(`${directory}/package/public/games/succession/rules.md`, 'utf8')).includes('Succession'),
   );
+
+  for (const document of ['rules', 'protocol', 'rating-method']) {
+    const text = await readFile(`${directory}/package/public/games/coding-finale/${document}.md`, 'utf8');
+    assert.ok(text.startsWith('# Coding Finale'), `Packaged Coding Finale ${document}`);
+  }
+
+  const protocol = await readFile(`${directory}/package/public/games/coding-finale/protocol.md`, 'utf8');
+  assert.ok(protocol.includes('X-Agent-Game-Protocols: 1,2,3'));
+  assert.ok(protocol.includes('coding-submit --json'));
+  assert.ok(protocol.includes('coding-practice --json'));
   const entry = `${directory}/package/${pkg.bin['agent-game']}`;
   const bin = `${directory}/agent-game`;
   await symlink(entry, bin);
@@ -165,6 +199,8 @@ try {
   );
 
   assert.ok((await readFile(setup.skillPath, 'utf8')).includes('connections --harness opencode'));
+  assert.equal(setup.selectedGame, 'coding-finale');
+  assert.ok(setup.rulesPath.endsWith('/public/games/coding-finale/rules.md'));
   const paired = await run(bin, ['start', '--config', config]);
   const pairing = JSON.parse(paired.stdout);
   assert.equal(new URL(pairing.verificationUrl).origin, server);
@@ -192,6 +228,12 @@ try {
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(server, { waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { name: 'Your agent. Their next great rival.' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Play Coding Finale', exact: true })).toHaveAttribute(
+      'href',
+      '/connect',
+    );
+    await expect(page.getByRole('link', { name: /^Play (Secret Overlord|Succession)$/ })).toHaveCount(0);
+    await expect(page.getByRole('combobox', { name: 'Standings', exact: true })).toHaveValue('coding-finale');
     assert.equal(await page.getByRole('button', { name: 'Start local exhibition' }).count(), 0);
     const fitsViewport = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
     assert.ok(fitsViewport, `Home overflow at ${width}px`);
@@ -201,6 +243,7 @@ try {
       page.getByRole('heading', { name: 'Your next game starts with a conversation.' }),
     ).toBeVisible();
     await expect(page.getByLabel('Message for your agent')).toHaveValue(new RegExp(`${server}/agents\\.md`));
+    await expect(page.getByLabel('Message for your agent')).toHaveValue(/Coding Finale/);
     await expect(page.getByRole('button', { name: 'Copy prompt' })).toBeVisible();
 
     const onboardingFitsViewport = await page.evaluate(
@@ -221,13 +264,12 @@ try {
     await page.goto(`${server}/?gameId=succession`, { waitUntil: 'networkidle' });
     await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Inside the arena', exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Play Succession', exact: true })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: 'Play Coding Finale', exact: true })).toHaveAttribute(
       'href',
-      '/connect?gameId=succession',
+      '/connect',
     );
-    await expect(page.getByRole('combobox', { name: 'Standings', exact: true })).toHaveValue(
-      'secret-overlord',
-    );
+    await expect(page.getByRole('link', { name: /^Play (Secret Overlord|Succession)$/ })).toHaveCount(0);
+    await expect(page.getByRole('combobox', { name: 'Standings', exact: true })).toHaveValue('coding-finale');
     await expect(page.locator('.header .brand')).toHaveAttribute('href', '/');
 
     const successionFitsViewport = await page.evaluate(

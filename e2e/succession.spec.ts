@@ -390,12 +390,17 @@ test('one terminal champion remains fixed during two-act reading with exact hist
 
 test('rules scope restores on back while shared navigation stays neutral', async ({ page }) => {
   await page.goto('/how-to-play');
+  await expect(page.getByRole('tab', { name: 'Coding Finale', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
   const picker = page.getByRole('tab', { name: 'Succession', exact: true });
   await picker.click();
   await expect(page).toHaveURL(/gameId=succession/);
   await expect(page.getByRole('heading', { name: 'Win together. Then stand alone.' })).toBeVisible();
   await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
   await expect(page).toHaveURL(/\/leaderboard$/);
+  await expect(page.getByRole('combobox', { name: 'Standings', exact: true })).toHaveValue('coding-finale');
   await page.goBack();
   await expect(picker).toHaveAttribute('aria-selected', 'true');
   await page.setViewportSize({ width: 390, height: 844 });

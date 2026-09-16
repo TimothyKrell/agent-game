@@ -11,7 +11,7 @@ import type { ActionRequest, Observation } from '../../src/game/types';
 import { AgentProfileSchema } from '../../src/shared/api';
 import type { AgentProfile, ApiRequestBody, QueueStatus } from '../../src/shared/api';
 
-const server = process.env.TEST_URL ?? 'http://127.0.0.1:8791';
+const server = process.env.TEST_URL ?? 'http://127.0.0.1:8891';
 
 const run = promisify(execFile);
 
@@ -62,7 +62,7 @@ async function pair(cookie: string, agentId: string) {
 }
 
 async function assignment(client: GameClient) {
-  await client.request('/api/queue', { requestId: randomUUID() });
+  await historicalQueue(client);
 
   for (let i = 0; i < 100; i++) {
     const status = await client.request<QueueStatus>('/api/queue');
@@ -74,6 +74,13 @@ async function assignment(client: GameClient) {
   throw new Error('Matchmaking did not assign a table');
 }
 
+async function historicalQueue(client: GameClient) {
+  const requestId = randomUUID();
+  await client.request('/__fixture/legacy-ticket', { requestId });
+
+  return client.request<QueueStatus>('/api/queue', { requestId, gameId: 'secret-overlord' });
+}
+
 describe('real Worker, D1, durable matches, and CLI protocol', () => {
   it('supervises a premature harness final answer through to the authoritative match result', async () => {
     const cookie = await owner();
@@ -82,9 +89,13 @@ describe('real Worker, D1, durable matches, and CLI protocol', () => {
     const matchId = await assignment(client);
     const dir = await mkdtemp('/tmp/opencode/agent-supervisor-');
     const configPath = `${dir}/connection.json`;
-    await writeFile(configPath, JSON.stringify({ server, token, agentId: agent.id, matchId }), {
-      mode: 0o600,
-    });
+    await writeFile(
+      configPath,
+      JSON.stringify({ server, token, agentId: agent.id, matchId, gameId: 'secret-overlord' }),
+      {
+        mode: 0o600,
+      },
+    );
     let calls = 0;
 
     const result = await supervise({ configPath, harness: 'claude' }, async (invocation) => {
@@ -218,7 +229,7 @@ describe('real Worker, D1, durable matches, and CLI protocol', () => {
     expect((await client.request<QueueStatus>('/api/queue')).status).toBe('idle');
 
     const result = await publicClient.request<{ agent: AgentProfile; history: unknown[] }>(
-      `/api/agents/${agent.id}`,
+      `/api/agents/${agent.id}?gameId=secret-overlord`,
     );
 
     expect(result.history).toHaveLength(1);
@@ -262,6 +273,10 @@ describe('real Worker, D1, durable matches, and CLI protocol', () => {
     expect(
       (await browser('/api/owner/pairing/approve', cookie, { code: pairing.code, agentId: agent.id })).status,
     ).toBe(200);
+    const pendingConnection = JSON.parse(await readFile(config, 'utf8'));
+    await new GameClient(server, pendingConnection.token).request('/__fixture/legacy-ticket', {
+      requestId: randomUUID(),
+    });
     const admission = await cli('start');
     expect(['queued', 'starting', 'matched']).toContain(admission.status);
     const connection = JSON.parse(await readFile(config, 'utf8'));
@@ -328,8 +343,8 @@ describe('real Worker, D1, durable matches, and CLI protocol', () => {
     const b = await profile(cookie);
     const first = await pair(cookie, a.id);
     const second = await pair(cookie, b.id);
-    const before = await first.client.request<QueueStatus>('/api/queue', { requestId: randomUUID() });
-    const after = await second.client.request<QueueStatus>('/api/queue', { requestId: randomUUID() });
+    const before = await historicalQueue(first.client);
+    const after = await historicalQueue(second.client);
     expect(after.fillAt).toBe(before.fillAt);
     const ids = await Promise.all([assignment(first.client), assignment(second.client)]);
     expect(ids[0]).not.toBe(ids[1]);
