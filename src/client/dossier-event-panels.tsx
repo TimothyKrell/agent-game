@@ -1,6 +1,5 @@
 import type { StoryChange, StoryRow, StoryValue, StoryEntrant } from './succession-story-types';
 import type { DossierEntrants } from './dossier-summary';
-import { DossierCard } from './dossier-cards';
 import { dossierName, dossierValue, DossierIdentity } from './dossier-identity';
 import { DossierRule } from './dossier-rules';
 import { unavailableEntrant } from './dossier-summary';
@@ -13,7 +12,19 @@ function eventEntrant(row: StoryRow, entrants: DossierEntrants, seat: number): S
   );
 }
 
-function DossierEventChange({ change, act }: { change: StoryChange; act: 1 | 2 }) {
+function DossierEventChange({
+  change,
+  act,
+  capability,
+  loss,
+  lossReason,
+}: {
+  change: StoryChange;
+  act: 1 | 2;
+  capability: 'treasurer' | 'thief' | 'assassin' | 'envoy' | 'guard';
+  loss: boolean;
+  lossReason?: keyof typeof lossReasons;
+}) {
   const alive = dossierValue(change.after.alive);
 
   return (
@@ -38,6 +49,11 @@ function DossierEventChange({ change, act }: { change: StoryChange; act: 1 | 2 }
           />
         </div>
       )}
+      <div className="dossier-event-card-detail">
+        <DossierRule rule={capability} />
+        <span>{loss ? 'Lost · publicly revealed' : 'Proved · replaced, not lost'}</span>
+        {loss && lossReason && <small>{lossReasons[lossReason]}</small>}
+      </div>
       {alive === false && (
         <small className="dossier-status">
           {act === 1 ? 'Executed · returns for Act II' : 'Eliminated · coins frozen'}
@@ -81,15 +97,15 @@ export function DossierEventPanel({ row, entrants }: { row: StoryRow; entrants: 
     >
       <div className="dossier-event-changes">
         {row.affected.map((change) => (
-          <DossierEventChange key={change.seat} change={change} act={row.position.act} />
+          <DossierEventChange
+            key={change.seat}
+            change={change}
+            act={row.position.act}
+            capability={fact.capability}
+            loss={loss}
+            lossReason={lossReason}
+          />
         ))}
-      </div>
-      <div className="dossier-event-card-detail">
-        <small>
-          {owner} · {loss ? 'Public loss' : 'Public proof'}
-        </small>
-        <DossierCard capability={fact.capability} state={loss ? 'lost' : 'revealed'} />
-        {loss && lossReason && <p>{lossReasons[lossReason]}</p>}
       </div>
     </section>
   );

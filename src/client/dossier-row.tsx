@@ -7,13 +7,13 @@ import { dossierFactText } from './dossier-facts';
 import type { DossierEntrants } from './dossier-summary';
 import { DossierAward, DossierCap, DossierReturn, unavailableEntrant } from './dossier-summary';
 import { DossierEventPanel, hasDossierEventPanel } from './dossier-event-panels';
+import {
+  DossierChallengeEvidence,
+  DossierElectionEvidence,
+  DossierPolicyEvidence,
+  DossierTrackerEvidence,
+} from './dossier-evidence';
 import { storyActionRules } from './succession-story-rules';
-
-const powerRules = {
-  investigate: 'investigation',
-  execute: 'execution',
-  'special-election': 'special-election',
-} as const;
 
 export function dossierRowId(row: StoryRow) {
   return `dossier-event-${encodeURIComponent(row.source.matchId)}-${encodeURIComponent(row.source.eventKey)}`;
@@ -82,7 +82,6 @@ function FactEvidence({ row, entrants }: { row: StoryRow; entrants: DossierEntra
   const fact = row.fact;
   const actor = dossierValue(row.actor);
   const lossReason = dossierValue(row.lossReason);
-  const power = dossierValue(row.executivePower);
   const name = (seat: number) => dossierName(rowEntrant(row, entrants, seat), seat);
 
   switch (fact.kind) {
@@ -104,29 +103,7 @@ function FactEvidence({ row, entrants }: { row: StoryRow; entrants: DossierEntra
         </div>
       );
     case 'challenge-resolved':
-      return (
-        <>
-          <p>
-            {fact.challenger === null
-              ? 'Unchallenged · not proof of a held card'
-              : `${name(fact.challenger)} challenges ${name(fact.claimant)}`}
-          </p>
-          <p>
-            <DossierRule rule={fact.capability} /> {fact.block ? 'block claim' : 'claim'} · {fact.outcome}
-          </p>
-          <details className="dossier-responses">
-            <summary>Published responses · {Object.keys(fact.responses).length}</summary>
-            <ul>
-              {Object.entries(fact.responses).map(([seat, response]) => (
-                <li key={seat}>
-                  <strong>{name(Number(seat))}</strong>
-                  <DossierText text={response} />
-                </li>
-              ))}
-            </ul>
-          </details>
-        </>
-      );
+      return <DossierChallengeEvidence row={row} entrants={entrants} />;
     case 'proof':
       return (
         <section aria-label={`${actor == null ? 'Agent' : name(actor)} public proof`}>
@@ -159,52 +136,13 @@ function FactEvidence({ row, entrants }: { row: StoryRow; entrants: DossierEntra
         </section>
       );
     case 'election':
-      return (
-        <section className="dossier-ballots">
-          <p>
-            <b>{Object.values(fact.votes).filter(Boolean).length}</b> approve ·{' '}
-            <b>{Object.values(fact.votes).filter((vote) => !vote).length}</b> reject
-          </p>
-          <p>
-            Coordinator: {name(fact.coordinator)} · Executor: {name(fact.executor)}
-          </p>
-          <details>
-            <summary>Ballots</summary>
-            <ul>
-              {Object.entries(fact.votes).map(([seat, approve]) => (
-                <li key={seat}>
-                  {name(Number(seat))} · {approve ? 'Approve' : 'Reject'}
-                </li>
-              ))}
-            </ul>
-          </details>
-        </section>
-      );
+      return <DossierElectionEvidence row={row} entrants={entrants} />;
     case 'policy':
-      return (
-        <div className="dossier-tracks">
-          <DossierRule rule="safeguard" value={fact.safeguards} />
-          <DossierRule rule="override" value={fact.overrides} />
-          {fact.chaos && <DossierRule rule="chaos" />}
-          {power && (
-            <span>
-              Coordinator power: <DossierRule rule={powerRules[power]} />
-            </span>
-          )}
-        </div>
-      );
+      return <DossierPolicyEvidence row={row} />;
     case 'tracker':
-      return (
-        <p>
-          <DossierRule rule="election-tracker" value={fact.tracker} /> / 3
-        </p>
-      );
+      return <DossierTrackerEvidence row={row} />;
     case 'nomination':
-      return (
-        <p>
-          <DossierRule rule="executor" />: {name(fact.target)}
-        </p>
-      );
+      return null;
     case 'investigation-result':
       return (
         <p>
@@ -302,14 +240,20 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
   if (fact.kind === 'audit') return null;
   const actor = dossierValue(row.actor);
   const departure = fact.kind === 'execution' || (fact.kind === 'influence-lost' && fact.eliminated);
-  const portraitSeat = fact.kind === 'execution' ? fact.target : actor;
+  const departureBanner = fact.kind === 'execution';
+
+  const portraitSeat = ['election', 'policy', 'tracker'].includes(fact.kind)
+    ? null
+    : fact.kind === 'execution'
+      ? fact.target
+      : actor;
 
   const system = fact.kind === 'phase' || fact.kind === 'system' || fact.kind === 'turn-ended';
 
   const speech = fact.kind === 'speech';
   const entrant = portraitSeat == null ? unavailableEntrant : rowEntrant(row, entrants, portraitSeat);
   const name = portraitSeat == null ? 'Actor unavailable' : dossierName(entrant, portraitSeat);
-  const evidence = !speech && !system && fact.kind !== 'act-started' && fact.kind !== 'act-ended';
+  const evidence = !speech && !system && fact.kind !== 'act-ended' && fact.kind !== 'nomination';
 
   const remaining = dossierValue(row.remaining);
   const action = dossierValue(row.action);
@@ -324,7 +268,7 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
     <article
       id={dossierRowId(row)}
       tabIndex={-1}
-      className={`dossier-row ${speech ? 'dossier-speech' : ''} ${system ? 'dossier-system' : ''} ${departure ? 'dossier-departure' : ''} ${row.visibility !== 'public' ? 'dossier-private' : ''}`}
+      className={`dossier-row ${speech ? 'dossier-speech' : ''} ${system ? 'dossier-system' : ''} ${departureBanner ? 'dossier-departure' : ''} ${fact.kind === 'influence-lost' && fact.eliminated ? 'dossier-elimination' : ''} ${row.visibility !== 'public' ? 'dossier-private' : ''}`}
       data-event-type={fact.kind}
       data-source-id={row.source.cursor}
       data-source-act={row.position.act}
@@ -359,7 +303,7 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
             </>
           ) : (
             <>
-              {departure && (
+              {departureBanner && (
                 <h3>
                   <Skull aria-hidden="true" />
                   <span>
@@ -372,14 +316,10 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
               <p className="dossier-source-text">
                 <DossierText text={dossierFactText(row, entrants)} />
               </p>
-              {fact.kind === 'execution' && (
-                <p>
-                  Coordinator:{' '}
-                  {actor == null ? 'unavailable' : dossierName(rowEntrant(row, entrants, actor), actor)}
-                </p>
-              )}
               {departure && fact.kind !== 'execution' && !action && <p>Action actor unavailable</p>}
-              <DossierActionContext row={row} entrants={entrants} />
+              {!['challenge-resolved', 'proof', 'influence-lost'].includes(fact.kind) && (
+                <DossierActionContext row={row} entrants={entrants} />
+              )}
               {fact.kind === 'turn-ended' && dossierValue(row.resolution) && (
                 <p>
                   {action && <DossierRule rule={storyActionRules[action.action]} />} ·{' '}
@@ -389,8 +329,6 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
               {fact.kind === 'act-ended' && (
                 <DossierAward team={fact.team} reason={fact.reason} seats={returns} />
               )}
-              {fact.kind === 'act-started' &&
-                (returns ? <DossierReturn seats={returns} /> : <p>Recorded starting states unavailable.</p>)}
             </>
           )}
         </div>
@@ -399,23 +337,30 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
         <aside className="dossier-evidence" aria-label="Recorded state">
           {eventPanel ? (
             <DossierEventPanel row={row} entrants={entrants} />
+          ) : fact.kind === 'act-started' ? (
+            returns ? (
+              <DossierReturn seats={returns} />
+            ) : (
+              <p>Recorded starting states unavailable.</p>
+            )
           ) : (
             <>
               <FactEvidence row={row} entrants={entrants} />
-              {row.affected.map((change) => (
-                <DossierResources
-                  key={change.seat}
-                  change={change}
-                  act={row.position.act}
-                  archive={archive}
-                />
-              ))}
+              {fact.kind !== 'challenge-resolved' &&
+                row.affected.map((change) => (
+                  <DossierResources
+                    key={change.seat}
+                    change={change}
+                    act={row.position.act}
+                    archive={archive}
+                  />
+                ))}
             </>
           )}
           {departure && !victim && <p>Historical resources unavailable.</p>}
         </aside>
       )}
-      {(departure || (fact.kind === 'influence-lost' && remaining)) && <DossierRemaining row={row} />}
+      {departure && remaining && <DossierRemaining row={row} />}
     </article>
   );
 }
