@@ -2,7 +2,8 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { evidence } from './evidence';
 import { Schema } from 'effect';
 import { ApiError, GameClient } from '../../cli/agent-game.mjs';
 import { supervise } from '../../cli/supervisor.mjs';
@@ -16,6 +17,25 @@ const server = process.env.TEST_URL ?? 'http://127.0.0.1:8891';
 const run = promisify(execFile);
 
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const matches = new Set<string>();
+
+beforeEach(() => matches.clear());
+
+afterEach(async ({ task }) => {
+  if (task.result?.state !== 'fail') return;
+
+  for (const matchId of matches) {
+    const response = await fetch(`${server}/__fixture/diagnostics/${matchId}`, {
+      signal: AbortSignal.timeout(10000),
+    }).catch(() => null);
+
+    await evidence(`${matchId}.json`, {
+      test: task.name,
+      diagnostics: response?.ok ? await response.json() : { unavailable: true, status: response?.status },
+    });
+  }
+});
 
 async function browser(path: string, cookie = '', body?: ApiRequestBody) {
   return fetch(`${server}${path}`, {
@@ -67,7 +87,12 @@ async function assignment(client: GameClient) {
   for (let i = 0; i < 100; i++) {
     const status = await client.request<QueueStatus>('/api/queue');
 
-    if (status.status === 'matched' && status.matchId) return status.matchId;
+    if (status.status === 'matched' && status.matchId) {
+      matches.add(status.matchId);
+
+      return status.matchId;
+    }
+
     await pause(100);
   }
 
@@ -134,6 +159,7 @@ describe('real Worker, D1, durable matches, and CLI protocol', () => {
       return { exitCode: 0, sessionId: 'test-session', costUsd: 0 };
     });
 
+    await evidence('supervisor-result.json', result);
     expect(result.status).toBe('finished');
     expect(result.you?.forfeited).toBe(false);
     expect(result.restarts).toBe(1);
@@ -353,6 +379,7 @@ describe('real Worker, D1, durable matches, and CLI protocol', () => {
       let view = await client.observation(ids[i]);
 
       for (let step = 0; view.status === 'active' && step < 1000; step++) {
+        await client.request(`/__fixture/abandon/${ids[i]}`, {});
         await pause(100);
         view = await client.observation(ids[i], view.cursor);
       }

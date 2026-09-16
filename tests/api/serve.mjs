@@ -46,6 +46,10 @@ const child = spawn(
     `APP_URL:http://127.0.0.1:${port}`,
     '--var',
     `TIME_SCALE:${process.env.TIME_SCALE ?? '0.02'}`,
+    '--var',
+    `API_HOUSE_DELIVERY_DELAY_MS:${process.env.API_HOUSE_DELIVERY_DELAY_MS ?? '0'}`,
+    '--var',
+    `API_RECOVERY_CLOCK:${process.env.API_RECOVERY_CLOCK ?? 'false'}`,
   ],
   { stdio: 'inherit' },
 );

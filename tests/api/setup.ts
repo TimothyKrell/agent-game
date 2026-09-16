@@ -1,5 +1,7 @@
 import { spawn } from 'node:child_process';
 import { mkdir, open } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { evidenceDirectory } from './evidence';
 
 async function fixtureReady(url: string) {
   return fetch(`${url}/__fixture/legacy-health`)
@@ -13,8 +15,9 @@ export default async function setup() {
   if (await fixtureReady(url)) return;
 
   if (process.env.TEST_URL) throw new Error(`Test server unavailable: ${url}`);
-  await mkdir('/tmp/opencode', { recursive: true });
-  const log = await open('/tmp/opencode/agent-game-api-server.log', 'w');
+  await mkdir(evidenceDirectory, { recursive: true });
+  const logPath = resolve(evidenceDirectory, 'worker.log');
+  const log = await open(logPath, 'w');
 
   const child = spawn(process.execPath, ['tests/api/serve.mjs'], {
     detached: true,
@@ -44,5 +47,5 @@ export default async function setup() {
 
   stop();
   await log.close();
-  throw new Error('Test Worker did not start. See /tmp/opencode/agent-game-api-server.log');
+  throw new Error(`Test Worker did not start. See ${logPath}`);
 }
