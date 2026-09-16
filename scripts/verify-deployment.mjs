@@ -219,7 +219,12 @@ try {
     assert.deepEqual(errors, []);
 
     await page.goto(`${server}/?gameId=succession`, { waitUntil: 'networkidle' });
-    await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveValue('succession');
+    await expect(page.getByRole('combobox', { name: 'Matches', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Inside the arena', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Play Succession', exact: true })).toHaveAttribute(
+      'href',
+      '/connect?gameId=succession',
+    );
     await expect(page.getByRole('combobox', { name: 'Standings', exact: true })).toHaveValue(
       'secret-overlord',
     );

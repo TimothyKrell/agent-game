@@ -282,6 +282,15 @@ function summaryOutcome(match: GameMatchSummary) {
   return `${match.winner === 'cooperative' ? 'Cooperative' : 'Rogue'} victory`;
 }
 
+function mergeMatches(
+  groups: (readonly GameMatchSummary[] | undefined)[],
+  timestamp: (match: GameMatchSummary) => number,
+): GameMatchSummary[] {
+  return [
+    ...new Map(groups.flatMap((matches) => matches ?? []).map((match) => [match.id, match])).values(),
+  ].sort((a, b) => timestamp(b) - timestamp(a));
+}
+
 function Home({
   data,
   refresh,
@@ -292,21 +301,16 @@ function Home({
   const choice = usePageGame();
   const { game } = choice;
   const standings = usePageGame('standingsGame');
-  const browser = useLoad(gamePath('/api/bootstrap', game), SiteBootstrapSchema, 10_000);
+  const arenaOverlord = useLoad('/api/bootstrap', SiteBootstrapSchema, 10_000);
+  const arenaSuccession = useLoad('/api/bootstrap?gameId=succession', SiteBootstrapSchema, 10_000);
   const contenders = useLoad(gamePath('/api/agents', standings.game), AgentListSchema, 30_000);
-  const archiveOverlord = useLoad('/api/bootstrap', SiteBootstrapSchema, 30_000);
-  const archiveSuccession = useLoad('/api/bootstrap?gameId=succession', SiteBootstrapSchema, 30_000);
+  const filteredArena = game === 'succession' ? arenaSuccession : arenaOverlord;
+  const arenaSources = choice.explicit ? [filteredArena] : [arenaOverlord, arenaSuccession];
 
-  const archive = [
-    ...new Map(
-      [...(archiveOverlord.data?.recent ?? []), ...(archiveSuccession.data?.recent ?? [])].map((match) => [
-        match.id,
-        match,
-      ]),
-    ).values(),
-  ]
-    .sort((a, b) => (b.finishedAt ?? b.createdAt) - (a.finishedAt ?? a.createdAt))
-    .slice(0, 3);
+  const archive = mergeMatches(
+    [arenaOverlord.data?.recent, arenaSuccession.data?.recent],
+    (match) => match.finishedAt ?? match.createdAt,
+  ).slice(0, 3);
 
   const title = useMotionEntry('title');
   const artwork = useMotionEntry('artwork');
@@ -316,8 +320,25 @@ function Home({
   const [tab, setTab] = useState('live');
   const underline = useUnderlineMotion(tab);
   const [selection, select] = useState('');
-  const matches = choice.invalid ? [] : ((tab === 'live' ? browser.data?.live : browser.data?.recent) ?? []);
+
+  const matchGroups = arenaSources.map((source) =>
+    tab === 'live' ? source.data?.live : source.data?.recent,
+  );
+
+  const matches = choice.invalid
+    ? []
+    : mergeMatches(
+        matchGroups,
+        tab === 'live' ? (match) => match.createdAt : (match) => match.finishedAt ?? match.createdAt,
+      );
+
   const selected = matches.find((match) => match.id === selection) ?? matches[0];
+  const arenaLoading = arenaSources.some((source) => !source.data && !source.error);
+  const arenaSettled = arenaSources.every((source) => source.data || source.error);
+  const queueCount = arenaSources.reduce((total, source) => total + (source.data?.queueCount ?? 0), 0);
+  const houseAvailable = arenaSources.some((source) => source.data?.houseAvailable);
+
+  const admissionPaused = arenaSources.every((source) => source.data && !source.data.houseAvailable);
 
   const { pictures, revalidateUnavailable } = useAgentPictures(
     (selected?.entrants ?? []).map((entrant) => ({ id: entrant.agentId })),
@@ -419,7 +440,7 @@ function Home({
           {data.mode === 'preview' && (
             <button
               className="button ghost small"
-              disabled={busy || choice.invalid || !browser.data}
+              disabled={busy || choice.invalid || !filteredArena.data}
               onClick={exhibition}
             >
               {busy ? <LoaderCircle className="spin" size={16} /> : <Play size={16} />}
@@ -428,11 +449,29 @@ function Home({
           )}
         </div>
         <ErrorBox message={error} />
+        {choice.explicit && (
+          <p role="status">
+            Showing {gameNames[game]} only. <Link href="/">Show both games</Link>
+          </p>
+        )}
         <ErrorBox
-          message={!choice.invalid && browser.error ? `${gameNames[game]} matches: ${browser.error}` : ''}
-          retry={browser.refresh}
+          message={
+            !choice.invalid && arenaSources.includes(arenaOverlord) && arenaOverlord.error
+              ? `Secret Overlord matches unavailable: ${arenaOverlord.error}`
+              : ''
+          }
+          retry={arenaOverlord.refresh}
         />
-        {browser.data && !browser.data.houseAvailable && (
+        <ErrorBox
+          message={
+            !choice.invalid && arenaSources.includes(arenaSuccession) && arenaSuccession.error
+              ? `Succession matches unavailable: ${arenaSuccession.error}`
+              : ''
+          }
+          retry={arenaSuccession.refresh}
+        />
+        {arenaLoading && <p role="status">Loading matches…</p>}
+        {admissionPaused && (
           <div className="admission-note">
             <Radio size={18} />
             <span>
@@ -445,8 +484,6 @@ function Home({
           <p role="status">
             This game is not supported here. Open a Secret Overlord or Succession game link.
           </p>
-        ) : !browser.data ? (
-          !browser.error && <p role="status">Loading {gameNames[game]} matches…</p>
         ) : selected ? (
           <div className="arena-browser">
             <div className="match-options" aria-label="Choose a table">
@@ -563,7 +600,7 @@ function Home({
               </Link>
             </section>
           </div>
-        ) : (
+        ) : arenaSettled ? (
           <div className="waiting-table">
             <div className="waiting-graphic">
               <Users size={36} />
@@ -577,20 +614,22 @@ function Home({
               </h3>
               <p>
                 {tab === 'live'
-                  ? browser.data.houseAvailable
+                  ? houseAvailable
                     ? 'Join the queue with your agent. House agents can fill remaining seats after 30 seconds, when capacity and admission budget are available.'
                     : 'New matches are waiting for house agents to become available. You can connect your agent and browse the archive.'
                   : 'Completed and interrupted match records will appear here.'}
               </p>
               <span className="mono muted">
-                {browser.data.queueCount} {gameNames[game].toUpperCase()} AGENTS IN QUEUE
+                {queueCount}{' '}
+                {choice.explicit ? `${gameNames[game].toUpperCase()} AGENTS` : 'AGENTS ACROSS BOTH GAMES'} IN
+                QUEUE
               </span>
             </div>
             <Link href={gamePath('/how-to-play', game)} className="text-link">
               Take a seat <ArrowRight size={17} />
             </Link>
           </div>
-        )}
+        ) : null}
       </section>
       <div className="game-discovery">
         {(['secret-overlord', 'succession'] as const).map((game) => (
@@ -667,19 +706,15 @@ function Home({
           </div>
           <Flourish />
         </div>
-        {!archiveOverlord.data && !archiveOverlord.error && (
-          <p role="status">Loading Secret Overlord archive…</p>
-        )}
-        {!archiveSuccession.data && !archiveSuccession.error && (
-          <p role="status">Loading Succession archive…</p>
-        )}
+        {!arenaOverlord.data && !arenaOverlord.error && <p role="status">Loading Secret Overlord archive…</p>}
+        {!arenaSuccession.data && !arenaSuccession.error && <p role="status">Loading Succession archive…</p>}
         <ErrorBox
-          message={archiveOverlord.error && `Secret Overlord archive unavailable: ${archiveOverlord.error}`}
-          retry={archiveOverlord.refresh}
+          message={arenaOverlord.error && `Secret Overlord archive unavailable: ${arenaOverlord.error}`}
+          retry={arenaOverlord.refresh}
         />
         <ErrorBox
-          message={archiveSuccession.error && `Succession archive unavailable: ${archiveSuccession.error}`}
-          retry={archiveSuccession.refresh}
+          message={arenaSuccession.error && `Succession archive unavailable: ${arenaSuccession.error}`}
+          retry={arenaSuccession.refresh}
         />
         {archive.length ? (
           <div className="archive-grid">
@@ -699,7 +734,7 @@ function Home({
               </Link>
             ))}
           </div>
-        ) : archiveOverlord.data && archiveSuccession.data ? (
+        ) : arenaOverlord.data && arenaSuccession.data ? (
           <div className="empty">
             <Layers />
             <h3>The record begins at the table.</h3>
