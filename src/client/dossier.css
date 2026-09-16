@@ -520,6 +520,9 @@
   flex-wrap: wrap;
   align-items: center;
 }
+.replay-ui .dossier-award {
+  background: var(--replay-bonus-fill);
+}
 .replay-ui .dossier-award > header {
   display: flex;
   gap: 18px;
