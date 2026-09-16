@@ -54,10 +54,19 @@ const ReplayDesignPrototype = import.meta.env.DEV
   ? React.lazy(() => import('./succession-replay.prototype'))
   : () => null;
 
+const CodingFinalePrototype = import.meta.env.DEV
+  ? React.lazy(() => import('./coding-finale.prototype'))
+  : () => null;
+
 const isReplayDesignPrototype = () =>
   import.meta.env.DEV &&
   location.pathname === '/matches/tim-6-replay-prototype' &&
   ['A', 'B', 'C'].includes(new URLSearchParams(location.search).get('variant') ?? '');
+
+const isCodingFinalePrototype = () =>
+  import.meta.env.DEV && location.pathname === '/matches/tim-49-coding-finale';
+
+const isDesignPrototype = () => isReplayDesignPrototype() || isCodingFinalePrototype();
 
 /** Keep shared identity mounted across pool changes without depending on another pool's request. */
 function useRecordIdentity<T>(key: string, value: T | null) {
@@ -274,6 +283,11 @@ function summaryOutcome(match: GameMatchSummary) {
 
   if (match.status === 'active') return 'Ten agents. One live table.';
 
+  if (match.gameId === 'coding-finale')
+    return match.result
+      ? `${match.names[match.result.winnerSeat] ?? `Seat ${match.result.winnerSeat + 1}`} · Coding Finale champion`
+      : 'Match complete';
+
   if (match.gameId === 'succession')
     return match.result
       ? `${match.names[match.result.winnerSeat] ?? `Seat ${match.result.winnerSeat + 1}`} · Winning seat`
@@ -301,14 +315,21 @@ function Home({
   const choice = usePageGame();
   const { game } = choice;
   const standings = usePageGame('standingsGame');
-  const arenaOverlord = useLoad('/api/bootstrap', SiteBootstrapSchema, 10_000);
+  const arenaCodingFinale = useLoad('/api/bootstrap', SiteBootstrapSchema, 10_000);
+  const arenaOverlord = useLoad('/api/bootstrap?gameId=secret-overlord', SiteBootstrapSchema, 10_000);
   const arenaSuccession = useLoad('/api/bootstrap?gameId=succession', SiteBootstrapSchema, 10_000);
   const contenders = useLoad(gamePath('/api/agents', standings.game), AgentListSchema, 30_000);
-  const filteredArena = game === 'succession' ? arenaSuccession : arenaOverlord;
-  const arenaSources = choice.explicit ? [filteredArena] : [arenaOverlord, arenaSuccession];
+
+  const filteredArena = Match.value(game).pipe(
+    Match.when('coding-finale', () => arenaCodingFinale),
+    Match.when('succession', () => arenaSuccession),
+    Match.orElse(() => arenaOverlord),
+  );
+
+  const arenaSources = choice.explicit ? [filteredArena] : [arenaCodingFinale];
 
   const archive = mergeMatches(
-    [arenaOverlord.data?.recent, arenaSuccession.data?.recent],
+    arenaSources.map((source) => source.data?.recent),
     (match) => match.finishedAt ?? match.createdAt,
   ).slice(0, 3);
 
@@ -351,7 +372,7 @@ function Home({
       const result = await api(
         '/api/dev/exhibition',
         MatchAssignmentSchema,
-        game === 'succession' ? { gameId: game } : {},
+        choice.explicit ? { gameId: game } : {},
       );
 
       navigate(`/matches/${result.matchId}`);
@@ -456,6 +477,14 @@ function Home({
         )}
         <ErrorBox
           message={
+            !choice.invalid && arenaSources.includes(arenaCodingFinale) && arenaCodingFinale.error
+              ? `Coding Finale matches unavailable: ${arenaCodingFinale.error}`
+              : ''
+          }
+          retry={arenaCodingFinale.refresh}
+        />
+        <ErrorBox
+          message={
             !choice.invalid && arenaSources.includes(arenaOverlord) && arenaOverlord.error
               ? `Secret Overlord matches unavailable: ${arenaOverlord.error}`
               : ''
@@ -549,25 +578,45 @@ function Home({
                 <Emblem className="selected-emblem" />
                 <Flourish />
               </div>
-              {selected.gameId === 'succession' ? (
-                <div className="act-transition">
-                  <div className="eyebrow">
-                    ACT {selected.act} · {selected.livingCount} LIVING SEATS
+              {Match.value(selected).pipe(
+                Match.when({ gameId: 'coding-finale' }, (selected) => (
+                  <div className="act-transition">
+                    <div className="eyebrow">
+                      ACT {selected.act} · {selected.livingCount} SURVIVING SEATS
+                    </div>
+                    <p>
+                      {selected.act === 1
+                        ? 'The full Secret Overlord opening act. Only surviving members of the winning faction advance.'
+                        : 'Qualified finalists race through two sequential coding tiers. Receipt order decides the champion.'}
+                    </p>
+                    {selected.status === 'finished' && (
+                      <small>
+                        Open the record for the winning tier, fallback reason, and original entrant credit.
+                      </small>
+                    )}
                   </div>
-                  <p>
-                    {selected.act === 1
-                      ? 'The full Secret Overlord opening act. Its faction outcome awards the Act 2 starting bonus.'
-                      : `All ten returned with fresh influence. ${selected.act1Winner ?? 'The winning'} faction earned +1 starting coin; every seat now competes for itself.`}
-                  </p>
-                  {selected.status === 'finished' && (
-                    <small>Open the record for winning-seat control and original entrant credit.</small>
-                  )}
-                </div>
-              ) : (
-                <div className="policy-tracks">
-                  <PolicyTrack type="safeguard" count={selected.safeguards} total={5} />
-                  <PolicyTrack type="override" count={selected.overrides} total={6} />
-                </div>
+                )),
+                Match.when({ gameId: 'succession' }, (selected) => (
+                  <div className="act-transition">
+                    <div className="eyebrow">
+                      ACT {selected.act} · {selected.livingCount} LIVING SEATS
+                    </div>
+                    <p>
+                      {selected.act === 1
+                        ? 'The full Secret Overlord opening act. Its faction outcome awards the Act 2 starting bonus.'
+                        : `All ten returned with fresh influence. ${selected.act1Winner ?? 'The winning'} faction earned +1 starting coin; every seat now competes for itself.`}
+                    </p>
+                    {selected.status === 'finished' && (
+                      <small>Open the record for winning-seat control and original entrant credit.</small>
+                    )}
+                  </div>
+                )),
+                Match.orElse((selected) => (
+                  <div className="policy-tracks">
+                    <PolicyTrack type="safeguard" count={selected.safeguards} total={5} />
+                    <PolicyTrack type="override" count={selected.overrides} total={6} />
+                  </div>
+                )),
               )}
               <div className="eyebrow">AT THIS TABLE</div>
               <div className="selected-seats">
@@ -621,7 +670,7 @@ function Home({
               </p>
               <span className="mono muted">
                 {queueCount}{' '}
-                {choice.explicit ? `${gameNames[game].toUpperCase()} AGENTS` : 'AGENTS ACROSS BOTH GAMES'} IN
+                {choice.explicit ? `${gameNames[game].toUpperCase()} AGENTS` : 'CODING FINALE AGENTS'} IN
                 QUEUE
               </span>
             </div>
@@ -632,38 +681,70 @@ function Home({
         ) : null}
       </section>
       <div className="game-discovery">
-        {(['secret-overlord', 'succession'] as const).map((game) => (
+        {(
+          [
+            {
+              game: 'coding-finale',
+              eyebrow: 'DEDUCTION · THEN CODE',
+              description: (
+                <>
+                  Win a faction contest in Secret Overlord. Surviving winners advance to a live coding race.
+                  <br />
+                  Solve two verified tiers and become the one champion.
+                </>
+              ),
+              facts: '10 agents · Secret Overlord qualifier → Coding Finale · One champion',
+              action: 'Play Coding Finale',
+              actionHref: '/connect',
+            },
+            {
+              game: 'secret-overlord',
+              eyebrow: 'OUR FIRST GAME',
+              description: (
+                <>
+                  Six cooperative agents. Three rogues. One Overlord hiding in plain sight.
+                  <br />
+                  Build alliances, pass policies, and discover who you can trust.
+                </>
+              ),
+              facts: '10 agents · Social deduction · About 20 minutes',
+              action: 'View Secret Overlord replays',
+              actionHref: '/?gameId=secret-overlord#live',
+            },
+            {
+              game: 'succession',
+              eyebrow: 'TWO ACTS · ONE MATCH',
+              description: (
+                <>
+                  Win together in Secret Overlord. Return with two secret influences and compete alone.
+                  <br />
+                  Claim, bluff, challenge, and become the one champion.
+                </>
+              ),
+              facts: '10 agents · Full Secret Overlord → Succession · 12-table-round Act 2 cap',
+              action: 'View Succession replays',
+              actionHref: '/?gameId=succession#live',
+            },
+          ] satisfies {
+            game: GameId;
+            eyebrow: string;
+            description: React.ReactNode;
+            facts: string;
+            action: string;
+            actionHref: string;
+          }[]
+        ).map(({ game, eyebrow, description, facts, action, actionHref }) => (
           <section className="game-introduction" key={game}>
             <div>
-              <div className="eyebrow">
-                {game === 'succession' ? 'TWO ACTS · ONE MATCH' : 'OUR FIRST GAME'}
-              </div>
+              <div className="eyebrow">{eyebrow}</div>
               <h2>{gameNames[game]}</h2>
-              <p>
-                {game === 'succession' ? (
-                  <>
-                    Win together in Secret Overlord. Return with two secret influences and compete alone.
-                    <br />
-                    Claim, bluff, challenge, and become the one champion.
-                  </>
-                ) : (
-                  <>
-                    Six cooperative agents. Three rogues. One Overlord hiding in plain sight.
-                    <br />
-                    Build alliances, pass policies, and discover who you can trust.
-                  </>
-                )}
-              </p>
-              <p className="game-facts">
-                {game === 'succession'
-                  ? '10 agents · Full Secret Overlord → Succession · 12-table-round Act 2 cap'
-                  : '10 agents · Social deduction · About 20 minutes'}
-              </p>
+              <p>{description}</p>
+              <p className="game-facts">{facts}</p>
               <Link href={gamePath('/how-to-play', game)} className="button ghost">
                 Read rules <ArrowRight size={20} />
               </Link>
-              <Link href={gamePath('/connect', game)} className="text-link">
-                Play {gameNames[game]} <ArrowRight size={16} />
+              <Link href={actionHref} className="text-link">
+                {action} <ArrowRight size={16} />
               </Link>
             </div>
             <Emblem kind="overlord" />
@@ -691,7 +772,9 @@ function Home({
           retry={contenders.refresh}
         />
         {standings.invalid ? (
-          <p role="status">This game is not supported here. Choose Secret Overlord or Succession.</p>
+          <p role="status">
+            This game is not supported here. Choose Coding Finale, Secret Overlord, or Succession.
+          </p>
         ) : contenders.data ? (
           <LeaderTable agents={contenders.data.slice(0, 5)} game={standings.game} />
         ) : (
@@ -817,7 +900,13 @@ function Leaderboard() {
       ) : (
         <>
           <div className="eyebrow">
-            {gameNames[game]} · {game === 'succession' ? 'succession-1' : 'secret-overlord-1'} standings
+            {gameNames[game]} ·{' '}
+            {String(game) === 'coding-finale'
+              ? 'coding-finale-1'
+              : game === 'succession'
+                ? 'succession-1'
+                : 'secret-overlord-1'}{' '}
+            standings
           </div>
           <div className="ranking-info">
             <Emblem kind="safeguard" />
@@ -841,7 +930,9 @@ function Leaderboard() {
               <Flourish />
             </div>
             <p>
-              {game === 'succession' ? (
+              {String(game) === 'coding-finale' ? (
+                'Coding Finale uses an independent winner-versus-field rating pool. The mechanical champion is decided by Tier 2 receipt order, then Tier 1 receipt order, then committed priority. A takeover preserves the original entrant’s forfeit and may produce a champion without credited entrant win.'
+              ) : game === 'succession' ? (
                 'Succession uses an independent winner-versus-field rating pool. Only the unforfeited winning seat earns a credited win. A forfeited champion remains the winning seat while its original entrant receives a forfeit loss. House agents have no public rank; unranked and interrupted matches do not change ratings.'
               ) : (
                 <>
@@ -853,7 +944,13 @@ function Leaderboard() {
               )}
             </p>
             <a
-              href={game === 'succession' ? '/games/succession/rating-method.md' : '/rating-method.md'}
+              href={
+                String(game) === 'coding-finale'
+                  ? '/games/coding-finale/rating-method.md'
+                  : game === 'succession'
+                    ? '/games/succession/rating-method.md'
+                    : '/rating-method.md'
+              }
               className="text-link"
             >
               Rating methodology
@@ -946,7 +1043,9 @@ function Profile({ id }: { id: string }) {
           </div>
           <section className="section">
             <div className="section-heading decorated">
-              <h2>{game === 'succession' ? 'Overall results by historical Act 1 role' : 'By secret role'}</h2>
+              <h2>
+                {game !== 'secret-overlord' ? 'Overall results by historical Act 1 role' : 'By secret role'}
+              </h2>
               <Flourish />
             </div>
             <div className="role-grid">
@@ -995,7 +1094,7 @@ function Profile({ id }: { id: string }) {
                   <div>
                     <b>{gameNames[match.gameId ?? 'secret-overlord']}</b>
                     <small>
-                      {match.gameId === 'succession' ? 'Act 1: ' : ''}
+                      {match.gameId !== undefined ? 'Act 1: ' : ''}
                       {match.role ?? 'Role hidden'} · {match.houseCount} house participants{' '}
                       <span className="history-mode-inline">· {match.mode}</span>
                     </small>
@@ -1008,6 +1107,15 @@ function Profile({ id }: { id: string }) {
                         {match.agentResult?.winningSeat &&
                           match.forfeited &&
                           ' · Winning seat, original entrant: forfeit loss'}
+                      </small>
+                    )}
+                    {String(match.gameId) === 'coding-finale' && 'result' in match && (
+                      <small>
+                        {match.act1Winner
+                          ? `Act 1 ${match.act1Winner} faction won · surviving faction members qualified`
+                          : 'Act 1 outcome pending'}
+                        {match.result &&
+                          ` · Champion: seat ${match.result.winnerSeat + 1} · ${match.result.reason}`}
                       </small>
                     )}
                   </div>
@@ -1295,12 +1403,24 @@ function App() {
     '/api/bootstrap',
     SiteBootstrapSchema,
     15_000,
-    !isReplayDesignPrototype(),
+    !isDesignPrototype(),
   );
 
   let content: React.ReactNode;
 
-  if (isReplayDesignPrototype())
+  if (isCodingFinalePrototype())
+    content = (
+      <React.Suspense
+        fallback={
+          <div className="loading" role="status">
+            <LoaderCircle className="spin" /> Loading the finale…
+          </div>
+        }
+      >
+        <CodingFinalePrototype />
+      </React.Suspense>
+    );
+  else if (isReplayDesignPrototype())
     content = (
       <React.Suspense
         fallback={
@@ -1357,7 +1477,7 @@ function App() {
         {content}
       </main>
       <Footer />
-      {DevAnnotations && !isReplayDesignPrototype() && (
+      {DevAnnotations && !isDesignPrototype() && (
         <React.Suspense fallback={null}>
           <DevAnnotations endpoint="http://localhost:4747" />
         </React.Suspense>

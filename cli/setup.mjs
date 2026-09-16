@@ -71,7 +71,7 @@ export async function connections(harness) {
       server: record.server,
       agentName: state.agentName ?? null,
       agentId: state.agentId ?? null,
-      selectedGame: state.selectedGame ?? 'secret-overlord',
+      selectedGame: state.selectedGame ?? 'coding-finale',
       participation: state.participation ?? null,
       previewParticipation: state.previewParticipation ?? null,
       expiresAt: state.expiresAt ?? null,
@@ -115,7 +115,7 @@ export async function setup(flags) {
   );
 
   const state = JSON.parse((await read(path)) ?? '{}');
-  state.selectedGame = gameId(flags.game ?? state.selectedGame);
+  state.selectedGame = gameId(flags.game ?? 'coding-finale');
   const sourceServer = flags['picture-source-server'];
   const sourceAgent = flags['picture-source-agent'];
 
@@ -138,7 +138,7 @@ export async function setup(flags) {
       `A custom or modified skill already exists at ${skill}. Preserve it and move it aside before retrying setup, or add these installation instructions to it yourself.`,
     );
   const source = await readFile(new URL('../skills/agent-game/SKILL.md', import.meta.url), 'utf8');
-  const content = `${source}\n## Local installation\n\nUse this command from any directory (Node 22.12+):\n\n\`\`\`sh\n${command} connections --harness ${flags.harness}\n\`\`\`\n\nThis lists saved arena URLs, source provenance, selected games, actual participation, competitor names, config paths and exact start commands without exposing credentials. Select the requested competitor and arena, or the only connection. Ask if several fit. Use the selected absolute CLI path and append its \`--config\` to every command. For previews, use the listed participation's immutable \`artifacts\` paths; run \`preview-select\` through the source connection to choose a new target. For production Secret Overlord read ${quote(fileURLToPath(new URL('../public/rules.md', import.meta.url)))}; for production Succession read ${quote(fileURLToPath(new URL('../public/games/succession/rules.md', import.meta.url)))}. Read the same game's protocol for history paging and rating-method for credit.\n`;
+  const content = `${source}\n## Local installation\n\nUse this command from any directory (Node 22.12+):\n\n\`\`\`sh\n${command} connections --harness ${flags.harness}\n\`\`\`\n\nThis lists saved arena URLs, source provenance, selected games, actual participation, competitor names, config paths and exact start commands without exposing credentials. Select the requested competitor and arena, or the only connection. Ask if several fit. Use the selected absolute CLI path and append its \`--config\` to every command. For previews, use the listed participation's immutable \`artifacts\` paths; run \`preview-select\` through the source connection to choose a new target. New production matches use Coding Finale: read ${quote(fileURLToPath(new URL('../public/games/coding-finale/rules.md', import.meta.url)))} and ${quote(fileURLToPath(new URL('../public/games/coding-finale/protocol.md', import.meta.url)))}. Resume historical Secret Overlord with ${quote(fileURLToPath(new URL('../public/rules.md', import.meta.url)))} or Succession with ${quote(fileURLToPath(new URL('../public/games/succession/rules.md', import.meta.url)))}. Read the same game's protocol for history paging and rating-method for credit.\n`;
   await mkdir(dirname(skill), { recursive: true });
   await writeFile(skill, content, { mode: 0o600 });
   state.server = server;
@@ -150,7 +150,7 @@ export async function setup(flags) {
     latest.server = server;
     latest.harness = flags.harness;
     latest.installation ??= state.installation;
-    latest.selectedGame = gameId(flags.game ?? latest.selectedGame);
+    latest.selectedGame = gameId(flags.game ?? 'coding-finale');
 
     if (lineage) latest.pictureSource = lineage;
     state.selectedGame = latest.selectedGame;
@@ -172,7 +172,9 @@ export async function setup(flags) {
     selectedGame: state.selectedGame,
     rulesPath: fileURLToPath(
       new URL(
-        state.selectedGame === 'succession' ? '../public/games/succession/rules.md' : '../public/rules.md',
+        state.selectedGame === 'secret-overlord'
+          ? '../public/rules.md'
+          : `../public/games/${state.selectedGame ?? 'coding-finale'}/rules.md`,
         import.meta.url,
       ),
     ),

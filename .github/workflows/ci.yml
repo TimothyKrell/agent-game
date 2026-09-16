@@ -190,6 +190,8 @@ jobs:
       - run: npm run build
       - run: npm run test:api -- --reporter=verbose --reporter=json --outputFile.json=api-results.json 2>&1 | tee api.log
         shell: bash
+        env:
+          API_EVIDENCE_DIR: .agent-game/ci-evidence/api
       - name: Save API diagnostics
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -198,6 +200,8 @@ jobs:
           path: |
             api.log
             api-results.json
+            .agent-game/ci-evidence/api
+          include-hidden-files: true
           retention-days: 7
 
   browser:

@@ -8,6 +8,7 @@ import { platformCoordinator } from './coordinator';
 import { requireGameProtocol, requireQueueProtocol, selectedGame } from './protocol';
 import {
   TransportActionRequestSchema,
+  CodingPracticeSchema,
   NameSchema,
   PairApproveSchema,
   PairStartSchema,
@@ -53,6 +54,8 @@ import {
 } from './repository';
 
 export { MatchObject } from './match';
+
+export { CodingSandbox } from './coding-runtime';
 
 export { MatchmakingObject } from './matchmaking';
 
@@ -113,7 +116,7 @@ export default {
 
       if (path === '/api/health') return json({ ok: true, protocolVersion: '1' });
 
-      if (path === '/api/games' && method === 'GET') return json(Object.values(GAME_DESCRIPTORS));
+      if (path === '/api/games' && method === 'GET') return json([GAME_DESCRIPTORS['coding-finale']]);
 
       if (path === '/api/agent-pictures' && method === 'GET') {
         const ids = url.searchParams.getAll('agentId');
@@ -170,7 +173,7 @@ export default {
         return json({
           name: 'Agent Game',
           gameId,
-          games: Object.values(GAME_DESCRIPTORS),
+          games: [GAME_DESCRIPTORS['coding-finale']],
           mode: env.HOUSE_PROVIDER === 'preview' ? 'preview' : 'ranked',
           owner,
           live,
@@ -199,6 +202,9 @@ export default {
 
         const input = await readOptionalJson(request, GameSelectionSchema);
         const gameId = selectedGame(input?.gameId ?? url.searchParams.get('gameId'));
+
+        if (gameId !== 'coding-finale')
+          throw new GameError('game-unavailable', 'New matches use Coding Finale.', 409);
         requireGameProtocol(gameId, protocols);
 
         return rpcResponse(await queue.exhibition(gameId));
@@ -377,6 +383,9 @@ export default {
             );
           const input = await readJson(request, QueueJoinSchema);
           const gameId = selectedGame(input.gameId);
+
+          if (gameId !== 'coding-finale' && current.status === 'idle')
+            throw new GameError('game-unavailable', 'New matches use Coding Finale.', 409);
           requireGameProtocol(gameId, protocols);
           const result = await queue.join(principal, input.requestId, gameId);
 
@@ -395,6 +404,40 @@ export default {
             selectedGame(url.searchParams.get('gameId')),
           ),
         );
+
+      const codingRoute = path.match(
+        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)\/coding\/(challenge|practice|source)$/,
+      );
+
+      if (codingRoute) {
+        const match = env.MATCHES.getByName(codingRoute[1]);
+
+        if (codingRoute[2] === 'source' && method === 'GET') {
+          const sequence = Number(url.searchParams.get('sequence'));
+
+          if (!url.searchParams.has('sequence') || !Number.isSafeInteger(sequence) || sequence < 1)
+            throw new GameError('invalid-sequence', 'Supply a positive integer sequence.', 400);
+          const principal = request.headers.has('authorization') ? await agentSession(request, env) : null;
+
+          return rpcResponse(await match.codingSource(principal, sequence, protocols));
+        }
+
+        const principal = await agentSession(request, env);
+
+        if (codingRoute[2] === 'challenge' && method === 'GET') {
+          const tier = Number(url.searchParams.get('tier'));
+
+          if (tier !== 1 && tier !== 2) throw new GameError('invalid-tier', 'Supply tier 1 or 2.', 400);
+
+          return rpcResponse(await match.codingChallenge(principal, tier, protocols));
+        }
+
+        if (codingRoute[2] === 'practice' && method === 'POST') {
+          const input = await readJson(request, CodingPracticeSchema, 204800);
+
+          return rpcResponse(await match.codingPractice(principal, input.program, input.inputs, protocols));
+        }
+      }
 
       const matchRoute = path.match(
         /^\/api\/matches\/(match_[a-zA-Z0-9-]+)(?:\/(actions|ticket|events|history|history-anchor|checkpoint|replay|rounds))?$/,
@@ -478,7 +521,7 @@ export default {
 
         if (operation === 'actions' && method === 'POST') {
           const principal = await agentSession(request, env);
-          const input = await readJson(request, TransportActionRequestSchema);
+          const input = await readJson(request, TransportActionRequestSchema, 204800);
 
           if (!/^[\w:-]{8,160}$/.test(input.actionId))
             throw new GameError(

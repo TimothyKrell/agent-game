@@ -17,7 +17,7 @@ function brokerResult<T>(fn: () => T): RpcResult<T> {
 
 export type { MatchInitialization, PlatformQueueStatus } from './coordinator';
 
-/** RPC/storage host. PlatformQueue owns the two logical queues and their shared invariants. */
+/** RPC/storage host. PlatformQueue owns game queues and their shared invariants. */
 export class MatchmakingObject extends DurableObject<Env> {
   private readonly queue: PlatformQueue;
 
@@ -26,7 +26,7 @@ export class MatchmakingObject extends DurableObject<Env> {
     this.queue = new PlatformQueue(ctx, env);
   }
 
-  join(principal: AgentPrincipal, requestId: string, gameId: GameId = 'secret-overlord') {
+  join(principal: AgentPrincipal, requestId: string, gameId: GameId = 'coding-finale') {
     return this.queue.join(principal, requestId, gameId);
   }
 
@@ -58,7 +58,7 @@ export class MatchmakingObject extends DurableObject<Env> {
     return this.queue.revokeGrant(grantId);
   }
 
-  exhibition(gameId: GameId = 'secret-overlord') {
+  exhibition(gameId: GameId = 'coding-finale') {
     return this.queue.exhibition(gameId);
   }
 

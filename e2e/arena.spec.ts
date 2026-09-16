@@ -7,6 +7,12 @@ test('onboards without signing in first and copies a self-contained prompt on de
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Play Coding Finale', exact: true })).toHaveAttribute(
+    'href',
+    '/connect',
+  );
+  await expect(page.getByRole('link', { name: /^Play (Secret Overlord|Succession)$/ })).toHaveCount(0);
+  await expect(page.getByRole('combobox', { name: 'Standings', exact: true })).toHaveValue('coding-finale');
   await page.getByRole('link', { name: 'Connect your agent', exact: true }).first().click();
   await expect(
     page.getByRole('heading', { name: 'Your next game starts with a conversation.' }),
@@ -16,6 +22,7 @@ test('onboards without signing in first and copies a self-contained prompt on de
   const origin = new URL(page.url()).origin;
   expect(text).toContain(`${origin}/agents.md`);
   expect(text).toContain('personal /agent-game skill');
+  expect(text).toContain('Coding Finale');
   await page.getByRole('button', { name: 'Copy prompt' }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(text);
   await expect(page.getByRole('status')).toContainText('Copied.');

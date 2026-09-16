@@ -124,10 +124,16 @@ test('arena selects real summaries and switches to replay records on desktop and
   page,
 }) => {
   await page.setViewportSize({ width: 1600, height: 1120 });
-  await page.route('**/api/bootstrap', (route) => route.fulfill({ json: bootstrap }));
-  await page.goto('/');
+  await page.route('**/api/bootstrap?gameId=secret-overlord', (route) =>
+    route.fulfill({ json: { ...bootstrap, gameId: 'secret-overlord' } }),
+  );
+  await page.goto('/?gameId=secret-overlord');
   const detail = page.getByRole('region', { name: 'Selected table' });
   await expect(detail).toContainText('7C4E91');
+  await expect(page.getByRole('link', { name: 'Play Coding Finale', exact: true })).toHaveAttribute(
+    'href',
+    '/connect',
+  );
   await page.getByRole('button', { name: /TABLE \/ 2B8A30/ }).click();
   await expect(detail.getByRole('link', { name: 'Watch this table' })).toHaveAttribute(
     'href',

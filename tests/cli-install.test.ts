@@ -92,6 +92,7 @@ it('installs the real archive, saves discoverable skills for both harnesses, and
 
     await writeFile(first.configPath, JSON.stringify(config));
     await cli('setup', '--server', 'https://arena.example.test', '--harness', 'opencode');
+    config.selectedGame = 'coding-finale';
     expect(JSON.parse(await readFile(first.configPath, 'utf8'))).toEqual(config);
     expect((await stat(first.configPath)).mode & 0o777).toBe(0o600);
     const skill = await readFile(first.skillPath, 'utf8');
@@ -115,7 +116,7 @@ it('installs the real archive, saves discoverable skills for both harnesses, and
     const listing = await cli('connections', '--harness', 'opencode');
     expect(listing.connections).toHaveLength(2);
     expect(listing.connections[0]).toMatchObject({
-      selectedGame: 'succession',
+      selectedGame: 'coding-finale',
       server: 'https://arena.example.test',
       agentName: 'Existing competitor',
       configPath: first.configPath,

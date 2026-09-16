@@ -2,6 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { DossierRow } from '../src/client/dossier-row';
+import { SuccessionDossier } from '../src/client/succession-dossier';
 import { DossierSeatCards } from '../src/client/dossier-cards';
 import { DossierPictureProvider, dossierValue } from '../src/client/dossier-identity';
 import { RuleHelpProvider } from '../src/client/ui/rule-help';
@@ -46,6 +47,22 @@ function renderEventPanel(row: StoryRow, model: StoryModel) {
 }
 
 describe('shared Dossier presentation on canonical model fixtures', () => {
+  it('renders Coding Finale Act I without Succession returns, bonuses, or an unrelated individual result', () => {
+    const html = renderToStaticMarkup(
+      createElement(SuccessionDossier, {
+        game: 'coding-finale',
+        model: capturedStory(940, 963),
+        status: 'finished',
+        act: 1,
+      }),
+    );
+
+    expect(html).toContain('Only surviving members of the winning faction qualify');
+    expect(html).not.toContain('All ten agents return');
+    expect(html).not.toContain('Bonus recipients not recorded');
+    expect(html).not.toContain('II · SUCCESSION');
+    expect(html).not.toContain('dossier-outcome');
+  });
   it('renders all twenty retained groups, including exact engine-generated outcomes and connected paid cancellation', async () => {
     const engine = await dossierEngineExamples();
     expect(engine.length + dossierRecordedExamples.length).toBe(20);

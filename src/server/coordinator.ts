@@ -103,7 +103,7 @@ export type PlatformQueueStatus = QueueStatus & {
   requestId: string | null;
   gameId: RepositoryGameId | null;
   rulesVersion: string | null;
-  protocolVersion: '1' | '2' | null;
+  protocolVersion: MatchSnapshot['protocolVersion'] | null;
 };
 
 function queueIdentity(gameId: RepositoryGameId) {
@@ -112,13 +112,13 @@ function queueIdentity(gameId: RepositoryGameId) {
   return { gameId, rulesVersion: descriptor.rulesVersion, protocolVersion: descriptor.protocolVersion };
 }
 
-const GAME_IDS: RepositoryGameId[] = ['secret-overlord', 'succession'];
+const GAME_IDS: RepositoryGameId[] = ['secret-overlord', 'succession', 'coding-finale'];
 
 function validGame(gameId: RepositoryGameId): void {
   if (!GAME_IDS.includes(gameId)) throw new GameError('game-not-found', 'Unknown game.', 400);
 }
 
-/** One deployed coordinator, two logical queues and global admission/participation limits. */
+/** One deployed coordinator with game-scoped queues and global admission/participation limits. */
 export class PlatformQueue {
   readonly preview: PreviewBrokerLedger;
   readonly previewTarget: PreviewTargetAllocations;
@@ -187,9 +187,11 @@ export class PlatformQueue {
   }
   private reservation(gameId: RepositoryGameId): number {
     const override =
-      gameId === 'succession' && 'HOUSE_SUCCESSION_MATCH_RESERVATION_USD' in this.env
-        ? this.env.HOUSE_SUCCESSION_MATCH_RESERVATION_USD
-        : undefined;
+      gameId === 'coding-finale'
+        ? (this.env.HOUSE_CODING_MATCH_RESERVATION_USD ?? '2.5')
+        : gameId === 'succession' && 'HOUSE_SUCCESSION_MATCH_RESERVATION_USD' in this.env
+          ? this.env.HOUSE_SUCCESSION_MATCH_RESERVATION_USD
+          : undefined;
 
     const configured =
       override === undefined || override === '' ? this.env.HOUSE_MATCH_RESERVATION_USD : override;
@@ -245,6 +247,19 @@ export class PlatformQueue {
   }
 
   private queueCapacity(gameId: RepositoryGameId = 'secret-overlord'): QueueStatus['capacity'] {
+    if (gameId === 'coding-finale') {
+      const limit = Number(this.env.CODING_MAX_CONCURRENT_MATCHES ?? 0);
+
+      if (
+        !this.env.CODING_SANDBOXES ||
+        !Number.isInteger(limit) ||
+        limit < 1 ||
+        limit > 3 ||
+        this.allocations().filter((allocation) => allocation.game_id === gameId).length >= limit
+      )
+        return 'busy';
+    }
+
     return previewEnabled(this.env)
       ? this.previewTarget.capacity(gameId)
       : this.capacity(this.reservation(gameId));
@@ -283,8 +298,14 @@ export class PlatformQueue {
     });
   }
 
-  async exhibition(gameId: RepositoryGameId = 'secret-overlord'): Promise<RpcResult<{ matchId: string }>> {
+  async exhibition(gameId: RepositoryGameId = 'coding-finale'): Promise<RpcResult<{ matchId: string }>> {
     validGame(gameId);
+
+    if (gameId !== 'coding-finale')
+      return {
+        ok: false,
+        error: { code: 'game-closed', message: 'New matches use Coding Finale.', status: 409 },
+      };
     const smoke = previewEnabled(this.env);
     const reservation = smoke ? 0 : this.reservation(gameId);
     const snapshot = smoke ? this.smokeSnapshot(gameId) : this.snapshot(gameId, true);
@@ -295,7 +316,7 @@ export class PlatformQueue {
     )
       return { ok: false, error: { code: 'not-found', message: 'Not found.', status: 404 } };
 
-    if (this.capacity(reservation) !== 'available')
+    if (this.queueCapacity(gameId) !== 'available')
       return {
         ok: false,
         error: { code: 'capacity', message: 'The exhibition tables are busy.', status: 409 },
@@ -307,7 +328,7 @@ export class PlatformQueue {
 
     const entries = await Promise.all(houses.results.map((house) => entrant(this.env, house.id, gameId)));
 
-    if (this.capacity(reservation) !== 'available')
+    if (this.queueCapacity(gameId) !== 'available')
       return {
         ok: false,
         error: { code: 'capacity', message: 'The exhibition tables are busy.', status: 409 },
@@ -362,7 +383,7 @@ export class PlatformQueue {
   async join(
     principal: AgentPrincipal,
     requestId: string,
-    gameId: RepositoryGameId = 'secret-overlord',
+    gameId: RepositoryGameId = 'coding-finale',
   ): Promise<RpcResult<PlatformQueueStatus>> {
     try {
       validGame(gameId);
@@ -424,6 +445,12 @@ export class PlatformQueue {
             matchId: current.match_id ?? undefined,
           },
         };
+
+      if (!current && gameId !== 'coding-finale')
+        throw new GameError('game-closed', 'New matches use Coding Finale.', 409);
+
+      if (!current && gameId === 'coding-finale' && !this.env.CODING_SANDBOXES)
+        throw new GameError('game-unavailable', 'Coding Finale requires configured sandboxes.', 503);
 
       if (!current)
         this.ctx.storage.transactionSync(() => {
@@ -1059,7 +1086,7 @@ export class PlatformQueue {
   }
 }
 
-/** Both logical game queues share the deployed coordinator and its global limits. */
+/** Game queues share the deployed coordinator and its preserved identity/global limits. */
 export function platformCoordinator(env: Pick<Env, 'MATCHMAKING'>) {
   return env.MATCHMAKING.getByName('secret-overlord');
 }

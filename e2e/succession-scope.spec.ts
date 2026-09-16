@@ -4,6 +4,8 @@ import { GAME_DESCRIPTORS } from '../src/game/descriptors';
 import type { AgentProfile, GameBootstrap, GameMatchSummary, QueueStatus } from '../src/shared/api';
 import type { GameId } from '../src/game/contracts';
 
+type LegacyScopeGame = Exclude<GameId, 'coding-finale'>;
+
 const owner = { id: 'owner-scope', handle: 'archivist', name: 'The Archivist' };
 
 const agent: AgentProfile = {
@@ -26,7 +28,7 @@ const agent: AgentProfile = {
   createdAt: 1,
 };
 
-function summary(game: GameId): GameMatchSummary {
+function summary(game: LegacyScopeGame): GameMatchSummary {
   const shared = {
     id: `${game}-scope`,
     status: 'finished' as const,
@@ -72,10 +74,10 @@ function summary(game: GameId): GameMatchSummary {
 }
 
 async function scopeRoutes(page: Page, signedIn = true) {
-  const gameFor = (url: string): GameId =>
+  const gameFor = (url: string): LegacyScopeGame =>
     new URL(url).searchParams.get('gameId') === 'succession' ? 'succession' : 'secret-overlord';
 
-  const profile = (game: GameId) => ({
+  const profile = (game: LegacyScopeGame) => ({
     ...agent,
     rating: game === 'succession' ? 1000 : 1274,
     placements: game === 'succession' ? 2 : 8,

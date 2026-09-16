@@ -99,7 +99,7 @@ export class MatchObject extends ApplicationMatch {
     }
 
     if (kind === 'discussion' && !state.phase.kind.includes('discussion')) return;
-    const grace = state.gameId === 'succession' ? state.snapshot.timing.grace : state.timing.grace;
+    const grace = state.snapshot.timing.grace;
     const deadline = Date.now() - (kind === 'grace' ? grace + 1 : 1);
     state.phase.deadline = deadline;
 

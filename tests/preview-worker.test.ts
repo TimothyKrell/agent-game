@@ -43,8 +43,14 @@ beforeAll(async () => {
       HOUSE_MODEL: 'scripted',
       BETTER_AUTH_SECRET: 'isolated-preview-test-secret-at-least-32-characters',
       TIME_SCALE: '0.1',
+      CODING_MAX_CONCURRENT_MATCHES: '0',
     },
-    experimental: { forceLocal: true, disableExperimentalWarning: true, watch: false },
+    experimental: {
+      forceLocal: true,
+      disableExperimentalWarning: true,
+      watch: false,
+      enableContainers: false,
+    },
   });
 }, 30_000);
 

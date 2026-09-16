@@ -1,5 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
-import { mkdtemp, open } from 'node:fs/promises';
+import { mkdir, mkdtemp, open } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { evidence, evidenceDirectory } from './evidence';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { expect, it } from 'vitest';
 import { Schema } from 'effect';
@@ -11,7 +13,10 @@ import type { ApiRequestBody, QueueStatus } from '../../src/shared/api';
 it('restarts the actual Worker during a required decision and recovers durable state without downtime forfeits', async () => {
   const directory = await mkdtemp('/tmp/opencode/agent-recovery-');
   const server = 'http://127.0.0.1:8811';
-  const log = await open(`${directory}/server.log`, 'w');
+  await mkdir(evidenceDirectory, { recursive: true });
+  const logPath = resolve(evidenceDirectory, 'recovery-worker.log');
+  const log = await open(logPath, 'w');
+  let matchId: string | null = null;
   let child: ChildProcess | undefined;
   const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -30,10 +35,16 @@ it('restarts the actual Worker during a required decision and recovers durable s
   };
 
   const start = async () => {
-    child = spawn(process.execPath, ['scripts/dev.mjs', '--test'], {
+    child = spawn(process.execPath, ['tests/api/serve.mjs'], {
       detached: true,
       stdio: ['ignore', log.fd, log.fd],
-      env: { ...process.env, PORT: '8811', TIME_SCALE: '0.1', PERSIST_TO: `${directory}/storage` },
+      env: {
+        ...process.env,
+        PORT: '8811',
+        TIME_SCALE: '0.1',
+        API_RECOVERY_CLOCK: 'true',
+        PERSIST_TO: `${directory}/storage`,
+      },
     });
 
     for (let i = 0; i < 120; i++) {
@@ -44,11 +55,11 @@ it('restarts the actual Worker during a required decision and recovers durable s
       )
         return;
 
-      if (child.exitCode !== null) throw new Error(`Recovery server failed. See ${directory}/server.log`);
+      if (child.exitCode !== null) throw new Error(`Recovery server failed. See ${logPath}`);
       await pause(250);
     }
 
-    throw new Error(`Recovery server did not start. See ${directory}/server.log`);
+    throw new Error(`Recovery server did not start. See ${logPath}`);
   };
 
   try {
@@ -92,7 +103,9 @@ it('restarts the actual Worker during a required decision and recovers durable s
     });
 
     await ownerPost('/api/owner/pairing/approve', { code: pairing.code, agentId: agent.id });
-    await client.request('/api/queue', { requestId: randomUUID() });
+    const requestId = randomUUID();
+    await client.request('/__fixture/legacy-ticket', { requestId });
+    await client.request('/api/queue', { requestId, gameId: 'secret-overlord' });
     let queue: QueueStatus;
 
     do {
@@ -100,7 +113,7 @@ it('restarts the actual Worker during a required decision and recovers durable s
       queue = await client.request<QueueStatus>('/api/queue');
     } while (!queue.matchId);
 
-    const matchId = queue.matchId;
+    matchId = queue.matchId;
     let view = await client.observation(matchId);
 
     while (!view.decision) view = await client.wait(matchId, view.cursor, 500);
@@ -132,6 +145,14 @@ it('restarts the actual Worker during a required decision and recovers durable s
 
     expect(view.status).toBe('finished');
     expect(view.you?.forfeited).toBe(false);
+  } catch (error) {
+    if (matchId) {
+      const response = await fetch(`${server}/__fixture/diagnostics/${matchId}`).catch(() => null);
+
+      if (response?.ok) await evidence('recovery-match.json', await response.json());
+    }
+
+    throw error;
   } finally {
     await stop();
     await log.close();

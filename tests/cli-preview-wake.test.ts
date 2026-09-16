@@ -46,7 +46,7 @@ async function wakeFixture(protocolVersion: '1' | '2') {
   const server = createServer(async (request, response) => {
     try {
       expect(request.headers.authorization).toBe('Bearer target-local-fixture');
-      expect(request.headers['x-agent-game-protocols']).toBe('1,2');
+      expect(request.headers['x-agent-game-protocols']).toBe('1,2,3');
       expect(request.url).toBe('/api/matches/match_public_wake?after=0');
       state.reads++;
       state.activeReads++;

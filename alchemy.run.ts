@@ -92,6 +92,21 @@ export const arenaResources = (env: NodeJS.ProcessEnv, commandArguments = proces
         : undefined;
 
     const secret = (key: string) => (env[key] ? { [key]: Redacted.make(env[key]!) } : {});
+    const codingConcurrency = Number(env.CODING_MAX_CONCURRENT_MATCHES ?? '1');
+
+    if (!Number.isInteger(codingConcurrency) || codingConcurrency < 1 || codingConcurrency > 3)
+      throw new Error('CODING_MAX_CONCURRENT_MATCHES must be an integer from 1 to 3.');
+
+    const codingSandboxes = preview
+      ? undefined
+      : Cloudflare.Container('CodingSandboxes', {
+          className: 'CodingSandbox',
+          context: './dev/coding-finale',
+          dockerfile: 'Dockerfile',
+          instanceType: 'standard-1',
+          // Six finalists, each with isolated practice and hidden-judge containers.
+          maxInstances: codingConcurrency * 12,
+        });
 
     const shared = {
       DB: db,
@@ -115,6 +130,8 @@ export const arenaResources = (env: NodeJS.ProcessEnv, commandArguments = proces
           HOUSE_DAILY_BUDGET_USD: '0',
           HOUSE_MATCH_RESERVATION_USD: '0',
           HOUSE_SUCCESSION_MATCH_RESERVATION_USD: '',
+          HOUSE_CODING_MATCH_RESERVATION_USD: '0',
+          CODING_MAX_CONCURRENT_MATCHES: '0',
           BETTER_AUTH_SECRET: previewAuth!.text,
           PREVIEW_SOURCE_URL: identity ? identity.sourceOrigin : '',
         }
@@ -129,6 +146,9 @@ export const arenaResources = (env: NodeJS.ProcessEnv, commandArguments = proces
           HOUSE_DAILY_BUDGET_USD: env.HOUSE_DAILY_BUDGET_USD ?? '5',
           HOUSE_MATCH_RESERVATION_USD: env.HOUSE_MATCH_RESERVATION_USD ?? '1.5',
           HOUSE_SUCCESSION_MATCH_RESERVATION_USD: env.HOUSE_SUCCESSION_MATCH_RESERVATION_USD ?? '',
+          HOUSE_CODING_MATCH_RESERVATION_USD: env.HOUSE_CODING_MATCH_RESERVATION_USD ?? '2.5',
+          CODING_MAX_CONCURRENT_MATCHES: String(codingConcurrency),
+          CODING_SANDBOXES: codingSandboxes!,
           ...secret('BETTER_AUTH_SECRET'),
           ...secret('GITHUB_CLIENT_ID'),
           ...secret('GITHUB_CLIENT_SECRET'),

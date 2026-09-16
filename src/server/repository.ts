@@ -4,7 +4,6 @@ import { PLACEMENT_RESULTS, ratingChanges } from '../game/rating';
 import type { Entrant, MatchState } from '../game/types';
 import type { GameId, MatchSnapshot, SettlementParticipant } from '../game/contracts';
 import { gameDescriptor } from '../game/descriptors';
-import type { IndividualResult2 } from '../shared/succession';
 import type {
   AgentProfile,
   ConnectionInfo,
@@ -12,7 +11,6 @@ import type {
   MatchSummary,
   OwnerProfile,
   RoleStats,
-  SuccessionSummary,
   SummaryEntrant,
 } from '../shared/api';
 import { nameValue, opaqueId } from './http';
@@ -23,7 +21,7 @@ export type RepositoryEnv = Pick<Env, 'DB' | 'HOUSE_PROVIDER' | 'HOUSE_MODEL'>;
 export type RepositoryGameId = GameId;
 
 function validateGame(gameId: GameId): void {
-  if (gameId !== 'secret-overlord' && gameId !== 'succession')
+  if (gameId !== 'secret-overlord' && gameId !== 'succession' && gameId !== 'coding-finale')
     throw new GameError('game-not-found', 'Unknown game.', 400);
 }
 
@@ -48,7 +46,7 @@ export interface IndexedMatch {
   round: number;
   houseCount: number;
   summary: GameMatchSummary;
-  result: IndividualResult2 | null;
+  result: Exclude<GameMatchSummary, MatchSummary>['result'];
   participants: { seat: number; entrant: Entrant; role?: 'cooperative' | 'rogue' | 'overlord' }[];
 }
 
@@ -57,7 +55,7 @@ export interface MatchSettlement {
   ratingPoolId: string;
   ratingVersion: string;
   mode: MatchSnapshot['mode'];
-  result: IndividualResult2 | null;
+  result: Exclude<GameMatchSummary, MatchSummary>['result'];
   participants: SettlementParticipant[];
 }
 
@@ -67,6 +65,7 @@ function agentSelect(gameId: RepositoryGameId): string {
   validateGame(gameId);
 
   if (gameId === 'secret-overlord') return AGENT_SELECT;
+  const { ratingPoolId } = gameDescriptor(gameId);
 
   return `SELECT a.id, a.owner_id, a.name, a.description, a.house, a.retired_at, a.created_at, a.persona, p.picture_json,
     o.handle AS owner_handle, coalesce(s.rating,1000) AS rating, coalesce(s.games,0) AS games,
@@ -74,10 +73,10 @@ function agentSelect(gameId: RepositoryGameId): string {
     coalesce(s.placements,0) AS placements, coalesce(s.stats_json,'{}') AS roles_json,
     CASE WHEN a.house = 0 AND a.retired_at IS NULL AND s.placements >= ${PLACEMENT_RESULTS}
     THEN 1 + (SELECT COUNT(*) FROM agent_game_stats t JOIN agents b ON b.id = t.agent_id
-      WHERE t.game_id = 'succession' AND t.rating_pool_id = 'succession-1'
+      WHERE t.game_id = '${gameId}' AND t.rating_pool_id = '${ratingPoolId}'
       AND b.house = 0 AND b.retired_at IS NULL AND t.placements >= ${PLACEMENT_RESULTS} AND t.rating > s.rating)
     ELSE NULL END AS rank FROM agents a LEFT JOIN owners o ON o.id = a.owner_id
-    LEFT JOIN agent_game_stats s ON s.agent_id = a.id AND s.game_id = 'succession' AND s.rating_pool_id = 'succession-1'
+    LEFT JOIN agent_game_stats s ON s.agent_id = a.id AND s.game_id = '${gameId}' AND s.rating_pool_id = '${ratingPoolId}'
     LEFT JOIN agent_pictures p ON p.agent_id = a.id`;
 }
 
@@ -145,9 +144,10 @@ export async function listAgents(
   options: { ownerId?: string; house?: boolean; limit?: number; gameId?: RepositoryGameId } = {},
 ): Promise<AgentProfile[]> {
   const where = options.ownerId ? 'a.owner_id = ?' : 'a.house = ? AND a.retired_at IS NULL';
+  const stats = (options.gameId ?? 'secret-overlord') === 'secret-overlord' ? 'a' : 's';
 
   const rows = await env.DB.prepare(
-    `${agentSelect(options.gameId ?? 'secret-overlord')} WHERE ${where} ORDER BY CASE WHEN ${options.gameId === 'succession' ? 's' : 'a'}.placements >= ? THEN 0 ELSE 1 END, rating DESC, a.created_at, a.id LIMIT ?`,
+    `${agentSelect(options.gameId ?? 'secret-overlord')} WHERE ${where} ORDER BY CASE WHEN ${stats}.placements >= ? THEN 0 ELSE 1 END, rating DESC, a.created_at, a.id LIMIT ?`,
   )
     .bind(options.ownerId ?? (options.house ? 1 : 0), PLACEMENT_RESULTS, options.limit ?? 100)
     .all<AgentRow>();
@@ -263,10 +263,10 @@ interface MatchRow {
   names_json: string;
 }
 
-function summary(row: MatchRow): MatchSummary | SuccessionSummary {
-  if (row.game_id === 'succession') {
+function summary(row: MatchRow): GameMatchSummary {
+  if (row.game_id !== 'secret-overlord') {
     if (!row.summary_json) throw new GameError('integrity-error', 'Missing game summary.', 500);
-    const value: SuccessionSummary = JSON.parse(row.summary_json);
+    const value: GameMatchSummary = JSON.parse(row.summary_json);
 
     return value;
   }
@@ -321,13 +321,13 @@ export function matchList(
   active: boolean,
   limit: number,
   gameId: RepositoryGameId,
-): Promise<(MatchSummary | SuccessionSummary)[]>;
+): Promise<GameMatchSummary[]>;
 export async function matchList(
   env: RepositoryEnv,
   active: boolean,
   limit = 20,
   gameId: RepositoryGameId = 'secret-overlord',
-): Promise<(MatchSummary | SuccessionSummary)[]> {
+): Promise<GameMatchSummary[]> {
   validateGame(gameId);
   const pageSize = Number.isFinite(limit) ? Math.max(0, Math.min(50, Math.trunc(limit))) : 20;
 
@@ -374,7 +374,7 @@ export async function agentHistory(
       role: row.status === 'active' ? null : row.role,
     };
 
-    if (row.game_id !== 'succession' || row.status === 'active') return base;
+    if (row.game_id === 'secret-overlord' || row.status === 'active') return base;
 
     const act1: { role: string; winner: string | null } | null = row.act1_json
       ? JSON.parse(row.act1_json)
@@ -416,15 +416,13 @@ function indexInput(env: RepositoryEnv, state: LegacyIndexedState | IndexedMatch
   )
     throw new GameError('integrity-error', 'Legacy state conflicts with its preserved snapshot.', 500);
 
+  const descriptor = gameDescriptor(snapshot.gameId);
+
   if (
-    (snapshot.gameId === 'secret-overlord' &&
-      (snapshot.rulesVersion !== 'secret-overlord-1' ||
-        snapshot.ratingPoolId !== 'secret-overlord-1' ||
-        snapshot.ratingVersion !== 'team-elo-1')) ||
-    (snapshot.gameId === 'succession' &&
-      (snapshot.rulesVersion !== 'succession-1' ||
-        snapshot.ratingPoolId !== 'succession-1' ||
-        snapshot.ratingVersion !== 'winner-softmax-1'))
+    snapshot.rulesVersion !== descriptor.rulesVersion ||
+    snapshot.ratingPoolId !== descriptor.ratingPoolId ||
+    snapshot.ratingVersion !== descriptor.ratingVersion ||
+    snapshot.protocolVersion !== descriptor.protocolVersion
   )
     throw new GameError('integrity-error', 'Inconsistent match descriptor.', 500);
 
@@ -459,7 +457,7 @@ function indexInput(env: RepositoryEnv, state: LegacyIndexedState | IndexedMatch
 
   if (
     modern &&
-    (snapshot.gameId !== 'succession' ||
+    (snapshot.gameId === 'secret-overlord' ||
       state.summary.gameId !== snapshot.gameId ||
       state.summary.id !== state.id ||
       state.summary.status !== status ||
@@ -470,7 +468,7 @@ function indexInput(env: RepositoryEnv, state: LegacyIndexedState | IndexedMatch
       state.summary.houseCount !== state.houseCount ||
       stableJson(state.summary.names) !==
         stableJson(participants.map((participant) => participant.entrant.name)) ||
-      state.summary.gameId !== 'succession' ||
+      state.summary.gameId === undefined ||
       stableJson(state.summary.result) !== stableJson(result) ||
       (status === 'finished') !== (result !== null))
   )
@@ -791,6 +789,10 @@ async function finalizeIndividual(
       participant.entrant.rating !== change.ratingBefore ||
       !Number.isFinite(change.ratingDelta) ||
       change.won !== won ||
+      (state.result &&
+        'credited' in state.result &&
+        state.result.winnerSeat === change.seat &&
+        state.result.credited !== won) ||
       (state.status === 'interrupted' && change.ratingDelta !== 0) ||
       change.placement !== (state.status === 'finished' && snapshot.mode === 'ranked' && !change.forfeited)
     )
@@ -844,7 +846,7 @@ async function finalizeIndividual(
     const detail = { winningSeat: state.result?.winnerSeat === change.seat, creditedWin: change.won };
 
     const act1 =
-      participant.role && state.summary.gameId === 'succession'
+      participant.role && (state.summary.gameId === 'succession' || state.summary.gameId === 'coding-finale')
         ? { role: participant.role, winner: state.summary.act1Winner }
         : null;
 

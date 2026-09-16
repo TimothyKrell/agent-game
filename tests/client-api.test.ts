@@ -70,7 +70,7 @@ afterAll(async () => {
 
 it('preserves protocol negotiation and the existing three-argument POST contract', async () => {
   await expect(api(`${origin}/post`, responseSchema, { name: 'API owner' })).resolves.toEqual({ ok: true });
-  expect(received.at(-1)).toMatchObject({ protocol: '1,2', method: 'POST', body: '{"name":"API owner"}' });
+  expect(received.at(-1)).toMatchObject({ protocol: '1,2,3', method: 'POST', body: '{"name":"API owner"}' });
 });
 
 it('does not send an already aborted request', async () => {

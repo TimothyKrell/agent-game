@@ -1,6 +1,7 @@
 import { Schema } from 'effect';
 import { GameError } from '../game/types';
 import type { ActionRequest2 } from '../shared/succession';
+import type { ActionRequest3 } from '../shared/coding-finale';
 import type { ApiFault, RpcResult } from '../shared/api';
 import { ProtocolUpgradeError } from './protocol';
 
@@ -144,9 +145,14 @@ export function checkOrigin(request: Request, env: Env): void {
   }
 }
 
-export function stableJson<T extends { action: ActionRequest2['action'] }>(request: T): string {
+export function stableJson<T extends { action: ActionRequest2['action'] | ActionRequest3['action'] }>(
+  request: T,
+): string {
   // Preserve protocol-1 fingerprints exactly. Protocol-2 exchange pairs keep legal-choice order.
   const action = Object.fromEntries(Object.entries(request.action).sort(([a], [b]) => a.localeCompare(b)));
+
+  if (request.action.type === 'submit-program')
+    action.program = { language: request.action.program.language, source: request.action.program.source };
 
   return JSON.stringify(
     Object.fromEntries(Object.entries({ ...request, action }).sort(([a], [b]) => a.localeCompare(b))),

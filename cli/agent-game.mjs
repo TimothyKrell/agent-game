@@ -64,7 +64,7 @@ export class GameClient {
     for (let attempt = 0; ; attempt++) {
       try {
         const headers = new Headers();
-        headers.set('X-Agent-Game-Protocols', '1,2');
+        headers.set('X-Agent-Game-Protocols', '1,2,3');
 
         if (body !== undefined) headers.set('content-type', 'application/json');
 
@@ -121,7 +121,7 @@ export class GameClient {
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.searchParams.set('after', String(after));
 
-    if (protocolVersion === '2') url.searchParams.set('protocol', '2');
+    if (['2', '3'].includes(protocolVersion)) url.searchParams.set('protocol', protocolVersion);
 
     if (ticket) url.searchParams.set('ticket', ticket);
 
@@ -140,7 +140,7 @@ export class GameClient {
     const first = await this.observation(matchId, after, wakeSignal);
 
     const changed = (view) =>
-      view.protocolVersion === '2'
+      ['2', '3'].includes(view.protocolVersion)
         ? notification(view) !== (seen ?? notification(first))
         : view.cursor !== after;
 
@@ -284,6 +284,10 @@ function options(argv) {
       json: { type: 'string' },
       text: { type: 'string' },
       file: { type: 'string' },
+      tier: { type: 'string' },
+      sequence: { type: 'string' },
+      language: { type: 'string' },
+      'challenge-id': { type: 'string' },
       'request-id': { type: 'string' },
       'picture-source-server': { type: 'string' },
       'picture-source-agent': { type: 'string' },
@@ -333,6 +337,26 @@ function print(data) {
   process.stdout.write(`${JSON.stringify(data)}\n`);
 }
 
+function validateProgram(program) {
+  if (
+    !program ||
+    !['javascript', 'typescript'].includes(program.language) ||
+    // Dependency-free CLI parses the external code payload at this boundary.
+    // eslint-disable-next-line anti-slop/no-runtime-typeof
+    typeof program.source !== 'string' ||
+    !program.source.length ||
+    Buffer.byteLength(program.source) > 32768
+  )
+    throw new Error('Program requires javascript/typescript language and 1–32768 UTF-8 source bytes.');
+}
+
+function codingPayload(flags) {
+  const payload = JSON.parse(String(flags.json ?? 'null'));
+  validateProgram(payload?.program);
+
+  return payload;
+}
+
 function minutes(value) {
   if (value === undefined) return undefined;
   const ms = Number(value) * 60000;
@@ -344,7 +368,7 @@ function minutes(value) {
 
 // Keep critical state intact inside common tool-output ceilings. History remains retrievable in pages.
 function display(view) {
-  if (view.protocolVersion === '2') {
+  if (['2', '3'].includes(view.protocolVersion)) {
     if (Buffer.byteLength(JSON.stringify(view)) > 14336 || 'events' in view || 'cursor' in view)
       throw new Error('Invalid bounded protocol-2 current observation.');
 
@@ -396,6 +420,24 @@ function display(view) {
 export async function main(argv = process.argv.slice(2)) {
   const { command, flags } = options(argv);
 
+  if (
+    process.env.AGENT_GAME_CHILD_DEADLINE &&
+    (![
+      'observe',
+      'wait',
+      'history',
+      'act',
+      'say',
+      'coding-challenge',
+      'coding-practice',
+      'coding-submit',
+      'coding-source',
+      'help',
+    ].includes(command) ||
+      flags.file)
+  )
+    throw new Error('Supervised play permits match commands and JSON code payloads only.');
+
   if (command === 'help' || flags.help) {
     console.log(
       'Setup: setup --server URL --harness opencode|claude [--config PATH]\nStart or resume: start --config PATH\nSaved installations: connections --harness opencode|claude\n',
@@ -407,7 +449,7 @@ export async function main(argv = process.argv.slice(2)) {
       'Connect without joining: connect --config PATH\nOptional picture: picture-help | picture-status | picture-skip\n  picture-upload --file PATH [--request-id ID]\n  picture-remove [--request-id ID]\n  picture-retry [--request-id ID] (uses saved original bytes/revision)\nAppend --config PATH to each command. PNG/JPEG only, at most 2 MiB and 2048×2048.\nSetup offer lineage: --picture-source-server URL --picture-source-agent ID (choice only; never transfers images or credentials).\n',
     );
     console.log(
-      'Game selection: setup|start|join|play --game secret-overlord|succession\nSupervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\n',
+      'New games: setup|start|join|play --game coding-finale (default). Existing historical participation retains its identity.\nSupervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\nCoding: coding-challenge --tier 1|2; coding-practice --json \'{"program":{"language":"javascript","source":"..."},"inputs":[]}\'; coding-submit --json \'{"challengeId":"...","tier":1,"program":{"language":"javascript","source":"..."}}\'; coding-submit --file PATH --language javascript|typescript --tier 1 --challenge-id ID; coding-source --sequence N\n',
     );
     console.log(
       'Supervisor allowances (minutes): --runtime N --queue-timeout N --child-slice N. Succession defaults: 120/10/10; Secret Overlord match runtime: 35. Existing ledgers retain their limits. Client stop leaves server clocks running and may lead to forfeit.\n',
@@ -498,7 +540,7 @@ export async function main(argv = process.argv.slice(2)) {
     });
   };
 
-  state.selectedGame = gameId(flags.game ?? state.selectedGame);
+  state.selectedGame = gameId(flags.game ?? (state.preview ? state.selectedGame : 'coding-finale'));
 
   if (['connect', 'start', 'pair', 'join', 'play'].includes(command))
     await change((latest) => {
@@ -709,7 +751,7 @@ export async function main(argv = process.argv.slice(2)) {
     if (current.status === 'idle') {
       const request = { requestId: state.pendingJoin.requestId };
 
-      if (state.pendingJoin.gameId === 'succession') request.gameId = 'succession';
+      request.gameId = state.pendingJoin.gameId;
       result = await client.request('/api/queue', request);
     }
 
@@ -868,7 +910,7 @@ export async function main(argv = process.argv.slice(2)) {
       latest.observation = view;
       latest.participation = { gameId: gameId(view.gameId), matchId: view.matchId };
 
-      if (view.protocolVersion === '2') latest.currentNotification = notification(view);
+      if (['2', '3'].includes(view.protocolVersion)) latest.currentNotification = notification(view);
       else latest.cursor = view.cursor;
 
       if (terminal(view)) delete latest.joinRequest;
@@ -884,7 +926,7 @@ export async function main(argv = process.argv.slice(2)) {
     const limit = Number(flags.limit ?? 10);
     const current = await client.observation(matchId, after);
 
-    if (current.protocolVersion === '2') {
+    if (['2', '3'].includes(current.protocolVersion)) {
       const accepted = await remember(current);
       const automatic = flags.after === undefined && flags.epoch === undefined && flags.through === undefined;
 
@@ -984,18 +1026,60 @@ export async function main(argv = process.argv.slice(2)) {
     return;
   }
 
-  if (command === 'act' || command === 'say') {
+  if (command === 'coding-challenge' || command === 'coding-source') {
+    const key = command === 'coding-challenge' ? 'tier' : 'sequence';
+    const value = Number(flags[key]);
+
+    if (!Number.isSafeInteger(value) || value < 1 || (key === 'tier' && value > 2))
+      throw new Error(`Supply a valid --${key}.`);
+    print(
+      await client.request(
+        `/api/matches/${matchId}/coding/${key === 'tier' ? 'challenge' : 'source'}?${key}=${value}`,
+      ),
+    );
+
+    return;
+  }
+
+  if (command === 'coding-practice') {
+    const payload = codingPayload(flags);
+
+    if (!Array.isArray(payload.inputs) || payload.inputs.length < 1 || payload.inputs.length > 8)
+      throw new Error('Practice JSON requires 1–8 routing inputs.');
+    print(await client.request(`/api/matches/${matchId}/coding/practice`, payload));
+
+    return;
+  }
+
+  if (command === 'act' || command === 'say' || command === 'coding-submit') {
     let request;
 
-    if (flags.json) request = JSON.parse(String(flags.json));
+    if (flags.json && command === 'act') request = JSON.parse(String(flags.json));
     else {
       const view = state.observation;
 
       if (!view || view.matchId !== matchId) throw new Error('Run observe or wait before acting.');
       const index = Number(flags.choice);
 
-      const action =
-        command === 'say'
+      const payload =
+        command === 'coding-submit'
+          ? flags.file
+            ? {
+                program: {
+                  language: flags.language ?? 'javascript',
+                  source: await readFile(flags.file, 'utf8'),
+                },
+                tier: Number(flags.tier),
+                challengeId: flags['challenge-id'],
+              }
+            : codingPayload(flags)
+          : null;
+
+      if (payload) validateProgram(payload.program);
+
+      const action = payload
+        ? { type: 'submit-program', ...payload }
+        : command === 'say'
           ? { type: 'chat', text: String(flags.text ?? '') }
           : Number.isInteger(index) && index >= 0
             ? view.decision?.actions[index]?.action
@@ -1010,20 +1094,19 @@ export async function main(argv = process.argv.slice(2)) {
 
       if (view.decision) request.decisionId = view.decision.id;
 
-      if (view.protocolVersion === '2') request.gameId = 'succession';
+      if (['2', '3'].includes(view.protocolVersion)) request.gameId = view.gameId;
 
       // Persist before sending: rerunning the identical command after a transport failure reuses the receipt ID.
-      const signature =
-        view.protocolVersion === '2'
-          ? JSON.stringify({
-              matchId,
-              gameId: view.gameId,
-              phaseId: view.phase.id,
-              decisionId: view.decision?.id,
-              generation: view.you?.generation,
-              action,
-            })
-          : JSON.stringify({ matchId, phaseId: view.phase.id, action });
+      const signature = ['2', '3'].includes(view.protocolVersion)
+        ? JSON.stringify({
+            matchId,
+            gameId: view.gameId,
+            phaseId: view.phase.id,
+            decisionId: view.decision?.id,
+            generation: view.you?.generation,
+            action,
+          })
+        : JSON.stringify({ matchId, phaseId: view.phase.id, action });
 
       if (state.pending?.signature === signature) request = state.pending.request;
       else state.pending = { signature, request };
@@ -1036,7 +1119,7 @@ export async function main(argv = process.argv.slice(2)) {
     });
     delete state.pending;
 
-    if (result.observation.protocolVersion !== '2' && !result.observation.reset)
+    if (result.observation.protocolVersion === '1' && !result.observation.reset)
       result.observation.events = result.observation.events.slice(state.cursor ?? 0);
 
     try {
