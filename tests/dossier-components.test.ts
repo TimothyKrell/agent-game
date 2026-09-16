@@ -121,6 +121,17 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
       expect(html).not.toContain('Cards at this moment');
     }
 
+    const nonEliminating = capturedEvents.find((event) => {
+      const fact = readStoryFact(event);
+
+      return fact.kind === 'influence-lost' && !fact.eliminated;
+    })!;
+
+    const nonEliminatingModel = capturedStory(nonEliminating.id, nonEliminating.id);
+    const nonEliminatingRow = nonEliminatingModel.rows[0];
+    expect(dossierValue(nonEliminatingRow.remaining)).toHaveLength(10);
+    expect(renderRow(nonEliminatingRow, nonEliminatingModel, false)).not.toContain('dossier-remaining');
+
     const quotes = capturedEvents.filter((event) => event.type === 'chat');
     expect(quotes).toHaveLength(416);
 
@@ -191,9 +202,19 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
           ),
         ),
     ).toBe(true);
-    expect(opening).toContain('ACT II · OPENING STATE');
-    expect(opening).toContain('All ten agents return');
+    expect(opening).not.toContain('ACT II · OPENING STATE');
+    expect(opening).not.toContain('Each agent receives two fresh secret capability cards.');
+    expect(opening).toContain('dossier-evidence');
     expect(opening).toContain('All 10 starting states');
+
+    const capturedOpening = capturedStory(963, 963);
+    const capturedStart = capturedOpening.rows.find((row) => row.fact.kind === 'act-started')!;
+    const capturedReturns = dossierValue(capturedOpening.chapters.returns)!;
+    expect(capturedReturns.filter((seat) => seat.coins === 3)).toHaveLength(4);
+    expect(capturedReturns.filter((seat) => seat.coins === 2)).toHaveLength(6);
+    const capturedOpeningHtml = renderRow(capturedStart, capturedOpening, false);
+    expect(capturedOpeningHtml).toContain('4 agents × <b>3</b>');
+    expect(capturedOpeningHtml).toContain('6 agents × <b>2</b>');
 
     const proof = await dossierProof();
     const proved = proof.rows.find((row) => row.fact.kind === 'proof')!;
@@ -208,7 +229,8 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
     const proofRow = renderRow(proved, proof, false);
 
     expect(proofRow).toContain('dossier-event-panel');
-    expect(proofRow.match(/dossier-card-revealed/g)).toHaveLength(1);
+    expect(proofRow.match(/dossier-event-card-detail/g)).toHaveLength(1);
+    expect(proofRow).not.toContain('dossier-card-revealed');
     expect(proofRow).not.toContain('dossier-delta');
 
     const double = examples.find((example) => example.id === 'double-loss')!.models[0];
@@ -224,8 +246,39 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
     const lossRow = renderRow(eliminated, double, false);
 
     expect(lossRow).toContain('dossier-event-panel-eliminated');
-    expect(lossRow.match(/dossier-card-lost/g)).toHaveLength(1);
+    expect(lossRow.match(/dossier-event-card-detail/g)).toHaveLength(1);
+    expect(lossRow).not.toContain('dossier-card-lost');
     expect(lossRow).not.toContain('dossier-delta');
+  });
+
+  it('renders compact ordered election, policy, tracker and response evidence without duplicated prose', () => {
+    const electionModel = capturedStory(26, 79);
+    const election = electionModel.rows.find((row) => row.fact.kind === 'election')!;
+    const electionHtml = renderRow(election, electionModel, false);
+    expect(electionHtml).toContain('<b>7</b> approve');
+    expect(electionHtml).toContain('<b>3</b> reject');
+    expect(electionHtml.match(/dossier-vote-bar/g)).toHaveLength(1);
+    expect(electionHtml.match(/class="approved"/g)).toHaveLength(14);
+    expect(electionHtml.match(/class="rejected"/g)).toHaveLength(6);
+
+    const policy = electionModel.rows.find((row) => row.fact.kind === 'policy')!;
+    const policyHtml = renderRow(policy, electionModel, false);
+    expect(policyHtml).toContain('dossier-policy-tracks');
+    expect(policyHtml).toContain('0 / 5');
+    expect(policyHtml).toContain('1 / 6');
+    expect(policyHtml.match(/dossier-track-slots/g)).toHaveLength(2);
+
+    const chaosModel = capturedStory(170, 215);
+    const tracker = chaosModel.rows.find((row) => row.fact.kind === 'tracker')!;
+    expect(renderRow(tracker, chaosModel, false)).toContain('dossier-tracker-compact');
+
+    const challengeModel = capturedStory(987, 1031);
+    const challenge = challengeModel.rows.find((row) => row.fact.kind === 'challenge-resolved')!;
+    const challengeHtml = renderRow(challenge, challengeModel, false);
+    const evidence = challengeHtml.slice(challengeHtml.indexOf('<aside'));
+    expect(evidence).toContain('Published responses · 9');
+    expect(evidence).not.toContain('block claim');
+    expect(evidence).not.toContain('Action at source');
   });
 
   it('uses the terminal canonical action source, with an honest terminal-record fallback', async () => {

@@ -49,11 +49,6 @@ export function DossierReturn({ seats }: { seats: readonly StoryReturn[] }) {
 
   return (
     <section className="dossier-return" aria-label="Act II starting states">
-      <header className="dossier-return-heading">
-        <small>ACT II · OPENING STATE</small>
-        <h3>{seats.length === 10 ? 'All ten agents return' : `${seats.length} starting seats recorded`}</h3>
-        <p>Each agent receives two fresh secret capability cards.</p>
-      </header>
       <div
         className="dossier-ten-cards"
         aria-label={`${seats.length} agents receive two fresh influence cards`}

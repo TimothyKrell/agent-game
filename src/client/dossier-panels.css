@@ -1,25 +1,6 @@
 /* Succession transition and event panels, kept separate from shared Dossier styling. */
-.replay-ui .dossier-return-heading {
-  margin-bottom: 16px;
-}
-
-.replay-ui .dossier-return-heading small {
-  color: var(--replay-neutral);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-}
-
-.replay-ui .dossier-return-heading h3 {
-  margin: 6px 0;
-  color: var(--replay-accent);
-  font-size: 22px;
-  font-weight: 500;
-}
-
-.replay-ui .dossier-return-heading p {
-  margin: 0;
-  color: var(--replay-muted-foreground);
-  line-height: 1.7;
+.replay-ui .dossier-return {
+  padding-block: 0;
 }
 
 .replay-ui .dossier-award .dossier-bonus-agents article {
@@ -34,8 +15,9 @@
 .replay-ui .dossier-event-panel {
   position: relative;
   display: grid;
-  gap: 14px;
-  padding: 14px;
+  gap: 10px;
+  width: min(100%, 320px);
+  padding: 12px;
   border: 1px solid transparent;
   border-image: var(--replay-frame) 16 / 16px;
   background: var(--replay-surface);
@@ -54,7 +36,7 @@
 
 .replay-ui .dossier-event-change {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -67,27 +49,30 @@
 }
 
 .replay-ui .dossier-event-card-detail {
-  display: grid;
-  gap: 9px;
-  padding-top: 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding-top: 9px;
   border-top: 1px solid var(--replay-border);
 }
 
-.replay-ui .dossier-event-card-detail > small {
-  color: var(--replay-muted-foreground);
+.replay-ui .dossier-event-card-detail > .dossier-term {
+  font-size: 14px;
 }
 
-.replay-ui .dossier-event-card-detail > p {
-  margin: 0;
+.replay-ui .dossier-event-card-detail > span,
+.replay-ui .dossier-event-card-detail > small {
+  color: var(--replay-muted-foreground);
+  font-size: 11px;
+}
+
+.replay-ui .dossier-event-card-detail > small {
+  flex-basis: 100%;
   color: var(--replay-departure);
-  font-size: 12px;
 }
 
 @media (max-width: 760px) {
-  .replay-ui .dossier-return-heading h3 {
-    font-size: 19px;
-  }
-
   .replay-ui .dossier-event-panel {
     padding: 12px;
   }

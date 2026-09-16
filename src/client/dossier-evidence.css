@@ -1,0 +1,138 @@
+/* Compact evidence geometry derived from the approved Dossier prototype. */
+.replay-ui .dossier-vote-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: var(--replay-foreground);
+  font-size: 12px;
+}
+
+.replay-ui .dossier-vote-total b {
+  margin-right: 6px;
+  color: var(--replay-accent);
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.replay-ui .dossier-vote-total > span:last-child,
+.replay-ui .dossier-vote-total > span:last-child b {
+  color: var(--replay-departure);
+}
+
+.replay-ui .dossier-vote-bar {
+  display: flex;
+  gap: 3px;
+  margin: 10px 0 4px;
+}
+
+.replay-ui .dossier-vote-bar span {
+  height: 7px;
+  flex: 1;
+}
+
+.replay-ui .dossier-vote-bar .approved {
+  background: #57b6a5;
+}
+
+.replay-ui .dossier-vote-bar .rejected {
+  background: #995d60;
+}
+
+.replay-ui .dossier-ballot-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  padding: 8px 0;
+}
+
+.replay-ui .dossier-ballot-list > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--replay-accent);
+  font-size: 11px;
+}
+
+.replay-ui .dossier-ballot-list svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+}
+
+.replay-ui .dossier-ballot-list .rejected {
+  color: var(--replay-departure);
+}
+
+.replay-ui .dossier-policy-tracks {
+  display: grid;
+  gap: 14px;
+}
+
+.replay-ui .dossier-policy-tracks > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.replay-ui .dossier-policy-tracks strong {
+  margin-left: auto;
+  color: var(--replay-accent);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-ui .dossier-track-slots {
+  display: flex;
+  flex: 0 0 100%;
+  gap: 6px;
+}
+
+.replay-ui .dossier-track-slots i {
+  height: 12px;
+  flex: 1;
+  border: 1px solid var(--replay-border-strong);
+}
+
+.replay-ui .dossier-policy-tracks > div:first-child .filled {
+  background: #438f82;
+}
+
+.replay-ui .dossier-policy-tracks > div:nth-child(2) .filled {
+  border-color: var(--replay-bonus-border);
+  background: #9e7653;
+}
+
+.replay-ui .dossier-tracker-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+}
+
+.replay-ui .dossier-tracker-compact strong {
+  color: var(--replay-bonus);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-ui .dossier-responses-compact {
+  border-block: 1px solid var(--replay-border);
+}
+
+.replay-ui .dossier-responses-compact ul {
+  margin: 0;
+  padding-block: 8px 14px;
+}
+
+@media (max-width: 760px) {
+  .replay-ui .dossier-ballot-list {
+    grid-template-columns: 1fr;
+  }
+}
+/* Inline government identities belong to the narrative, not a duplicate evidence block. */
+.replay-ui .dossier-source-text > .dossier-identity-compact {
+  vertical-align: middle;
+  font-size: inherit;
+}
