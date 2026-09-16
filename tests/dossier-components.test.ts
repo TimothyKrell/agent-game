@@ -115,7 +115,7 @@ describe('shared Dossier presentation on canonical model fixtures', () => {
       const row = model.rows[0];
       expect(dossierValue(row.remaining)).toHaveLength(expectedCounts[index]);
       const html = renderRow(row, model, false);
-      expect(html).toContain('dossier-elimination');
+      expect(html).toContain('dossier-departure');
       expect(html).toContain(`<strong>${expectedCounts[index]}</strong>`);
       expect(html).not.toContain('At this point in the record');
       expect(html).not.toContain('Cards at this moment');
