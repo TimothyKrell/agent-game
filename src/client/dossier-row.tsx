@@ -334,7 +334,7 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
                 <DossierActionContext row={row} entrants={entrants} />
               )}
               {fact.kind === 'turn-ended' && dossierValue(row.resolution) && (
-                <p>
+                <p className="dossier-action-resolution">
                   {action && <DossierRule rule={storyActionRules[action.action]} />} ·{' '}
                   {dossierValue(row.resolution)}
                 </p>

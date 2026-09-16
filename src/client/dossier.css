@@ -389,6 +389,9 @@
   font-size: 11px;
   color: var(--replay-muted-foreground);
 }
+.replay-ui .dossier-copy > .dossier-action-resolution {
+  margin-top: 8px;
+}
 .replay-ui .dossier-action-facts {
   display: flex;
   align-items: center;
