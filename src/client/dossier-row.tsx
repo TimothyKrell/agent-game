@@ -71,9 +71,6 @@ function DossierActionContext({ row, entrants }: { row: StoryRow; entrants: Doss
           : ''}
       </span>
       {action.paid > 0 && <span>{action.paid} coins paid · no refund</span>}
-      {declaration?.kind === 'event' && (
-        <span className="dossier-source-reference">Action at source {declaration.cursor}</span>
-      )}
     </div>
   );
 }

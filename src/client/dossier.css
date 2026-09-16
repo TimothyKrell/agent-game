@@ -389,9 +389,6 @@
   font-size: 11px;
   color: var(--replay-muted-foreground);
 }
-.replay-ui .dossier-source-reference {
-  font-size: 9px;
-}
 .replay-ui .dossier-action-facts {
   display: flex;
   align-items: center;
