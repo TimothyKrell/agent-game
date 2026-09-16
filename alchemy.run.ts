@@ -102,7 +102,7 @@ export const arenaResources = (env: NodeJS.ProcessEnv, commandArguments = proces
       : Cloudflare.Container('CodingSandboxes', {
           className: 'CodingSandbox',
           context: './dev/coding-finale',
-          dockerfile: 'Dockerfile',
+          dockerfile: './dev/coding-finale/Dockerfile',
           instanceType: 'standard-1',
           // Six finalists, each with isolated practice and hidden-judge containers.
           maxInstances: codingConcurrency * 12,
