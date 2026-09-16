@@ -314,6 +314,22 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
                 </h3>
               )}
               <p className="dossier-source-text">
+                {fact.kind === 'election' && (
+                  <>
+                    <DossierIdentity
+                      entrant={rowEntrant(row, entrants, fact.coordinator)}
+                      seat={fact.coordinator}
+                      compact
+                    />
+                    {' → '}
+                    <DossierIdentity
+                      entrant={rowEntrant(row, entrants, fact.executor)}
+                      seat={fact.executor}
+                      compact
+                    />
+                    {'. '}
+                  </>
+                )}
                 <DossierText text={dossierFactText(row, entrants)} />
               </p>
               {departure && fact.kind !== 'execution' && !action && <p>Action actor unavailable</p>}

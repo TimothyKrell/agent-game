@@ -49,11 +49,16 @@
 }
 
 .replay-ui .dossier-event-card-detail {
-  display: grid;
-  justify-items: start;
-  gap: 5px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   padding-top: 9px;
   border-top: 1px solid var(--replay-border);
+}
+
+.replay-ui .dossier-event-card-detail > .dossier-term {
+  font-size: 14px;
 }
 
 .replay-ui .dossier-event-card-detail > span,
@@ -63,6 +68,7 @@
 }
 
 .replay-ui .dossier-event-card-detail > small {
+  flex-basis: 100%;
   color: var(--replay-departure);
 }
 

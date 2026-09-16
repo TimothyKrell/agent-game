@@ -131,3 +131,8 @@
     grid-template-columns: 1fr;
   }
 }
+/* Inline government identities belong to the narrative, not a duplicate evidence block. */
+.replay-ui .dossier-source-text > .dossier-identity-compact {
+  vertical-align: middle;
+  font-size: inherit;
+}
