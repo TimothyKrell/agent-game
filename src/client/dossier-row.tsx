@@ -71,9 +71,6 @@ function DossierActionContext({ row, entrants }: { row: StoryRow; entrants: Doss
           : ''}
       </span>
       {action.paid > 0 && <span>{action.paid} coins paid · no refund</span>}
-      {declaration?.kind === 'event' && (
-        <span className="dossier-source-reference">Action at source {declaration.cursor}</span>
-      )}
     </div>
   );
 }
@@ -241,7 +238,7 @@ export function DossierRow({ row, entrants, archive, returns, game }: DossierRow
   if (fact.kind === 'audit') return null;
   const actor = dossierValue(row.actor);
   const departure = fact.kind === 'execution' || (fact.kind === 'influence-lost' && fact.eliminated);
-  const departureBanner = fact.kind === 'execution';
+  const departureBanner = departure;
 
   const portraitSeat = ['election', 'policy', 'tracker'].includes(fact.kind)
     ? null
@@ -269,7 +266,7 @@ export function DossierRow({ row, entrants, archive, returns, game }: DossierRow
     <article
       id={dossierRowId(row)}
       tabIndex={-1}
-      className={`dossier-row ${speech ? 'dossier-speech' : ''} ${system ? 'dossier-system' : ''} ${departureBanner ? 'dossier-departure' : ''} ${fact.kind === 'influence-lost' && fact.eliminated ? 'dossier-elimination' : ''} ${row.visibility !== 'public' ? 'dossier-private' : ''}`}
+      className={`dossier-row ${speech ? 'dossier-speech' : ''} ${system ? 'dossier-system' : ''} ${departureBanner ? 'dossier-departure' : ''} ${row.visibility !== 'public' ? 'dossier-private' : ''}`}
       data-event-type={fact.kind}
       data-source-id={row.source.cursor}
       data-source-act={row.position.act}
@@ -315,6 +312,22 @@ export function DossierRow({ row, entrants, archive, returns, game }: DossierRow
                 </h3>
               )}
               <p className="dossier-source-text">
+                {fact.kind === 'election' && (
+                  <>
+                    <DossierIdentity
+                      entrant={rowEntrant(row, entrants, fact.coordinator)}
+                      seat={fact.coordinator}
+                      compact
+                    />
+                    {' → '}
+                    <DossierIdentity
+                      entrant={rowEntrant(row, entrants, fact.executor)}
+                      seat={fact.executor}
+                      compact
+                    />
+                    {'. '}
+                  </>
+                )}
                 <DossierText text={dossierFactText(row, entrants)} />
               </p>
               {departure && fact.kind !== 'execution' && !action && <p>Action actor unavailable</p>}
@@ -322,7 +335,7 @@ export function DossierRow({ row, entrants, archive, returns, game }: DossierRow
                 <DossierActionContext row={row} entrants={entrants} />
               )}
               {fact.kind === 'turn-ended' && dossierValue(row.resolution) && (
-                <p>
+                <p className="dossier-action-resolution">
                   {action && <DossierRule rule={storyActionRules[action.action]} />} ·{' '}
                   {dossierValue(row.resolution)}
                 </p>
