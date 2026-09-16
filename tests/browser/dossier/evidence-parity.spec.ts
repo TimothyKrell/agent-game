@@ -43,7 +43,8 @@ for (const width of [1440, 390]) {
     await expect(elimination.locator('.dossier-event-panel')).toHaveCount(1);
     await expect(elimination.locator('.dossier-event-card-detail')).toHaveCount(1);
     await expect(elimination.locator('.dossier-remaining')).toHaveCount(1);
-    await expect(elimination).not.toHaveClass(/dossier-departure/);
+    await expect(elimination).toHaveClass(/dossier-departure/);
+    await expect(elimination.locator('.dossier-copy > h3')).toContainText('eliminated');
 
     const proof = row(page, 'proof', '1011');
     const visualRows = { election, policy, opening, challenge, proof, ordinaryLoss };

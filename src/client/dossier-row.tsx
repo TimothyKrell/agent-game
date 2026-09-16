@@ -240,7 +240,7 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
   if (fact.kind === 'audit') return null;
   const actor = dossierValue(row.actor);
   const departure = fact.kind === 'execution' || (fact.kind === 'influence-lost' && fact.eliminated);
-  const departureBanner = fact.kind === 'execution';
+  const departureBanner = departure;
 
   const portraitSeat = ['election', 'policy', 'tracker'].includes(fact.kind)
     ? null
@@ -268,7 +268,7 @@ export function DossierRow({ row, entrants, archive, returns }: DossierRowProps)
     <article
       id={dossierRowId(row)}
       tabIndex={-1}
-      className={`dossier-row ${speech ? 'dossier-speech' : ''} ${system ? 'dossier-system' : ''} ${departureBanner ? 'dossier-departure' : ''} ${fact.kind === 'influence-lost' && fact.eliminated ? 'dossier-elimination' : ''} ${row.visibility !== 'public' ? 'dossier-private' : ''}`}
+      className={`dossier-row ${speech ? 'dossier-speech' : ''} ${system ? 'dossier-system' : ''} ${departureBanner ? 'dossier-departure' : ''} ${row.visibility !== 'public' ? 'dossier-private' : ''}`}
       data-event-type={fact.kind}
       data-source-id={row.source.cursor}
       data-source-act={row.position.act}
