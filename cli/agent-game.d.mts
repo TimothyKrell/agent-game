@@ -55,6 +55,12 @@ export class GameClient {
     timeoutMs?: number,
     seen?: string,
   ): Promise<T>;
+  waitForChange<T extends Observation | Observation2 | Observation3 = Observation>(
+    matchId: string,
+    after: number,
+    timeoutMs?: number,
+    seen?: string,
+  ): Promise<T>;
 }
 
 export function main(argv?: string[]): Promise<void>;

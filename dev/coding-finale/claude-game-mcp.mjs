@@ -6,8 +6,7 @@ const [configPath, metricsPath, cliPath, gatePath] = process.argv.slice(2);
 
 const tool = {
   name: 'game',
-  description:
-    'Your fixed game CLI. Required choices first. wait blocks up to 60s, waking on changes. history uses explicit cursors. Coding payloads are JSON.',
+  description: `Your fixed game CLI. Required choices first. ${process.env.AGENT_GAME_EVENT_WAIT === '1' ? 'wait remains pending until a change or decision; idle timeouts are handled internally.' : 'wait blocks up to 60s, waking on changes.'} history uses explicit cursors. Coding payloads are JSON.`,
   inputSchema: {
     type: 'object',
     properties: {

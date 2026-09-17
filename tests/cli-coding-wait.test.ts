@@ -12,7 +12,12 @@ const run = promisify(execFile);
 
 it.each(
   [false, true].flatMap((compact) =>
-    ['clock', 'history', 'reclaim', 'decision', 'terminal'].map((change) => ({ compact, change })),
+    ['clock', 'history', 'reclaim', 'decision', 'terminal', 'delayed-history', 'revoked', 'runtime'].map(
+      (change) => ({
+        compact,
+        change,
+      }),
+    ),
   ),
 )('wait distinguishes $change changes (compact=$compact)', async ({ change, compact }) => {
   const directory = await mkdtemp(join(tmpdir(), 'coding-wait-'));
@@ -34,7 +39,20 @@ it.each(
     finale: null,
   };
 
+  let changeAt = Infinity;
+
   const server = createServer((request, response) => {
+    if (change === 'revoked' && Date.now() >= changeAt) {
+      response.writeHead(401, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ error: { code: 'connection-revoked', message: 'Fixture revoked.' } }));
+
+      return;
+    }
+
+    if (!request.url?.includes('ticket')) {
+      if (change === 'delayed-history' && Date.now() >= changeAt) view.history.streamHead = 18;
+    }
+
     response.setHeader('content-type', 'application/json');
     response.end(
       JSON.stringify(
@@ -96,21 +114,50 @@ it.each(
 
     if (change === 'terminal') view.status = 'finished';
     const started = performance.now();
+    changeAt = Date.now() + 2100;
 
-    const result = await run('node', [
-      'cli/agent-game.mjs',
-      'wait',
-      '--timeout',
-      '1',
-      '--config',
-      config,
-      ...(compact ? ['--compact'] : []),
-    ]);
+    const pending = run(
+      'node',
+      [
+        'cli/agent-game.mjs',
+        'wait',
+        '--timeout',
+        '1',
+        '--config',
+        config,
+        ...(compact ? ['--compact'] : []),
+        ...(change !== 'clock' ? ['--until-change'] : []),
+      ],
+      {
+        env:
+          change === 'runtime'
+            ? { ...process.env, AGENT_GAME_CHILD_DEADLINE: String(Date.now() + 1500) }
+            : process.env,
+      },
+    );
+
+    if (change === 'runtime') {
+      await expect(pending).rejects.toMatchObject({ stdout: expect.stringContaining('runtime-exhausted') });
+      expect(performance.now() - started).toBeLessThan(3000);
+
+      return;
+    }
+
+    if (change === 'revoked') {
+      await expect(pending).rejects.toMatchObject({ stdout: expect.stringContaining('connection-revoked') });
+
+      return;
+    }
+
+    const result = await pending;
 
     expect(JSON.parse(result.stdout).decision).toEqual(view.decision);
     expect(JSON.parse(result.stdout).unchanged === true).toBe(compact && change === 'clock');
 
-    if (change === 'clock') expect(performance.now() - started).toBeGreaterThanOrEqual(800);
+    if (change === 'delayed-history') {
+      expect(JSON.parse(result.stdout).history.streamHead).toBe(18);
+      expect(performance.now() - started).toBeGreaterThanOrEqual(1800);
+    } else if (change === 'clock') expect(performance.now() - started).toBeGreaterThanOrEqual(800);
     else expect(performance.now() - started).toBeLessThan(800);
   } finally {
     for (const socket of sockets) socket.destroy();

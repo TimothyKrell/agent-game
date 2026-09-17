@@ -146,7 +146,7 @@ export class GameClient {
         ? notification(view) !== (seen ?? notification(first))
         : view.cursor !== after;
 
-    if (changed(first) || first.decision || terminal(first)) return first;
+    if (changed(first) || first.decision || first.you?.canReclaim || terminal(first)) return first;
 
     return new Promise((resolve, reject) => {
       let socket;
@@ -256,6 +256,27 @@ export class GameClient {
       void reconnect();
     });
   }
+
+  /** Idle transport deadlines stay inside the client; errors still reach the caller. */
+  async waitForChange(matchId, after, timeoutMs = 60_000, seen) {
+    if (seen === undefined) return this.observation(matchId, after);
+    let previous = seen;
+
+    while (true) {
+      const view = await this.wait(matchId, after, timeoutMs, previous);
+      const current = notification(view);
+
+      if (
+        previous === undefined ||
+        current !== previous ||
+        view.decision ||
+        view.you?.canReclaim ||
+        terminal(view)
+      )
+        return view;
+      previous = current;
+    }
+  }
 }
 
 function options(argv) {
@@ -266,6 +287,7 @@ function options(argv) {
       help: { type: 'boolean' },
       compact: { type: 'boolean' },
       discussion: { type: 'boolean' },
+      'until-change': { type: 'boolean' },
       'discussion-reset': { type: 'boolean' },
       to: { type: 'string' },
       'reply-to': { type: 'string' },
@@ -470,7 +492,7 @@ export async function main(argv = process.argv.slice(2)) {
       'History: history --epoch E --after N --through T --limit 10 --max-bytes 12288. Queue waiting: status --wait 5.\nProtocol 2 current state is bounded to 14 KiB; history pages come from the server.\n',
     );
     console.log(
-      'Use --compact for smaller Coding Finale observations. Quiet wait timeouts return unchanged:true; retain the prior state or run observe --compact to refresh. Complete state is cached for act --choice. Omit --compact for full protocol output.\n',
+      'Use --compact for smaller Coding Finale observations. Quiet wait timeouts return unchanged:true; retain the prior state or run observe --compact to refresh. Experimental wait --until-change keeps idle timeouts inside the client; --timeout remains its transport recheck interval. It requires a harness that permits long-running tools. Complete state is cached for act --choice. Omit --compact for full protocol output.\n',
     );
     console.log(
       `Agent Game · HTTP / WebSocket client (Node 22.12+)\n\nCommands:\n  pair --server URL [--name "OpenCode on laptop"]\n  pair-status                  Complete an approved pairing\n  join                         Join or resume the matchmaking queue\n  status                       Get queue / match assignment\n  leave                        Cancel a queued entry\n  observe [--match ID]          Read current entitled state\n  reclaim [--match ID]          Explicitly reclaim temporary house coverage\n  wait [--timeout 20]           Wait for new events, decisions, or game end\n  act --choice N               Submit a zero-based legal choice from last observation\n  act --json '{...}'           Submit a complete ActionRequest\n  say --text "..."             Send public discussion\n  watch --match ID             Stream a public or entitled match\n\nUse --config PATH for each installation. Defaults to ~/.agent-game/connection.json.\nUse --match ID to override the last assignment. All output except help is JSON.\nKeep calling wait in the foreground until the match ends. A socket alone does not wake a model.\n`,
@@ -1091,7 +1113,12 @@ export async function main(argv = process.argv.slice(2)) {
     const view = await remember(
       flags.discussion && unreadDiscussion(state, state.observation)
         ? await client.observation(matchId)
-        : await client.wait(matchId, state.cursor ?? 0, seconds * 1000, seen),
+        : await (flags['until-change'] ? client.waitForChange.bind(client) : client.wait.bind(client))(
+            matchId,
+            state.cursor ?? 0,
+            seconds * 1000,
+            seen,
+          ),
     );
 
     const unchanged =
