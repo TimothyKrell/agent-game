@@ -50,3 +50,11 @@ The reset also records a creation-time cutoff in `arena_control.retired_before`.
 ## Review corrections
 
 The two review passes found a terminal-state decoder mismatch, concurrent discussion redelivery, successful-looking terminal reclaim receipts, and a missing live-history retry path. These are corrected with regression checks: finished states round-trip with current-generation superseded receipts, concurrent CLI history consumers claim each event once, terminal reclaim rejects new handoffs while retaining valid retries, and the live feed exposes an activity retry during transient outages. The browser outage/retry case passes. Extended compatibility checks also exposed preview `connect` overwriting the selected historical game; preview selection is now preserved.
+
+## Completed full-table comparison
+
+Match `match_a3695598-b99d-4cde-be1a-9fa401e804c8` completed in **26.19 minutes**, with **zero takeovers**, no forfeits and no budget stops. Cooperative agents qualified by five Safeguards; Vector (seat 4) won with Tier 2 submission 6. All six submissions were judged: five passed and Orbit's Tier 1 attempt hit the time limit. The public archive contains 334 events and 61 chat messages, including 15 addressed messages and six explicit reply links.
+
+All ten Haiku harnesses exited successfully with final reports. Total reported cost, including readiness, is **$12.2294096**; no invocation relies on a stream-only estimate. Peak measured context was 67,365 tokens. This improves on the preceding run's two takeovers and eight missing final reports, but is a single comparison rather than a reliability rate. The live backend was started before review corrections and intentionally stayed fixed during paid play; review regressions were verified separately. This preview-provider match used routing, not a randomly selected new family.
+
+Artifacts: `/tmp/opencode/claude-haiku-release-table/report.json` and `public-evidence.json`. Phone replay: `http://100.97.89.80:5193/matches/match_a3695598-b99d-4cde-be1a-9fa401e804c8` (Tailscale).

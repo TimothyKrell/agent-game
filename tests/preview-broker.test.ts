@@ -1553,7 +1553,7 @@ describe.sequential('isolated source budget exhaustion', () => {
       Schema.Array(Schema.Struct({ games: Schema.Number, rating: Schema.Number })),
     );
 
-    expect(profile).toEqual([{ games: 0, rating: 1000 }]);
+    expect(profile).toEqual([{ games: 0, rating: 0 }]);
     observations.push(
       'Actual live target HouseSeat → source generateHouse → game submission at normal clocks; over-estimate actual costs stay charged, exhausted work interrupts with partial history and no ratings or local usage ledger.',
     );

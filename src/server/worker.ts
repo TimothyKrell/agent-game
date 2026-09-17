@@ -385,7 +385,8 @@ export default {
               503,
             );
           const input = await readJson(request, QueueJoinSchema);
-          const gameId = selectedGame(input.gameId);
+          // Retained protocol-1 preview executables omit the original game's ID.
+          const gameId = selectedGame(input.gameId ?? (previewEnabled(env) ? 'secret-overlord' : undefined));
 
           if (!permitsGame(env, gameId) && current.status === 'idle')
             throw new GameError('game-unavailable', 'New matches use Coding Finale.', 409);

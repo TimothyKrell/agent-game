@@ -358,7 +358,8 @@ it.each(['opencode', 'claude'])(
       status: 'ready',
       picture: { askOwner: false },
     });
-    expect(await cli(selected.configPath, 'start')).toMatchObject({
+    const started = await cli(selected.configPath, 'start');
+    expect(started, JSON.stringify(started)).toMatchObject({
       exitCode: 1,
       error: { code: 'preview-allocation-pending', status: 503 },
     });
