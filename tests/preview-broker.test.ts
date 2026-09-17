@@ -1373,7 +1373,7 @@ describe.sequential('shared production and preview competition', () => {
     const allocations = await count(source, 'preview_broker_allocations');
 
     const response = await decoded(
-      await post(arena.worker, '/api/dev/exhibition', {}),
+      await post(arena.worker, '/api/dev/exhibition', { gameId: 'secret-overlord' }),
       Schema.Struct({ matchId: Schema.String }),
     );
 

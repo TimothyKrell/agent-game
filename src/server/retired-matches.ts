@@ -19,11 +19,17 @@ export async function rejectRetiredMatch(env: Env, id: string) {
 
   if (!retired) return;
 
-  if (!retired.purged) await purge(env, id);
+  if (!retired.purged) {
+    await platformCoordinator(env).registerRetiredAllocations();
+    await purge(env, id);
+  }
+
   throw new GameError('match-retired', 'This match was removed in the arena reset.', 410);
 }
 
 export async function purgeRetiredMatches(env: Env) {
+  await platformCoordinator(env).registerRetiredAllocations();
+
   const rows = await env.DB.prepare(
     'SELECT id FROM retired_matches WHERE purged=0 ORDER BY id LIMIT 25',
   ).all<{ id: string }>();

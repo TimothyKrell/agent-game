@@ -858,6 +858,9 @@ export class MatchObject extends DurableObject<Env> {
         throw new GameError('action-id-conflict', 'This reclaim request ID was reused with different input.');
 
       if (!receipt) {
+        if (state.status !== 'active')
+          throw new GameError('match-ended', 'A terminal match cannot hand off controller authority.', 409);
+
         if (state.seats[seat].generation !== request.expectedGeneration)
           throw new GameError(
             'controller-generation-changed',

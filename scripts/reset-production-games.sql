@@ -1,5 +1,6 @@
 -- Run against the production D1 database only after export and deployment of migration 0009.
 -- D1 batch execution must be transactional. Profiles, grants, authentication and pictures survive.
+UPDATE arena_control SET retired_before = CAST(unixepoch('subsec') * 1000 AS INTEGER) WHERE id=1;
 INSERT OR IGNORE INTO retired_matches(id, retired_at)
 SELECT id, CAST(unixepoch('subsec') * 1000 AS INTEGER) FROM matches;
 DELETE FROM match_participants;

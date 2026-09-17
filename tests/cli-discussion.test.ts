@@ -32,6 +32,13 @@ it('delivers unread addressed discussion without replay, drains backlog before s
   let handoff = false;
   let historyFails = false;
   let submitted: unknown;
+  let synchronizeHistory = false;
+  let arrivals = 0;
+  let releaseConcurrent = () => {};
+
+  const concurrentPages = new Promise<void>((resolve) => {
+    releaseConcurrent = resolve;
+  });
 
   const server = createServer(async (request, response) => {
     const url = new URL(request.url!, 'http://localhost');
@@ -73,6 +80,11 @@ it('delivers unread addressed discussion without replay, drains backlog before s
         hasMore: cursor < through,
         reset: false,
       };
+
+      if (synchronizeHistory) {
+        if (++arrivals === 2) releaseConcurrent();
+        await concurrentPages;
+      }
 
       if (handoff) {
         view.you.generation++;
@@ -157,6 +169,11 @@ it('delivers unread addressed discussion without replay, drains backlog before s
     expect(accepted.accepted).toBe(true);
     expect(accepted.observation.discussion.error).toContain('unavailable');
     expect(JSON.parse(await readFile(config, 'utf8')).discussionWalk.cursor).toBe(25);
+    historyFails = false;
+    synchronizeHistory = true;
+    const concurrent = await Promise.all([cli('observe'), cli('observe')]);
+    expect(concurrent.flatMap((result) => result.discussion.events)).toHaveLength(1);
+    expect(concurrent.map((result) => result.discussion.cursor)).toEqual([26, 26]);
   } finally {
     server.closeAllConnections();
     await new Promise<void>((done) => server.close(() => done()));

@@ -79,6 +79,9 @@ export default {
     ).run();
 
     if (new URL(request.url).pathname === '/api/__fixture/retire' && request.method === 'POST') {
+      await env.DB.prepare(
+        'CREATE TABLE IF NOT EXISTS arena_control (id INTEGER PRIMARY KEY, retired_before INTEGER NOT NULL DEFAULT 0)',
+      ).run();
       const input: { id: string } = await request.json();
       await env.DB.prepare('INSERT OR IGNORE INTO retired_matches(id,retired_at) VALUES (?,?)')
         .bind(input.id, Date.now())

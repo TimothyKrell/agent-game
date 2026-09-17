@@ -7,7 +7,7 @@ Authorized 2026-09-16: integrate local live-experience/recovery/discussion work,
 - [x] Audit current branch, release workflow, production storage and existing failing checks.
 - [x] Discussion: retain bounded unanswered directed-message context, encourage explicit recipient metadata, use 45-second Coding Finale discussion windows, preserve required-action clocks and strategic silence.
 - [x] Reliability: diagnose the two last-match takeovers, settle terminal pending receipts explicitly, allow bounded graceful model shutdown and retain final usage.
-- [x] Catalog: Coding Finale is the only public selectable/default game. Disable standalone Secret Overlord admission. Keep Succession behind the development-environment admission gate.
+- [x] Catalog: Coding Finale is the only public selectable/default game. Disable standalone Secret Overlord production admission. Explicit development/preview requests retain the experimental engines and existing registered preview contracts.
 - [x] Challenges: add 30 distinct versioned families alongside routing, with published examples, explicit contracts, larger Tier 2 bounds, deterministic private-seeded suites, reference oracles, boundary checks and selected exhaustive cross-checks. Generalize practice/judging/archive presentation; preserve existing routing snapshots. Deterministic preview-provider fixtures retain routing.
 - [ ] Release checks: lint, formatting, all TypeScript projects, core/API tests, relevant extended tests, browser/mobile regressions, real sandbox submissions and bounded live dialogue/full-match evaluation.
 - [ ] Release new immutable CLI version (do not overwrite 0.4.0 archive bytes).
@@ -44,3 +44,9 @@ Reconciled the previous full game by taking exactly one cost source per invocati
 After successful deployment/migration, set `arena_control.admissions_paused=1` using the production D1 binding. Confirm no live matches remain, export D1 into private local storage, and execute `scripts/reset-production-games.sql`. The SQL records tombstones before deleting indexes and resets every rating pool and original profile statistics to zero. Verify identity/picture/grant counts against the export.
 
 Visit retired match URLs to drive bounded cleanup immediately; cron also handles batches. Cleanup removes coordinator joins/allocations, match histories/source/evidence and house-seat jobs/notes, and destroys finalist sandboxes. Tombstones and local storage guards fence late writes. Confirm every tombstone is marked purged, public histories are empty and ratings/records are zero before clearing the admission pause. Preserve CLI 0.4.0 bytes and publish 0.5.0.
+
+The reset also records a creation-time cutoff in `arena_control.retired_before`. D1 rejects late indexing of any match created at or before that cutoff, including unindexed objects. Cleanup registers pre-cutoff coordinator allocations as tombstones before processing them.
+
+## Review corrections
+
+The two review passes found a terminal-state decoder mismatch, concurrent discussion redelivery, successful-looking terminal reclaim receipts, and a missing live-history retry path. These are corrected with regression checks: finished states round-trip with current-generation superseded receipts, concurrent CLI history consumers claim each event once, terminal reclaim rejects new handoffs while retaining valid retries, and the live feed exposes an activity retry during transient outages. The browser outage/retry case passes. Extended compatibility checks also exposed preview `connect` overwriting the selected historical game; preview selection is now preserved.

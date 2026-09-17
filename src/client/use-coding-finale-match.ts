@@ -51,6 +51,7 @@ export function useCodingFinaleMatch(initial: Observation3) {
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const [historyGeneration, setHistoryGeneration] = useState(0);
+  const [historyRetryGeneration, setHistoryRetryGeneration] = useState(0);
 
   const [history, setHistory] = useState<{
     epoch: string;
@@ -421,7 +422,14 @@ export function useCodingFinaleMatch(initial: Observation3) {
       });
 
     return () => request.abort();
-  }, [view.matchId, view.history.visibilityEpoch, view.act, view.status, resetHistory]);
+  }, [
+    view.matchId,
+    view.history.visibilityEpoch,
+    view.act,
+    view.status,
+    resetHistory,
+    historyRetryGeneration,
+  ]);
 
   const act = async (action: Action3) => {
     const accepted = current.current;
@@ -481,6 +489,11 @@ export function useCodingFinaleMatch(initial: Observation3) {
       checkpoint: history.epoch === view.history.visibilityEpoch ? history.checkpoint : null,
       actOneSnapshot: history.epoch === view.history.visibilityEpoch ? history.actOneSnapshot : null,
       rounds: history.epoch === view.history.visibilityEpoch ? history.rounds : [],
+      retry: () => {
+        setHistoryRetryGeneration((value) => value + 1);
+
+        return loadHistory(history.following ? (historyHead ?? 0) : history.through, history.following);
+      },
       loadEarlier: () => {
         followLive.current = false;
 

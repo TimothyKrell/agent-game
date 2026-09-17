@@ -345,4 +345,20 @@ it('atomically reclaims only for the original entrant and never through ordinary
     },
   });
   expect((await reclaim(coveredSeat.entrant.agentId, 'reclaim-request-2', 1)).status).toBe(409);
+
+  const terminal = evolveCodingFinale(secondCoverage, {
+    type: 'interrupt',
+    reason: 'Terminal handoff fixture',
+    now: secondCoverage.phase.startedAt + 1,
+  }).state;
+
+  await worker.fetch('/api/__fixture/state', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ id, state: JSON.stringify(terminal) }),
+  });
+  const terminalReclaim = await reclaim(coveredSeat.entrant.agentId, 'terminal-reclaim', 3);
+  expect(terminalReclaim.status).toBe(409);
+  expect(await terminalReclaim.json()).toMatchObject({ error: { code: 'match-ended' } });
+  expect((await reclaim(coveredSeat.entrant.agentId)).status).toBe(200);
 });

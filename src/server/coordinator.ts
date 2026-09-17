@@ -319,7 +319,7 @@ export class PlatformQueue {
         },
       };
 
-    if (gameId !== 'coding-finale' && !(gameId === 'succession' && this.env.ENVIRONMENT === 'development'))
+    if (!permitsGame(this.env, gameId))
       return {
         ok: false,
         error: { code: 'game-closed', message: 'New matches use Coding Finale.', status: 409 },
@@ -464,11 +464,7 @@ export class PlatformQueue {
           },
         };
 
-      if (
-        !current &&
-        gameId !== 'coding-finale' &&
-        !(gameId === 'succession' && this.env.ENVIRONMENT === 'development')
-      )
+      if (!current && !permitsGame(this.env, gameId))
         throw new GameError('game-closed', 'New matches use Coding Finale.', 409);
 
       if (!current && gameId === 'coding-finale' && !this.env.CODING_SANDBOXES)
@@ -640,6 +636,30 @@ export class PlatformQueue {
       this.ctx.storage.sql.exec('DELETE FROM allocations WHERE id=?', matchId);
       this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id=?', matchId);
     });
+  }
+
+  async registerRetiredAllocations(): Promise<void> {
+    const control = await this.env.DB.prepare('SELECT retired_before FROM arena_control WHERE id=1').first<{
+      retired_before: number;
+    }>();
+
+    if (!control || control.retired_before <= 0) return;
+
+    const allocations = this.ctx.storage.sql
+      .exec<{ id: string }>('SELECT id FROM allocations WHERE created_at<=?', control.retired_before)
+      .toArray();
+
+    for (let offset = 0; offset < allocations.length; offset += 50)
+      await this.env.DB.batch(
+        allocations
+          .slice(offset, offset + 50)
+          .map((allocation) =>
+            this.env.DB.prepare('INSERT OR IGNORE INTO retired_matches(id,retired_at) VALUES (?,?)').bind(
+              allocation.id,
+              control.retired_before,
+            ),
+          ),
+      );
   }
 
   async revokeGrant(grantId: string): Promise<void> {
@@ -1129,4 +1149,9 @@ export class PlatformQueue {
 /** Game queues share the deployed coordinator and its preserved identity/global limits. */
 export function platformCoordinator(env: Pick<Env, 'MATCHMAKING'>) {
   return env.MATCHMAKING.getByName('secret-overlord');
+}
+
+/** Public production admission is Finale-only; explicit nonproduction requests retain engine experiments. */
+export function permitsGame(env: Pick<Env, 'ENVIRONMENT'>, gameId: RepositoryGameId): boolean {
+  return gameId === 'coding-finale' || env.ENVIRONMENT === 'development' || env.ENVIRONMENT === 'preview';
 }

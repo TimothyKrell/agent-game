@@ -44,6 +44,11 @@ it('resets match records and scores atomically, preserves identity, and fences l
         "INSERT INTO matches(id,status,mode,created_at,house_count,names_json) VALUES ('old','finished','ranked',1,10,'[]')",
       ),
     ).toThrow('match-retired');
+    expect(() =>
+      db.exec(
+        "INSERT INTO matches(id,status,mode,created_at,house_count,names_json) VALUES ('never-indexed','finished','ranked',1,10,'[]')",
+      ),
+    ).toThrow('match-retired');
     db.exec("INSERT INTO agents(id,name,name_key,created_at) VALUES ('new','New','new',2)");
     expect(db.prepare("SELECT rating FROM agents WHERE id='new'").get()).toMatchObject({ rating: 0 });
   } finally {

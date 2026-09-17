@@ -1016,14 +1016,14 @@ describe('actual Succession HTTP, Durable Object and house execution', () => {
       }>(`/api/agents/${participant.agent_id}?gameId=succession`);
 
       expect(selected.agent).toMatchObject({ games: 1, placements: 1, wins: participant.won });
-      expect(selected.agent.rating).toBeCloseTo(1000 + (participant.rating_delta ?? 0));
+      expect(selected.agent.rating).toBeCloseTo(participant.rating_delta ?? 0);
       expect(
         (
           await data<{ agent: { rating: number; games: number; placements: number } }>(
             `/api/agents/${participant.agent_id}`,
           )
         ).agent,
-      ).toMatchObject({ rating: 1000, games: 0, placements: 0 });
+      ).toMatchObject({ rating: 0, games: 0, placements: 0 });
     }
 
     await until(

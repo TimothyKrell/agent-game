@@ -32,6 +32,7 @@ test('live feed retains rows, follows the bottom, and pauses without moving the 
 
   let release: (() => void) | undefined;
   let hold = false;
+  let historyUnavailable = true;
 
   const view = () => ({
     ...observeCodingFinale(state, null),
@@ -84,6 +85,9 @@ test('live feed retains rows, follows the bottom, and pauses without moving the 
     }
 
     if (url.pathname.endsWith('/history')) {
+      if (historyUnavailable)
+        return route.fulfill({ status: 503, json: { error: { message: 'Temporary history outage' } } });
+
       if (hold)
         await new Promise<void>((resolve) => {
           release = resolve;
@@ -128,6 +132,10 @@ test('live feed retains rows, follows the bottom, and pauses without moving the 
     socket.send(JSON.stringify({ type: 'observation', observation: view() }));
   });
   await page.goto(`/matches/${state.id}`);
+
+  await expect(page.getByRole('button', { name: 'Retry activity' })).toBeVisible();
+  historyUnavailable = false;
+  await page.getByRole('button', { name: 'Retry activity' }).click();
 
   const last = page.getByText(
     'Public statement 30: preserve this exact conversation while the game continues.',

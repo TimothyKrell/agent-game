@@ -5,7 +5,7 @@ import { changeAgentPicture, readAgentPicture } from './agent-pictures';
 import { GameError } from '../game/types';
 import { GAME_DESCRIPTORS } from '../game/descriptors';
 import { rejectRetiredMatch, purgeRetiredMatches } from './retired-matches';
-import { platformCoordinator } from './coordinator';
+import { platformCoordinator, permitsGame } from './coordinator';
 import { requireGameProtocol, requireQueueProtocol, selectedGame } from './protocol';
 import {
   TransportActionRequestSchema,
@@ -206,7 +206,7 @@ export default {
         const input = await readOptionalJson(request, GameSelectionSchema);
         const gameId = selectedGame(input?.gameId ?? url.searchParams.get('gameId'));
 
-        if (gameId !== 'coding-finale')
+        if (!permitsGame(env, gameId))
           throw new GameError('game-unavailable', 'New matches use Coding Finale.', 409);
         requireGameProtocol(gameId, protocols);
 
@@ -387,11 +387,7 @@ export default {
           const input = await readJson(request, QueueJoinSchema);
           const gameId = selectedGame(input.gameId);
 
-          if (
-            gameId !== 'coding-finale' &&
-            !(gameId === 'succession' && env.ENVIRONMENT === 'development') &&
-            current.status === 'idle'
-          )
+          if (!permitsGame(env, gameId) && current.status === 'idle')
             throw new GameError('game-unavailable', 'New matches use Coding Finale.', 409);
           requireGameProtocol(gameId, protocols);
           const result = await queue.join(principal, input.requestId, gameId);

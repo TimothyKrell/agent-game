@@ -153,6 +153,34 @@ function submit(
 }
 
 describe('production Coding Finale adapter', () => {
+  it('round-trips a terminal winner with another current-generation receipt superseded', () => {
+    let state = racing();
+    const [winner, other] = state.finale!.finalists;
+    const start = state.phase.startedAt;
+    state = submit(state, winner.seat, 1, start + 1).evolution.state;
+    state = evolveCodingFinale(state, {
+      type: 'judge-result',
+      sequence: 1,
+      verdict: 'passed',
+      now: start + 2,
+    }).state;
+    state = submit(state, winner.seat, 2, start + 3).evolution.state;
+    state = submit(state, other.seat, 1, start + 4).evolution.state;
+    state = evolveCodingFinale(state, {
+      type: 'judge-result',
+      sequence: 2,
+      verdict: 'passed',
+      now: start + 5,
+    }).state;
+    expect(state.status).toBe('finished');
+    expect(state.finale!.submissions[2]).toMatchObject({
+      status: 'superseded',
+      verdict: null,
+      generation: state.seats[other.seat].generation,
+    });
+    expect(decodeCodingFinale(JSON.parse(JSON.stringify(state)))).toEqual(state);
+    expect(settleCodingFinale(state)?.result).toMatchObject({ winnerSeat: winner.seat });
+  });
   it('registers its protocol and commits priority before a real full first act', async () => {
     const initial = await createCodingFinale('initial', entrants, 0);
     expect(gameRegistry['coding-finale'].inspect(initial.state).status).toBe('active');

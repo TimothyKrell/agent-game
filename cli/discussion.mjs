@@ -57,12 +57,11 @@ export async function discussion({ view, client, state, remember, change, reset 
   const applied = await change((latest) => {
     if (!latest.observation || scope(latest.observation) !== identity) return false;
     const previous = latest.discussionWalk?.scope === identity ? latest.discussionWalk.cursor : 0;
+    const claimed = page.events.filter((event) => reset || event.id > previous);
     const currentWalk = !reset && latest.discussionWalk?.scope === identity ? latest.discussionWalk : null;
     let awaitingReply = pendingReplies(currentWalk, fresh.serverNow);
 
-    for (const event of page.events) {
-      if (!reset && event.id <= previous) continue;
-
+    for (const event of claimed) {
       if (event.type !== 'chat') continue;
 
       if (event.seat === fresh.you?.seat && event.data?.replyTo)
@@ -90,7 +89,11 @@ export async function discussion({ view, client, state, remember, change, reset 
     };
     Object.assign(state, latest);
 
-    return true;
+    return {
+      events: claimed,
+      cursor: latest.discussionWalk.cursor,
+      awaitingReply: latest.discussionWalk.awaitingReply,
+    };
   });
 
   if (!applied) return { view: fresh, discussion: { reset: true, events: [] } };
@@ -99,12 +102,12 @@ export async function discussion({ view, client, state, remember, change, reset 
     view: fresh,
     discussion: {
       visibilityEpoch: page.visibilityEpoch,
-      cursor: page.cursor,
+      cursor: applied.cursor,
       through,
-      hasMore: page.cursor < fresh.history.streamHead,
+      hasMore: applied.cursor < fresh.history.streamHead,
       omittedBefore: walk ? undefined : after,
-      awaitingReply: state.discussionWalk.awaitingReply,
-      events: page.events.map((event) => ({
+      awaitingReply: applied.awaitingReply,
+      events: applied.events.map((event) => ({
         ...event,
         addressedToYou:
           event.type === 'chat' &&

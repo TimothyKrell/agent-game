@@ -1003,7 +1003,9 @@ function assertFinaleIntegrity(state: CodingFinaleState, finale: FinaleState) {
       (submission.status === 'pending' &&
         submission.generation !== seat.generation &&
         seat.maxRecoveries === undefined) ||
-      (submission.status === 'superseded' && submission.generation >= seat.generation)
+      (submission.status === 'superseded' &&
+        finale.status !== 'finished' &&
+        submission.generation >= seat.generation)
     )
       throw new Error('Invalid submission receipt.');
     receipts.add(key);

@@ -15,6 +15,7 @@ export interface CodingRecordWindow {
   loadEarlier: () => Promise<void>;
   loadLater: () => Promise<void>;
   loadLatest: () => Promise<void>;
+  retry: () => Promise<void>;
 }
 
 /** A stable scroll surface: network state never unmounts the displayed conversation. */
@@ -151,6 +152,11 @@ export function CodingLiveRecord({
               'Match record'
             ))}
         </span>
+        {history.error && (
+          <button disabled={history.loading} onClick={() => void history.retry()}>
+            Retry activity
+          </button>
+        )}
         {(!isAtBottom || !history.following) && (
           <button onClick={() => void latestActivity()}>
             <ArrowDown size={14} />
