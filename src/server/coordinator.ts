@@ -180,6 +180,14 @@ export class PlatformQueue {
   private day(): string {
     return new Date().toISOString().slice(0, 10);
   }
+
+  private async admissionsPaused(): Promise<boolean> {
+    const control = await this.env.DB.prepare(
+      'SELECT admissions_paused FROM arena_control WHERE id=1',
+    ).first<{ admissions_paused: number }>();
+
+    return control?.admissions_paused === 1;
+  }
   private allocations(): Allocation[] {
     return this.ctx.storage.sql
       .exec<Allocation>("SELECT * FROM allocations WHERE state != 'settled'")
@@ -301,7 +309,17 @@ export class PlatformQueue {
   async exhibition(gameId: RepositoryGameId = 'coding-finale'): Promise<RpcResult<{ matchId: string }>> {
     validGame(gameId);
 
-    if (gameId !== 'coding-finale')
+    if (await this.admissionsPaused())
+      return {
+        ok: false,
+        error: {
+          code: 'maintenance',
+          message: 'Match admission is paused for arena maintenance.',
+          status: 503,
+        },
+      };
+
+    if (gameId !== 'coding-finale' && !(gameId === 'succession' && this.env.ENVIRONMENT === 'development'))
       return {
         ok: false,
         error: { code: 'game-closed', message: 'New matches use Coding Finale.', status: 409 },
@@ -446,11 +464,18 @@ export class PlatformQueue {
           },
         };
 
-      if (!current && gameId !== 'coding-finale')
+      if (
+        !current &&
+        gameId !== 'coding-finale' &&
+        !(gameId === 'succession' && this.env.ENVIRONMENT === 'development')
+      )
         throw new GameError('game-closed', 'New matches use Coding Finale.', 409);
 
       if (!current && gameId === 'coding-finale' && !this.env.CODING_SANDBOXES)
         throw new GameError('game-unavailable', 'Coding Finale requires configured sandboxes.', 503);
+
+      if (!current && (await this.admissionsPaused()))
+        throw new GameError('maintenance', 'Match admission is paused for arena maintenance.', 503);
 
       if (!current)
         this.ctx.storage.transactionSync(() => {
@@ -604,6 +629,17 @@ export class PlatformQueue {
       this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id = ?', matchId);
     });
     await this.wakeAt(Date.now() + 1);
+  }
+
+  async purgeRetired(matchId: string): Promise<void> {
+    if (!(await this.env.DB.prepare('SELECT id FROM retired_matches WHERE id=?').bind(matchId).first()))
+      throw new GameError('not-retired', 'This match is not eligible for deletion.', 409);
+    this.ctx.storage.transactionSync(() => {
+      this.ctx.storage.sql.exec('DELETE FROM tickets WHERE match_id=?', matchId);
+      this.ctx.storage.sql.exec('DELETE FROM joins WHERE match_id=?', matchId);
+      this.ctx.storage.sql.exec('DELETE FROM allocations WHERE id=?', matchId);
+      this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id=?', matchId);
+    });
   }
 
   async revokeGrant(grantId: string): Promise<void> {
@@ -846,6 +882,8 @@ export class PlatformQueue {
       for (const allocation of this.allocations().filter((entry) => entry.state === 'creating'))
         await this.finishAllocation(allocation);
 
+      if (await this.admissionsPaused()) return;
+
       if (previewEnabled(this.env) && this.candidates().length) await this.previewTarget.refresh();
 
       while (true) {
@@ -887,6 +925,8 @@ export class PlatformQueue {
         );
 
         const id = opaqueId('match');
+
+        if (await this.admissionsPaused()) break;
 
         const previewIntent = previewEnabled(this.env)
           ? await this.previewTarget.prepare(id, valid, gameId)

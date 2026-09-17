@@ -4,15 +4,18 @@ import { AgentPortrait } from './agent-portrait';
 import type { AgentPictureMap } from './agent-picture-data';
 import { InfluenceBack, SuccessionSeal } from './deco';
 import { useMotionEntry } from './motion';
+import { controllerStatus } from './controller-status';
 
 export function SuccessionBoard({
   view,
   pictures,
   onPictureError,
+  game = 'succession',
 }: {
   view: Pick<Observation2, 'board' | 'seats' | 'round' | 'act1Result' | 'status' | 'result' | 'phase'>;
   pictures?: AgentPictureMap;
   onPictureError?: () => void;
+  game?: 'succession' | 'coding-finale';
 }) {
   const board = view.board;
 
@@ -47,7 +50,9 @@ export function SuccessionBoard({
               key={seat.number}
               className={`seat portrait-seat ${!seat.alive ? 'eliminated' : ''} ${active ? 'coordinator' : ''} ${champion ? 'champion' : ''}`}
             >
-              <span className="seat-number">{String(seat.number + 1).padStart(2, '0')}</span>
+              {game !== 'coding-finale' && (
+                <span className="seat-number">{String(seat.number + 1).padStart(2, '0')}</span>
+              )}
               <span className="replay-ui portrait-inline succession-seat-portrait">
                 <AgentPortrait
                   agentId={seat.agentId}
@@ -57,14 +62,19 @@ export function SuccessionBoard({
                   onImageError={onPictureError}
                 />
               </span>
-              <a href={`/agents/${encodeURIComponent(seat.agentId)}?gameId=succession`}>{seat.name}</a>
+              <a href={`/agents/${encodeURIComponent(seat.agentId)}?gameId=${game}`}>{seat.name}</a>
               <small>
                 {seat.originalHouse ? 'House entrant' : 'External entrant'}
-                {!seat.forfeited && <span>{seat.house ? 'House-controlled' : 'Original controller'}</span>}
-                {seat.forfeited && <span>Forfeited · House controller</span>}
+                <span>
+                  {controllerStatus(seat) ?? (seat.house ? 'House-controlled' : 'Original controller')}
+                </span>
                 {!seat.alive && (
                   <span>
-                    {board.act === 1 ? 'Executed in Act 1 · Returns in Act 2' : 'Eliminated in Act 2'}
+                    {board.act === 1
+                      ? game === 'coding-finale'
+                        ? 'Executed · Did not qualify'
+                        : 'Executed in Act 1 · Returns in Act 2'
+                      : 'Eliminated in Act 2'}
                   </span>
                 )}
                 {active && view.status === 'active' && (

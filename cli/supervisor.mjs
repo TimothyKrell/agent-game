@@ -9,6 +9,7 @@ import { acceptCurrent, validateCurrent, validateIdentity, connectionIdentity } 
 import { activeArtifacts, pinParticipation, pinnedDocuments, verifyPins } from './preview-artifacts.mjs';
 import { updateCurrent } from './agent-game.mjs';
 import { apiResponse } from './http-response.mjs';
+import { discussionGuidance } from './discussion-guidance.mjs';
 
 // Coordinator decision 2026-09-13; bounded resource profile, not a completion guarantee.
 // Evidence: docs/evidence/succession-supervisor.md.
@@ -928,9 +929,15 @@ export async function supervise(options, invoke = invokeHarness) {
       };
 
       const shellPath = `'${config.replaceAll("'", "'\\''")}'`;
+
+      const discussionInstructions =
+        ledger.gameId === 'coding-finale'
+          ? `${discussionGuidance}\nFor this CLI interface, append --compact --discussion to observe/wait/act/say/reclaim. Addressing flags: say --text TEXT --to 2,5; replies additionally use --reply-to EVENT_KEY --reply-seat N. Use observe --discussion-reset after context loss. Read attached discussion before optional speech; don't reread it with history. These Coding Finale instructions replace the generic manual Recent context sequence below when attached discussion is available.`
+          : "Before optional speech, follow the skill's Recent context sequence: read bounded recent history, then reobserve for decisions, phase changes and cooldown.";
+
       // This shipped CLI deliberately has no Effect runtime dependency.
       // eslint-disable-next-line anti-slop-effect/prefer-effect-match
-      const prompt = `Continue the same ${ledger.gameId} match ${ledger.matchId}. Only server finished/interrupted ends the game. Act 1 victory/execution and Act 2 elimination do not. Use foreground node agent-game.mjs <command> --config ${shellPath}. Submit current legal decisions immediately. Before optional speech, follow the skill's Recent context sequence: read bounded recent history, then reobserve for decisions, phase changes and cooldown. Silence is valid. Keep waiting through quiet periods. Read the installed game rules. Remaining runtime ${Math.floor(remaining())}ms; child/tool/network/shutdown absolute deadline ${deadline}; all waits must fit inside it. Remaining harness allowance: ${grant === null ? 'provider-managed; local spend unknown' : `$${grant}`}. Pursue ${ledger.gameId === 'coding-finale' ? 'sole overall victory through qualification and the coding race' : ledger.gameId === 'succession' ? 'sole overall match victory; Act 1 faction victory gives a coin bonus and all seats return for Act 2' : 'your assigned faction victory'}. Never join another participation.`;
+      const prompt = `Continue the same ${ledger.gameId} match ${ledger.matchId}. Only server finished/interrupted ends the game. Act 1 victory/execution and Act 2 elimination do not. Use foreground node agent-game.mjs <command> --config ${shellPath}. Submit current legal decisions immediately. ${discussionInstructions} Silence is valid. Keep waiting through quiet periods. Read the installed game rules. Remaining runtime ${Math.floor(remaining())}ms; child/tool/network/shutdown absolute deadline ${deadline}; all waits must fit inside it. Remaining harness allowance: ${grant === null ? 'provider-managed; local spend unknown' : `$${grant}`}. Pursue ${ledger.gameId === 'coding-finale' ? 'sole overall victory through qualification and the coding race' : ledger.gameId === 'succession' ? 'sole overall match victory; Act 1 faction victory gives a coin bonus and all seats return for Act 2' : 'your assigned faction victory'}. Never join another participation.`;
 
       const task = Promise.resolve()
         .then(() =>

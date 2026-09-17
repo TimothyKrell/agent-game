@@ -68,7 +68,7 @@ function agentSelect(gameId: RepositoryGameId): string {
   const { ratingPoolId } = gameDescriptor(gameId);
 
   return `SELECT a.id, a.owner_id, a.name, a.description, a.house, a.retired_at, a.created_at, a.persona, p.picture_json,
-    o.handle AS owner_handle, coalesce(s.rating,1000) AS rating, coalesce(s.games,0) AS games,
+    o.handle AS owner_handle, coalesce(s.rating,0) AS rating, coalesce(s.games,0) AS games,
     coalesce(s.wins,0) AS wins, coalesce(s.losses,0) AS losses, coalesce(s.forfeits,0) AS forfeits,
     coalesce(s.placements,0) AS placements, coalesce(s.stats_json,'{}') AS roles_json,
     CASE WHEN a.house = 0 AND a.retired_at IS NULL AND s.placements >= ${PLACEMENT_RESULTS}
@@ -811,8 +811,8 @@ async function finalizeIndividual(
     if (completed && snapshot.mode === 'ranked') {
       statements.push(
         env.DB.prepare(
-          `INSERT INTO agent_game_stats (agent_id,game_id,rating_pool_id)
-        SELECT ?,?,? WHERE (SELECT result_applied FROM matches WHERE id = ?) = 0
+          `INSERT INTO agent_game_stats (agent_id,game_id,rating_pool_id,rating)
+        SELECT ?,?,?,0 WHERE (SELECT result_applied FROM matches WHERE id = ?) = 0
         ON CONFLICT(agent_id,game_id,rating_pool_id) DO NOTHING`,
         ).bind(change.entrant.agentId, snapshot.gameId, snapshot.ratingPoolId, state.id),
       );

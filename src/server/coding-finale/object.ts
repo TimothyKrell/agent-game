@@ -88,7 +88,7 @@ export class FinaleObject extends DurableObject<FinaleEnv> {
       case 'practice':
         return this.practice(command.tokenHash, command.program, command.inputs);
       case 'say':
-        return this.say(command.tokenHash, command.text);
+        throw new GameError('chat-closed', 'Chat is unavailable during the coding finale.');
       case 'history':
         return this.history(command.after);
       case 'source':
@@ -282,38 +282,6 @@ export class FinaleObject extends DurableObject<FinaleEnv> {
     } finally {
       this.ctx.storage.sql.exec('UPDATE controllers SET practice_until=0 WHERE token_hash=?', tokenHash);
     }
-  }
-
-  say(tokenHash: string, text: string) {
-    const controller = this.controller(tokenHash);
-    const state = advanceFinale(this.load(), Date.now());
-    this.save(state);
-
-    if (state.status !== 'racing') throw new GameError('race-closed', 'Finalist discussion has ended.');
-
-    if ([...text].length > 1000 || !text.trim())
-      throw new GameError('invalid-chat', 'Use 1–1000 characters.');
-
-    const last = this.ctx.storage.sql
-      .exec<{ last_chat: number }>('SELECT last_chat FROM controllers WHERE token_hash=?', tokenHash)
-      .one().last_chat;
-
-    if (Date.now() < last + 5000) throw new GameError('chat-cooldown', 'Wait five seconds between messages.');
-    this.ctx.storage.transactionSync(() => {
-      this.ctx.storage.sql.exec(
-        'INSERT INTO chat (seat,at,text) VALUES (?,?,?)',
-        controller.seat,
-        Date.now(),
-        text,
-      );
-      this.ctx.storage.sql.exec(
-        'UPDATE controllers SET last_chat=? WHERE token_hash=?',
-        Date.now(),
-        tokenHash,
-      );
-    });
-
-    return { accepted: true };
   }
 
   history(after: number) {

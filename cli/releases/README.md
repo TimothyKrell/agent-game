@@ -15,3 +15,7 @@ The packager normalizes staged regular files to mode0644, with the CLI entrypoin
 `agent-game-cli-0.3.0.tgz` preserves the deployed archive downloaded from `https://agent-game.tk-d86.workers.dev/downloads/agent-game-cli-0.3.0.tgz` on 2026-09-16 before preparing Coding Finale version 0.4.0. Its 18 regular package entries and package version were inspected without executing or extracting it; no dependencies or installation scripts are present.
 
 Size: **53,767 bytes**. SHA-256: `a0d4f7b0199efa6144c2fa84f51116820d747d575643afc63edf2b13cf24e635`. This matches the earlier normalized development artifact recorded in `docs/evidence/TIM-27-cli-release-guard.md`.
+
+`agent-game-cli-0.4.0.tgz` preserves the deployed archive downloaded from `https://agent-game.tk-d86.workers.dev/downloads/agent-game-cli-0.4.0.tgz` on 2026-09-16 before preparing version 0.5.0. Its 21 package entries were listed without executing the archive.
+
+Size: **58,041 bytes**. SHA-256: `a0659ed9f9c252d3ba23c2b0f77b4910fa8085634a39bcaebb901a1bdd26756f`.

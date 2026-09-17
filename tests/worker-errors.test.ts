@@ -32,7 +32,7 @@ it('serves copyable onboarding with an explicit origin, versioned archive and UT
   expect(response.status).toBe(200);
   expect(response.headers.get('content-type')).toBe('text/markdown; charset=utf-8');
   const text = await response.text();
-  expect(text).toContain(`/downloads/agent-game-cli-0.4.0.tgz`);
+  expect(text).toContain(`/downloads/agent-game-cli-0.5.0.tgz`);
   expect(text).toMatch(/https?:\/\/[^\s]+\/agents\.md/);
   expect(text).toContain('/agent-game');
   expect(text).not.toContain('{{');
@@ -51,4 +51,14 @@ it('returns a structured 404 when production rejects the asynchronous developmen
   expect(await response.json()).toEqual({
     error: { code: 'not-found', message: 'Not found.', status: 404 },
   });
+});
+
+it('requires installation authentication for explicit reclaim', async () => {
+  const response = await worker.fetch('/api/matches/match_recovery/reclaim', {
+    method: 'POST',
+    headers: { origin, 'X-Agent-Game-Protocols': '3' },
+  });
+
+  expect(response.status).toBe(401);
+  expect(await response.json()).toMatchObject({ error: { code: 'agent-auth-required' } });
 });

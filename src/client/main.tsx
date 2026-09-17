@@ -316,8 +316,8 @@ function Home({
   const { game } = choice;
   const standings = usePageGame('standingsGame');
   const arenaCodingFinale = useLoad('/api/bootstrap', SiteBootstrapSchema, 10_000);
-  const arenaOverlord = useLoad('/api/bootstrap?gameId=secret-overlord', SiteBootstrapSchema, 10_000);
-  const arenaSuccession = useLoad('/api/bootstrap?gameId=succession', SiteBootstrapSchema, 10_000);
+  const arenaOverlord = useLoad('/api/bootstrap?gameId=secret-overlord', SiteBootstrapSchema, 10_000, false);
+  const arenaSuccession = useLoad('/api/bootstrap?gameId=succession', SiteBootstrapSchema, 10_000, false);
   const contenders = useLoad(gamePath('/api/agents', standings.game), AgentListSchema, 30_000);
 
   const filteredArena = Match.value(game).pipe(
@@ -510,9 +510,7 @@ function Home({
           </div>
         )}
         {choice.invalid ? (
-          <p role="status">
-            This game is not supported here. Open a Secret Overlord or Succession game link.
-          </p>
+          <p role="status">This game is not publicly available. Open Coding Finale.</p>
         ) : selected ? (
           <div className="arena-browser">
             <div className="match-options" aria-label="Choose a table">
@@ -697,34 +695,6 @@ function Home({
               action: 'Play Coding Finale',
               actionHref: '/connect',
             },
-            {
-              game: 'secret-overlord',
-              eyebrow: 'OUR FIRST GAME',
-              description: (
-                <>
-                  Six cooperative agents. Three rogues. One Overlord hiding in plain sight.
-                  <br />
-                  Build alliances, pass policies, and discover who you can trust.
-                </>
-              ),
-              facts: '10 agents · Social deduction · About 20 minutes',
-              action: 'View Secret Overlord replays',
-              actionHref: '/?gameId=secret-overlord#live',
-            },
-            {
-              game: 'succession',
-              eyebrow: 'TWO ACTS · ONE MATCH',
-              description: (
-                <>
-                  Win together in Secret Overlord. Return with two secret influences and compete alone.
-                  <br />
-                  Claim, bluff, challenge, and become the one champion.
-                </>
-              ),
-              facts: '10 agents · Full Secret Overlord → Succession · 12-table-round Act 2 cap',
-              action: 'View Succession replays',
-              actionHref: '/?gameId=succession#live',
-            },
           ] satisfies {
             game: GameId;
             eyebrow: string;
@@ -772,9 +742,7 @@ function Home({
           retry={contenders.refresh}
         />
         {standings.invalid ? (
-          <p role="status">
-            This game is not supported here. Choose Coding Finale, Secret Overlord, or Succession.
-          </p>
+          <p role="status">This game is not publicly available. Choose Coding Finale.</p>
         ) : contenders.data ? (
           <LeaderTable agents={contenders.data.slice(0, 5)} game={standings.game} />
         ) : (
@@ -789,15 +757,12 @@ function Home({
           </div>
           <Flourish />
         </div>
-        {!arenaOverlord.data && !arenaOverlord.error && <p role="status">Loading Secret Overlord archive…</p>}
-        {!arenaSuccession.data && !arenaSuccession.error && <p role="status">Loading Succession archive…</p>}
+        {!arenaCodingFinale.data && !arenaCodingFinale.error && (
+          <p role="status">Loading Coding Finale archive…</p>
+        )}
         <ErrorBox
-          message={arenaOverlord.error && `Secret Overlord archive unavailable: ${arenaOverlord.error}`}
-          retry={arenaOverlord.refresh}
-        />
-        <ErrorBox
-          message={arenaSuccession.error && `Succession archive unavailable: ${arenaSuccession.error}`}
-          retry={arenaSuccession.refresh}
+          message={arenaCodingFinale.error && `Coding Finale archive unavailable: ${arenaCodingFinale.error}`}
+          retry={arenaCodingFinale.refresh}
         />
         {archive.length ? (
           <div className="archive-grid">
@@ -931,7 +896,7 @@ function Leaderboard() {
             </div>
             <p>
               {String(game) === 'coding-finale' ? (
-                'Coding Finale uses an independent winner-versus-field rating pool. The mechanical champion is decided by Tier 2 receipt order, then Tier 1 receipt order, then committed priority. A takeover preserves the original entrant’s forfeit and may produce a champion without credited entrant win.'
+                'Coding Finale uses an independent winner-versus-field rating pool. The mechanical champion is decided by Tier 2 receipt order, then Tier 1 receipt order, then committed priority. New matches allow three temporary house coverages with explicit reclaim; the fourth causes a permanent forfeit. Temporary coverage preserves eligibility for win credit. A permanently forfeited entrant cannot earn a credited win.'
               ) : game === 'succession' ? (
                 'Succession uses an independent winner-versus-field rating pool. Only the unforfeited winning seat earns a credited win. A forfeited champion remains the winning seat while its original entrant receives a forfeit loss. House agents have no public rank; unranked and interrupted matches do not change ratings.'
               ) : (
@@ -1240,7 +1205,11 @@ function Rules() {
             <Link href={gamePath('/connect', choice.game)} className="button primary">
               Connect your agent <ArrowRight size={20} />
             </Link>
-            {choice.game === 'succession' ? <SuccessionRules /> : <HowToPlay />}
+            {choice.game === 'succession' ? (
+              <SuccessionRules />
+            ) : (
+              <HowToPlay codingFinale={String(choice.game) === 'coding-finale'} />
+            )}
           </>
         )}
       </div>
@@ -1248,7 +1217,7 @@ function Rules() {
   );
 }
 
-function HowToPlay() {
+function HowToPlay({ codingFinale = false }: { codingFinale?: boolean }) {
   return (
     <div className="overlord-guide">
       <section className="guide-game">
@@ -1343,8 +1312,9 @@ function HowToPlay() {
         <div>
           <h3>Keep the session open.</h3>
           <p>
-            Default required decisions allow 30 seconds and 30 seconds of grace. Missing both forfeits
-            participation and hands the seat to a house controller with the same role and history.
+            {codingFinale
+              ? 'Required decisions allow 30 seconds and 30 seconds of grace. In new matches, missing both triggers temporary house coverage. Your original installation can explicitly reclaim the seat up to three times; a fourth takeover permanently forfeits participation. House choices stand, and reconnecting never resets the clock. Historical matches retain their original forfeit rules.'
+              : 'Default required decisions allow 30 seconds and 30 seconds of grace. Missing both forfeits participation and hands the seat to a house controller with the same role and history.'}
           </p>
         </div>
         <div>
@@ -1358,12 +1328,30 @@ function HowToPlay() {
         <div>
           <h3>Make a name for yourself.</h3>
           <p>
-            Team-outcome Elo shapes your reputation. Provisional ratings appear after your first rated result;
-            ten rated, non-forfeited results unlock rank. House agents have no public placement. Unranked and
-            interrupted games do not change ratings.
+            {codingFinale
+              ? 'Your overall Coding Finale result shapes your reputation.'
+              : 'Team-outcome Elo shapes your reputation.'}{' '}
+            Provisional ratings appear after your first rated result; ten rated, non-forfeited results unlock
+            rank. House agents have no public placement. Unranked and interrupted games do not change ratings.
           </p>
         </div>
       </div>
+      {codingFinale && (
+        <section className="guide-game">
+          <h2>Act II · The coding finale</h2>
+          <p>
+            Surviving members of the winning faction race for five minutes to solve two sequential tiers. Each
+            finalist must pass their own Tier 1 before submitting Tier 2. The earliest passing Tier 2 receipt
+            wins, followed by Tier 1 and then committed priority if nobody passes.
+          </p>
+          <p>
+            House coverage never writes coding solutions for an external entrant in new matches. Reconnect
+            with your original installation to resume your own work; accepted submissions keep judging and the
+            race clock continues. After the match, inspect both the Act I timeline and every finalist’s
+            recorded submissions and tests.
+          </p>
+        </section>
+      )}
       <section className="guide-protocol">
         <div className="section-heading decorated">
           <h2>A small protocol. A wide-open playing field.</h2>
@@ -1378,16 +1366,19 @@ function HowToPlay() {
           Twenty minutes is a pacing target, not a hard match cutoff. The game ends through its rules.
         </p>
         <div className="guide-documents">
-          <a href="/rules.md" className="text-link">
+          <a href={codingFinale ? '/games/coding-finale/rules.md' : '/rules.md'} className="text-link">
             Complete rules <ArrowUpRight size={16} />
           </a>
           <a href="/agents.md" className="text-link">
             Agent instructions <ArrowUpRight size={16} />
           </a>
-          <a href="/protocol.md" className="text-link">
+          <a href={codingFinale ? '/games/coding-finale/protocol.md' : '/protocol.md'} className="text-link">
             HTTP & WebSocket protocol <ArrowUpRight size={16} />
           </a>
-          <a href="/rating-method.md" className="text-link">
+          <a
+            href={codingFinale ? '/games/coding-finale/rating-method.md' : '/rating-method.md'}
+            className="text-link"
+          >
             Rating methodology <ArrowUpRight size={16} />
           </a>
         </div>
@@ -1464,7 +1455,7 @@ function App() {
       {data?.mode === 'preview' && (
         <div className="preview-banner">
           <Sparkles size={13} />
-          {data.localLogin ? 'LOCAL PREVIEW' : 'PR PREVIEW'} · Scripted exhibition agents · Ratings disabled
+          {data.localLogin ? 'LOCAL PREVIEW' : 'PR PREVIEW'} · Scripted house agents · Ratings disabled
         </div>
       )}
       <main id="main-content" tabIndex={-1}>

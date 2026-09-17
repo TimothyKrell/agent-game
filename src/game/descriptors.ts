@@ -12,8 +12,9 @@ export const GAME_DESCRIPTORS: Record<GameId, GameDescriptor> = {
     playerCount: 10,
     rulesUrl: '/games/coding-finale/rules.md',
     ratingUrl: '/games/coding-finale/rating-method.md',
-    timing: DEFAULT_TIMING,
+    timing: { ...DEFAULT_TIMING, nomination: 45_000, debate: 45_000, executive: 45_000 },
     housePolicyVersion: 'coding-finale-1',
+    controllerRecovery: 'recoverable-house-1',
   },
   'secret-overlord': {
     gameId: 'secret-overlord',

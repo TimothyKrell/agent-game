@@ -16,6 +16,7 @@ export interface GameDescriptor {
   ratingUrl: string;
   timing: Timing;
   housePolicyVersion: string;
+  controllerRecovery?: 'recoverable-house-1';
 }
 
 export interface MatchSnapshot extends GameDescriptor {

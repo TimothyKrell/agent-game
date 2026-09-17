@@ -1,5 +1,6 @@
 import type { GameId } from '../game/contracts';
-import type { RoutingInput, routingChallenge } from '../game/coding-finale/routing';
+import type { CodingInput } from '../game/coding-finale/puzzle-input';
+import type { codingChallenge } from '../game/coding-finale/challenges';
 import type { FinaleSubmission, Program, FINALE_RULES } from '../game/coding-finale/types';
 import type { RpcResult } from '../shared/api';
 
@@ -22,14 +23,14 @@ export interface HouseModelConfig {
 }
 
 export interface HouseCodingContext {
-  challenge: ReturnType<typeof routingChallenge> & { challengeId: string; limits: typeof FINALE_RULES };
+  challenge: ReturnType<typeof codingChallenge> & { challengeId: string; limits: typeof FINALE_RULES };
   priorProgram: Program | null;
   feedback: FinaleSubmission[];
 }
 
 export interface HouseCodingCandidate {
   program: Program;
-  inputs: RoutingInput[];
+  inputs: CodingInput[];
   notes: string;
 }
 

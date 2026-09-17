@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 4px;
+  padding: 6px 4px;
 }
 
 .replay-ui .dossier-chapter-navigation button {
@@ -52,7 +52,7 @@
 }
 
 .replay-ui .dossier-reader-error {
-  padding: 9px 12px;
+  padding: 7px 9px;
   border-bottom: 1px solid var(--replay-destructive);
   color: var(--replay-destructive);
   font-size: 12px;
@@ -71,7 +71,7 @@
 
   .replay-ui .dossier-chapter-heading .dossier-chapter-trigger {
     flex-basis: 100%;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
   }
 
   .replay-ui .dossier-chapter-navigation {

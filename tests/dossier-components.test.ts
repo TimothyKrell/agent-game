@@ -47,6 +47,33 @@ function renderEventPanel(row: StoryRow, model: StoryModel) {
 }
 
 describe('shared Dossier presentation on canonical model fixtures', () => {
+  it('renders explicit public recipients and reply avatars while preserving the exact quote', () => {
+    const model = capturedStory(940, 963);
+    const source = capturedEvents.find((event) => event.type === 'chat')!;
+
+    const event = {
+      ...source,
+      text: 'Explain your claim, please.',
+      data: { to: [1, 2], replyTo: { eventKey: 'earlier-chat', seat: 1 } },
+    };
+
+    const story = buildSuccessionStory({
+      scope: { matchId: 'reply-fixture', visibilityEpoch: 'public' },
+      after: event.id - 1,
+      through: event.id,
+      events: [event],
+    });
+
+    const row = story.rows[0];
+    expect(row.fact).toEqual({ kind: 'speech', ...event.data });
+    const html = renderRow(row, model, false);
+    expect(html).toContain('Replying to');
+    expect(html).toContain('Public message addressing');
+    expect(html.match(/class="dossier-chat-recipient"/g)).toHaveLength(2);
+    expect(html).toContain('dossier-identity-compact');
+    expect(html).toContain(event.text);
+    expect(readStoryFact({ ...source, data: undefined })).toEqual({ kind: 'speech' });
+  });
   it('renders Coding Finale Act I without Succession returns, bonuses, or an unrelated individual result', () => {
     const html = renderToStaticMarkup(
       createElement(SuccessionDossier, {

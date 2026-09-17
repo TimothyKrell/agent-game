@@ -50,6 +50,10 @@ export class MatchmakingObject extends DurableObject<Env> {
     return this.queue.complete(matchId);
   }
 
+  purgeRetired(matchId: string) {
+    return this.queue.purgeRetired(matchId);
+  }
+
   retire(agentId: string, ownerId: string) {
     return this.queue.retire(agentId, ownerId);
   }

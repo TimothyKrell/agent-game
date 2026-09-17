@@ -1,6 +1,7 @@
 import { Schema } from 'effect';
 import { describe, expect, it } from 'vitest';
 import { buildSuccessionStory } from '../src/client/succession-story';
+import { dossierFactText } from '../src/client/dossier-facts';
 import type { StoryModel, StoryRow, StoryValue } from '../src/client/succession-story';
 import { storyRules, storyText } from '../src/client/succession-story-rules';
 import { evolveSuccession } from '../src/game/succession/engine';
@@ -45,6 +46,65 @@ function after(row: StoryRow, seat: number) {
 }
 
 describe('canonical Succession story windows', () => {
+  it('preserves temporary coverage and reclaim in bounded historical controller records', async () => {
+    const { created } = await storyGame(2);
+    const baseline = observeSuccession(created.state, null);
+    const start = baseline.history.streamHead;
+    const agentId = baseline.seats[0].agentId;
+
+    const model = buildSuccessionStory({
+      scope: { matchId: baseline.matchId, visibilityEpoch: baseline.history.visibilityEpoch },
+      after: start,
+      through: start + 2,
+      baseline,
+      events: [
+        {
+          id: start + 1,
+          eventKey: 'coverage-1',
+          act: 1,
+          round: 1,
+          at: 2000,
+          seat: 0,
+          type: 'takeover',
+          text: 'Temporary coverage',
+          data: { agentId, generation: 1, recoverable: true, recoveryCount: 1, recoveryLimit: 3 },
+        },
+        {
+          id: start + 2,
+          eventKey: 'reclaimed-1',
+          act: 1,
+          round: 1,
+          at: 3000,
+          seat: 0,
+          type: 'reclaimed',
+          text: 'Original entrant returns',
+          data: { agentId, generation: 2, recoveryCount: 1, recoveryLimit: 3 },
+        },
+      ],
+    });
+
+    const covered = row(model, 'takeover');
+    const reclaimed = row(model, 'reclaimed');
+    expect(get(after(covered, 0).controller)).toMatchObject({
+      house: true,
+      forfeited: false,
+      recoverable: true,
+      recoveryCount: 1,
+      recoveryLimit: 3,
+    });
+    expect(get(after(reclaimed, 0).controller)).toMatchObject({
+      house: false,
+      forfeited: false,
+      recoverable: false,
+      recoveryCount: 1,
+      recoveryLimit: 3,
+    });
+    expect(get(get(after(reclaimed, 0).controller).identity)).toBe(agentId);
+    expect(dossierFactText(covered, new Map())).toContain('temporarily covers');
+    expect(dossierFactText(covered, new Map())).not.toContain('forfeits');
+    expect(dossierFactText(reclaimed, new Map())).toContain('resumes control');
+  });
+
   it('keeps ordinary execution private, shows Overlord result at its source, and returns all ten with the actual bonus', async () => {
     const { created, random } = await storyGame(2);
     const initial = created.state;

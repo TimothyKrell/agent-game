@@ -5,6 +5,7 @@ import type { Observation2, HistoryMetadata2, InfluenceCard, PendingAction2 } fr
 import { legalAct2, pendingAct2 } from './act2';
 import type { CapabilityCard } from './act2';
 import type { SuccessionState } from './types';
+import { seatRecovery } from '../types';
 
 const cardView = ({ id, capability }: CapabilityCard): InfluenceCard => ({ id, capability });
 
@@ -16,8 +17,27 @@ export function observeSuccession(
   houseController = false,
 ): Observation2 {
   const seat = seatNumber === null ? null : (state.seats[seatNumber] ?? null);
-  const permitted = seat && (!seat.forfeited || houseController) ? seat : null;
+
+  const permitted =
+    seat &&
+    ((houseController && seat.houseProfile !== null) || (seat.houseProfile === null && !seat.forfeited))
+      ? seat
+      : null;
+
   const ended = state.status !== 'active';
+
+  const you: Observation2['you'] = seat
+    ? {
+        seat: seat.number,
+        agentId: seat.entrant.agentId,
+        alive: seat.alive,
+        forfeited: seat.forfeited,
+        generation: seat.generation,
+        ...seatRecovery(seat),
+      }
+    : null;
+
+  if (you && seat?.maxRecoveries !== undefined) you.canReclaim = false;
 
   const base: Observation2 = {
     protocolVersion: '2',
@@ -51,6 +71,7 @@ export function observeSuccession(
         forfeited: entry.forfeited,
         rating: entry.entrant.rating,
         generation: entry.generation,
+        ...seatRecovery(entry),
       };
 
       if (state.stage.act === 2 || ended) visible.role = entry.role;
@@ -80,15 +101,7 @@ export function observeSuccession(
       nextSpeakAt:
         permitted?.lastChatAt == null ? null : permitted.lastChatAt + state.snapshot.timing.chatCooldown,
     },
-    you: seat
-      ? {
-          seat: seat.number,
-          agentId: seat.entrant.agentId,
-          alive: seat.alive,
-          forfeited: seat.forfeited,
-          generation: seat.generation,
-        }
-      : null,
+    you,
     private: null,
     decision: null,
     result: state.result,

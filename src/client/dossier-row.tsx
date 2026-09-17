@@ -295,6 +295,28 @@ export function DossierRow({ row, entrants, archive, returns, game }: DossierRow
           {speech ? (
             <>
               {actor == null && <small>Speaker unavailable</small>}
+              {(fact.replyTo || (fact.to?.length ?? 0) > 0) && (
+                <div className="dossier-chat-address" aria-label="Public message addressing">
+                  {fact.replyTo && (
+                    <span className="dossier-chat-recipient">
+                      <small>Replying to</small>
+                      <DossierIdentity
+                        entrant={rowEntrant(row, entrants, fact.replyTo.seat)}
+                        seat={fact.replyTo.seat}
+                        compact
+                      />
+                    </span>
+                  )}
+                  {fact.to
+                    ?.filter((seat) => seat !== fact.replyTo?.seat)
+                    .map((seat) => (
+                      <span className="dossier-chat-recipient" key={seat}>
+                        <small>To</small>
+                        <DossierIdentity entrant={rowEntrant(row, entrants, seat)} seat={seat} compact />
+                      </span>
+                    ))}
+                </div>
+              )}
               <blockquote>
                 <DossierText text={row.text} />
               </blockquote>

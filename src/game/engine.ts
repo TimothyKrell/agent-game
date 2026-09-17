@@ -623,7 +623,11 @@ export function advance(input: MatchState, now: number, context: LegacyContext =
   for (const seatNumber of pending) {
     const replacementEnd = state.phase.replacements[String(seatNumber)];
 
-    if (replacementEnd !== undefined && now >= replacementEnd)
+    if (
+      replacementEnd !== undefined &&
+      state.seats[seatNumber].houseProfile !== null &&
+      now >= replacementEnd
+    )
       return interruptMatch(
         state,
         now,
@@ -647,11 +651,13 @@ export function advance(input: MatchState, now: number, context: LegacyContext =
   for (const seatNumber of pending) {
     const replacementEnd = state.phase.replacements[String(seatNumber)];
 
-    if (replacementEnd !== undefined) continue;
-
-    if (now < state.phase.deadline! + state.timing.grace) continue;
+    if (now < (replacementEnd ?? state.phase.deadline! + state.timing.grace)) continue;
     const seat = state.seats[seatNumber];
-    seat.forfeited = true;
+
+    if (seat.maxRecoveries !== undefined) {
+      seat.recoveryCount = (seat.recoveryCount ?? 0) + 1;
+      seat.forfeited = seat.recoveryCount > seat.maxRecoveries;
+    } else seat.forfeited = true;
     seat.generation++;
     seat.houseProfile = `relief-${seatNumber}`;
     state.phase.replacements[String(seatNumber)] = now + state.timing.action;
@@ -660,12 +666,62 @@ export function advance(input: MatchState, now: number, context: LegacyContext =
       context,
       now,
       'takeover',
-      `${seat.entrant.name} forfeits. A house agent takes over seat ${seatNumber + 1}.`,
-      { seat: seatNumber, data: { agentId: seat.entrant.agentId, generation: seat.generation } },
+      seat.forfeited
+        ? `${seat.entrant.name} exhausts recovery and permanently forfeits seat ${seatNumber + 1}.`
+        : `A house agent temporarily covers ${seat.entrant.name} in seat ${seatNumber + 1}.`,
+      {
+        seat: seatNumber,
+        data: {
+          agentId: seat.entrant.agentId,
+          generation: seat.generation,
+          recoveryCount: seat.recoveryCount ?? 0,
+          recoveryLimit: seat.maxRecoveries ?? 0,
+          recoverable: !seat.forfeited,
+        },
+      },
     );
   }
 
   return state.events.length === input.events.length ? input : state;
+}
+
+/** Explicit original-installation handoff; callers authenticate identity before entering this transition. */
+export function reclaimSeat(
+  input: MatchState,
+  seatNumber: number,
+  now: number,
+  context: LegacyContext = defaultContext,
+): MatchState {
+  const current = input.seats[seatNumber];
+
+  if (!current || terminal(input)) throw new GameError('match-finished', 'The match is terminal.');
+
+  if (current.entrant.house)
+    throw new GameError('original-house', 'Original house entrants cannot reclaim a seat.');
+
+  if (current.maxRecoveries === undefined)
+    throw new GameError('recovery-unavailable', 'This match does not support controller recovery.');
+
+  if (current.forfeited) throw new GameError('recovery-exhausted', 'This seat has permanently forfeited.');
+
+  if (current.houseProfile === null)
+    throw new GameError('not-covered', 'This installation already controls its seat.');
+
+  const state = structuredClone(input);
+  const seat = state.seats[seatNumber];
+  seat.generation++;
+  seat.houseProfile = null;
+  emit(state, context, now, 'reclaimed', `${seat.entrant.name} reclaimed seat ${seatNumber + 1}.`, {
+    seat: seatNumber,
+    data: {
+      agentId: seat.entrant.agentId,
+      generation: seat.generation,
+      recoveryCount: seat.recoveryCount ?? 0,
+      recoveryLimit: seat.maxRecoveries ?? 0,
+    },
+  });
+
+  return state;
 }
 
 export function nextDeadline(state: MatchState): number | null {
@@ -711,8 +767,29 @@ export function act(
 
     if (seat.lastChatAt !== null && now < seat.lastChatAt + state.timing.chatCooldown)
       throw new GameError('chat-cooldown', 'Wait for your speaking cooldown.', 429);
+    const targets = [...(action.to ?? []), ...(action.replyTo ? [action.replyTo.seat] : [])];
+
+    if (
+      (action.to?.length ?? 0) > 3 ||
+      targets.some((target) => !Number.isInteger(target) || !state.seats[target])
+    )
+      throw new GameError('invalid-recipient', 'Address agents by a valid seat from this match.', 400);
+
+    if (
+      action.replyTo &&
+      (!action.replyTo.eventKey.startsWith(`${state.id}:`) || action.replyTo.eventKey.length > 200)
+    )
+      throw new GameError('invalid-reply', 'Reply to a public message in this match.', 400);
     state.seats[seatNumber].lastChatAt = now;
-    emit(state, context, now, 'chat', text, { seat: seatNumber });
+    const data: NonNullable<GameEvent['data']> = {};
+
+    if (action.to?.length) data.to = [...new Set(action.to)];
+
+    if (action.replyTo) data.replyTo = action.replyTo;
+    emit(state, context, now, 'chat', text, {
+      seat: seatNumber,
+      data: Object.keys(data).length ? data : undefined,
+    });
 
     return state;
   }

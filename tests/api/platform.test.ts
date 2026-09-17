@@ -260,7 +260,7 @@ describe('real Worker, D1, durable matches, and CLI protocol', () => {
 
     expect(result.history).toHaveLength(1);
     expect(result.agent.games).toBe(0);
-    expect(result.agent.rating).toBe(1000); // Preview games are never ranked.
+    expect(result.agent.rating).toBe(0); // Preview games are never ranked.
   });
 
   it('runs the actual CLI pairing and queue commands, preserving private credentials and honoring revocation', async () => {

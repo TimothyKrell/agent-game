@@ -1,4 +1,5 @@
 import { Schema } from 'effect';
+import { ChatAddressSchema } from '../shared/chat';
 import { AuditFact2Schema } from '../shared/succession';
 import type { AuthorizedEvent2 } from '../shared/succession';
 import type { StoryFact } from './succession-story-types';
@@ -39,7 +40,13 @@ const Lost = Schema.Struct({ capability: Capability, eliminated: Schema.Boolean 
 
 const Turn = Schema.Struct({ round: Integer, slot: Seat });
 
-const Takeover = Schema.Struct({ agentId: Schema.String, generation: Schema.optional(Integer) });
+const Takeover = Schema.Struct({
+  agentId: Schema.String,
+  generation: Schema.optional(Integer),
+  recoverable: Schema.optional(Schema.Boolean),
+  recoveryCount: Schema.optional(Integer),
+  recoveryLimit: Schema.optional(Integer),
+});
 
 const SecretRole = Schema.Struct({ role: Role });
 
@@ -123,7 +130,9 @@ export function readStoryFact(event: AuthorizedEvent2): StoryFact {
 
   switch (event.type) {
     case 'chat':
-      return { kind: 'speech' };
+      return Schema.is(ChatAddressSchema)(data)
+        ? { kind: 'speech', ...Schema.decodeUnknownSync(ChatAddressSchema)(data) }
+        : { kind: 'speech' };
     case 'nomination':
     case 'investigation':
     case 'execution':
@@ -185,7 +194,8 @@ export function readStoryFact(event: AuthorizedEvent2): StoryFact {
       if (Schema.is(Finished)(data)) return { kind: 'finished', ...Schema.decodeUnknownSync(Finished)(data) };
       break;
     case 'takeover':
-      if (Schema.is(Takeover)(data)) return { kind: 'takeover', ...Schema.decodeUnknownSync(Takeover)(data) };
+    case 'reclaimed':
+      if (Schema.is(Takeover)(data)) return { kind: event.type, ...Schema.decodeUnknownSync(Takeover)(data) };
       break;
     case 'interrupted':
       return { kind: 'interrupted' };

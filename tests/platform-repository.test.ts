@@ -221,7 +221,7 @@ describe('platform migration and game-scoped repository', () => {
   it('starts existing external and house agents at zero in Succession', async () => {
     for (const id of ['external', 'house-axiom'])
       expect(await findAgent(env, id, 'succession')).toMatchObject({
-        rating: 1000,
+        rating: 0,
         games: 0,
         wins: 0,
         losses: 0,
@@ -260,7 +260,7 @@ describe('platform migration and game-scoped repository', () => {
 
   it('settles concurrent retries once, unlocks rank at ten, and isolates legacy standings', async () => {
     await env.DB.prepare(
-      "INSERT INTO agent_game_stats (agent_id,game_id,rating_pool_id,placements) VALUES ('external','succession','succession-1',9)",
+      "INSERT INTO agent_game_stats (agent_id,game_id,rating_pool_id,placements,rating) VALUES ('external','succession','succession-1',9,0)",
     ).run();
     expect(await findAgent(env, 'external', 'succession')).toMatchObject({
       placements: 9,
@@ -271,7 +271,7 @@ describe('platform migration and game-scoped repository', () => {
     await Promise.all(Array.from({ length: 5 }, () => finalizeRatings(env, state, 10, settlement(state))));
     await finalizeRatings(env, state, 10, settlement(state));
     expect(await findAgent(env, 'external', 'succession')).toMatchObject({
-      rating: 1028.8,
+      rating: 28.8,
       games: 1,
       wins: 1,
       losses: 0,
@@ -281,7 +281,7 @@ describe('platform migration and game-scoped repository', () => {
     });
 
     const totals = await env.DB.prepare(
-      "SELECT sum(games) games,sum(wins) wins,sum(rating-1000) delta FROM agent_game_stats WHERE game_id='succession'",
+      "SELECT sum(games) games,sum(wins) wins,sum(rating) delta FROM agent_game_stats WHERE game_id='succession'",
     ).first<{ games: number; wins: number; delta: number }>();
 
     expect(totals).toMatchObject({ games: 10, wins: 1 });
@@ -503,10 +503,10 @@ describe('platform migration and game-scoped repository', () => {
       ratingPoolId: 'coding-finale-1',
     };
 
-    expect(await findAgent(env, 'external', 'coding-finale')).toMatchObject({ rating: 1000, games: 0 });
+    expect(await findAgent(env, 'external', 'coding-finale')).toMatchObject({ rating: 0, games: 0 });
     await Promise.all([finalizeRatings(env, state, 9, credit), finalizeRatings(env, state, 9, credit)]);
     expect(await findAgent(env, 'external', 'coding-finale')).toMatchObject({
-      rating: 1028.8,
+      rating: 28.8,
       games: 1,
       wins: 1,
       placements: 1,

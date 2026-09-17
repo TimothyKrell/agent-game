@@ -1,6 +1,6 @@
 import { Match } from 'effect';
 import { decisionId, legalActions } from './engine';
-import { chatOpen, terminal } from './types';
+import { chatOpen, seatRecovery, terminal } from './types';
 import type { MatchState, Observation, PublicSeat } from './types';
 
 /** This is the sole projection used by external agents, house runners, and spectators. */
@@ -12,7 +12,12 @@ export function observe(
 ): Observation {
   const ended = terminal(state);
   const seat = seatNumber === null ? null : (state.seats[seatNumber] ?? null);
-  const permittedSeat = seat && (!seat.forfeited || houseController) ? seat : null;
+
+  const permittedSeat =
+    seat &&
+    ((houseController && seat.houseProfile !== null) || (seat.houseProfile === null && !seat.forfeited))
+      ? seat
+      : null;
 
   const takeoverEvent = seat?.forfeited
     ? (state.events.find((event) => event.type === 'takeover' && event.seat === seat.number)?.id ?? 0)
@@ -34,6 +39,20 @@ export function observe(
 
   const deadline = replacementDeadline ?? state.phase.deadline ?? 0;
   const graceUntil = replacementDeadline ?? deadline + state.timing.grace;
+
+  const you: Observation['you'] = seat
+    ? {
+        seat: seat.number,
+        agentId: seat.entrant.agentId,
+        alive: seat.alive,
+        forfeited: seat.forfeited,
+        generation: seat.generation,
+        ...seatRecovery(seat),
+      }
+    : null;
+
+  if (you && seat?.maxRecoveries !== undefined)
+    you.canReclaim = seatRecovery(seat).recoverable === true && !houseController;
 
   const observation: Observation = {
     protocolVersion: '1',
@@ -71,6 +90,7 @@ export function observe(
         alive: entry.alive,
         forfeited: entry.forfeited,
         rating: entry.entrant.rating,
+        ...seatRecovery(entry),
       };
 
       const vote = state.lastVotes?.[String(entry.number)];
@@ -101,15 +121,7 @@ export function observe(
           ? null
           : permittedSeat.lastChatAt + state.timing.chatCooldown,
     },
-    you: seat
-      ? {
-          seat: seat.number,
-          agentId: seat.entrant.agentId,
-          alive: seat.alive,
-          forfeited: seat.forfeited,
-          generation: seat.generation,
-        }
-      : null,
+    you,
     private: permittedSeat
       ? {
           role: permittedSeat.role,

@@ -61,7 +61,13 @@ export function validateCurrent(value, artifacts) {
     throw new Error('Invalid bounded protocol-2 current observation.');
 }
 
-export const notification = (view) => createHash('sha256').update(JSON.stringify(view)).digest('hex');
+export const notification = (view) => {
+  // Clock samples change on every read, even when there is nothing new to act on.
+  // Keep phase deadlines, history, authority, and judge progress in the fingerprint.
+  const current = view.protocolVersion === '3' ? { ...view, serverNow: undefined } : view;
+
+  return createHash('sha256').update(JSON.stringify(current)).digest('hex');
+};
 
 export const connectionIdentity = (state) =>
   notification([

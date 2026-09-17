@@ -52,6 +52,7 @@ it.each(['0.1.1', version])(
       context,
     );
 
+    const externalSeat = state.seats.findIndex((seat) => seat.entrant.agentId === 'agent-0');
     const ended = () => ['finished', 'interrupted'].includes(state.phase.kind);
 
     const pump = () => {
@@ -59,7 +60,7 @@ it.each(['0.1.1', version])(
         if (steps > 1000) throw new Error('Legacy fixture did not progress');
         const pending = pendingSeats(state);
 
-        if (pending.includes(0)) return;
+        if (pending.includes(externalSeat)) return;
         const seat = pending[0];
 
         if (seat !== undefined) {
@@ -93,12 +94,19 @@ it.each(['0.1.1', version])(
           expect(JSON.parse(body).gameId).toBeUndefined();
           const input = Schema.decodeUnknownSync(ActionRequestSchema)(JSON.parse(body));
           actionId = input.actionId;
-          state = act(state, 0, state.seats[0].generation, input, state.phase.startedAt + 1, context);
+          state = act(
+            state,
+            externalSeat,
+            state.seats[externalSeat].generation,
+            input,
+            state.phase.startedAt + 1,
+            context,
+          );
         }
 
         pump();
         const after = Number(new URL(request.url!, 'http://localhost').searchParams.get('after') ?? 0);
-        const view = observe(state, 0, after);
+        const view = observe(state, externalSeat, after);
         response.setHeader('content-type', 'application/json');
         response.end(JSON.stringify(actionId ? { accepted: true, actionId, observation: view } : view));
       } catch (error) {

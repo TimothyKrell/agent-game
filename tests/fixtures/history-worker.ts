@@ -4,11 +4,15 @@ import type { HistoryAudience, HistoryEvent, HistoryQuery } from '../../src/serv
 import type { HistoryMetadata2 } from '../../src/shared/succession';
 
 type FixtureCommand =
+  | { type: 'reply'; eventKey: string; seat: number }
   | { type: 'append'; events: HistoryEvent[] }
   | { type: 'freeze'; seat: number }
+  | { type: 'restore'; seat: number }
+  | { type: 'enable-recovery' }
   | { type: 'page'; audience: HistoryAudience; query: HistoryQuery }
   | { type: 'metadata'; audience: HistoryAudience }
   | { type: 'anchor'; audience: HistoryAudience; eventKey: string }
+  | { type: 'checkpoint'; audience: HistoryAudience; cursor: number }
   | { type: 'populate'; count: number; escaping: boolean; expectedOffset?: number }
   | { type: 'current' };
 
@@ -99,6 +103,12 @@ export class HistoryFixture extends DurableObject<Record<string, never>> {
     const command: FixtureCommand = await request.json();
 
     try {
+      if (command.type === 'reply') {
+        this.history.requirePublicReply(command);
+
+        return Response.json({ accepted: true });
+      }
+
       if (command.type === 'append') {
         const result = this.ctx.storage.transactionSync(() => this.history.append(command.events));
 
@@ -111,10 +121,25 @@ export class HistoryFixture extends DurableObject<Record<string, never>> {
         return Response.json({ frozen: true });
       }
 
+      if (command.type === 'restore') {
+        this.ctx.storage.transactionSync(() => this.history.restoreOriginal(command.seat));
+
+        return Response.json({ restored: true });
+      }
+
+      if (command.type === 'enable-recovery') {
+        this.ctx.storage.transactionSync(() => this.history.enableRecoverableOriginals());
+
+        return Response.json({ enabled: true });
+      }
+
       if (command.type === 'metadata') return Response.json(this.history.metadata(command.audience));
 
       if (command.type === 'anchor')
         return Response.json({ cursor: this.history.anchor(command.audience, command.eventKey) });
+
+      if (command.type === 'checkpoint')
+        return Response.json(this.history.checkpointPosition(command.audience, command.cursor));
 
       if (command.type === 'page')
         return Response.json(this.history.page('match_history-fixture', command.audience, command.query));

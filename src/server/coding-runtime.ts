@@ -1,8 +1,8 @@
 import { getSandbox, Sandbox } from '@cloudflare/sandbox';
 import type { Program, Tier } from '../game/coding-finale/types';
-import type { RoutingInput } from '../game/coding-finale/routing';
-import { routingCases } from '../game/coding-finale/routing';
-import { judgeProgram, runProgram } from './coding-finale/judge';
+import type { CodingInput } from '../game/coding-finale/puzzle-input';
+import { codingCases } from '../game/coding-finale/challenges';
+import { judgeProgramWithEvidence, runProgram } from './coding-finale/judge';
 
 /** Separate contestant development and judge containers; expected answers stay in the Worker. */
 export class CodingSandbox extends Sandbox<Env> {
@@ -35,7 +35,7 @@ export function practiceCodingProgram(
   seat: number,
   run: number,
   program: Program,
-  inputs: RoutingInput[],
+  inputs: CodingInput[],
 ) {
   return runProgram(environment(env, matchId, seat, 'practice'), `practice-${run}`, program, inputs);
 }
@@ -48,12 +48,13 @@ export function judgeCodingSubmission(
   program: Program,
   seed: number,
   tier: Tier,
+  family = 'scheduled-network-1',
 ) {
-  return judgeProgram(
+  return judgeProgramWithEvidence(
     environment(env, matchId, seat, 'judge'),
     `submission-${sequence}`,
     program,
-    routingCases(seed, tier),
+    codingCases(family, seed, tier),
   );
 }
 

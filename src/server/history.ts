@@ -51,6 +51,12 @@ export class MatchHistory {
       'CREATE TABLE IF NOT EXISTS history_cutoffs (seat INTEGER PRIMARY KEY, seat_head INTEGER NOT NULL, public_head INTEGER NOT NULL)',
     );
     sql.exec(
+      'CREATE TABLE IF NOT EXISTS history_original_access (seat INTEGER PRIMARY KEY, enabled INTEGER NOT NULL)',
+    );
+    sql.exec(
+      'CREATE TABLE IF NOT EXISTS history_original_private (seat INTEGER NOT NULL, seq INTEGER NOT NULL, PRIMARY KEY (seat,seq))',
+    );
+    sql.exec(
       "CREATE UNIQUE INDEX IF NOT EXISTS events_event_key ON events(json_extract(data, '$.eventKey'))",
     );
     sql.exec('CREATE UNIQUE INDEX IF NOT EXISTS history_stream_events ON history_streams(stream, event_id)');
@@ -68,6 +74,29 @@ export class MatchHistory {
       if (!this.sql.exec('SELECT name FROM history_heads WHERE name = ?', name).toArray().length)
         this.sql.exec('INSERT INTO history_heads (name, head, epoch) VALUES (?, 0, ?)', name, id());
     }
+  }
+
+  enableRecoverableOriginals(): void {
+    for (let seat = 0; seat < 10; seat++)
+      this.sql.exec('INSERT OR IGNORE INTO history_original_access(seat,enabled) VALUES (?,1)', seat);
+  }
+
+  /** A reply may reference only real public speech, never private evidence or an invented speaker. */
+  requirePublicReply(reply: { eventKey: string; seat: number }): void {
+    const exists = this.sql
+      .exec<{ id: number }>(
+        "SELECT id FROM events WHERE json_extract(data, '$.eventKey') = ? AND json_extract(data, '$.type') = 'chat' AND json_extract(data, '$.visibility') = 'public' AND json_extract(data, '$.seat') = ? LIMIT 1",
+        reply.eventKey,
+        reply.seat,
+      )
+      .toArray()[0];
+
+    if (!exists)
+      throw new GameError(
+        'invalid-reply',
+        'Reply to an existing public message and its original speaker.',
+        400,
+      );
   }
 
   private stream(name: string): StreamRow {
@@ -90,12 +119,34 @@ export class MatchHistory {
 
   /** Fence original private entitlement before appending a takeover's new private facts. */
   freezeOriginal(seat: number): void {
+    if (this.originalAccess(seat) !== null) {
+      this.sql.exec('UPDATE history_original_access SET enabled=0 WHERE seat=?', seat);
+      this.sql.exec('UPDATE history_heads SET epoch=? WHERE name=?', crypto.randomUUID(), `original:${seat}`);
+
+      return;
+    }
+
     this.sql.exec(
       'INSERT OR IGNORE INTO history_cutoffs (seat, seat_head, public_head) VALUES (?, ?, ?)',
       seat,
       this.stream(`seat:${seat}`).head,
       this.stream('public').head,
     );
+  }
+
+  /** Resume only future private facts; facts created under house authority stay excluded. */
+  restoreOriginal(seat: number): void {
+    if (this.originalAccess(seat) === null) return;
+    this.sql.exec('UPDATE history_original_access SET enabled=1 WHERE seat=?', seat);
+    this.sql.exec('UPDATE history_heads SET epoch=? WHERE name=?', crypto.randomUUID(), `original:${seat}`);
+  }
+
+  private originalAccess(seat: number): boolean | null {
+    const row = this.sql
+      .exec<{ enabled: number }>('SELECT enabled FROM history_original_access WHERE seat=?', seat)
+      .toArray()[0];
+
+    return row ? row.enabled === 1 : null;
   }
 
   metadata(audience: HistoryAudience): HistoryMetadata2 {
@@ -112,6 +163,14 @@ export class MatchHistory {
     }
 
     const seatStream = this.stream(`seat:${audience.seat}`);
+    const access = this.originalAccess(audience.seat);
+
+    if (!audience.house && access !== null) {
+      const original = this.stream(`original:${audience.seat}`);
+
+      return { visibilityEpoch: original.epoch, streamHead: original.head };
+    }
+
     const cutoff = audience.house ? null : this.cutoff(audience.seat);
 
     return {
@@ -145,8 +204,17 @@ export class MatchHistory {
 
       const streams =
         event.visibility === 'public'
-          ? ['public', ...Array.from({ length: 10 }, (_, seat) => `seat:${seat}`)]
-          : [`seat:${event.visibility}`];
+          ? [
+              'public',
+              ...Array.from({ length: 10 }, (_, seat) => `seat:${seat}`),
+              ...Array.from({ length: 10 }, (_, seat) => seat)
+                .filter((seat) => this.originalAccess(seat) !== null)
+                .map((seat) => `original:${seat}`),
+            ]
+          : [
+              `seat:${event.visibility}`,
+              ...(this.originalAccess(event.visibility) ? [`original:${event.visibility}`] : []),
+            ];
 
       for (const stream of streams) {
         const sequence = this.stream(stream).head + 1;
@@ -157,6 +225,13 @@ export class MatchHistory {
           head,
         );
         this.sql.exec('UPDATE history_heads SET head = ? WHERE name = ?', sequence, stream);
+
+        if (stream.startsWith('original:')) {
+          const seat = Number(stream.slice('original:'.length));
+
+          if (this.originalAccess(seat))
+            this.sql.exec('INSERT INTO history_original_private(seat,seq) VALUES (?,?)', seat, sequence);
+        }
       }
     }
 
@@ -206,6 +281,9 @@ export class MatchHistory {
         .map((row) => this.project(row.data, row.id));
 
     if (audience.seat === null) return this.range('public', after, through, limit);
+
+    if (!audience.house && this.originalAccess(audience.seat) !== null)
+      return this.range(`original:${audience.seat}`, after, through, limit);
     const cutoff = audience.house ? null : this.cutoff(audience.seat);
 
     if (!cutoff) return this.range(`seat:${audience.seat}`, after, through, limit);
@@ -305,6 +383,32 @@ export class MatchHistory {
       );
 
     if (audience.terminal) return { eventId: cursor, privateEntitled: true };
+
+    if (audience.seat !== null && !audience.house && this.originalAccess(audience.seat) !== null) {
+      if (cursor === 0) return { eventId: 0, privateEntitled: true };
+
+      const row = this.sql
+        .exec<{ event_id: number }>(
+          'SELECT event_id FROM history_streams WHERE stream=? AND seq=?',
+          `original:${audience.seat}`,
+          cursor,
+        )
+        .toArray()[0];
+
+      if (!row)
+        throw new GameError(
+          'history-checkpoint-unavailable',
+          'The authorized checkpoint index is unavailable.',
+          409,
+        );
+
+      const privateEntitled = !!this.sql
+        .exec('SELECT seq FROM history_original_private WHERE seat=? AND seq=?', audience.seat, cursor)
+        .toArray().length;
+
+      return { eventId: row.event_id, privateEntitled };
+    }
+
     const cutoff = audience.seat === null || audience.house ? null : this.cutoff(audience.seat);
     const privateEntitled = audience.seat !== null && (!cutoff || cursor <= cutoff.seat_head);
 
@@ -342,7 +446,13 @@ export class MatchHistory {
     if (!event) return null;
 
     if (audience.terminal) return event.id;
-    const stream = audience.seat === null ? 'public' : `seat:${audience.seat}`;
+
+    const stream =
+      audience.seat === null
+        ? 'public'
+        : !audience.house && this.originalAccess(audience.seat) !== null
+          ? `original:${audience.seat}`
+          : `seat:${audience.seat}`;
 
     const row = this.sql
       .exec<{ seq: number }>(
@@ -353,6 +463,9 @@ export class MatchHistory {
       .toArray()[0];
 
     if (!row) return null;
+
+    if (!audience.house && audience.seat !== null && this.originalAccess(audience.seat) !== null)
+      return row.seq;
     const cutoff = audience.seat === null || audience.house ? null : this.cutoff(audience.seat);
 
     if (!cutoff || row.seq <= cutoff.seat_head) return row.seq;

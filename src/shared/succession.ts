@@ -1,4 +1,5 @@
 import { Schema, Struct } from 'effect';
+import { ChatActionSchema } from './chat';
 import type { Card, GameAction, Observation, PublicSeat, Role, Team } from '../game/types';
 
 export type Capability = 'treasurer' | 'thief' | 'assassin' | 'envoy' | 'guard';
@@ -171,10 +172,7 @@ const bytes = (value: Observation2 | AuthorizedEvent2 | HistoryPage2 | ReplayFra
   new TextEncoder().encode(JSON.stringify(value)).byteLength;
 
 const Act1ActionSchema = Schema.Union([
-  Schema.Struct({
-    type: Schema.Literal('chat'),
-    text: Schema.String.check(Schema.makeFilter((text) => [...text].length <= 1000)),
-  }),
+  ChatActionSchema,
   Schema.Struct({
     type: Schema.Literals(['nominate', 'investigate', 'special-election', 'execute']),
     target: Seat,
@@ -402,6 +400,12 @@ export const Observation2Schema = Schema.Struct({
         role: Schema.optional(RoleSchema),
         vote: Schema.optional(Schema.Boolean),
         generation: Integer,
+        control: Schema.optional(
+          Schema.Literals(['entrant', 'temporary-house', 'permanent-house', 'house-entrant']),
+        ),
+        recoveryCount: Schema.optional(Integer),
+        recoveryLimit: Schema.optional(Integer),
+        recoverable: Schema.optional(Schema.Boolean),
         coins: Schema.optional(Integer),
         influence: Schema.optional(Integer.check(Schema.isBetween({ minimum: 0, maximum: 2 }))),
         revealed: Schema.optional(
@@ -429,6 +433,13 @@ export const Observation2Schema = Schema.Struct({
       alive: Schema.Boolean,
       forfeited: Schema.Boolean,
       generation: Integer,
+      control: Schema.optional(
+        Schema.Literals(['entrant', 'temporary-house', 'permanent-house', 'house-entrant']),
+      ),
+      recoveryCount: Schema.optional(Integer),
+      recoveryLimit: Schema.optional(Integer),
+      recoverable: Schema.optional(Schema.Boolean),
+      canReclaim: Schema.optional(Schema.Boolean),
     }),
   ),
   private: Schema.NullOr(
