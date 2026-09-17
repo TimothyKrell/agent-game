@@ -16,6 +16,8 @@ const resumeRoot = process.argv[3] ? resolve(process.argv[3]) : null;
 
 const gameBudget = Number(process.env.CLAUDE_GAME_BUDGET_USD ?? '0.95');
 
+const eventWait = process.env.AGENT_GAME_EVENT_WAIT !== '0';
+
 if (!Number.isFinite(gameBudget) || gameBudget <= 0)
   throw new Error('CLAUDE_GAME_BUDGET_USD must be a positive finite dollar allowance per agent.');
 
@@ -36,7 +38,7 @@ await mkdir(root, { mode: 0o700 });
 
 await writeFile(
   resolve(root, 'run-settings.json'),
-  JSON.stringify({ gameBudget, readinessBudget: 0.03, agents: 10 }, null, 2),
+  JSON.stringify({ gameBudget, readinessBudget: 0.03, agents: 10, eventWait }, null, 2),
 );
 
 const bots = await Promise.all(
@@ -145,7 +147,12 @@ function launch(bot, prompt, budget, stage) {
     cwd: bot.directory,
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, MCP_TOOL_TIMEOUT: '90000', CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1' },
+    env: {
+      ...process.env,
+      AGENT_GAME_EVENT_WAIT: eventWait ? '1' : '0',
+      MCP_TOOL_TIMEOUT: eventWait ? '600000' : '90000',
+      CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
+    },
   });
 
   bot.child = child;
@@ -324,7 +331,7 @@ const finale = await readFile(resolve(repo, 'public/games/coding-finale/rules.md
 const prompt = `Play this ONE queued Coding Finale match through the game tool until top-level status finished/interrupted. Call status then observe.
 After every observation: reclaim if you.canReclaim; otherwise act immediately on required decision.actions using its zero-based choice. An empty actions array in Act II means solve and submit code instead. Never pick legislative cards randomly. Cooperative: preserve/enact Safeguards; rogue: pursue faction victory. Protect private role knowledge and distinguish claims from facts.
 ${discussionGuidance}
-Then call wait and continue the foreground tool loop. wait blocks up to 60s but wakes on meaningful changes. An unchanged:true result retains prior game state; do not reobserve after every timeout. Never end your response with a promise to wait: actually call the tool and keep going. Termination is only top-level finished/interrupted, including after execution, loss of qualification, or house coverage.
+Then call wait and continue the foreground tool loop. ${eventWait ? 'wait stays pending until a meaningful change; idle transport timeouts are handled internally.' : 'wait blocks up to 60s but wakes on meaningful changes.'} An unchanged:true result retains prior game state; do not reobserve after every timeout. Never end your response with a promise to wait: actually call the tool and keep going. Termination is only top-level finished/interrupted, including after execution, loss of qualification, or house coverage.
 Act II finalists immediately fetch coding-challenge tier 1; independently write export function solve(input). Use coding-practice payload {program:{language:"javascript",source:"..."},inputs:[...]} for own tests, then coding-submit payload {challengeId,tier:1,program:{language:"javascript",source:"..."}}. Acceptance is not a pass: wait for verdict. After YOUR tier 1 passes, fetch tier 2 and solve it. There are five minutes total. Do not idle with an actionable coding decision. Other entrants and repository solvers are unavailable. If not qualified, keep waiting for the final result. Temporary coverage is reclaimable.
 RULES:\n${rules}\n${finale}`;
 

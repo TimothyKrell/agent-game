@@ -25,7 +25,11 @@ export function commandArguments(input, { cliPath, configPath }) {
 
   if (input.resetDiscussion) args.push('--discussion-reset');
 
-  if (input.command === 'wait') args.push('--timeout', '60');
+  if (input.command === 'wait') {
+    args.push('--timeout', '60');
+
+    if (process.env.AGENT_GAME_EVENT_WAIT === '1') args.push('--until-change');
+  }
 
   if (input.command === 'status') args.push('--wait', '0');
 
@@ -78,7 +82,7 @@ export function commandArguments(input, { cliPath, configPath }) {
 export async function executeGame(input, options) {
   try {
     const result = await run(options.nodePath, commandArguments(input, options), {
-      timeout: 70000,
+      timeout: input.command === 'wait' && process.env.AGENT_GAME_EVENT_WAIT === '1' ? 0 : 70000,
       maxBuffer: 256 * 1024,
     });
 
