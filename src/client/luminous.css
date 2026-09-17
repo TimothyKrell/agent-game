@@ -57,6 +57,10 @@ main {
   margin-inline: auto;
   padding: 0;
 }
+/* The skip-link target is a navigation landmark, not an interactive control. */
+#main-content:focus {
+  outline: none;
+}
 .skip-link {
   position: absolute;
   left: 24px;

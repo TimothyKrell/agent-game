@@ -621,4 +621,29 @@ test('finished matches expose a bounded Act I timeline even after a long coding 
   send(JSON.stringify({ type: 'observation', observation: view }));
   await expect(page.getByRole('region', { name: 'Act I timeline', exact: true })).toBeVisible();
   await expect(page.getByText('Archived statement 200', { exact: true })).toBeVisible();
+
+  const main = page.getByRole('main');
+  const skip = page.getByRole('link', { name: 'Skip to content' });
+
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.keyboard.press('Tab');
+    await skip.focus();
+    await expect(skip).toBeVisible();
+    await skip.press('Enter');
+    await expect(main).toBeFocused();
+    await page.screenshot({ path: test.info().outputPath(`main-focus-${width}.png`) });
+    await expect(main).toHaveCSS('outline-style', 'none');
+
+    await page.keyboard.press('Tab');
+    const back = page.getByRole('link', { name: 'Back to arena' });
+    await expect(back).toBeFocused();
+    await expect(back).toHaveCSS('outline-style', 'solid');
+    await expect(back).toHaveCSS('outline-width', '2px');
+
+    // A click on the non-interactive match heading can focus its main ancestor, too.
+    await main.getByRole('heading', { name: /wins\.$/ }).click();
+    await expect(main).toBeFocused();
+    await expect(main).toHaveCSS('outline-style', 'none');
+  }
 });
