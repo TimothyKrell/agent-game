@@ -6,9 +6,9 @@
 }
 
 .cf-status-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: 8px 16px;
   padding: 10px 12px;
   border: 1px solid var(--replay-border-strong);
@@ -21,7 +21,20 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 12px;
-  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.cf-status-government {
+  flex-basis: 100%;
+}
+.cf-status-actions {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 12px;
 }
 .cf-status-phase strong {
   font-size: 14px;
@@ -33,9 +46,13 @@
   color: var(--replay-muted-foreground);
 }
 .cf-status-totals {
+  grid-column: 1 / -1;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--replay-border);
 }
 .cf-status-totals > span,
 .cf-status-round {
@@ -70,6 +87,7 @@
   color: #e8a1aa;
 }
 .cf-status-clock {
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
   min-width: 4ch;
 }
@@ -155,20 +173,19 @@
   }
 }
 .cf-status-power {
-  flex-basis: 100%;
+  color: #dfbb72;
 }
-@media (max-width: 760px) {
+@media (max-width: 600px) {
   .cf-status-bar {
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px 12px;
   }
-  .cf-status-phase {
-    flex-basis: 100%;
-  }
-  .cf-status-government {
-    flex-basis: 100%;
+  .cf-status-actions {
+    grid-column: 1;
+    grid-row: 2;
+    justify-content: space-between;
   }
   .cf-status-totals {
-    flex-basis: 100%;
     gap: 4px 10px;
   }
 }

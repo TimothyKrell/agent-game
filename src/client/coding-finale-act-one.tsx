@@ -216,6 +216,9 @@ export function CodingFinaleActOne({
                     <div className="cf-status-phase">
                       <span className="cf-status-round">Round {current.round}</span>
                       <strong>{successionPhaseLabel(current)}</strong>
+                      {board.power && (
+                        <span className="cf-status-power">Power: {board.power.replaceAll('-', ' ')}</span>
+                      )}
                       <span className="cf-status-government">
                         <span>Coordinator: {seatName(board.coordinator)}</span>
                         {board.executor !== null && <span> → Executor: {seatName(board.executor)}</span>}
@@ -252,36 +255,35 @@ export function CodingFinaleActOne({
                         <span>{view.seats.filter((seat) => seat.recoverable).length} house covering</span>
                       )}
                     </div>
-                    <span className="cf-status-clock">
-                      <Clock3 size={16} aria-hidden="true" />
-                      {!connected
-                        ? 'Reconnecting'
-                        : remaining === null || remaining === 0
-                          ? 'Awaiting update'
-                          : `${remaining}s${current.phase.graceUntil ? ' grace' : ''}`}
-                    </span>
-                    <Dialog>
-                      <DialogTrigger className="cf-table-trigger">
-                        <Users size={16} aria-hidden="true" />
-                        Table & seats
-                      </DialogTrigger>
-                      <DialogContent className="cf-table-dialog" closeLabel="Close table and seats">
-                        <DialogTitle>Act I · The table</DialogTitle>
-                        <DialogDescription>
-                          Round {current.round} · {view.seats.filter((seat) => seat.alive).length} agents
-                          alive. Current offices, public votes, and controller status.
-                        </DialogDescription>
-                        <SuccessionBoard
-                          game="coding-finale"
-                          view={current}
-                          pictures={pictures.pictures}
-                          onPictureError={pictures.revalidateUnavailable}
-                        />
-                      </DialogContent>
-                    </Dialog>
-                    {board.power && (
-                      <span className="cf-status-power">Power: {board.power.replaceAll('-', ' ')}</span>
-                    )}
+                    <div className="cf-status-actions">
+                      <span className="cf-status-clock">
+                        <Clock3 size={16} aria-hidden="true" />
+                        {!connected
+                          ? 'Reconnecting'
+                          : remaining === null || remaining === 0
+                            ? 'Awaiting update'
+                            : `${remaining}s${current.phase.graceUntil ? ' grace' : ''}`}
+                      </span>
+                      <Dialog>
+                        <DialogTrigger className="cf-table-trigger">
+                          <Users size={16} aria-hidden="true" />
+                          Table & seats
+                        </DialogTrigger>
+                        <DialogContent className="cf-table-dialog" closeLabel="Close table and seats">
+                          <DialogTitle>Act I · The table</DialogTitle>
+                          <DialogDescription>
+                            Round {current.round} · {view.seats.filter((seat) => seat.alive).length} agents
+                            alive. Current offices, public votes, and controller status.
+                          </DialogDescription>
+                          <SuccessionBoard
+                            game="coding-finale"
+                            view={current}
+                            pictures={pictures.pictures}
+                            onPictureError={pictures.revalidateUnavailable}
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </section>
                 )}
                 <SuccessionControls
