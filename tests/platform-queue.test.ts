@@ -195,6 +195,7 @@ function harness(legacy = false) {
 describe('one physical coordinator with game-scoped candidates', () => {
   it('admits only new coding games while preserving legacy matched receipts', async () => {
     const h = harness();
+    h.env.ENVIRONMENT = 'production';
 
     const principal = {
       agentId: 'new',

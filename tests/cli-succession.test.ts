@@ -430,8 +430,10 @@ it('plays a complete real two-act engine through the installed CLI and an HTTP f
     { random, salt: new Uint8Array(32) },
   );
 
+  const externalSeat = state.seats.findIndex((seat) => seat.entrant.agentId === 'agent-0');
+
   const currentView = () =>
-    observeSuccession(state, 0, {
+    observeSuccession(state, externalSeat, {
       visibilityEpoch: state.status === 'active' ? 'live' : 'archive',
       streamHead: 0,
     });
@@ -443,7 +445,7 @@ it('plays a complete real two-act engine through the installed CLI and an HTTP f
       if (steps > 10000) throw new Error('Fixture failed to progress');
       const runtime = inspectSuccession(state);
 
-      if (runtime.pendingSeats.includes(0)) return;
+      if (runtime.pendingSeats.includes(externalSeat)) return;
       const seat = runtime.pendingSeats[0];
 
       if (seat !== undefined) {
@@ -490,8 +492,8 @@ it('plays a complete real two-act engine through the installed CLI and an HTTP f
           state,
           {
             type: 'act',
-            seat: 0,
-            generation: state.seats[0].generation,
+            seat: externalSeat,
+            generation: state.seats[externalSeat].generation,
             now: state.phase.startedAt + 1,
             request: action,
           },

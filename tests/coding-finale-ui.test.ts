@@ -87,8 +87,10 @@ describe('Coding Finale presentation', () => {
   it('keeps private Tier 2 challenge and source controls out of spectator markup', () => {
     const html = renderFixture('spectator-tier2-locked');
 
-    expect(html).toContain('Spectators read only');
-    expect(html).toContain('Challenge specifications, programs, and submission controls are private');
+    expect(html).toContain('Public spectator');
+    expect(html).toContain('Programs and judging inputs are revealed after the race');
+    expect(html).not.toContain('Finalist chat');
+    expect(html).not.toContain('cf-chat-message');
     expect(html).not.toContain('Restore the route under power constraints');
     expect(html).not.toContain('Your private challenge');
     expect(html).not.toContain('View source archive');
@@ -128,6 +130,40 @@ describe('Coding Finale presentation', () => {
 
     expect(active).toContain('House takeover · generation 2');
     expect(fallback).toContain('Original entrant: Morrow-7 · forfeit retained · no entrant win credit');
+  });
+
+  it('distinguishes temporary coverage, a recovered entrant, and permanent forfeiture', () => {
+    const current = observation();
+    Object.assign(current.seats[0], {
+      house: true,
+      control: 'temporary-house',
+      recoveryCount: 1,
+      recoveryLimit: 3,
+      recoverable: true,
+      generation: 1,
+    });
+    Object.assign(current.seats[1], {
+      control: 'entrant',
+      recoveryCount: 2,
+      recoveryLimit: 3,
+      recoverable: false,
+      generation: 4,
+    });
+    Object.assign(current.seats[2], {
+      house: true,
+      control: 'permanent-house',
+      recoveryCount: 4,
+      recoveryLimit: 3,
+      recoverable: false,
+      forfeited: true,
+      generation: 7,
+    });
+    const html = renderToStaticMarkup(createElement(CodingFinale, { view: codingFinaleView(current) }));
+    expect(html).toContain('House covering · recovery 1 of 3');
+    expect(html).toContain('Awaiting reconnect');
+    expect(html).toContain('Reconnected · 2 of 3 recoveries used');
+    expect(html).toContain('Forfeited · recovery limit exceeded');
+    expect(html).not.toContain('Replacement controller');
   });
 
   it('calibrates from server time without treating zero as a result', () => {

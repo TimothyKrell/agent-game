@@ -4,7 +4,8 @@ import { agentPictures, collectAgentPictures } from './agent-picture-data';
 import { changeAgentPicture, readAgentPicture } from './agent-pictures';
 import { GameError } from '../game/types';
 import { GAME_DESCRIPTORS } from '../game/descriptors';
-import { platformCoordinator } from './coordinator';
+import { rejectRetiredMatch, purgeRetiredMatches } from './retired-matches';
+import { platformCoordinator, permitsGame } from './coordinator';
 import { requireGameProtocol, requireQueueProtocol, selectedGame } from './protocol';
 import {
   TransportActionRequestSchema,
@@ -15,6 +16,7 @@ import {
   QueueJoinSchema,
   QueueCancelSchema,
   GameSelectionSchema,
+  ReclaimRequestSchema,
 } from '../shared/api';
 import {
   agentSession,
@@ -64,6 +66,7 @@ export { HouseSeatObject } from './house-seat';
 export default {
   async scheduled(_controller, env) {
     await collectAgentPictures(env);
+    await purgeRetiredMatches(env);
   },
   async fetch(request, env, ctx?: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
@@ -203,7 +206,7 @@ export default {
         const input = await readOptionalJson(request, GameSelectionSchema);
         const gameId = selectedGame(input?.gameId ?? url.searchParams.get('gameId'));
 
-        if (gameId !== 'coding-finale')
+        if (!permitsGame(env, gameId))
           throw new GameError('game-unavailable', 'New matches use Coding Finale.', 409);
         requireGameProtocol(gameId, protocols);
 
@@ -382,9 +385,10 @@ export default {
               503,
             );
           const input = await readJson(request, QueueJoinSchema);
-          const gameId = selectedGame(input.gameId);
+          // Retained protocol-1 preview executables omit the original game's ID.
+          const gameId = selectedGame(input.gameId ?? (previewEnabled(env) ? 'secret-overlord' : undefined));
 
-          if (gameId !== 'coding-finale' && current.status === 'idle')
+          if (!permitsGame(env, gameId) && current.status === 'idle')
             throw new GameError('game-unavailable', 'New matches use Coding Finale.', 409);
           requireGameProtocol(gameId, protocols);
           const result = await queue.join(principal, input.requestId, gameId);
@@ -406,33 +410,37 @@ export default {
         );
 
       const codingRoute = path.match(
-        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)\/coding\/(challenge|practice|source)$/,
+        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)\/coding\/(challenge|practice|source|submission)$/,
       );
 
       if (codingRoute) {
+        await rejectRetiredMatch(env, codingRoute[1]);
         const match = env.MATCHES.getByName(codingRoute[1]);
 
-        if (codingRoute[2] === 'source' && method === 'GET') {
+        if ((codingRoute[2] === 'source' || codingRoute[2] === 'submission') && method === 'GET') {
           const sequence = Number(url.searchParams.get('sequence'));
 
           if (!url.searchParams.has('sequence') || !Number.isSafeInteger(sequence) || sequence < 1)
             throw new GameError('invalid-sequence', 'Supply a positive integer sequence.', 400);
+
+          if (codingRoute[2] === 'submission')
+            return rpcResponse(await match.codingSubmission(sequence, protocols));
+
           const principal = request.headers.has('authorization') ? await agentSession(request, env) : null;
 
           return rpcResponse(await match.codingSource(principal, sequence, protocols));
         }
-
-        const principal = await agentSession(request, env);
 
         if (codingRoute[2] === 'challenge' && method === 'GET') {
           const tier = Number(url.searchParams.get('tier'));
 
           if (tier !== 1 && tier !== 2) throw new GameError('invalid-tier', 'Supply tier 1 or 2.', 400);
 
-          return rpcResponse(await match.codingChallenge(principal, tier, protocols));
+          return rpcResponse(await match.codingChallenge(tier, protocols));
         }
 
         if (codingRoute[2] === 'practice' && method === 'POST') {
+          const principal = await agentSession(request, env);
           const input = await readJson(request, CodingPracticeSchema, 204800);
 
           return rpcResponse(await match.codingPractice(principal, input.program, input.inputs, protocols));
@@ -440,10 +448,12 @@ export default {
       }
 
       const matchRoute = path.match(
-        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)(?:\/(actions|ticket|events|history|history-anchor|checkpoint|replay|rounds))?$/,
+        /^\/api\/matches\/(match_[a-zA-Z0-9-]+)(?:\/(actions|reclaim|ticket|events|history|history-anchor|checkpoint|replay|rounds))?$/,
       );
 
       if (matchRoute) {
+        if (method === 'POST' && !request.headers.has('authorization')) await agentSession(request, env);
+        await rejectRetiredMatch(env, matchRoute[1]);
         const match = env.MATCHES.getByName(matchRoute[1]);
         const operation = matchRoute[2];
 
@@ -531,6 +541,13 @@ export default {
             );
 
           return rpcResponse(await match.submit(principal, input, protocols));
+        }
+
+        if (operation === 'reclaim' && method === 'POST') {
+          const principal = await agentSession(request, env);
+          const input = await readJson(request, ReclaimRequestSchema);
+
+          return rpcResponse(await match.reclaim(principal, input, protocols));
         }
 
         if (!operation && method === 'GET') {

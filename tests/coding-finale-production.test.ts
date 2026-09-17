@@ -4,21 +4,25 @@ import { setTimeout as pause } from 'node:timers/promises';
 import { Schema } from 'effect';
 import { afterEach, describe, expect, it } from 'vitest';
 import { AgentProfileSchema } from '../src/shared/api';
-import type { ApiRequestBody } from '../src/shared/api';
+import type { ApiRequestBody, ReclaimRequest } from '../src/shared/api';
 import type { Program } from '../src/game/coding-finale/types';
-import type { RoutingInput } from '../src/game/coding-finale/routing';
+import type { CodingInput } from '../src/game/coding-finale/puzzle-input';
 import { Observation3Schema } from '../src/shared/coding-finale';
+import {
+  PublicCodingChallengeSchema,
+  CodingSubmissionReportSchema,
+} from '../src/shared/coding-finale-artifacts';
 import type { ActionRequest3, Observation3 } from '../src/shared/coding-finale';
 import { previewAction } from '../src/game/preview';
 import { solveRouting, routingChallenge } from '../src/game/coding-finale/routing';
 
-const origin = 'http://127.0.0.1:8797';
+const origin = process.env.FINALE_PRODUCTION_ORIGIN ?? 'http://127.0.0.1:8797';
 
 const sockets = new Set<WebSocket>();
 
 type Controller = { token: string; agentId: string; rating: number };
 
-type RequestBody = ApiRequestBody | { program: Program; inputs: RoutingInput[] };
+type RequestBody = ApiRequestBody | ReclaimRequest | { program: Program; inputs: CodingInput[] };
 
 type HistoryPage = {
   cursor: number;
@@ -135,11 +139,19 @@ async function history(id: string, view: Observation3) {
 }
 
 async function previewOnly() {
-  const config = Schema.decodeUnknownSync(Schema.Struct({ provider: Schema.Literal('preview') }))(
-    JSON.parse(await readFile('.agent-game/finale-production/connection.json', 'utf8')),
+  const config = Schema.decodeUnknownSync(
+    Schema.Struct({ provider: Schema.Literal('preview'), origin: Schema.String }),
+  )(
+    JSON.parse(
+      await readFile(
+        process.env.FINALE_PRODUCTION_CONFIG ?? '.agent-game/finale-production/connection.json',
+        'utf8',
+      ),
+    ),
   );
 
   expect(config.provider).toBe('preview');
+  expect(config.origin).toBe(origin);
 }
 
 describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
@@ -176,6 +188,13 @@ describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
       );
 
       expect(source.source).toContain('solve');
+
+      const report = Schema.decodeUnknownSync(CodingSubmissionReportSchema)(
+        await data(`/api/matches/${id}/coding/submission?sequence=${final.result!.submission}`),
+      );
+
+      expect(report.program).toEqual(source);
+      expect(report.evidence).toMatchObject({ status: 'recorded', totalCases: 24, passedCases: 24 });
       await expect.poll(() => frames.at(-1)?.status, { timeout: 10_000 }).toBe('finished');
       expect(frames.every((view) => view.you === null && view.finale?.you == null)).toBe(true);
       expect(frames.some((view) => view.act === 1)).toBe(true);
@@ -220,15 +239,77 @@ describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
       const initial = await observe(id);
       expect(initial.mode).toBe('preview');
       expect(initial.seats.every((seat) => !seat.house)).toBe(true);
-      const deadline = Date.now() + 150_000;
+      // Normal production timing includes unskippable Act I discussion windows in
+      // addition to the deliberate action deadline and grace used by this test.
+      const deadline = Date.now() + 480_000;
       let view = initial;
+      let recoveryController: Controller | null = null;
+      let recoveryComplete = false;
 
       while (view.act === 1 && view.status === 'active' && Date.now() < deadline) {
         await Promise.all(
           controllers.map(async (controller) => {
             const current = await observe(id, controller);
 
+            if (controller === recoveryController && current.you?.canReclaim && !recoveryComplete) {
+              const covered = current.you;
+              const readAgain = await observe(id, controller);
+              expect(readAgain.you).toMatchObject({
+                generation: covered.generation,
+                control: 'temporary-house',
+                recoveryCount: 1,
+              });
+              const other = controllers.find((entry) => entry !== controller)!;
+              expect(
+                (
+                  await request(
+                    `/api/matches/${id}/reclaim`,
+                    { requestId: randomUUID(), expectedGeneration: covered.generation },
+                    other,
+                  )
+                ).status,
+              ).toBe(409);
+              const reclaim = { requestId: randomUUID(), expectedGeneration: covered.generation };
+
+              const reclaimed = await data<{
+                reclaimed: true;
+                generation: number;
+                observation: Observation3;
+              }>(`/api/matches/${id}/reclaim`, reclaim, controller);
+
+              expect(reclaimed).toMatchObject({
+                reclaimed: true,
+                generation: covered.generation + 1,
+                observation: {
+                  you: { control: 'entrant', recoveryCount: 1, canReclaim: false },
+                },
+              });
+              expect(
+                await data<{ generation: number }>(`/api/matches/${id}/reclaim`, reclaim, controller),
+              ).toMatchObject({ generation: covered.generation + 1 });
+              expect(
+                (
+                  await request(
+                    `/api/matches/${id}/reclaim`,
+                    { requestId: randomUUID(), expectedGeneration: covered.generation },
+                    controller,
+                  )
+                ).status,
+              ).toBe(409);
+              recoveryComplete = true;
+
+              return;
+            }
+
             if (!current.actOne || !current.decision) return;
+
+            if (!recoveryController) {
+              recoveryController = controller;
+
+              return;
+            }
+
+            if (controller === recoveryController && !recoveryComplete) return;
             const action = previewAction(current.actOne);
 
             if (!action) return;
@@ -250,6 +331,7 @@ describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
       }
 
       expect(view.act, view.interruptionReason ?? 'Act 1 deadline exceeded').toBe(2);
+      expect(recoveryComplete).toBe(true);
       await expect
         .poll(async () => (await observe(id)).finale?.status, { timeout: 120_000, interval: 100 })
         .not.toBe('preparing');
@@ -265,12 +347,11 @@ describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
       ).toBe(409);
       expect(
         (await request(`/api/matches/${id}/coding/challenge?tier=1`, undefined, spectatorController)).status,
-      ).toBe(409);
+      ).toBe(200);
+      expect(view.chat.open).toBe(false);
 
-      const challenge = await data<{ challengeId: string }>(
-        `/api/matches/${id}/coding/challenge?tier=1`,
-        undefined,
-        controller,
+      const challenge = Schema.decodeUnknownSync(PublicCodingChallengeSchema)(
+        await data(`/api/matches/${id}/coding/challenge?tier=1`),
       );
 
       // Deterministic fixture source is never used by the real-provider launcher.
@@ -306,6 +387,20 @@ describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
           )
         ).status,
       ).toBe(409);
+      expect(
+        (
+          await request(
+            `/api/matches/${id}/actions`,
+            {
+              gameId: 'coding-finale',
+              phaseId: privateView.phase.id,
+              actionId: randomUUID(),
+              action: { type: 'chat', text: 'Even finalists cannot chat during the coding race.' },
+            },
+            controller,
+          )
+        ).status,
+      ).toBe(409);
 
       const practice = await data<{ exitCode: number; stdout: string }>(
         `/api/matches/${id}/coding/practice`,
@@ -318,6 +413,45 @@ describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
 
       expect(practice.exitCode).toBe(0);
       expect(JSON.parse(practice.stdout)).toEqual([7]);
+
+      const variedPractice = await data<{ exitCode: number; stdout: string }>(
+        `/api/matches/${id}/coding/practice`,
+        {
+          program: {
+            language: 'javascript',
+            source:
+              'export function solve(input) { return input.values.reduce((sum, value) => sum + value, 0); }',
+          },
+          inputs: [{ values: [-2, 4, 7] }, { values: [] }],
+        },
+        controller,
+      );
+
+      expect(variedPractice.exitCode).toBe(0);
+      expect(JSON.parse(variedPractice.stdout)).toEqual([9, 0]);
+
+      const flawed: ActionRequest3 = {
+        ...submit(1, randomUUID()),
+        action: {
+          type: 'submit-program',
+          tier: 1,
+          challengeId: challenge.challengeId,
+          program: {
+            language: 'javascript',
+            source: 'export function solve(input) { return input.start === input.target ? 0 : -999; }',
+          },
+        },
+      };
+
+      await data(`/api/matches/${id}/actions`, flawed, controller);
+      expect((await request(`/api/matches/${id}/coding/submission?sequence=1`)).status).toBe(409);
+      await expect
+        .poll(async () => (await observe(id, controller)).finale?.submissions[0]?.verdict, {
+          timeout: 30_000,
+        })
+        .toBe('wrong-answer');
+      expect((await observe(id)).finale?.submissions[0]).toMatchObject({ status: 'judged', verdict: null });
+      expect((await request(`/api/matches/${id}/coding/challenge?tier=2`)).status).toBe(409);
       const tierOne = submit(1, randomUUID());
       await data(`/api/matches/${id}/actions`, tierOne, controller);
       expect((await request(`/api/matches/${id}/coding/source?sequence=1`)).status).toBe(409);
@@ -325,10 +459,21 @@ describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
         .poll(async () => (await observe(id, controller)).finale?.you?.unlockedTier, { timeout: 30_000 })
         .toBe(2);
       await data(`/api/matches/${id}/actions`, tierOne, controller);
-      expect((await observe(id, controller)).finale?.submissions).toHaveLength(1);
+      expect((await observe(id, controller)).finale?.submissions).toHaveLength(2);
       expect(
         (await request(`/api/matches/${id}/coding/challenge?tier=2`, undefined, controller)).status,
       ).toBe(200);
+      expect((await request(`/api/matches/${id}/coding/challenge?tier=2`)).status).toBe(200);
+
+      const otherFinalist = view.seats.find(
+        (seat) => seat.qualification === 'finalist' && seat.number !== finalist.number,
+      )!;
+
+      const otherController = controllers.find((entry) => entry.agentId === otherFinalist.agentId)!;
+      expect(
+        (await request(`/api/matches/${id}/actions`, submit(2, randomUUID()), otherController)).status,
+      ).toBe(409);
+      expect((await request(`/api/matches/${id}/coding/submission?sequence=2`)).status).toBe(409);
       expect(JSON.stringify(await observe(id))).not.toContain(source);
       await data(`/api/matches/${id}/actions`, submit(2, randomUUID()), controller);
       await expect.poll(async () => (await observe(id)).status, { timeout: 30_000 }).toBe('finished');
@@ -339,10 +484,45 @@ describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
         reason: 'tier-two',
         credited: true,
       });
-      expect(await data(`/api/matches/${id}/coding/source?sequence=1`)).toEqual({
+      expect(await data(`/api/matches/${id}/coding/source?sequence=2`)).toEqual({
         language: 'typescript',
         source,
       });
+
+      const failedReport = Schema.decodeUnknownSync(CodingSubmissionReportSchema)(
+        await data(`/api/matches/${id}/coding/submission?sequence=1`),
+      );
+
+      expect(failedReport).toMatchObject({
+        seat: finalist.number,
+        tier: 1,
+        verdict: 'wrong-answer',
+        evidence: { status: 'recorded', totalCases: 24, passedCases: 1 },
+      });
+      expect(failedReport.evidence.status).toBe('recorded');
+
+      if (failedReport.evidence.status === 'recorded') {
+        expect(failedReport.evidence.cases.length).toBeLessThanOrEqual(6);
+        expect(
+          failedReport.evidence.cases.some(
+            (test) => test.status === 'passed' && test.actual === test.expected,
+          ),
+        ).toBe(true);
+        expect(
+          failedReport.evidence.cases.some((test) => test.status === 'failed' && test.actual === -999),
+        ).toBe(true);
+      }
+
+      const winningReport = Schema.decodeUnknownSync(CodingSubmissionReportSchema)(
+        await data(`/api/matches/${id}/coding/submission?sequence=${final.result!.submission}`),
+      );
+
+      expect(winningReport).toMatchObject({
+        verdict: 'passed',
+        evidence: { status: 'recorded', totalCases: 24, passedCases: 24 },
+      });
+      expect((await request(`/api/matches/${id}/coding/submission?sequence=999`)).status).toBe(404);
+      expect((await request(`/api/matches/${id}/coding/submission?sequence=0`)).status).toBe(400);
       const events = await history(id, final);
       expect(events.some((event) => event.type === 'finale-finished')).toBe(true);
       expect(
@@ -372,6 +552,6 @@ describe.skipIf(process.env.FINALE_PRODUCTION !== '1')(
 
         expect(profile.agent).toMatchObject({ games: 0, rating: entry.rating, rank: null });
       }
-    }, 240_000);
+    }, 600_000);
   },
 );

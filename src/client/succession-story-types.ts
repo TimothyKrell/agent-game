@@ -47,6 +47,9 @@ export interface StoryController {
   house: boolean;
   generation: StoryValue<number>;
   forfeited: boolean;
+  recoverable?: boolean;
+  recoveryCount?: number;
+  recoveryLimit?: number;
   /** The wire records house authority, not a replacement competitor/profile identity. */
   identity: StoryValue<string>;
 }
@@ -89,7 +92,7 @@ export type StoryResolution = 'applied' | 'blocked' | 'cancelled';
 
 /** Typed mechanical payloads. Source text is retained separately, verbatim, on every row. */
 export type StoryFact =
-  | { kind: 'speech' }
+  | { kind: 'speech'; to?: number[]; replyTo?: { eventKey: string; seat: number } }
   | { kind: 'nomination'; target: number }
   | { kind: 'ballot'; approve: boolean }
   | {
@@ -137,7 +140,14 @@ export type StoryFact =
   | { kind: 'exchange-completed' }
   | { kind: 'turn-ended'; round: number; slot: number }
   | { kind: 'finished'; winner: number; capEvidence: CapEvidence2 | null }
-  | { kind: 'takeover'; agentId: string; generation?: number }
+  | {
+      kind: 'takeover' | 'reclaimed';
+      agentId: string;
+      generation?: number;
+      recoverable?: boolean;
+      recoveryCount?: number;
+      recoveryLimit?: number;
+    }
   | { kind: 'interrupted' }
   | {
       kind: 'phase';

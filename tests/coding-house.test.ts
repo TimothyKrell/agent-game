@@ -59,7 +59,7 @@ function harness() {
     result: null,
     interruptionReason: null,
     you: { seat: 0, agentId: 'agent', alive: true, forfeited: false, generation: 0 },
-    chat: { open: true, maxCharacters: 700, cooldownMs: 5000, nextSpeakAt: null },
+    chat: { open: false, maxCharacters: 700, cooldownMs: 5000, nextSpeakAt: null },
     decision: { id: 'tier-1-attempt-0', deadline, graceUntil: deadline, actions: [] },
     commitment: { digest: 'commit', reveal: null },
     history: { visibilityEpoch: 'epoch', streamHead: 0 },
@@ -154,6 +154,21 @@ function harness() {
 
   return { db, cold, job, tick, run, match, coding, view };
 }
+
+it('retires an old Act 2 chat activation without model calls, spending, or submission', async () => {
+  const h = harness();
+
+  try {
+    await h.cold().enqueue({ ...h.job, id: 'race:seat:0:chat:0', kind: 'chat' });
+    await h.tick();
+    expect(h.run).not.toHaveBeenCalled();
+    expect(coordinator.reserveInference).not.toHaveBeenCalled();
+    expect(h.match.submitHouse).not.toHaveBeenCalled();
+    expect(h.db.prepare('SELECT outcome FROM jobs').get()).toEqual({ outcome: 'chat-closed' });
+  } finally {
+    h.db.close();
+  }
+});
 
 it('resumes persisted source and practice across cold alarms, revises with actual output, and retries one formal receipt without reinference', async () => {
   const h = harness();

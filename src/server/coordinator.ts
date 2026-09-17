@@ -180,6 +180,14 @@ export class PlatformQueue {
   private day(): string {
     return new Date().toISOString().slice(0, 10);
   }
+
+  private async admissionsPaused(): Promise<boolean> {
+    const control = await this.env.DB.prepare(
+      'SELECT admissions_paused FROM arena_control WHERE id=1',
+    ).first<{ admissions_paused: number }>();
+
+    return control?.admissions_paused === 1;
+  }
   private allocations(): Allocation[] {
     return this.ctx.storage.sql
       .exec<Allocation>("SELECT * FROM allocations WHERE state != 'settled'")
@@ -301,7 +309,17 @@ export class PlatformQueue {
   async exhibition(gameId: RepositoryGameId = 'coding-finale'): Promise<RpcResult<{ matchId: string }>> {
     validGame(gameId);
 
-    if (gameId !== 'coding-finale')
+    if (await this.admissionsPaused())
+      return {
+        ok: false,
+        error: {
+          code: 'maintenance',
+          message: 'Match admission is paused for arena maintenance.',
+          status: 503,
+        },
+      };
+
+    if (!permitsGame(this.env, gameId))
       return {
         ok: false,
         error: { code: 'game-closed', message: 'New matches use Coding Finale.', status: 409 },
@@ -446,11 +464,14 @@ export class PlatformQueue {
           },
         };
 
-      if (!current && gameId !== 'coding-finale')
+      if (!current && !permitsGame(this.env, gameId))
         throw new GameError('game-closed', 'New matches use Coding Finale.', 409);
 
       if (!current && gameId === 'coding-finale' && !this.env.CODING_SANDBOXES)
         throw new GameError('game-unavailable', 'Coding Finale requires configured sandboxes.', 503);
+
+      if (!current && (await this.admissionsPaused()))
+        throw new GameError('maintenance', 'Match admission is paused for arena maintenance.', 503);
 
       if (!current)
         this.ctx.storage.transactionSync(() => {
@@ -604,6 +625,41 @@ export class PlatformQueue {
       this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id = ?', matchId);
     });
     await this.wakeAt(Date.now() + 1);
+  }
+
+  async purgeRetired(matchId: string): Promise<void> {
+    if (!(await this.env.DB.prepare('SELECT id FROM retired_matches WHERE id=?').bind(matchId).first()))
+      throw new GameError('not-retired', 'This match is not eligible for deletion.', 409);
+    this.ctx.storage.transactionSync(() => {
+      this.ctx.storage.sql.exec('DELETE FROM tickets WHERE match_id=?', matchId);
+      this.ctx.storage.sql.exec('DELETE FROM joins WHERE match_id=?', matchId);
+      this.ctx.storage.sql.exec('DELETE FROM allocations WHERE id=?', matchId);
+      this.ctx.storage.sql.exec('DELETE FROM inference_waiters WHERE match_id=?', matchId);
+    });
+  }
+
+  async registerRetiredAllocations(): Promise<void> {
+    const control = await this.env.DB.prepare('SELECT retired_before FROM arena_control WHERE id=1').first<{
+      retired_before: number;
+    }>();
+
+    if (!control || control.retired_before <= 0) return;
+
+    const allocations = this.ctx.storage.sql
+      .exec<{ id: string }>('SELECT id FROM allocations WHERE created_at<=?', control.retired_before)
+      .toArray();
+
+    for (let offset = 0; offset < allocations.length; offset += 50)
+      await this.env.DB.batch(
+        allocations
+          .slice(offset, offset + 50)
+          .map((allocation) =>
+            this.env.DB.prepare('INSERT OR IGNORE INTO retired_matches(id,retired_at) VALUES (?,?)').bind(
+              allocation.id,
+              control.retired_before,
+            ),
+          ),
+      );
   }
 
   async revokeGrant(grantId: string): Promise<void> {
@@ -846,6 +902,8 @@ export class PlatformQueue {
       for (const allocation of this.allocations().filter((entry) => entry.state === 'creating'))
         await this.finishAllocation(allocation);
 
+      if (await this.admissionsPaused()) return;
+
       if (previewEnabled(this.env) && this.candidates().length) await this.previewTarget.refresh();
 
       while (true) {
@@ -887,6 +945,8 @@ export class PlatformQueue {
         );
 
         const id = opaqueId('match');
+
+        if (await this.admissionsPaused()) break;
 
         const previewIntent = previewEnabled(this.env)
           ? await this.previewTarget.prepare(id, valid, gameId)
@@ -1089,4 +1149,9 @@ export class PlatformQueue {
 /** Game queues share the deployed coordinator and its preserved identity/global limits. */
 export function platformCoordinator(env: Pick<Env, 'MATCHMAKING'>) {
   return env.MATCHMAKING.getByName('secret-overlord');
+}
+
+/** Public production admission is Finale-only; explicit nonproduction requests retain engine experiments. */
+export function permitsGame(env: Pick<Env, 'ENVIRONMENT'>, gameId: RepositoryGameId): boolean {
+  return gameId === 'coding-finale' || env.ENVIRONMENT === 'development' || env.ENVIRONMENT === 'preview';
 }

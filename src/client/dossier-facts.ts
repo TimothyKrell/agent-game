@@ -82,7 +82,11 @@ export function dossierFactText(row: StoryRow, entrants: DossierEntrants) {
         'executor-discard': 'Discards the other policy.',
       }[fact.operation];
     case 'takeover':
-      return 'House controller takes over. The original entrant forfeits.';
+      return fact.recoverable
+        ? 'House temporarily covers this seat. The original entrant can reconnect.'
+        : 'House controller takes over. The original entrant forfeits.';
+    case 'reclaimed':
+      return 'The original entrant reconnects and resumes control. Earlier house choices stand.';
     case 'finished':
       return fact.capEvidence
         ? `${name(fact.winner)} is the mechanical champion at the Round cap.`

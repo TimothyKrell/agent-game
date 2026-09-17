@@ -1,9 +1,10 @@
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { once } from 'node:events';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
+import { Schema } from 'effect';
 import { localEgress } from './local-egress.mjs';
 
 const { values } = parseArgs({
@@ -12,6 +13,8 @@ const { values } = parseArgs({
     model: { type: 'string', default: process.env.HOUSE_MODEL },
     persist: { type: 'string', default: '.agent-game/finale-production' },
     'time-scale': { type: 'string' },
+    port: { type: 'string', default: '8797' },
+    'inspector-port': { type: 'string', default: '9297' },
   },
 });
 
@@ -20,7 +23,16 @@ if (!['preview', 'openai', 'workers-ai'].includes(values.provider))
 
 const directory = resolve(values.persist);
 
-const origin = 'http://127.0.0.1:8797';
+const port = Number(values.port);
+
+const inspectorPort = Number(values['inspector-port']);
+
+for (const value of [port, inspectorPort]) {
+  if (!Number.isInteger(value) || value < 1 || value > 65535)
+    throw new Error('Ports must be integers between 1 and 65535.');
+}
+
+const origin = `http://127.0.0.1:${port}`;
 
 const models = {
   preview: 'integration-scripted',
@@ -87,16 +99,39 @@ console.log(`Persistence: ${directory}. No match is created automatically.`);
 // This prevents a UI build from aborting paid inference mid-match.
 Object.assign(process.env, egress, { WRANGLER_SEND_METRICS: 'false' });
 
-const { unstable_startWorker } = await import('wrangler');
+const { unstable_startWorker, unstable_getVarsForDev } = await import('wrangler');
+
+const configuredSecret =
+  process.env.BETTER_AUTH_SECRET ??
+  unstable_getVarsForDev(resolve('wrangler.jsonc'), undefined, {}, undefined, true).BETTER_AUTH_SECRET;
+
+let authSecret = configuredSecret;
+
+if (authSecret === undefined) {
+  const secretPath = `${directory}/dev-auth-secret`;
+
+  try {
+    await writeFile(secretPath, randomBytes(32).toString('base64url'), { flag: 'wx', mode: 0o600 });
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+  }
+
+  await chmod(secretPath, 0o600);
+  authSecret = await readFile(secretPath, 'utf8');
+}
+
+if (!Schema.is(Schema.String.check(Schema.isMinLength(32)))(authSecret))
+  throw new Error('Development authentication requires a secret of at least 32 characters.');
 
 const worker = await unstable_startWorker({
   config: resolve('wrangler.jsonc'),
-  bindings: Object.fromEntries(
-    Object.entries(vars).map(([key, value]) => [key, { type: 'plain_text', value }]),
-  ),
+  bindings: {
+    ...Object.fromEntries(Object.entries(vars).map(([key, value]) => [key, { type: 'plain_text', value }])),
+    BETTER_AUTH_SECRET: { type: 'secret_text', value: authSecret },
+  },
   dev: {
-    server: { hostname: '127.0.0.1', port: 8797 },
-    inspector: { port: 9297 },
+    server: { hostname: '127.0.0.1', port },
+    inspector: { port: inspectorPort },
     persist: directory,
     remote: values.provider === 'workers-ai' ? undefined : false,
     watch: false,

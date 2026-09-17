@@ -162,7 +162,7 @@ export default {
         return json({ done: true });
       }
 
-      if (path === '/fixture/production') return json(await queue.exhibition());
+      if (path === '/fixture/production') return json(await queue.exhibition('secret-overlord'));
 
       if (path === '/fixture/reserve') {
         const input = await readJson(

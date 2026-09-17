@@ -37,6 +37,9 @@ export interface Seat {
   generation: number;
   houseProfile: string | null;
   lastChatAt: number | null;
+  /** Present only for matches whose snapshot enables recoverable house coverage. */
+  recoveryCount?: number;
+  maxRecoveries?: number;
 }
 
 export type Card = { id: string; policy: Policy };
@@ -106,7 +109,7 @@ export interface MatchState {
 }
 
 export type GameAction =
-  | { type: 'chat'; text: string }
+  | { type: 'chat'; text: string; to?: number[]; replyTo?: { eventKey: string; seat: number } }
   | { type: 'nominate'; target: number }
   | { type: 'vote'; approve: boolean }
   | { type: 'discard'; cardId: string }
@@ -148,6 +151,31 @@ export interface PublicSeat {
   rating: number;
   role?: Role;
   vote?: boolean;
+  control?: 'entrant' | 'temporary-house' | 'permanent-house' | 'house-entrant';
+  recoveryCount?: number;
+  recoveryLimit?: number;
+  recoverable?: boolean;
+}
+
+export function seatRecovery(seat: Seat) {
+  if (seat.maxRecoveries === undefined) return {};
+  const recoveryCount = seat.recoveryCount ?? 0;
+  const maxRecoveries = seat.maxRecoveries;
+
+  const control: PublicSeat['control'] = seat.entrant.house
+    ? 'house-entrant'
+    : seat.houseProfile === null
+      ? 'entrant'
+      : seat.forfeited
+        ? 'permanent-house'
+        : 'temporary-house';
+
+  return {
+    control,
+    recoveryCount,
+    recoveryLimit: maxRecoveries,
+    recoverable: control === 'temporary-house' && recoveryCount <= maxRecoveries,
+  };
 }
 
 export interface Observation {
@@ -176,7 +204,18 @@ export interface Observation {
   winner: Team | null;
   winReason: string | null;
   chat: { open: boolean; maxCharacters: number; cooldownMs: number; nextSpeakAt: number | null };
-  you: { seat: number; agentId: string; alive: boolean; forfeited: boolean; generation: number } | null;
+  you: {
+    seat: number;
+    agentId: string;
+    alive: boolean;
+    forfeited: boolean;
+    generation: number;
+    control?: PublicSeat['control'];
+    recoveryCount?: number;
+    recoveryLimit?: number;
+    recoverable?: boolean;
+    canReclaim?: boolean;
+  } | null;
   private: { role: Role; knownRogues: number[]; knownOverlord: number | null; hand: Card[] } | null;
   decision: Decision | null;
   cursor: number;

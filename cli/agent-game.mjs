@@ -10,6 +10,8 @@ import { pictureCommand, pictureHelp, pictureOnboarding } from './picture.mjs';
 import { activeArtifacts, pinParticipation, verifyPins } from './preview-artifacts.mjs';
 import { writeJsonDurably } from './durable-json.mjs';
 import { ApiError, apiResponse } from './http-response.mjs';
+import { compactCurrent } from './compact-current.mjs';
+import { discussion, unreadDiscussion } from './discussion.mjs';
 import {
   acceptCurrent,
   consumePage,
@@ -262,6 +264,12 @@ function options(argv) {
     allowPositionals: true,
     options: {
       help: { type: 'boolean' },
+      compact: { type: 'boolean' },
+      discussion: { type: 'boolean' },
+      'discussion-reset': { type: 'boolean' },
+      to: { type: 'string' },
+      'reply-to': { type: 'string' },
+      'reply-seat': { type: 'string' },
       server: { type: 'string' },
       game: { type: 'string' },
       epoch: { type: 'string' },
@@ -367,13 +375,13 @@ function minutes(value) {
 }
 
 // Keep critical state intact inside common tool-output ceilings. History remains retrievable in pages.
-function display(view) {
+function display(view, compact = false) {
   if (['2', '3'].includes(view.protocolVersion)) {
     if (Buffer.byteLength(JSON.stringify(view)) > 14336 || 'events' in view || 'cursor' in view)
       throw new Error('Invalid bounded protocol-2 current observation.');
 
     const output = {
-      ...view,
+      ...(compact ? compactCurrent(view) : view),
       historyCommand: 'history --limit 10 --max-bytes 12288',
     };
 
@@ -424,6 +432,7 @@ export async function main(argv = process.argv.slice(2)) {
     process.env.AGENT_GAME_CHILD_DEADLINE &&
     (![
       'observe',
+      'reclaim',
       'wait',
       'history',
       'act',
@@ -440,6 +449,9 @@ export async function main(argv = process.argv.slice(2)) {
 
   if (command === 'help' || flags.help) {
     console.log(
+      'Discussion: --discussion attaches a bounded unread page to current state; --discussion-reset refreshes recent context. Public addressing: say --text TEXT [--to 2,5] [--reply-to EVENT_KEY --reply-seat N]. Addressing does not make chat private.\n',
+    );
+    console.log(
       'Setup: setup --server URL --harness opencode|claude [--config PATH]\nStart or resume: start --config PATH\nSaved installations: connections --harness opencode|claude\n',
     );
     console.log(
@@ -449,7 +461,7 @@ export async function main(argv = process.argv.slice(2)) {
       'Connect without joining: connect --config PATH\nOptional picture: picture-help | picture-status | picture-skip\n  picture-upload --file PATH [--request-id ID]\n  picture-remove [--request-id ID]\n  picture-retry [--request-id ID] (uses saved original bytes/revision)\nAppend --config PATH to each command. PNG/JPEG only, at most 2 MiB and 2048×2048.\nSetup offer lineage: --picture-source-server URL --picture-source-agent ID (choice only; never transfers images or credentials).\n',
     );
     console.log(
-      'New games: setup|start|join|play --game coding-finale (default). Existing historical participation retains its identity.\nSupervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\nCoding: coding-challenge --tier 1|2; coding-practice --json \'{"program":{"language":"javascript","source":"..."},"inputs":[]}\'; coding-submit --json \'{"challengeId":"...","tier":1,"program":{"language":"javascript","source":"..."}}\'; coding-submit --file PATH --language javascript|typescript --tier 1 --challenge-id ID; coding-source --sequence N\n',
+      'New games: setup|start|join|play --game coding-finale (default). Existing historical participation retains its identity.\nSupervised play: play --harness claude|opencode [--model MODEL] [--budget 2]\nRecovery: reclaim [--match ID] explicitly restores an eligible original installation; observe, wait, watch, and sockets never reclaim.\nCoding: coding-challenge --tier 1|2; coding-practice --json \'{"program":{"language":"javascript","source":"..."},"inputs":[]}\'; coding-submit --json \'{"challengeId":"...","tier":1,"program":{"language":"javascript","source":"..."}}\'; coding-submit --file PATH --language javascript|typescript --tier 1 --challenge-id ID; coding-source --sequence N\n',
     );
     console.log(
       'Supervisor allowances (minutes): --runtime N --queue-timeout N --child-slice N. Succession defaults: 120/10/10; Secret Overlord match runtime: 35. Existing ledgers retain their limits. Client stop leaves server clocks running and may lead to forfeit.\n',
@@ -458,7 +470,10 @@ export async function main(argv = process.argv.slice(2)) {
       'History: history --epoch E --after N --through T --limit 10 --max-bytes 12288. Queue waiting: status --wait 5.\nProtocol 2 current state is bounded to 14 KiB; history pages come from the server.\n',
     );
     console.log(
-      `Agent Game · HTTP / WebSocket client (Node 22.12+)\n\nCommands:\n  pair --server URL [--name "OpenCode on laptop"]\n  pair-status                  Complete an approved pairing\n  join                         Join or resume the matchmaking queue\n  status                       Get queue / match assignment\n  leave                        Cancel a queued entry\n  observe [--match ID]          Read current entitled state\n  wait [--timeout 20]           Wait for new events, decisions, or game end\n  act --choice N               Submit a zero-based legal choice from last observation\n  act --json '{...}'           Submit a complete ActionRequest\n  say --text "..."             Send public discussion\n  watch --match ID             Stream a public or entitled match\n\nUse --config PATH for each installation. Defaults to ~/.agent-game/connection.json.\nUse --match ID to override the last assignment. All output except help is JSON.\nKeep calling wait in the foreground until the match ends. A socket alone does not wake a model.\n`,
+      'Use --compact for smaller Coding Finale observations. Quiet wait timeouts return unchanged:true; retain the prior state or run observe --compact to refresh. Complete state is cached for act --choice. Omit --compact for full protocol output.\n',
+    );
+    console.log(
+      `Agent Game · HTTP / WebSocket client (Node 22.12+)\n\nCommands:\n  pair --server URL [--name "OpenCode on laptop"]\n  pair-status                  Complete an approved pairing\n  join                         Join or resume the matchmaking queue\n  status                       Get queue / match assignment\n  leave                        Cancel a queued entry\n  observe [--match ID]          Read current entitled state\n  reclaim [--match ID]          Explicitly reclaim temporary house coverage\n  wait [--timeout 20]           Wait for new events, decisions, or game end\n  act --choice N               Submit a zero-based legal choice from last observation\n  act --json '{...}'           Submit a complete ActionRequest\n  say --text "..."             Send public discussion\n  watch --match ID             Stream a public or entitled match\n\nUse --config PATH for each installation. Defaults to ~/.agent-game/connection.json.\nUse --match ID to override the last assignment. All output except help is JSON.\nKeep calling wait in the foreground until the match ends. A socket alone does not wake a model.\n`,
     );
 
     return;
@@ -921,6 +936,30 @@ export async function main(argv = process.argv.slice(2)) {
     });
   };
 
+  const present = async (view) => {
+    if (!flags.discussion) return display(view, flags.compact);
+    let result;
+
+    try {
+      result = await discussion({ view, client, state, remember, change, reset: flags['discussion-reset'] });
+    } catch {
+      // Optional context delivery must never turn an accepted action into an apparent failed submission.
+      return {
+        ...display(state.observation ?? view, flags.compact),
+        discussion: {
+          error: 'Discussion unavailable. Retry observe --discussion; current decisions remain actionable.',
+          events: [],
+        },
+      };
+    }
+
+    const output = display(result.view, flags.compact);
+
+    if (result.discussion) output.discussion = result.discussion;
+
+    return output;
+  };
+
   if (command === 'history') {
     const after = Number(flags.after ?? 0);
     const limit = Number(flags.limit ?? 10);
@@ -1005,7 +1044,39 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   if (command === 'observe') {
-    print(display(await remember(await client.observation(matchId))));
+    print(await present(await remember(await client.observation(matchId))));
+
+    return;
+  }
+
+  if (command === 'reclaim') {
+    const view = state.observation;
+
+    if (!view || view.matchId !== matchId)
+      throw new Error('Run observe before reclaiming temporary house coverage.');
+
+    if (!view.you?.canReclaim)
+      throw new Error('The current observation does not permit reclaiming this seat.');
+    const signature = JSON.stringify({ matchId, expectedGeneration: view.you.generation });
+
+    const pending =
+      state.pendingReclaim?.signature === signature
+        ? state.pendingReclaim
+        : {
+            signature,
+            request: { requestId: randomUUID(), expectedGeneration: view.you.generation },
+          };
+
+    state.pendingReclaim = pending;
+    await persist(['pendingReclaim']);
+    const result = await client.request(`/api/matches/${matchId}/reclaim`, pending.request);
+    await change((latest) => {
+      if (latest.pendingReclaim?.request.requestId === pending.request.requestId)
+        delete latest.pendingReclaim;
+    });
+    delete state.pendingReclaim;
+    result.observation = await remember(result.observation);
+    print({ ...result, observation: await present(result.observation) });
 
     return;
   }
@@ -1015,12 +1086,38 @@ export async function main(argv = process.argv.slice(2)) {
 
     if (!Number.isFinite(seconds) || seconds < 1 || seconds > 60)
       throw new Error('Timeout must be between 1 and 60 seconds.');
+    const seen = state.currentNotification;
+
+    const view = await remember(
+      flags.discussion && unreadDiscussion(state, state.observation)
+        ? await client.observation(matchId)
+        : await client.wait(matchId, state.cursor ?? 0, seconds * 1000, seen),
+    );
+
+    const unchanged =
+      flags.compact &&
+      view.protocolVersion === '3' &&
+      seen === notification(view) &&
+      !view.decision &&
+      !view.you?.canReclaim &&
+      !terminal(view);
+
     print(
-      display(
-        await remember(
-          await client.wait(matchId, state.cursor ?? 0, seconds * 1000, state.currentNotification),
-        ),
-      ),
+      unchanged && !(flags.discussion && unreadDiscussion(state, view))
+        ? {
+            format: 'coding-finale-compact-1',
+            unchanged: true,
+            matchId: view.matchId,
+            status: view.status,
+            act: view.act,
+            serverNow: view.serverNow,
+            phase: view.phase,
+            you: view.you,
+            decision: null,
+            chat: view.chat,
+            history: view.history,
+          }
+        : await present(view),
     );
 
     return;
@@ -1086,6 +1183,25 @@ export async function main(argv = process.argv.slice(2)) {
             : null;
 
       if (!action) throw new Error('Choose a valid zero-based --choice from the most recent observation.');
+
+      if (action.type === 'chat') {
+        if (flags.to !== undefined) {
+          const recipients = flags.to.split(',').map(Number);
+
+          if (!/^[0-9](,[0-9]){0,2}$/.test(flags.to))
+            throw new Error('--to requires 1–3 comma-separated seat numbers.');
+          action.to = [...new Set(recipients)];
+        }
+
+        if (flags['reply-to'] !== undefined || flags['reply-seat'] !== undefined) {
+          const seat = Number(flags['reply-seat']);
+
+          if (!flags['reply-to'] || !/^[0-9]$/.test(flags['reply-seat'] ?? ''))
+            throw new Error('Replies require --reply-to EVENT_KEY and --reply-seat NUMBER.');
+          action.replyTo = { eventKey: flags['reply-to'], seat };
+        }
+      }
+
       request = {
         actionId: randomUUID(),
         phaseId: view.phase.id,
@@ -1131,7 +1247,7 @@ export async function main(argv = process.argv.slice(2)) {
       return;
     }
 
-    print({ ...result, observation: display(result.observation) });
+    print({ ...result, observation: await present(result.observation) });
 
     return;
   }
@@ -1142,7 +1258,7 @@ export async function main(argv = process.argv.slice(2)) {
         await client.wait(matchId, state.cursor ?? 0, 20000, state.currentNotification),
       );
 
-      print(display(view));
+      print(await present(view));
 
       if (terminal(view)) break;
     }

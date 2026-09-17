@@ -3,7 +3,7 @@ import type { Entrant, GameEvent, Seat } from '../types';
 import { GameError, teamOf } from '../types';
 import type { MatchSnapshot, RuntimeInspection, SettlementParticipant } from '../contracts';
 import { gameDescriptor } from '../descriptors';
-import { createMatch, evolveLegacy } from '../engine';
+import { createMatch, evolveLegacy, reclaimSeat } from '../engine';
 import { inspectSecretOverlord, normalizeSecretOverlord, observeSecretOverlord } from '../secret-overlord';
 import { Act1BoardSchema, LegacyStateSchema } from '../succession/persistence';
 import type { Act1Board, RandomContext, SuccessionEvent } from '../succession/types';
@@ -23,7 +23,7 @@ import {
 } from './engine';
 import { FINALE_RULES, FinaleStateSchema } from './types';
 import type { FinaleController, FinaleState, Tier, Verdict } from './types';
-import { routingChallenge } from './routing';
+import { codingChallenge, CHALLENGE_FAMILIES } from './challenges';
 import { randomIndex } from '../random';
 
 const PREPARATION_MS = 120_000;
@@ -42,6 +42,7 @@ export interface CodingFinaleState {
   actOne: Act1Board;
   finale: FinaleState | null;
   seed: number;
+  challengeFamily?: string;
   commitment: { digest: string; saltBase64url: string; priority: number[] };
   phase: RuntimeInspection['phase'];
   act1Result: { team: 'cooperative' | 'rogue'; reason: string } | null;
@@ -65,6 +66,7 @@ export type CodingFinaleCommand =
   | { type: 'advance' | 'recover'; now: number }
   | { type: 'judge-result'; sequence: number; verdict: Verdict; now: number }
   | { type: 'replace'; seat: number; houseProfile: string; now: number }
+  | { type: 'reclaim'; seat: number; now: number }
   | { type: 'interrupt'; reason: string; now: number };
 
 export interface CodingFinaleEvolution {
@@ -113,6 +115,12 @@ export async function createCodingFinale(
 
   const { seats, events, ...actOne } = initial;
 
+  if (snapshot.controllerRecovery === 'recoverable-house-1')
+    for (const seat of seats) {
+      seat.recoveryCount = 0;
+      seat.maxRecoveries = seat.entrant.house ? 0 : 3;
+    }
+
   const state: CodingFinaleState = {
     storageVersion: 1,
     gameId: 'coding-finale',
@@ -126,6 +134,10 @@ export async function createCodingFinale(
     actOne,
     finale: null,
     seed: crypto.getRandomValues(new Uint32Array(1))[0],
+    challengeFamily:
+      snapshot.houseModel.provider === 'preview'
+        ? 'scheduled-network-1'
+        : CHALLENGE_FAMILIES[randomIndex(CHALLENGE_FAMILIES.length)],
     commitment,
     phase: structuredClone(actOne.phase),
     act1Result: null,
@@ -241,6 +253,9 @@ export function evolveCodingFinale(
   const emit = emitter(state, appendedEvents, replayFrames);
   const result = () => ({ state, appendedEvents, replay: null, replayFrames });
 
+  if (state.finale && command.type === 'act' && command.request.action.type === 'chat')
+    throw new GameError('chat-closed', 'Chat is closed throughout Act 2.');
+
   if (state.status !== 'active') {
     if (command.type === 'act') throw new GameError('match-finished', 'The match is terminal.');
 
@@ -253,6 +268,36 @@ export function evolveCodingFinale(
   if (!state.finale) {
     if (command.type === 'prepare-ready' || command.type === 'judge-result' || command.type === 'replace')
       throw new GameError('act-one-active', 'This command requires the finale.');
+
+    if (command.type === 'reclaim') {
+      const reclaimed = reclaimSeat(
+        { ...state.actOne, seats: state.seats, events: [] },
+        command.seat,
+        command.now,
+        {
+          ...random,
+          onEvent(board, event) {
+            const { seats: nextSeats, ...nextActOne } = board;
+            state.seats = nextSeats;
+            state.actOne = nextActOne;
+            state.phase = nextActOne.phase;
+            emit(event.at, event.type, event.text, {
+              visibility: event.visibility,
+              seat: event.seat,
+              data: event.data,
+            });
+          },
+        },
+      );
+
+      const { seats: nextSeats, events: _events, ...nextActOne } = reclaimed;
+      state.seats = nextSeats;
+      state.actOne = nextActOne;
+      state.phase = nextActOne.phase;
+
+      return result();
+    }
+
     const legacyCommand = actOneCommand(command);
 
     const evolved = evolveLegacy({ ...state.actOne, seats: state.seats }, legacyCommand, {
@@ -289,7 +334,11 @@ export function evolveCodingFinale(
 
     if (actOne.phase.kind === 'finished') {
       state.act1Result = { team: actOne.winner!, reason: actOne.winReason! };
-      state.finale = createFinale(evolved.state, `${state.id}:scheduled-routing-1`, state.commitment);
+      state.finale = createFinale(
+        evolved.state,
+        `${state.id}:${state.challengeFamily ?? 'scheduled-routing-1'}`,
+        state.commitment,
+      );
       state.phase = {
         id: `${state.id}:finale:preparing`,
         kind: 'preparing',
@@ -327,6 +376,12 @@ export function evolveCodingFinale(
         house: command.house ?? state.seats[command.seat]?.houseProfile !== null,
       };
 
+      if (controller.house && !state.seats[command.seat].entrant.house)
+        throw new GameError(
+          'covered-finalist-idle',
+          'House coverage cannot author programs for an externally entered finalist.',
+        );
+
       finalistFor(state.finale, controller);
 
       const retry =
@@ -338,21 +393,7 @@ export function evolveCodingFinale(
       if (!retry && request.phaseId !== state.phase.id)
         throw new GameError('stale-phase', 'This phase has ended.');
 
-      if (request.action.type === 'chat') {
-        if (state.finale.status !== 'racing' || command.now >= state.finale.deadline!)
-          throw new GameError('chat-closed', 'Finalist chat is closed.');
-        const seat = state.seats[command.seat];
-        const text = request.action.text.trim();
-
-        if (!text || text.length > 1200)
-          throw new GameError('invalid-chat', 'Chat must contain 1–1200 characters.', 400);
-
-        if (seat.lastChatAt !== null && command.now < seat.lastChatAt + state.snapshot.timing.chatCooldown)
-          throw new GameError('chat-cooldown', 'Wait before speaking again.');
-        seat.lastChatAt = command.now;
-        state.lastChat = { seat: command.seat, at: command.now };
-        emit(command.now, 'chat', text, { seat: command.seat });
-      } else if (request.action.type === 'submit-program') {
+      if (request.action.type === 'submit-program') {
         if (!command.fingerprint || !/^[a-f0-9]{64}$/.test(command.fingerprint))
           throw new GameError(
             'invalid-fingerprint',
@@ -379,8 +420,7 @@ export function evolveCodingFinale(
               fingerprint: command.fingerprint,
             },
           });
-      } else
-        throw new GameError('wrong-act', 'Only chat and program submissions are available in the finale.');
+      } else throw new GameError('wrong-act', 'Only program submissions are available in the finale.');
       break;
     }
 
@@ -403,10 +443,75 @@ export function evolveCodingFinale(
         });
       break;
     case 'replace':
-      state.finale = replaceFinalist(state.finale, command.seat, command.houseProfile, command.now);
+      if (
+        state.snapshot.controllerRecovery === 'recoverable-house-1' &&
+        !state.seats[command.seat].entrant.house
+      ) {
+        const seat = state.seats[command.seat];
+
+        if (seat.houseProfile !== null)
+          throw new GameError('already-covered', 'Continuous house coverage is one incident.');
+        seat.recoveryCount = (seat.recoveryCount ?? 0) + 1;
+        state.finale = replaceFinalist(state.finale, command.seat, command.houseProfile, command.now, {
+          forfeited: seat.recoveryCount > (seat.maxRecoveries ?? 0),
+          supersedePending: false,
+        });
+      } else state.finale = replaceFinalist(state.finale, command.seat, command.houseProfile, command.now);
       syncFinale(state, command.now);
-      emit(command.now, 'takeover', 'A house agent took over the finalist seat.', { seat: command.seat });
+      emit(
+        command.now,
+        'takeover',
+        state.seats[command.seat].forfeited
+          ? 'The finalist exhausted recovery and permanently forfeited.'
+          : 'A house agent temporarily covered the finalist seat.',
+        {
+          seat: command.seat,
+          data: {
+            agentId: state.seats[command.seat].entrant.agentId,
+            generation: state.seats[command.seat].generation,
+            recoveryCount: state.seats[command.seat].recoveryCount ?? 0,
+            recoveryLimit: state.seats[command.seat].maxRecoveries ?? 0,
+            recoverable: !state.seats[command.seat].forfeited,
+          },
+        },
+      );
       break;
+    case 'reclaim': {
+      const seat = state.seats[command.seat];
+
+      if (!seat || seat.entrant.house)
+        throw new GameError('original-house', 'Original house entrants cannot reclaim a seat.');
+
+      if (seat.maxRecoveries === undefined)
+        throw new GameError('recovery-unavailable', 'This match does not support controller recovery.');
+
+      if (seat.forfeited) throw new GameError('recovery-exhausted', 'This seat has permanently forfeited.');
+
+      if (seat.houseProfile === null)
+        throw new GameError('not-covered', 'This installation already controls its seat.');
+      seat.generation++;
+      seat.houseProfile = null;
+      const finalist = state.finale.finalists.find((entry) => entry.seat === command.seat);
+
+      if (finalist) {
+        finalist.generation = seat.generation;
+        finalist.forfeited = false;
+        finalist.houseProfile = null;
+      }
+
+      syncFinale(state, command.now);
+      emit(command.now, 'reclaimed', 'The original installation reclaimed the finalist seat.', {
+        seat: command.seat,
+        data: {
+          agentId: seat.entrant.agentId,
+          generation: seat.generation,
+          recoveryCount: seat.recoveryCount ?? 0,
+          recoveryLimit: seat.maxRecoveries ?? 0,
+        },
+      });
+      break;
+    }
+
     case 'interrupt':
       state.finale = interruptFinale(state.finale, command.reason);
       break;
@@ -450,21 +555,24 @@ export function pendingCodingFinaleJobs(state: CodingFinaleState) {
     : [];
 }
 
+export function publicCodingFinaleChallenge(state: CodingFinaleState, tier: Tier) {
+  if (!state.finale) throw new GameError('act-one-active', 'The challenge is not available yet.');
+
+  if (tier === 2 && !state.finale.finalists.some((finalist) => finalist.tierOne !== null))
+    throw new GameError('tier-locked', 'Tier 2 becomes public when any finalist passes Tier 1.');
+
+  return codingChallenge(state.challengeFamily ?? 'scheduled-network-1', tier);
+}
+
 export function authorizeCodingFinaleChallenge(
   state: CodingFinaleState,
   controller: FinaleController,
   tier: Tier,
 ) {
   if (!state.finale) throw new GameError('act-one-active', 'The challenge is not available yet.');
-  const finalist = finalistFor(state.finale, controller);
+  finalistFor(state.finale, controller);
 
-  if (state.finale.status === 'preparing')
-    throw new GameError('race-not-started', 'The challenge is available when the shared clock starts.');
-
-  if (tier === 2 && finalist.tierOne === null)
-    throw new GameError('tier-locked', 'Pass Tier 1 before accessing Tier 2.');
-
-  return routingChallenge(tier);
+  return publicCodingFinaleChallenge(state, tier);
 }
 
 export function inspectCodingFinale(state: CodingFinaleState): RuntimeInspection {
@@ -482,6 +590,7 @@ export function inspectCodingFinale(state: CodingFinaleState): RuntimeInspection
           .filter(
             (seat) =>
               seat.tierTwo === null &&
+              (state.seats[seat.seat].houseProfile === null || state.seats[seat.seat].entrant.house) &&
               !pending.some((entry) => entry.seat === seat.seat) &&
               state.finale!.submissions.filter((entry) => entry.seat === seat.seat).length <
                 FINALE_RULES.maxSubmissions,
@@ -544,6 +653,10 @@ export function observeCodingFinale(
         }
       : null;
 
+  const you = legacy.you ? { ...legacy.you } : null;
+
+  if (you?.canReclaim !== undefined) you.canReclaim = you.canReclaim && state.status === 'active';
+
   return {
     gameId: 'coding-finale',
     protocolVersion: '3',
@@ -585,16 +698,13 @@ export function observeCodingFinale(
     act1Result: state.act1Result,
     result: state.result,
     interruptionReason: state.interruptionReason,
-    you: legacy.you,
+    you,
     chat: finale
       ? {
-          open: !!controller && finale.status === 'racing',
+          open: false,
           maxCharacters: 1200,
           cooldownMs: state.snapshot.timing.chatCooldown,
-          nextSpeakAt:
-            participant?.lastChatAt === null || !participant
-              ? null
-              : participant.lastChatAt + state.snapshot.timing.chatCooldown,
+          nextSpeakAt: null,
         }
       : legacy.chat,
     decision,
@@ -674,6 +784,7 @@ const SnapshotSchema = Schema.Struct({
   ratingUrl: Schema.String,
   timing: LegacyStateSchema.fields.timing,
   housePolicyVersion: Schema.String,
+  controllerRecovery: Schema.optional(Schema.Literal('recoverable-house-1')),
   mode: LegacyStateSchema.fields.mode,
   houseModel: Schema.Struct({ provider: Schema.String, model: Schema.String, policyVersion: Schema.String }),
   gameId: Schema.Literal('coding-finale'),
@@ -705,6 +816,7 @@ const CodingFinaleStateSchema = Schema.Struct({
   actOne: Act1BoardSchema,
   finale: Schema.NullOr(FinaleStateSchema),
   seed: Schema.Int,
+  challengeFamily: Schema.optional(Schema.String),
   commitment: Schema.Struct({
     digest: Schema.String,
     saltBase64url: Schema.String,
@@ -762,6 +874,21 @@ export function decodeCodingFinale(value: unknown): CodingFinaleState {
     state.seed > 0xffff_ffff
   )
     throw new Error('Invalid Coding Finale identity or commitment.');
+
+  const recoverable = state.snapshot.controllerRecovery === 'recoverable-house-1';
+
+  if (
+    state.seats.some((seat) =>
+      recoverable
+        ? seat.recoveryCount === undefined ||
+          seat.maxRecoveries !== (seat.entrant.house ? 0 : 3) ||
+          seat.recoveryCount < 0 ||
+          seat.recoveryCount > 4 ||
+          (!seat.entrant.house && seat.forfeited !== seat.recoveryCount > 3)
+        : seat.recoveryCount !== undefined || seat.maxRecoveries !== undefined,
+    )
+  )
+    throw new Error('Invalid controller recovery state.');
 
   if (state.finale) {
     if (
@@ -873,8 +1000,12 @@ function assertFinaleIntegrity(state: CodingFinaleState, finale: FinaleState) {
       submission.generation < 0 ||
       submission.generation > seat.generation ||
       (submission.status === 'judged') !== (submission.verdict !== null) ||
-      (submission.status === 'pending' && submission.generation !== seat.generation) ||
-      (submission.status === 'superseded' && submission.generation >= seat.generation)
+      (submission.status === 'pending' &&
+        submission.generation !== seat.generation &&
+        seat.maxRecoveries === undefined) ||
+      (submission.status === 'superseded' &&
+        finale.status !== 'finished' &&
+        submission.generation >= seat.generation)
     )
       throw new Error('Invalid submission receipt.');
     receipts.add(key);

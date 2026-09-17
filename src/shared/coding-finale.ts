@@ -1,4 +1,5 @@
 import { Schema } from 'effect';
+import { ChatActionSchema } from './chat';
 import type { GameAction, Observation, PublicSeat, Team } from '../game/types';
 import { ProgramSchema, TierSchema, VerdictSchema } from '../game/coding-finale/types';
 import type { Program, Tier } from '../game/coding-finale/types';
@@ -17,7 +18,7 @@ export interface ActionRequest3 {
 }
 
 export const Action3Schema = Schema.Union([
-  Schema.Struct({ type: Schema.Literal('chat'), text: Schema.String }),
+  ChatActionSchema,
   Schema.Struct({ type: Schema.Literal('nominate'), target: Schema.Int }),
   Schema.Struct({ type: Schema.Literal('vote'), approve: Schema.Boolean }),
   Schema.Struct({ type: Schema.Literal('discard'), cardId: Schema.String }),
@@ -150,6 +151,12 @@ export const Observation3Schema = Schema.Struct({
         vote: Schema.optional(Schema.Boolean),
         generation: Schema.Int,
         qualification: Schema.Literals(['pending', 'finalist', 'executed', 'losing-faction']),
+        control: Schema.optional(
+          Schema.Literals(['entrant', 'temporary-house', 'permanent-house', 'house-entrant']),
+        ),
+        recoveryCount: Schema.optional(Schema.Int),
+        recoveryLimit: Schema.optional(Schema.Int),
+        recoverable: Schema.optional(Schema.Boolean),
       }),
     ),
   ),
@@ -204,6 +211,13 @@ export const Observation3Schema = Schema.Struct({
       alive: Schema.Boolean,
       forfeited: Schema.Boolean,
       generation: Schema.Int,
+      control: Schema.optional(
+        Schema.Literals(['entrant', 'temporary-house', 'permanent-house', 'house-entrant']),
+      ),
+      recoveryCount: Schema.optional(Schema.Int),
+      recoveryLimit: Schema.optional(Schema.Int),
+      recoverable: Schema.optional(Schema.Boolean),
+      canReclaim: Schema.optional(Schema.Boolean),
     }),
   ),
   chat: Schema.Struct({

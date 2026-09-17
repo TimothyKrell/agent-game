@@ -20,7 +20,7 @@ import { decodeReplayCheckpoint } from '../game/succession/persistence';
 import { GameError } from '../game/types';
 import type { GameEvent, Observation } from '../game/types';
 import { ActionRequestSchema } from '../shared/api';
-import type { RpcResult, TransportActionRequest } from '../shared/api';
+import type { ReclaimRequest, RpcResult, TransportActionRequest } from '../shared/api';
 import { ActionRequest2Schema } from '../shared/succession';
 import type { HistoryPage2, Observation2, ReplayFrame2 } from '../shared/succession';
 import type { HistoryAnchor2, RoundIndex2 } from '../shared/history';
@@ -45,6 +45,7 @@ import type {
 } from '../shared/coding-finale-history';
 import {
   authorizeCodingFinaleChallenge,
+  publicCodingFinaleChallenge,
   evolveCodingFinale,
   observeCodingFinale,
   decodeCodingFinaleReplayState,
@@ -53,7 +54,12 @@ import {
 import type { CodingFinaleState, CodingFinaleEvolution } from '../game/coding-finale/game';
 import { FINALE_RULES, ProgramSchema } from '../game/coding-finale/types';
 import type { Program, Tier } from '../game/coding-finale/types';
-import type { RoutingInput } from '../game/coding-finale/routing';
+import type { CodingInput } from '../game/coding-finale/puzzle-input';
+import {
+  PublicCodingChallengeSchema,
+  CodingSubmissionReportSchema,
+  CodingJudgeEvidenceSchema,
+} from '../shared/coding-finale-artifacts';
 import {
   prepareCodingEnvironment,
   practiceCodingProgram,
@@ -180,6 +186,9 @@ export class MatchObject extends DurableObject<Env> {
       'CREATE TABLE IF NOT EXISTS coding_programs (sequence INTEGER PRIMARY KEY, data TEXT NOT NULL, started_at INTEGER)',
     );
     ctx.storage.sql.exec(
+      'CREATE TABLE IF NOT EXISTS coding_judge_evidence (sequence INTEGER PRIMARY KEY, data TEXT NOT NULL)',
+    );
+    ctx.storage.sql.exec(
       'CREATE TABLE IF NOT EXISTS coding_practice (seat INTEGER PRIMARY KEY, runs INTEGER NOT NULL DEFAULT 0, lease_until INTEGER NOT NULL DEFAULT 0)',
     );
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
@@ -190,6 +199,41 @@ export class MatchObject extends DurableObject<Env> {
       this.ctx.storage.sql.exec<{ value: string }>('SELECT value FROM meta WHERE key = ?', key).toArray()[0]
         ?.value ?? null
     );
+  }
+
+  /** Deletion is authorized by an operator-created D1 tombstone, never by an HTTP caller. */
+  async purgeRetired(matchId: string): Promise<void> {
+    if (
+      this.ctx.id.toString() !== this.env.MATCHES.idFromName(matchId).toString() ||
+      !(await this.env.DB.prepare('SELECT id FROM retired_matches WHERE id=?').bind(matchId).first())
+    )
+      throw new GameError('not-retired', 'This match is not eligible for deletion.', 409);
+    const state = this.exists() ? this.load() : null;
+
+    const cleanupSeats =
+      state?.gameId === 'coding-finale'
+        ? (state.finale?.finalists.map((finalist) => finalist.seat) ?? [])
+        : Schema.decodeUnknownSync(Schema.Array(Schema.Int))(
+            JSON.parse(this.getMeta('retired-cleanup') ?? '[]'),
+          );
+
+    this.ctx.storage.transactionSync(() => {
+      const tables = this.ctx.storage.sql
+        .exec<{ name: string }>(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT GLOB '__cf_*'",
+        )
+        .toArray();
+
+      for (const { name } of tables) this.ctx.storage.sql.exec(`DELETE FROM "${name.replaceAll('"', '""')}"`);
+      this.setMeta('retired', '1');
+      this.setMeta('retired-cleanup', JSON.stringify(cleanupSeats));
+    });
+    await this.ctx.storage.deleteAlarm();
+
+    for (const socket of this.ctx.getWebSockets()) socket.close(1000, 'Match history reset');
+
+    await Promise.all(cleanupSeats.map((seat) => closeCodingEnvironment(this.env, matchId, seat)));
+    this.setMeta('retired-cleanup', '[]');
   }
 
   private setMeta(key: string, value: string): void {
@@ -206,6 +250,9 @@ export class MatchObject extends DurableObject<Env> {
 
   /** Succession reads one bounded current row, never any historical event/checkpoint rows. */
   private load(): AnyMatchState {
+    if (this.getMeta('retired'))
+      throw new GameError('match-retired', 'This match was removed in the arena reset.', 410);
+
     const row = this.ctx.storage.sql
       .exec<{ data: string }>('SELECT data FROM game WHERE id = 1')
       .toArray()[0];
@@ -239,6 +286,7 @@ export class MatchObject extends DurableObject<Env> {
   }
 
   private saveLegacy(state: SecretOverlordState, previous: SecretOverlordState | null): void {
+    if (this.getMeta('retired')) throw new GameError('match-retired', 'Match retired.', 410);
     const { events, ...record } = state;
     this.ctx.storage.transactionSync(() => {
       this.ctx.storage.sql.exec(
@@ -258,6 +306,7 @@ export class MatchObject extends DurableObject<Env> {
   }
 
   private saveSuccession(evolution: Evolution, previous: SuccessionState | null): void {
+    if (this.getMeta('retired')) throw new GameError('match-retired', 'Match retired.', 410);
     const { state, appendedEvents, replay, replayFrames } = evolution;
 
     if (jsonBytes(state) > 65_536) throw new Error('Current Succession board exceeds 64 KiB');
@@ -322,15 +371,23 @@ export class MatchObject extends DurableObject<Env> {
     evolution: ReturnType<typeof evolveCodingFinale>,
     previous: CodingFinaleState | null,
   ): void {
+    if (this.getMeta('retired')) throw new GameError('match-retired', 'Match retired.', 410);
     const { state, appendedEvents, replayFrames } = evolution;
 
     if (jsonBytes(state) > 65_536) throw new Error('Current coding board exceeds 64 KiB');
     this.ctx.storage.transactionSync(() => {
-      if (!previous) this.history.initialize();
+      if (!previous) {
+        this.history.initialize();
+
+        if (state.snapshot.controllerRecovery === 'recoverable-house-1')
+          this.history.enableRecoverableOriginals();
+      }
 
       for (const seat of state.seats)
-        if (seat.forfeited && !previous?.seats[seat.number].forfeited)
+        if (seat.houseProfile !== null && previous?.seats[seat.number].houseProfile === null)
           this.history.freezeOriginal(seat.number);
+        else if (seat.houseProfile === null && previous?.seats[seat.number].houseProfile !== null)
+          this.history.restoreOriginal(seat.number);
       const appended = this.history.append(appendedEvents);
 
       const ids = new Map(appendedEvents.map((event, index) => [event.eventKey, appended.first + index]));
@@ -647,6 +704,12 @@ export class MatchObject extends DurableObject<Env> {
     generation: number,
     raw: TransportActionRequest,
   ): AnyMatchState {
+    if (raw.action.type === 'chat' && raw.action.replyTo) {
+      if (state.gameId !== 'coding-finale')
+        throw new GameError('invalid-reply', 'Structured replies require Coding Finale.', 400);
+      this.history.requirePublicReply(raw.action.replyTo);
+    }
+
     if (state.gameId === 'coding-finale') {
       const request = Schema.decodeUnknownSync(ActionRequest3Schema)(raw);
       const fingerprint = createHash('sha256').update(stableJson(request)).digest('hex');
@@ -772,6 +835,68 @@ export class MatchObject extends DurableObject<Env> {
     }
   }
 
+  async reclaim(
+    principal: AgentPrincipal,
+    request: ReclaimRequest,
+    protocols = '',
+  ): Promise<RpcResult<{ reclaimed: true; generation: number; observation: Current }>> {
+    try {
+      const state = this.reconcile();
+      requireGameProtocol(state.gameId, protocols, state.id);
+
+      if (state.gameId !== 'coding-finale')
+        throw new GameError('game-mismatch', 'This match does not support controller recovery.');
+      const seat = this.seatFor(state, principal);
+      const receiptKey = `reclaim:${principal.agentId}:${request.requestId}`;
+      const fingerprint = JSON.stringify({ expectedGeneration: request.expectedGeneration });
+
+      const receipt = this.ctx.storage.sql
+        .exec<{ fingerprint: string }>('SELECT fingerprint FROM receipts WHERE id=?', receiptKey)
+        .toArray()[0];
+
+      if (receipt && receipt.fingerprint !== fingerprint)
+        throw new GameError('action-id-conflict', 'This reclaim request ID was reused with different input.');
+
+      if (!receipt) {
+        if (state.status !== 'active')
+          throw new GameError('match-ended', 'A terminal match cannot hand off controller authority.', 409);
+
+        if (state.seats[seat].generation !== request.expectedGeneration)
+          throw new GameError(
+            'controller-generation-changed',
+            'The seat generation changed; observe before reclaiming.',
+          );
+        const evolution = evolveCodingFinale(state, { type: 'reclaim', seat, now: Date.now() });
+
+        this.ctx.storage.transactionSync(() => {
+          this.saveCoding(evolution, state);
+          this.ctx.storage.sql.exec(
+            'INSERT INTO receipts(id,fingerprint) VALUES (?,?)',
+            receiptKey,
+            fingerprint,
+          );
+        });
+        this.broadcast(evolution.state);
+      }
+
+      await this.arm();
+      const current = this.load();
+
+      return {
+        ok: true,
+        value: {
+          reclaimed: true,
+          generation: request.expectedGeneration + 1,
+          observation: this.current(current, seat),
+        },
+      };
+    } catch (error) {
+      await this.arm();
+
+      return { ok: false, error: fault(error) };
+    }
+  }
+
   private codingController(state: CodingFinaleState, principal: AgentPrincipal) {
     const seat = this.seatFor(state, principal);
     const entry = state.seats[seat];
@@ -782,22 +907,21 @@ export class MatchObject extends DurableObject<Env> {
     return { seat, generation: entry.generation, house: false };
   }
 
-  async codingChallenge(principal: AgentPrincipal, tier: Tier, protocols = '') {
+  async codingChallenge(tier: Tier, protocols = '') {
     try {
       const state = this.reconcile();
       requireGameProtocol(state.gameId, protocols, state.id);
 
       if (state.gameId !== 'coding-finale')
         throw new GameError('game-mismatch', 'This match has no coding challenge.');
-      const controller = this.codingController(state, principal);
 
       return {
         ok: true as const,
-        value: {
-          ...authorizeCodingFinaleChallenge(state, controller, tier),
+        value: Schema.decodeUnknownSync(PublicCodingChallengeSchema)({
+          ...publicCodingFinaleChallenge(state, tier),
           challengeId: state.finale!.challengeId,
           limits: FINALE_RULES,
-        },
+        }),
       };
     } catch (error) {
       return { ok: false as const, error: fault(error) };
@@ -829,11 +953,63 @@ export class MatchObject extends DurableObject<Env> {
     }
   }
 
+  async codingSubmission(sequence: number, protocols = '') {
+    try {
+      const state = this.reconcile();
+      requireGameProtocol(state.gameId, protocols, state.id);
+
+      if (state.gameId !== 'coding-finale')
+        throw new GameError('game-mismatch', 'This match has no coding submissions.');
+
+      if (state.status === 'active')
+        throw new GameError('archive-locked', 'Submission reports are private until the match ends.');
+
+      const submission = state.finale?.submissions.find((entry) => entry.sequence === sequence);
+
+      const row = this.ctx.storage.sql
+        .exec<{ data: string }>('SELECT data FROM coding_programs WHERE sequence=?', sequence)
+        .toArray()[0];
+
+      if (!submission || !row) throw new GameError('not-found', 'No such submission.', 404);
+
+      const recorded = this.ctx.storage.sql
+        .exec<{ data: string }>('SELECT data FROM coding_judge_evidence WHERE sequence=?', sequence)
+        .toArray()[0];
+
+      return {
+        ok: true as const,
+        value: Schema.decodeUnknownSync(CodingSubmissionReportSchema)({
+          gameId: 'coding-finale',
+          protocolVersion: '3',
+          matchId: state.id,
+          challengeId: state.finale!.challengeId,
+          sequence: submission.sequence,
+          seat: submission.seat,
+          generation: submission.generation,
+          tier: submission.tier,
+          receivedAt: submission.receivedAt,
+          status: submission.status,
+          verdict: submission.verdict,
+          program: JSON.parse(row.data),
+          evidence:
+            submission.status === 'judged' && recorded
+              ? JSON.parse(recorded.data)
+              : {
+                  status: 'unavailable',
+                  reason: submission.status === 'judged' ? 'not-recorded' : 'not-judged',
+                },
+        }),
+      };
+    } catch (error) {
+      return { ok: false as const, error: fault(error) };
+    }
+  }
+
   private async codingPracticeFor(
     state: CodingFinaleState,
     seat: number,
     program: Program,
-    inputs: RoutingInput[],
+    inputs: CodingInput[],
   ) {
     if (
       state.finale?.status !== 'racing' ||
@@ -883,7 +1059,7 @@ export class MatchObject extends DurableObject<Env> {
     }
   }
 
-  async codingPractice(principal: AgentPrincipal, program: Program, inputs: RoutingInput[], protocols = '') {
+  async codingPractice(principal: AgentPrincipal, program: Program, inputs: CodingInput[], protocols = '') {
     try {
       const state = this.reconcile();
       requireGameProtocol(state.gameId, protocols, state.id);
@@ -906,7 +1082,7 @@ export class MatchObject extends DurableObject<Env> {
     }
   }
 
-  async houseCodingPractice(job: HouseJob, program: Program, inputs: RoutingInput[]) {
+  async houseCodingPractice(job: HouseJob, program: Program, inputs: CodingInput[]) {
     try {
       const state = this.reconcile();
 
@@ -921,6 +1097,12 @@ export class MatchObject extends DurableObject<Env> {
         Date.now() >= job.deadline
       )
         throw new GameError('obsolete-job', 'This coding activation is no longer current.');
+
+      if (!seat.entrant.house)
+        throw new GameError(
+          'covered-finalist-idle',
+          'House coverage cannot practice for an externally entered finalist.',
+        );
       const value = await this.codingPracticeFor(state, seat.number, program, inputs);
       const current = this.load();
 
@@ -951,7 +1133,8 @@ export class MatchObject extends DurableObject<Env> {
     const coding =
       state.gameId === 'coding-finale' &&
       state.finale?.status === 'racing' &&
-      state.finale.finalists.some((entry) => entry.seat === seat)
+      state.finale.finalists.some((entry) => entry.seat === seat) &&
+      state.seats[seat].entrant.house
         ? this.codingHouseInput(state, seat, generation)
         : null;
 
@@ -961,11 +1144,12 @@ export class MatchObject extends DurableObject<Env> {
       lastChat: inspectGame(state).lastChat,
       recent:
         state.gameId !== 'secret-overlord' ? this.history.recent({ seat, house: true, terminal: false }) : [],
-      persona: entry.forfeited
-        ? state.gameId === 'succession'
-          ? 'A composed substitute. Use entitled history and current capability evidence to pursue sole overall seat victory.'
-          : 'A composed substitute. Reconstruct the permitted game history and pursue your assigned team’s victory.'
-        : (entry.entrant.persona ?? 'A careful, concise strategist.'),
+      persona:
+        entry.houseProfile !== null && !entry.entrant.house
+          ? state.gameId === 'succession'
+            ? 'A composed substitute. Use entitled history and current capability evidence to pursue sole overall seat victory.'
+            : 'A composed substitute. Reconstruct the permitted game history and pursue your assigned team’s victory.'
+          : (entry.entrant.persona ?? 'A careful, concise strategist.'),
     };
   }
 
@@ -1779,7 +1963,7 @@ export class MatchObject extends DurableObject<Env> {
     try {
       const program = Schema.decodeUnknownSync(ProgramSchema)(JSON.parse(row.data));
 
-      const verdict = await judgeCodingSubmission(
+      const judged = await judgeCodingSubmission(
         this.env,
         initial.id,
         submission.seat,
@@ -1787,6 +1971,7 @@ export class MatchObject extends DurableObject<Env> {
         program,
         initial.seed,
         submission.tier,
+        initial.challengeFamily ?? 'scheduled-network-1',
       );
 
       const state = this.load();
@@ -1796,11 +1981,21 @@ export class MatchObject extends DurableObject<Env> {
       const evolution = evolveCodingFinale(state, {
         type: 'judge-result',
         sequence,
-        verdict,
+        verdict: judged.verdict,
         now: Date.now(),
       });
 
-      this.saveCoding(evolution, state);
+      this.ctx.storage.transactionSync(() => {
+        const accepted = evolution.state.finale?.submissions.find((entry) => entry.sequence === sequence);
+
+        if (accepted?.status === 'judged' && accepted.verdict === judged.verdict)
+          this.ctx.storage.sql.exec(
+            'INSERT OR IGNORE INTO coding_judge_evidence (sequence,data) VALUES (?,?)',
+            sequence,
+            JSON.stringify(Schema.decodeUnknownSync(CodingJudgeEvidenceSchema)(judged.evidence)),
+          );
+        this.saveCoding(evolution, state);
+      });
       this.broadcast(evolution.state);
     } catch (error) {
       console.error(

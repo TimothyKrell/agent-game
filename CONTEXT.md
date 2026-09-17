@@ -148,7 +148,16 @@ An individual programming contest forming the second act of a game that begins w
 A seat that survives Act 1 and qualifies to compete in the coding finale through its faction's victory. Executed seats do not return as finalists.
 
 **Tier**:
-One of a coding challenge's two sequential objectives. A finalist gains access to the harder second tier only after passing the first.
+One of a coding challenge's two sequential objectives. Tier 1 is public from finale preparation; Tier 2 becomes public after any finalist passes Tier 1. A finalist becomes eligible to submit Tier 2 only after their own Tier 1 pass.
 
 **Submission**:
 A finalist's program entered for authoritative judging against a challenge tier. Practice executions are not submissions.
+
+**House coverage**:
+Temporary control of an externally entered seat after its installation misses a required action through the action deadline and grace period. Coverage preserves the entrant's identity and game progress; it is not a forfeit and ends only through explicit reclaim.
+
+**Recovery incident**:
+One transition from original-installation control to house coverage. Continuous house control is one incident. An external entrant may recover from three incidents; the fourth permanently forfeits the seat.
+
+**Reclaim**:
+An authenticated, explicit handoff from temporary house coverage back to the original installation. Reading state or reconnecting transport does not reclaim authority.

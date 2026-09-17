@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { expect, it } from 'vitest';
 import { Schema } from 'effect';
 import { CodingPracticeSchema, TransportActionRequestSchema } from '../src/shared/api';
@@ -93,7 +93,7 @@ it('submits supervised source as inert JSON, practices remotely and preserves pr
     phase: { id: 'race' },
     history: { visibilityEpoch: 'seat', streamHead: 0 },
     decision: null,
-    you: { seat: 0, generation: 0 },
+    you: { seat: 0, generation: 1, canReclaim: true },
     finale: { you: { unlockedTier: 1 } },
   };
 
@@ -112,7 +112,9 @@ it('submits supervised source as inert JSON, practices remotely and preserves pr
       JSON.stringify(
         request.url?.endsWith('/actions')
           ? { accepted: true, actionId: parsed.actionId, observation: view }
-          : { outputs: [1] },
+          : request.url?.endsWith('/reclaim')
+            ? { reclaimed: true, observation: view }
+            : { outputs: [1] },
       ),
     );
   });
@@ -164,7 +166,8 @@ it('submits supervised source as inert JSON, practices remotely and preserves pr
       ],
       { env },
     );
-    expect(received[0]).toMatchObject({
+    await run(process.execPath, ['cli/agent-game.mjs', 'reclaim', '--config', config], { env });
+    expect(received.find((entry) => entry.path.endsWith('/actions'))).toMatchObject({
       path: '/api/matches/match_coding/actions',
       protocols: '1,2,3',
       body: {
@@ -173,10 +176,17 @@ it('submits supervised source as inert JSON, practices remotely and preserves pr
         action: { type: 'submit-program', tier: 1, program },
       },
     });
-    expect(received[1]).toMatchObject({
+    expect(received.find((entry) => entry.path.endsWith('/coding/practice'))).toMatchObject({
       path: '/api/matches/match_coding/coding/practice',
       body: { program, inputs: [routingInput] },
     });
+    const reclaim = received.find((entry) => entry.path.endsWith('/reclaim'));
+    expect(reclaim).toMatchObject({
+      path: '/api/matches/match_coding/reclaim',
+      body: { expectedGeneration: 1 },
+      protocols: '1,2,3',
+    });
+    expect(reclaim?.body).toMatchObject({ requestId: expect.any(String) });
     await expect(
       run(
         process.execPath,
@@ -184,6 +194,69 @@ it('submits supervised source as inert JSON, practices remotely and preserves pr
         { env },
       ),
     ).rejects.toThrow();
+  } finally {
+    await new Promise<void>((done) => server.close(() => done()));
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+it('replays the exact persisted reclaim receipt after a lost acknowledgement', async () => {
+  const directory = await mkdtemp('/tmp/opencode/reclaim-cli-');
+  const requests: unknown[] = [];
+
+  const view = {
+    gameId: 'coding-finale',
+    protocolVersion: '3',
+    rulesVersion: 'coding-finale-1',
+    matchId: 'match_reclaim',
+    status: 'active',
+    act: 1,
+    phase: { id: 'nomination' },
+    history: { visibilityEpoch: 'seat', streamHead: 0 },
+    decision: null,
+    you: { seat: 0, generation: 1, canReclaim: true },
+  };
+
+  const server = createServer(async (request, response) => {
+    let body = '';
+
+    for await (const chunk of request) body += chunk;
+    requests.push(JSON.parse(body));
+
+    if (requests.length <= 3) {
+      request.socket.destroy();
+
+      return;
+    }
+
+    response.setHeader('content-type', 'application/json');
+    response.end(JSON.stringify({ reclaimed: true, generation: 2, observation: view }));
+  });
+
+  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+  const address = Schema.decodeUnknownSync(Schema.Struct({ port: Schema.Number }))(server.address());
+  const config = `${directory}/connection.json`;
+  await writeFile(
+    config,
+    JSON.stringify({
+      server: `http://127.0.0.1:${address.port}`,
+      token: 'test-token',
+      matchId: view.matchId,
+      observation: view,
+    }),
+  );
+
+  try {
+    await expect(
+      run(process.execPath, ['cli/agent-game.mjs', 'reclaim', '--config', config]),
+    ).rejects.toThrow();
+    const pending = JSON.parse(await readFile(config, 'utf8')).pendingReclaim;
+    expect(pending).toMatchObject({
+      request: { requestId: expect.any(String), expectedGeneration: 1 },
+    });
+    await run(process.execPath, ['cli/agent-game.mjs', 'reclaim', '--config', config]);
+    expect(requests).toEqual([pending.request, pending.request, pending.request, pending.request]);
+    expect(JSON.parse(await readFile(config, 'utf8')).pendingReclaim).toBeUndefined();
   } finally {
     await new Promise<void>((done) => server.close(() => done()));
     await rm(directory, { recursive: true, force: true });

@@ -168,6 +168,18 @@ export function DossierResources({
             : ''}
         </p>
       )}
+      {controller &&
+        !controller.forfeited &&
+        (controller.recoverable || (controller.recoveryCount ?? 0) > 0) && (
+          <p className="dossier-status">
+            {controller.recoverable
+              ? 'House covering · original entrant can reconnect'
+              : 'Original entrant reconnected'}
+            {controller.recoveryCount !== undefined && controller.recoveryLimit !== undefined
+              ? ` · ${controller.recoveryCount} of ${controller.recoveryLimit} recoveries used`
+              : ''}
+          </p>
+        )}
       {act === 1 && role && dossierVisible(role.visibility, archive) && (
         <p className="dossier-private-label">
           {

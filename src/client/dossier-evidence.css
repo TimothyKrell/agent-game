@@ -2,7 +2,7 @@
 .replay-ui .dossier-vote-total {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: 15px;
   color: var(--replay-foreground);
   font-size: 12px;
 }
@@ -22,7 +22,7 @@
 .replay-ui .dossier-vote-bar {
   display: flex;
   gap: 3px;
-  margin: 10px 0 4px;
+  margin: 8px 0 3px;
 }
 
 .replay-ui .dossier-vote-bar span {
@@ -41,8 +41,8 @@
 .replay-ui .dossier-ballot-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 9px;
-  padding: 8px 0;
+  gap: 7px;
+  padding: 6px 0;
 }
 
 .replay-ui .dossier-ballot-list > span {
@@ -66,13 +66,13 @@
 
 .replay-ui .dossier-policy-tracks {
   display: grid;
-  gap: 14px;
+  gap: 11px;
 }
 
 .replay-ui .dossier-policy-tracks > div {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
   flex-wrap: wrap;
 }
 
@@ -86,7 +86,7 @@
 .replay-ui .dossier-track-slots {
   display: flex;
   flex: 0 0 100%;
-  gap: 6px;
+  gap: 5px;
 }
 
 .replay-ui .dossier-track-slots i {
@@ -107,7 +107,7 @@
 .replay-ui .dossier-tracker-compact {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
   width: fit-content;
 }
 
@@ -123,7 +123,7 @@
 
 .replay-ui .dossier-responses-compact ul {
   margin: 0;
-  padding-block: 8px 14px;
+  padding-block: 6px 11px;
 }
 
 @media (max-width: 760px) {

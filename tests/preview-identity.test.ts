@@ -839,7 +839,7 @@ it('handles owner-first import, local identity collisions and paginated rosters 
   );
 
   expect(imported).toHaveLength(28);
-  expect(imported.every((agent) => agent.rating === 1000 && agent.games === 0)).toBe(true);
+  expect(imported.every((agent) => agent.rating === 0 && agent.games === 0)).toBe(true);
   const token = `agk_${secret()}`;
   await sql(
     source,

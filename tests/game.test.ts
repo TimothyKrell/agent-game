@@ -11,6 +11,7 @@ import {
   nextDeadline,
   pendingSeats,
   recoverMatch,
+  reclaimSeat,
 } from '../src/game/engine';
 import { observe } from '../src/game/observation';
 import { previewAction } from '../src/game/preview';
@@ -297,6 +298,116 @@ describe('the ten-seat information game', () => {
 });
 
 describe('timing, controller replacement, and results', () => {
+  it('allows three explicit recoveries, counts continuous coverage once, and permanently forfeits the fourth incident', () => {
+    let state = phase(game(), 'nomination');
+    state.coordinator = 0;
+    state.seats[0].recoveryCount = 0;
+    state.seats[0].maxRecoveries = 3;
+
+    for (let incident = 1; incident <= 4; incident++) {
+      state.phase.deadline = incident * 100;
+      state.phase.graceAnnounced = true;
+      state.phase.replacements = {};
+      state = advance(state, incident * 100 + state.timing.grace);
+      expect(state.seats[0]).toMatchObject({
+        recoveryCount: incident,
+        generation: incident * 2 - 1,
+        houseProfile: 'relief-0',
+        forfeited: incident === 4,
+      });
+
+      const original = observe(state, 0);
+      expect(original.private).toBeNull();
+      expect(original.decision).toBeNull();
+      expect(original.you).toMatchObject({
+        control: incident === 4 ? 'permanent-house' : 'temporary-house',
+        recoveryCount: incident,
+        recoveryLimit: 3,
+        canReclaim: incident < 4,
+      });
+
+      if (incident < 4) {
+        const coveredGeneration = state.seats[0].generation;
+        state = reclaimSeat(state, 0, incident * 100 + state.timing.grace + 1);
+        expect(state.seats[0]).toMatchObject({
+          generation: incident * 2,
+          houseProfile: null,
+          forfeited: false,
+        });
+        expect(() =>
+          act(
+            state,
+            0,
+            coveredGeneration,
+            {
+              actionId: `stale-${incident}`,
+              phaseId: state.phase.id,
+              action: { type: 'nominate', target: 1 },
+            },
+            incident * 100 + state.timing.grace + 2,
+          ),
+        ).toThrow('replaced');
+      }
+    }
+
+    expect(() => reclaimSeat(state, 0, 1000)).toThrow('permanently forfeited');
+    expect(state.events.filter((event) => event.type === 'takeover')).toHaveLength(4);
+    expect(state.events.filter((event) => event.type === 'reclaimed')).toHaveLength(3);
+  });
+
+  it('preserves the replacement deadline when reclaim races the same overdue decision', () => {
+    let covered = phase(game(), 'nomination');
+    covered.coordinator = 0;
+    covered.seats[0].recoveryCount = 0;
+    covered.seats[0].maxRecoveries = 3;
+    covered = advance(covered, 60);
+    const houseGeneration = covered.seats[0].generation;
+    const replacementDeadline = covered.phase.replacements['0'];
+
+    const reclaimed = reclaimSeat(covered, 0, 61);
+    expect(nextDeadline(reclaimed)).toBe(replacementDeadline);
+    expect(reclaimed.phase.replacements['0']).toBe(90);
+    expect(() =>
+      act(
+        reclaimed,
+        0,
+        houseGeneration,
+        {
+          actionId: 'stale-house',
+          phaseId: reclaimed.phase.id,
+          decisionId: decisionId(reclaimed, 0),
+          action: { type: 'nominate', target: 1 },
+        },
+        62,
+      ),
+    ).toThrow('replaced');
+
+    const answered = act(
+      reclaimed,
+      0,
+      reclaimed.seats[0].generation,
+      {
+        actionId: 'reclaimed-answer',
+        phaseId: reclaimed.phase.id,
+        decisionId: decisionId(reclaimed, 0),
+        action: { type: 'nominate', target: 1 },
+      },
+      89,
+    );
+
+    expect(answered.executor).toBe(1);
+
+    const missed = advance(reclaimed, replacementDeadline);
+    expect(missed.phase.kind).toBe('nomination');
+    expect(missed.seats[0]).toMatchObject({
+      recoveryCount: 2,
+      forfeited: false,
+      houseProfile: 'relief-0',
+      generation: 3,
+    });
+    expect(missed.phase.replacements['0']).toBe(120);
+  });
+
   it('does not assign new forfeits on the same tick that an unavailable house service interrupts the match', () => {
     const state = phase(game(), 'voting');
     state.executor = 1;
@@ -357,6 +468,23 @@ describe('timing, controller replacement, and results', () => {
     expect(() =>
       act(state, 1, 0, { actionId: 'stale', phaseId: old, action: { type: 'chat', text: 'Late reply' } }, 21),
     ).toThrow('phase has changed');
+  });
+
+  it('preserves structured public addressing and rejects invalid recipients without changing cooldown', () => {
+    let state = game();
+    expect(() => move(state, 0, { type: 'chat', text: 'Question', to: [10] }, 1)).toThrow('valid seat');
+    expect(state.seats[0].lastChatAt).toBeNull();
+    const replyTo = { eventKey: `${state.id}:1`, seat: 1 };
+    state = move(state, 0, { type: 'chat', text: 'Explain your claim.', to: [1, 1, 2], replyTo }, 1);
+    expect(state.events.at(-1)).toMatchObject({
+      type: 'chat',
+      visibility: 'public',
+      seat: 0,
+      data: { to: [1, 2], replyTo },
+    });
+    expect(() =>
+      move(state, 1, { type: 'chat', text: 'Wrong match', replyTo: { eventKey: 'other:1', seat: 0 } }, 2),
+    ).toThrow('this match');
   });
 
   it('rates a forfeiting winner as a loss, counts eliminated teammates, and is rating-shift invariant', () => {

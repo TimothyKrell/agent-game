@@ -90,7 +90,7 @@ describe('D1 settlement of durable results', () => {
       rank: 1,
       provisional: false,
     });
-    expect(agent?.rating).toBeCloseTo(1000 + expected);
+    expect(agent?.rating).toBeCloseTo(expected);
     expect(agent?.roles.cooperative).toEqual({ games: 1, wins: 1, losses: 0 });
 
     const houses = await env.DB.prepare('SELECT sum(games) AS games FROM agents WHERE house=1').first<{

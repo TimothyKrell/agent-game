@@ -81,7 +81,7 @@ it('hosts an unranked scripted preview while keeping owner login disabled', asyn
   expect(login.status).toBe(404);
   expect((await worker.fetch('/api/owner')).status).toBe(401);
 
-  const response = await worker.fetch('/api/dev/exhibition', {
+  const response = await worker.fetch('/api/dev/exhibition?gameId=secret-overlord', {
     method: 'POST',
     headers: { origin },
   });

@@ -17,6 +17,14 @@ function controllerKey(view: Observation3) {
   );
 }
 
+/** This reader owns Act I only; coding receipts have their own race record. */
+function actOneHead(view: Observation3, rounds: RoundIndex3['rounds']) {
+  if (view.act === 1) return view.history.streamHead;
+  const start = rounds.find((round) => round.act === 2)?.through;
+
+  return start === undefined ? null : Math.max(0, start - 1);
+}
+
 function canAdvance(current: Observation3, next: Observation3) {
   if (next.matchId !== current.matchId || next.protocolVersion !== '3') return false;
 
@@ -43,6 +51,7 @@ export function useCodingFinaleMatch(initial: Observation3) {
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const [historyGeneration, setHistoryGeneration] = useState(0);
+  const [historyRetryGeneration, setHistoryRetryGeneration] = useState(0);
 
   const [history, setHistory] = useState<{
     epoch: string;
@@ -69,6 +78,17 @@ export function useCodingFinaleMatch(initial: Observation3) {
   });
 
   const current = useRef(initial);
+  const visibleHistory = useRef(history);
+  visibleHistory.current = history;
+  const followLive = useRef(true);
+
+  const historyRequest = useRef<{
+    ticket: number;
+    epoch: string;
+    follow: boolean;
+    controller: AbortController;
+  } | null>(null);
+
   const lifecycle = useRef(0);
   const historyTicket = useRef(0);
   const retry = useRef<{ fingerprint: string; request: ActionRequest3 } | null>(null);
@@ -149,6 +169,8 @@ export function useCodingFinaleMatch(initial: Observation3) {
       closed = true;
       lifecycle.current++;
       historyTicket.current++;
+      historyRequest.current?.controller.abort();
+      historyRequest.current = null;
       clearTimeout(reconnect);
       clearInterval(heartbeat);
       socket?.close();
@@ -157,6 +179,9 @@ export function useCodingFinaleMatch(initial: Observation3) {
 
   const resetHistory = useCallback(() => {
     historyTicket.current++;
+    historyRequest.current?.controller.abort();
+    historyRequest.current = null;
+    followLive.current = true;
     setHistoryGeneration((value) => value + 1);
     setHistory((state) => ({
       ...state,
@@ -178,34 +203,55 @@ export function useCodingFinaleMatch(initial: Observation3) {
     async (requestedThrough: number, follow = false) => {
       const observed = current.current;
       const epoch = observed.history.visibilityEpoch;
-      const head = observed.history.streamHead;
+
+      const head = actOneHead(
+        observed,
+        visibleHistory.current.epoch === epoch ? visibleHistory.current.rounds : [],
+      );
+
+      if (head === null) return;
       const through = Math.max(0, Math.min(requestedThrough, head));
       const after = Math.max(0, through - 128);
+
+      if (follow && historyRequest.current?.follow && historyRequest.current.epoch === epoch) return;
+
+      historyRequest.current?.controller.abort();
       const ticket = ++historyTicket.current;
       const request = new AbortController();
+      historyRequest.current = { ticket, epoch, follow, controller: request };
+      const previous = visibleHistory.current;
+      const reusable = previous.epoch === epoch && previous.after <= after && previous.through <= through;
+      let completed = false;
 
-      setHistory((state) => ({
-        ...state,
-        epoch,
-        after,
-        through,
-        events:
-          state.epoch === epoch && state.after === after && state.through === through ? state.events : [],
-        checkpoint: null,
-        loading: true,
-        error: '',
-        following: follow,
-      }));
+      setHistory((state) => {
+        const retained =
+          state.epoch === epoch
+            ? state
+            : {
+                ...state,
+                after: 0,
+                through: 0,
+                events: [],
+                checkpoint: null,
+                actOneSnapshot: null,
+                rounds: [],
+              };
+
+        return { ...retained, epoch, loading: true, error: '', following: follow };
+      });
 
       try {
         const checkpointQuery = new URLSearchParams({ epoch, through: String(after) });
 
-        const checkpoint = await api(
-          `/api/matches/${encodeURIComponent(observed.matchId)}/${observed.status === 'active' ? 'checkpoint' : 'replay'}?${checkpointQuery}`,
-          Schema.Union([HistoryCheckpoint3Schema, HistoryPage3Schema]),
-          undefined,
-          { signal: request.signal },
-        );
+        const checkpoint =
+          previous.epoch === epoch && previous.after === after && previous.checkpoint
+            ? previous.checkpoint
+            : await api(
+                `/api/matches/${encodeURIComponent(observed.matchId)}/${observed.status === 'active' ? 'checkpoint' : 'replay'}?${checkpointQuery}`,
+                Schema.Union([HistoryCheckpoint3Schema, HistoryPage3Schema]),
+                undefined,
+                { signal: request.signal },
+              );
 
         if ('reset' in checkpoint) {
           resetHistory();
@@ -220,8 +266,11 @@ export function useCodingFinaleMatch(initial: Observation3) {
         )
           throw new Error('The historical baseline does not match this reading window.');
 
-        const events: AuthorizedEvent2[] = [];
-        let cursor = after;
+        const events: AuthorizedEvent2[] = reusable
+          ? previous.events.filter((event) => event.id > after)
+          : [];
+
+        let cursor = reusable ? Math.max(after, previous.through) : after;
 
         while (cursor < through) {
           const query = new URLSearchParams({
@@ -260,7 +309,15 @@ export function useCodingFinaleMatch(initial: Observation3) {
 
         if (events.length > 128) throw new Error('The match record exceeded its 128-row reading bound.');
 
-        if (ticket !== historyTicket.current) return;
+        if (ticket !== historyTicket.current || current.current.history.visibilityEpoch !== epoch) return;
+
+        if (follow && !followLive.current) {
+          setHistory((state) => ({ ...state, loading: false }));
+
+          return;
+        }
+
+        completed = true;
         setHistory((state) => ({ ...state, epoch, after, through, events, checkpoint, loading: false }));
       } catch (cause) {
         if (request.signal.aborted || ticket !== historyTicket.current) return;
@@ -269,18 +326,31 @@ export function useCodingFinaleMatch(initial: Observation3) {
           loading: false,
           error: cause instanceof Error ? cause.message : 'The selected match record could not be loaded.',
         }));
+      } finally {
+        if (historyRequest.current?.ticket === ticket) historyRequest.current = null;
+
+        const latestHead = actOneHead(current.current, visibleHistory.current.rounds);
+
+        if (completed && follow && followLive.current && latestHead !== null && latestHead > through) {
+          setHistoryGeneration((value) => value + 1);
+        }
       }
     },
     [resetHistory],
   );
 
+  const historyHead = actOneHead(view, history.epoch === view.history.visibilityEpoch ? history.rounds : []);
+
   useEffect(() => {
+    if (history.epoch !== view.history.visibilityEpoch) followLive.current = true;
     setHistory((state) => {
       if (state.epoch === view.history.visibilityEpoch) return state;
 
       return {
         ...state,
         epoch: view.history.visibilityEpoch,
+        after: 0,
+        through: 0,
         events: [],
         checkpoint: null,
         actOneSnapshot: view.actOne ? view : null,
@@ -289,11 +359,12 @@ export function useCodingFinaleMatch(initial: Observation3) {
       };
     });
 
-    if (history.following || history.epoch !== view.history.visibilityEpoch)
-      void loadHistory(view.history.streamHead, true);
+    if (historyHead !== null && (history.following || history.epoch !== view.history.visibilityEpoch))
+      void loadHistory(historyHead, true);
   }, [
     view.history.streamHead,
     view.history.visibilityEpoch,
+    historyHead,
     history.following,
     history.epoch,
     historyGeneration,
@@ -351,7 +422,14 @@ export function useCodingFinaleMatch(initial: Observation3) {
       });
 
     return () => request.abort();
-  }, [view.matchId, view.history.visibilityEpoch, view.history.streamHead, resetHistory]);
+  }, [
+    view.matchId,
+    view.history.visibilityEpoch,
+    view.act,
+    view.status,
+    resetHistory,
+    historyRetryGeneration,
+  ]);
 
   const act = async (action: Action3) => {
     const accepted = current.current;
@@ -406,15 +484,32 @@ export function useCodingFinaleMatch(initial: Observation3) {
     refresh,
     history: {
       ...history,
-      head: view.history.streamHead,
+      head: historyHead ?? 0,
       events: history.epoch === view.history.visibilityEpoch ? history.events : [],
       checkpoint: history.epoch === view.history.visibilityEpoch ? history.checkpoint : null,
       actOneSnapshot: history.epoch === view.history.visibilityEpoch ? history.actOneSnapshot : null,
       rounds: history.epoch === view.history.visibilityEpoch ? history.rounds : [],
-      loadEarlier: () => loadHistory(history.after, false),
-      loadLater: () => loadHistory(Math.min(view.history.streamHead, history.through + 128), false),
-      loadLatest: () => loadHistory(view.history.streamHead, true),
-      loadRound: (through: number) => loadHistory(Math.min(view.history.streamHead, through + 127), false),
+      retry: () => {
+        setHistoryRetryGeneration((value) => value + 1);
+
+        return loadHistory(history.following ? (historyHead ?? 0) : history.through, history.following);
+      },
+      loadEarlier: () => {
+        followLive.current = false;
+
+        return loadHistory(Math.min(history.through - 1, history.after + 64), false);
+      },
+      loadLater: () => loadHistory(Math.min(historyHead ?? 0, history.through + 64), false),
+      loadLatest: () => {
+        followLive.current = true;
+
+        return loadHistory(historyHead ?? 0, true);
+      },
+      setFollowing: (following: boolean) => {
+        followLive.current = following;
+        setHistory((state) => (state.following === following ? state : { ...state, following }));
+      },
+      loadRound: (through: number) => loadHistory(Math.min(historyHead ?? 0, through + 127), false),
     },
   };
 }

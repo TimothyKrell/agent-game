@@ -124,8 +124,8 @@ function DossierContent({
         />
       )}
       {currentState}
-      <div className="dossier-reading-options">
-        {archiveAvailable && (
+      {archiveAvailable && (
+        <div className="dossier-reading-options">
           <label>
             <input
               type="checkbox"
@@ -137,9 +137,8 @@ function DossierContent({
               <small>Secret during play</small>
             </span>
           </label>
-        )}
-        <span>Hover or tap a highlighted rule term</span>
-      </div>
+        </div>
+      )}
       {(game === 'coding-finale' ? ([1] as const) : ([1, 2] as const)).map((chapter) => {
         const open = chapters.open[chapter];
 
@@ -185,25 +184,27 @@ function DossierContent({
                     </span>
                     <ChevronDown aria-hidden="true" />
                   </CollapsibleTrigger>
-                  <span
-                    className="dossier-chapter-navigation"
-                    aria-label={`Act ${chapter === 1 ? 'I' : 'II'} navigation`}
-                  >
-                    <button
-                      type="button"
-                      disabled={reader.pendingJump?.act === chapter}
-                      onClick={() => reader.jump(chapter, 'start')}
+                  {game === 'succession' && (
+                    <span
+                      className="dossier-chapter-navigation"
+                      aria-label={`Act ${chapter === 1 ? 'I' : 'II'} navigation`}
                     >
-                      Start
-                    </button>
-                    <button
-                      type="button"
-                      disabled={reader.pendingJump?.act === chapter}
-                      onClick={() => reader.jump(chapter, 'end')}
-                    >
-                      {status === 'active' && act === chapter ? 'Latest' : 'End'}
-                    </button>
-                  </span>
+                      <button
+                        type="button"
+                        disabled={reader.pendingJump?.act === chapter}
+                        onClick={() => reader.jump(chapter, 'start')}
+                      >
+                        Start
+                      </button>
+                      <button
+                        type="button"
+                        disabled={reader.pendingJump?.act === chapter}
+                        onClick={() => reader.jump(chapter, 'end')}
+                      >
+                        {status === 'active' && act === chapter ? 'Latest' : 'End'}
+                      </button>
+                    </span>
+                  )}
                 </h2>
                 {reader.navigationError && (
                   <div className="dossier-reader-error" role="alert">

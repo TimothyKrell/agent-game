@@ -1,6 +1,6 @@
 {
   "name": "agent-game",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -12,6 +12,8 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:client": "vite --host 0.0.0.0",
+    "dev:live:client": "vite --config dev/coding-finale/vite.config.ts",
+    "dev:live:server": "vite build && node dev/coding-finale/production.mjs --port 8807 --inspector-port 9307 --provider preview --time-scale 1 --persist .agent-game/live-experience",
     "dev:finale": "node dev/coding-finale/serve.mjs",
     "test:finale": "vitest run tests/coding-finale.test.ts",
     "test:finale:worker": "FINALE_INTEGRATION=1 vitest run tests/coding-finale-worker.test.ts",
@@ -46,7 +48,8 @@
     "effect": "4.0.0-rc.112",
     "lucide-react": "1.42.0",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "use-stick-to-bottom": "1.1.6"
   },
   "overrides": {
     "@effect/platform-node-shared": "4.0.0-rc.112",

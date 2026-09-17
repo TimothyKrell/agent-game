@@ -9,6 +9,7 @@ import {
   decodeCodingFinale,
   decodeCodingFinaleReplayState,
   authorizeCodingFinaleChallenge,
+  publicCodingFinaleChallenge,
   pendingCodingFinaleJobs,
   settleCodingFinale,
 } from '../src/game/coding-finale/game';
@@ -17,6 +18,7 @@ import { gameDescriptor } from '../src/game/descriptors';
 import { decodeGameState, gameRegistry } from '../src/game/registry';
 import { previewAction } from '../src/game/preview';
 import { teamOf } from '../src/game/types';
+import { codingChallenge } from '../src/game/coding-finale/challenges';
 import type { ActionRequest3 } from '../src/shared/coding-finale';
 import { ActionRequest3Schema, Observation3Schema } from '../src/shared/coding-finale';
 
@@ -29,6 +31,9 @@ const entrants = Array.from({ length: 10 }, (_, seat) => ({
 }));
 
 let prepared: CodingFinaleState;
+
+const routingChallenge = (tier: 1 | 2) =>
+  codingChallenge(prepared.challengeFamily ?? 'scheduled-network-1', tier);
 
 let nextId = 0;
 
@@ -148,6 +153,34 @@ function submit(
 }
 
 describe('production Coding Finale adapter', () => {
+  it('round-trips a terminal winner with another current-generation receipt superseded', () => {
+    let state = racing();
+    const [winner, other] = state.finale!.finalists;
+    const start = state.phase.startedAt;
+    state = submit(state, winner.seat, 1, start + 1).evolution.state;
+    state = evolveCodingFinale(state, {
+      type: 'judge-result',
+      sequence: 1,
+      verdict: 'passed',
+      now: start + 2,
+    }).state;
+    state = submit(state, winner.seat, 2, start + 3).evolution.state;
+    state = submit(state, other.seat, 1, start + 4).evolution.state;
+    state = evolveCodingFinale(state, {
+      type: 'judge-result',
+      sequence: 2,
+      verdict: 'passed',
+      now: start + 5,
+    }).state;
+    expect(state.status).toBe('finished');
+    expect(state.finale!.submissions[2]).toMatchObject({
+      status: 'superseded',
+      verdict: null,
+      generation: state.seats[other.seat].generation,
+    });
+    expect(decodeCodingFinale(JSON.parse(JSON.stringify(state)))).toEqual(state);
+    expect(settleCodingFinale(state)?.result).toMatchObject({ winnerSeat: winner.seat });
+  });
   it('registers its protocol and commits priority before a real full first act', async () => {
     const initial = await createCodingFinale('initial', entrants, 0);
     expect(gameRegistry['coding-finale'].inspect(initial.state).status).toBe('active');
@@ -175,9 +208,11 @@ describe('production Coding Finale adapter', () => {
         .map((seat) => seat.number),
     );
     const seat = prepared.finale!.finalists[0].seat;
-    expect(() => authorizeCodingFinaleChallenge(prepared, { seat, generation: 0, house: false }, 1)).toThrow(
-      'shared clock',
+    expect(publicCodingFinaleChallenge(prepared, 1)).toEqual(routingChallenge(1));
+    expect(authorizeCodingFinaleChallenge(prepared, { seat, generation: 0, house: false }, 1)).toEqual(
+      routingChallenge(1),
     );
+    expect(() => publicCodingFinaleChallenge(prepared, 2)).toThrow('Tier 1');
     const state = racing();
     expect(state.finale!.deadline! - state.finale!.startedAt!).toBe(300_000);
     expect(observeCodingFinale(state).actOne).toBeNull();
@@ -344,7 +379,7 @@ describe('production Coding Finale adapter', () => {
     expect(lateVerdict.appendedEvents.some((event) => event.type === 'submission-judged')).toBe(false);
   });
 
-  it('retains seat progress through takeover while withholding original entrant win credit', () => {
+  it('retains progress and entrant credit during temporary coverage without house-authored programs', () => {
     let state = racing();
     const seat = state.finale!.finalists[0].seat;
     const now = state.phase.startedAt;
@@ -362,24 +397,96 @@ describe('production Coding Finale adapter', () => {
     expect(() => authorizeCodingFinaleChallenge(state, { seat, generation: 0, house: false }, 1)).toThrow(
       'controller',
     );
-    state = submit(state, seat, 2, now + 4).evolution.state;
+    expect(() => submit(state, seat, 2, now + 4)).toThrow('cannot author programs');
+    state = evolveCodingFinale(state, { type: 'advance', now: state.finale!.deadline! }).state;
+    expect(state.result).toMatchObject({ winnerSeat: seat, credited: true });
+    expect(settleCodingFinale(state)?.participants.find((entry) => entry.seat === seat)).toMatchObject({
+      won: true,
+      forfeited: false,
+      placement: true,
+    });
+    expect(decodeCodingFinale(JSON.parse(JSON.stringify(state)))).toEqual(state);
+  });
+
+  it('withholds entrant credit only after the fourth coverage incident', () => {
+    let state = racing();
+    const seat = state.finale!.finalists[0].seat;
+    const now = state.phase.startedAt;
+    state = submit(state, seat, 1, now + 1).evolution.state;
     state = evolveCodingFinale(state, {
       type: 'judge-result',
-      sequence: 2,
+      sequence: 1,
       verdict: 'passed',
-      now: now + 5,
+      now: now + 2,
     }).state;
+
+    for (let incident = 1; incident <= 4; incident++) {
+      state = evolveCodingFinale(state, {
+        type: 'replace',
+        seat,
+        houseProfile: `relief-${seat}`,
+        now: now + incident * 2 + 1,
+      }).state;
+
+      if (incident < 4)
+        state = evolveCodingFinale(state, {
+          type: 'reclaim',
+          seat,
+          now: now + incident * 2 + 2,
+        }).state;
+    }
+
+    expect(state.seats[seat]).toMatchObject({ recoveryCount: 4, forfeited: true });
+    state = evolveCodingFinale(state, { type: 'advance', now: state.finale!.deadline! }).state;
     expect(state.result).toMatchObject({ winnerSeat: seat, credited: false });
     expect(settleCodingFinale(state)?.participants.find((entry) => entry.seat === seat)).toMatchObject({
       won: false,
       forfeited: true,
       placement: false,
     });
+  });
+
+  it('keeps covered external finalists idle until explicit reclaim without disturbing accepted judge work', () => {
+    let state = racing();
+    const finalist = state.finale!.finalists.find((entry) => !state.seats[entry.seat].entrant.house)!;
+    const seat = state.seats[finalist.seat];
+    const originalGeneration = seat.generation;
+    const accepted = submit(state, seat.number, 1, state.phase.startedAt + 1).evolution.state;
+    state = structuredClone(accepted);
+    state.seats[seat.number].recoveryCount = 1;
+    state.seats[seat.number].maxRecoveries = 3;
+    state.seats[seat.number].generation++;
+    state.seats[seat.number].houseProfile = `relief-${seat.number}`;
+    state.finale!.finalists.find((entry) => entry.seat === seat.number)!.generation++;
+    state.finale!.finalists.find((entry) => entry.seat === seat.number)!.houseProfile =
+      `relief-${seat.number}`;
+
+    expect(inspectCodingFinale(state).pendingSeats).not.toContain(seat.number);
+    expect(observeCodingFinale(state, seat.number)).toMatchObject({
+      decision: null,
+      finale: { you: null },
+      you: { control: 'temporary-house', canReclaim: true },
+    });
+
+    const coveredGeneration = state.seats[seat.number].generation;
+    state = evolveCodingFinale(state, {
+      type: 'reclaim',
+      seat: seat.number,
+      now: state.phase.startedAt + 2,
+    }).state;
+    expect(state.finale!.submissions[0]).toMatchObject({ status: 'pending', generation: originalGeneration });
+    expect(state.seats[seat.number]).toMatchObject({
+      houseProfile: null,
+      generation: coveredGeneration + 1,
+      recoveryCount: 1,
+    });
+    expect(inspectCodingFinale(state).pendingSeats).not.toContain(seat.number);
+    expect(observeCodingFinale(state, seat.number).finale?.you).not.toBeNull();
     expect(decodeCodingFinale(JSON.parse(JSON.stringify(state)))).toEqual(state);
   });
 
-  it('keeps spectators read-only and current state bounded under chat', () => {
-    let state = racing();
+  it('keeps spectators read-only and persisted state free of source artifacts', () => {
+    const state = racing();
     const seat = state.finale!.finalists[0].seat;
 
     const spectator = state.seats.find(
@@ -391,27 +498,149 @@ describe('production Coding Finale adapter', () => {
       authorizeCodingFinaleChallenge(state, { seat: spectator.number, generation: 0, house: false }, 1),
     ).toThrow('winning-faction');
 
-    for (let index = 0; index < 30; index++) {
-      state = evolveCodingFinale(state, {
-        type: 'act',
-        seat,
-        generation: 0,
-        now: state.phase.startedAt + index * 5000,
-        request: {
-          gameId: 'coding-finale',
-          phaseId: state.phase.id,
-          actionId: `chat-${index}`,
-          action: { type: 'chat', text: 'x'.repeat(1200) },
-        },
-      }).state;
-    }
-
     expect(JSON.stringify(state).length).toBeLessThan(20_000);
-    expect(JSON.stringify(state)).not.toContain('x'.repeat(1200));
+    expect(publicCodingFinaleChallenge(state, 1)).toEqual(routingChallenge(1));
+    expect(observeCodingFinale(state, seat).chat.open).toBe(false);
     expect(() =>
       decodeCodingFinale({ ...state, seed: 1, programs: [{ source: 'not permitted' }] }),
     ).toThrow();
     expect(() => decodeCodingFinale({ ...state, gameId: 'succession' })).toThrow();
+  });
+
+  it('decodes historical snapshots without recovery capability or wire fields', () => {
+    const historical = structuredClone(prepared);
+    delete historical.snapshot.controllerRecovery;
+
+    for (const seat of historical.seats) {
+      delete seat.recoveryCount;
+      delete seat.maxRecoveries;
+    }
+
+    const decoded = decodeCodingFinale(JSON.parse(JSON.stringify(historical)));
+    expect(decoded.snapshot.controllerRecovery).toBeUndefined();
+    expect(observeCodingFinale(decoded).seats[0]).not.toHaveProperty('control');
+    expect(decodeCodingFinaleReplayState(JSON.parse(JSON.stringify(historical)))).toEqual(historical);
+  });
+
+  it('preserves ordinary Act 1 chat', async () => {
+    const { state } = await createCodingFinale('chat-act-one', entrants, 0);
+    expect(observeCodingFinale(state, 0).chat.open).toBe(true);
+
+    const evolution = evolveCodingFinale(state, {
+      type: 'act',
+      seat: 0,
+      generation: 0,
+      now: 1,
+      request: {
+        gameId: 'coding-finale',
+        phaseId: state.phase.id,
+        actionId: 'chat-one',
+        action: { type: 'chat', text: 'Discuss this nomination.' },
+      },
+    });
+
+    expect(
+      evolution.appendedEvents.some(
+        (event) => event.type === 'chat' && event.text === 'Discuss this nomination.',
+      ),
+    ).toBe(true);
+    expect(evolution.state.lastChat).toEqual({ seat: 0, at: 1 });
+    expect(inspectCodingFinale(evolution.state).discussion).not.toBeNull();
+    expect(() => publicCodingFinaleChallenge(state, 1)).toThrow('not available');
+  });
+
+  it('rejects all Act 2 chat without changing progress or historical chat fields', () => {
+    const initial = racing();
+    const seat = initial.finale!.finalists[0].seat;
+    const pending = submit(initial, seat, 1, initial.finale!.deadline! - 1).evolution.state;
+    const judging = evolveCodingFinale(pending, { type: 'advance', now: initial.finale!.deadline! }).state;
+    const finished = evolveCodingFinale(initial, { type: 'advance', now: initial.finale!.deadline! }).state;
+
+    const interrupted = evolveCodingFinale(initial, {
+      type: 'interrupt',
+      now: initial.phase.startedAt + 1,
+      reason: 'Test interruption.',
+    }).state;
+
+    for (const original of [prepared, initial, judging, finished, interrupted]) {
+      const state = structuredClone(original);
+      state.lastChat = { seat, at: state.createdAt };
+      state.seats[seat].lastChatAt = state.createdAt;
+      const before = structuredClone(state);
+      expect(decodeCodingFinale(JSON.parse(JSON.stringify(state)))).toEqual(state);
+      expect(inspectCodingFinale(state).discussion).toBeNull();
+
+      for (const speaker of state.seats) {
+        expect(observeCodingFinale(state, speaker.number).chat).toMatchObject({
+          open: false,
+          nextSpeakAt: null,
+        });
+        expect(() =>
+          evolveCodingFinale(state, {
+            type: 'act',
+            seat: speaker.number,
+            generation: speaker.generation,
+            now: state.phase.startedAt + 1,
+            request: {
+              gameId: 'coding-finale',
+              phaseId: state.phase.id,
+              actionId: 'closed-chat',
+              action: { type: 'chat', text: 'No Act 2 chat.' },
+            },
+          }),
+        ).toThrow(expect.objectContaining({ code: 'chat-closed' }));
+      }
+
+      expect(observeCodingFinale(state).chat).toMatchObject({ open: false, nextSpeakAt: null });
+      expect(state).toEqual(before);
+    }
+  });
+
+  it('opens public Tier 2 after any finalist passes without unlocking another finalist submission', () => {
+    let state = racing();
+    const [a, b] = state.finale!.finalists;
+    const now = state.phase.startedAt;
+    state = submit(state, a.seat, 1, now + 1).evolution.state;
+    state = evolveCodingFinale(state, {
+      type: 'judge-result',
+      sequence: 1,
+      verdict: 'passed',
+      now: now + 2,
+    }).state;
+    expect(publicCodingFinaleChallenge(state, 2)).toEqual(routingChallenge(2));
+    expect(
+      authorizeCodingFinaleChallenge(state, { seat: b.seat, generation: b.generation, house: false }, 2),
+    ).toEqual(routingChallenge(2));
+    expect(observeCodingFinale(state, b.seat).finale?.you?.unlockedTier).toBe(1);
+    expect(() => submit(state, b.seat, 2, now + 3)).toThrow('Tier 1');
+
+    const alteredSecrets = {
+      ...state,
+      seed: state.seed ^ 12345,
+      commitment: { ...state.commitment, saltBase64url: 'different-secret' },
+    };
+
+    expect(publicCodingFinaleChallenge(alteredSecrets, 2)).toEqual(routingChallenge(2));
+    const finished = evolveCodingFinale(state, { type: 'advance', now: state.finale!.deadline! }).state;
+    expect(publicCodingFinaleChallenge(finished, 2)).toEqual(routingChallenge(2));
+  });
+
+  it('keeps public Tier 2 locked at termination when nobody passed Tier 1', () => {
+    const initial = racing();
+    const finished = evolveCodingFinale(initial, { type: 'advance', now: initial.finale!.deadline! }).state;
+
+    const interrupted = evolveCodingFinale(prepared, {
+      type: 'interrupt',
+      now: prepared.phase.startedAt + 1,
+      reason: 'Preparation failed.',
+    }).state;
+
+    for (const state of [finished, interrupted]) {
+      expect(publicCodingFinaleChallenge(state, 1)).toEqual(routingChallenge(1));
+      expect(() => publicCodingFinaleChallenge(state, 2)).toThrow(
+        expect.objectContaining({ code: 'tier-locked' }),
+      );
+    }
   });
 
   it('bounds the full submission budget and waits until the common deadline for fallback', () => {

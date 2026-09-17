@@ -180,6 +180,10 @@ function finish(
   state.status = 'finished';
   state.result = { winnerSeat, credited: !winner.forfeited, reason, submission };
 
+  // Once precedence is decided, outstanding attempts cannot affect the winner.
+  // Keep their source/receipt without pretending they are still being judged.
+  for (const entry of state.submissions) if (entry.status === 'pending') entry.status = 'superseded';
+
   return state;
 }
 
@@ -222,19 +226,26 @@ export function interruptFinale(input: FinaleState, reason: string): FinaleState
 }
 
 /** A takeover retains earned tiers and attempts but invalidates the old controller's pending work. */
-export function replaceFinalist(input: FinaleState, seat: number, houseProfile: string, now: number) {
+export function replaceFinalist(
+  input: FinaleState,
+  seat: number,
+  houseProfile: string,
+  now: number,
+  options: { forfeited?: boolean; supersedePending?: boolean } = {},
+) {
   if (input.status === 'finished' || input.status === 'interrupted') return input;
   const state = structuredClone(input);
   const finalist = state.finalists.find((entry) => entry.seat === seat);
 
   if (!finalist) throw new GameError('not-finalist', 'The seat did not qualify.');
   finalist.generation += 1;
-  finalist.forfeited = true;
+  finalist.forfeited = options.forfeited ?? true;
   finalist.houseProfile = houseProfile;
 
-  for (const entry of state.submissions) {
-    if (entry.seat === seat && entry.status === 'pending') entry.status = 'superseded';
-  }
+  if (options.supersedePending ?? true)
+    for (const entry of state.submissions) {
+      if (entry.seat === seat && entry.status === 'pending') entry.status = 'superseded';
+    }
 
   return advanceFinale(state, now);
 }

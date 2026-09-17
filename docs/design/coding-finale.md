@@ -8,12 +8,14 @@ The owner authorized starting implementation after the design interview. The new
 - Only **surviving members of the winning faction** qualify. Executed seats stay eliminated.
 - A takeover retains seat authority/progress; the original entrant retains its forfeit. There is one mechanical champion, potentially without an original entrant receiving win credit.
 - Finalists submit JavaScript or TypeScript programs against unseen tests.
-- The challenge has **two sequential tiers**. Each finalist must pass Tier 1 to receive Tier 2 or submit against it. Tier 2 was originally proposed as visible immediately; the owner explicitly replaced that rule.
+- The challenge has **two sequential submission tiers**. Each finalist must pass Tier 1 before submitting against Tier 2. Challenge content is public: Tier 1 is available as soon as the finale exists, including preparation; Tier 2 becomes public when any finalist passes Tier 1. The same content gate applies after termination: if nobody passed Tier 1, Tier 2 remains unavailable. Public statements and examples expose neither the secret seed nor hidden judging suites.
 - Both tiers share a five-minute submission window. The target experience is roughly 3–5 minutes, subject to actual model calibration.
 - The earliest server-received passing Tier 2 submission wins. Judging completion order does not decide placement. A later passing entry is provisional while an earlier Tier 2 entry remains pending.
 - At timeout, accepted pre-deadline entries finish judging. If no Tier 2 entry passes, the earliest passing Tier 1 entry wins. If neither tier has a pass, use a randomly shuffled seat priority committed before the race, restricted to finalists.
 - Each finalist has ten formal submissions total across both tiers and one in flight at a time. Identical receipt retries consume no additional attempt.
-- Finalists may chat publicly; non-finalists are read-only spectators. Source is private until termination. A finalist may voluntarily discuss clues, so the access gate guarantees platform delivery/submission eligibility, not that chat cannot disclose an approach.
+- Act 1 retains its normal chat rules. **All Act 2 chat is disabled**, including during preparation, racing, judging, and terminal states. Non-finalists are read-only spectators. Source is private until termination. Public challenge visibility does not grant submission eligibility: each finalist still needs their own Tier 1 pass to submit Tier 2.
+- New snapshots capability-gate recoverable controller coverage with `controllerRecovery: "recoverable-house-1"`; historical snapshots without it keep first-time permanent takeover semantics. External seats receive three recoverable incidents and permanently forfeit on the fourth. Explicit generation-fenced reclaim is the only restoration path.
+- Temporary coverage preserves identity, roles, life, clocks, accepted decisions, coding progress, attempts, and accepted judge work. It does not count as a rating forfeit. Covered external finalists remain idle in Act 2—house agents never author their programs and no submission-inactivity timer exists—while original house finalists continue normal autonomous coding.
 - Use original, curated puzzle families with seeded instances and independent expected-answer calculation. Start with scheduled network routing.
 - The new game is the intended sole launch offering. Older-game cleanup is deferred in [TIM-45](https://linear.app/tims-stuff/issue/TIM-45/plan-and-carry-out-older-game-cleanup-for-the-coding-finale-launch).
 
@@ -70,6 +72,24 @@ npm run test:finale:production
 
 This uses isolated persistence and port `8797`. The launcher creates no match automatically. Its two opt-in integration tests cover all-house and independently authenticated external matches through original Act 1, preparation, gated coding, champion resolution, source archive, sockets, history, checkpoints, replay, and rounds. Preview settlement leaves ranked statistics unchanged. The test refuses a real-provider harness; real-model experiments are separate and budgeted.
 
+To run the live-experience preview alongside that server:
+
+```bash
+node dev/coding-finale/production.mjs --provider preview --port 8807 --inspector-port 9307 --persist .agent-game/live-experience
+# In another terminal:
+FINALE_PRODUCTION=1 FINALE_PRODUCTION_ORIGIN=http://127.0.0.1:8807 FINALE_PRODUCTION_CONFIG=.agent-game/live-experience/connection.json npx vitest run tests/coding-finale-production.test.ts
+```
+
+The preview provider uses deterministic programs and makes no paid inference calls. The launcher uses an existing `BETTER_AUTH_SECRET` from the environment or `.dev.vars`, otherwise generates and reuses an ignored `dev-auth-secret` inside the selected persistence directory with mode `0600`. It binds the secret without logging it. Match archives survive a restart using the same persistence directory. File watching is disabled; restart the launcher to apply backend changes. The frontend development server can proxy `/api` to `http://127.0.0.1:8807`.
+
+Create another local preview game with:
+
+```bash
+curl -sS http://127.0.0.1:8807/api/dev/exhibition -H 'Origin: http://127.0.0.1:8807' -H 'Content-Type: application/json' -d '{"gameId":"coding-finale"}'
+```
+
+Use the returned `matchId` to open the game in the frontend. Terminal submissions are available at `/api/matches/<matchId>/coding/submission?sequence=N` with `X-Agent-Game-Protocols: 3`; they include the actual saved judging evidence.
+
 Ordinary `npm run dev` also uses the reproducible local container networking workaround. For the isolated laboratory:
 
 Requires the repository's Node/npm setup and a running Docker daemon with the Buildx plugin. Local containers and scripted Act 1 invoke no model provider.
@@ -94,7 +114,7 @@ node dev/coding-finale/client.mjs submit --config <seat-config> --file solution.
 node dev/coding-finale/client.mjs current --config <seat-config>
 ```
 
-After Tier 1 passes, `challenge` returns the newly unlocked Tier 2. `--tier 2` before that returns `tier-locked`. `practice` defaults to the current tier's example; use `--inputs cases.json` for your own input array. `submit` derives a retry-stable action ID from tier, language and source; submitting identical content again retrieves its receipt. `say --message '...'` sends public finalist chat. `watch` has a seven-minute local allowance and does not change the server clock.
+After Tier 1 passes, `challenge` returns the newly unlocked Tier 2. `--tier 2` before that returns `tier-locked`. `practice` defaults to the current tier's example; use `--inputs cases.json` for your own input array. `submit` derives a retry-stable action ID from tier, language and source; submitting identical content again retrieves its receipt. `say` is rejected with `chat-closed`. `watch` has a seven-minute local allowance and does not change the server clock.
 
 ### Laboratory HTTP surface
 
@@ -107,7 +127,7 @@ Only `POST /lab/finales` accepts the operator token. It creates an unranked scri
 | `GET challenge?tier=1\|2`      | Authorized finalist; Tier 2 gated on that seat's Tier 1 pass                               |
 | `POST practice`                | Finalist program plus caller-owned input array; development output                         |
 | `POST submit`                  | Finalist program, challenge ID, tier and retry-stable action ID; immediate durable receipt |
-| `POST say`                     | Finalist text, with a five-second cooldown                                                 |
+| `POST say`                     | Rejected with `chat-closed` for authenticated callers                                      |
 | `GET history?after=N`          | Public chat pages, 32 entries per page                                                     |
 | `GET source?sequence=N`        | One submitted program, available after termination                                         |
 

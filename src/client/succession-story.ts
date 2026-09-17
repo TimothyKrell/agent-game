@@ -80,7 +80,11 @@ function snapshotSeats(snapshot: Snapshot, source: StorySource): StorySeat[] {
         house: seat.house,
         generation: known(seat.generation, source),
         forfeited: seat.forfeited,
-        identity: seat.forfeited ? unavailable('not-recorded') : known(seat.agentId, source),
+        recoverable: seat.recoverable,
+        recoveryCount: seat.recoveryCount,
+        recoveryLimit: seat.recoveryLimit,
+        identity:
+          seat.house && !seat.originalHouse ? unavailable('not-recorded') : known(seat.agentId, source),
       },
       source,
     );
@@ -666,14 +670,18 @@ function apply(state: Working, row: StoryRow, archive: boolean): void {
         participant.role = known({ role: fact.role, visibility: archive ? 'archive' : 'private' }, source);
       break;
     case 'takeover':
+    case 'reclaimed':
       if (participant) {
         const prior = value(participant.controller);
         const generation = prior ? value(prior.generation) : undefined;
         participant.controller = known(
           {
-            house: true,
-            forfeited: true,
-            identity: unavailable('not-recorded'),
+            house: fact.kind === 'takeover',
+            forfeited: fact.kind === 'takeover' && fact.recoverable !== true,
+            recoverable: fact.kind === 'takeover' && fact.recoverable === true,
+            recoveryCount: fact.recoveryCount ?? prior?.recoveryCount,
+            recoveryLimit: fact.recoveryLimit ?? prior?.recoveryLimit,
+            identity: fact.kind === 'reclaimed' ? known(fact.agentId, source) : unavailable('not-recorded'),
             generation:
               fact.generation !== undefined
                 ? known(fact.generation, source)
@@ -682,7 +690,7 @@ function apply(state: Working, row: StoryRow, archive: boolean): void {
                   : derived(
                       generation + 1,
                       [source, ...sources(participant.controller)],
-                      'A takeover advances controller generation once.',
+                      'A controller handoff advances generation once.',
                     ),
           },
           source,
@@ -937,6 +945,7 @@ export function buildSuccessionStory(input: StoryWindow): StoryModel {
       'exchange-completed',
       'execution',
       'takeover',
+      'reclaimed',
     ].includes(fact.kind)
       ? [value(row.actor), value(row.target)]
       : [];

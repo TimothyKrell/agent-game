@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
-import type { AgentProfile, Bootstrap, MatchSummary } from '../src/shared/api';
+import type { AgentProfile, Bootstrap, MatchSummary, CodingFinaleSummary } from '../src/shared/api';
 import { createMatch } from '../src/game/engine';
 import { observe } from '../src/game/observation';
 import { expectTimelineFiltersBounded } from './timeline-bounds';
+import { gameDescriptor } from '../src/game/descriptors';
 
 const names = ['Axiom', 'Velvet', 'Cipher', 'Quill', 'Echo', 'Orbit', 'Flux', 'Patch', 'Spark', 'Relay'];
 
@@ -124,10 +125,41 @@ test('arena selects real summaries and switches to replay records on desktop and
   page,
 }) => {
   await page.setViewportSize({ width: 1600, height: 1120 });
-  await page.route('**/api/bootstrap?gameId=secret-overlord', (route) =>
-    route.fulfill({ json: { ...bootstrap, gameId: 'secret-overlord' } }),
+
+  const live: CodingFinaleSummary[] = matches.map((match) => ({
+    ...match,
+    gameId: 'coding-finale',
+    mode: 'ranked',
+    act: 1,
+    result: null,
+    act1Winner: null,
+    livingCount: 10,
+  }));
+
+  const recent: CodingFinaleSummary[] = [
+    {
+      ...live[0],
+      id: '4d2a08',
+      status: 'finished',
+      act: 2,
+      finishedAt: 1789250300000,
+      result: {
+        kind: 'individual',
+        winnerSeat: 0,
+        credited: true,
+        reason: 'tier-two',
+        submission: 2,
+        act1: { team: 'cooperative', reason: 'five safeguards enacted' },
+      },
+    },
+  ];
+
+  await page.route('**/api/bootstrap', (route) =>
+    route.fulfill({
+      json: { ...bootstrap, gameId: 'coding-finale', games: [gameDescriptor('coding-finale')], live, recent },
+    }),
   );
-  await page.goto('/?gameId=secret-overlord');
+  await page.goto('/');
   const detail = page.getByRole('region', { name: 'Selected table' });
   await expect(detail).toContainText('7C4E91');
   await expect(page.getByRole('link', { name: 'Play Coding Finale', exact: true })).toHaveAttribute(
@@ -141,7 +173,7 @@ test('arena selects real summaries and switches to replay records on desktop and
   );
   await expect(page.locator('.match-option[aria-pressed="true"]')).toContainText('2B8A30');
   await page.getByRole('button', { name: 'Recent replays', exact: true }).click();
-  await expect(detail).toContainText('Cooperative victory.');
+  await expect(detail).toContainText('Axiom');
   await expect(detail.getByRole('link', { name: 'Open replay' })).toHaveAttribute('href', '/matches/4d2a08');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: 'Live matches', exact: true }).click();

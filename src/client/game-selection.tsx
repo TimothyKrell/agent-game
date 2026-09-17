@@ -9,7 +9,7 @@ export const gameNames = {
   'coding-finale': 'Coding Finale',
 };
 
-const pageGames = ['coding-finale', 'secret-overlord', 'succession'] as const;
+const pageGames = ['coding-finale'] as const;
 
 function isPageGame(value: string | null): value is GameId {
   return value !== null && pageGames.some((game) => game === value);

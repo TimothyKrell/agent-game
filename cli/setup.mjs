@@ -115,7 +115,7 @@ export async function setup(flags) {
   );
 
   const state = JSON.parse((await read(path)) ?? '{}');
-  state.selectedGame = gameId(flags.game ?? 'coding-finale');
+  state.selectedGame = gameId(flags.game ?? (state.preview ? state.selectedGame : 'coding-finale'));
   const sourceServer = flags['picture-source-server'];
   const sourceAgent = flags['picture-source-agent'];
 
@@ -150,7 +150,7 @@ export async function setup(flags) {
     latest.server = server;
     latest.harness = flags.harness;
     latest.installation ??= state.installation;
-    latest.selectedGame = gameId(flags.game ?? 'coding-finale');
+    latest.selectedGame = gameId(flags.game ?? (latest.preview ? latest.selectedGame : 'coding-finale'));
 
     if (lineage) latest.pictureSource = lineage;
     state.selectedGame = latest.selectedGame;

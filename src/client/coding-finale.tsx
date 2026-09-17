@@ -11,7 +11,6 @@ import {
   LoaderCircle,
   LockKeyhole,
   Radio,
-  Send,
   ShieldCheck,
   Trophy,
 } from 'lucide-react';
@@ -103,12 +102,16 @@ function Identity({ identity }: { identity: FinaleIdentity }) {
       <AgentPortrait agentId={identity.agentId} name={identity.name} />
       <div>
         <strong>{identity.name}</strong>
-        <span>Seat {String(identity.seat + 1).padStart(2, '0')}</span>
-        {takeover && (
-          <span className="cf-takeover">
-            {identity.controlledByHouse ? 'House takeover' : 'Replacement controller'} · generation{' '}
-            {identity.controllerGeneration + 1}
-          </span>
+        {identity.controllerStatus ? (
+          <span className="cf-takeover">{identity.controllerStatus}</span>
+        ) : (
+          takeover &&
+          identity.controllerStatus === undefined && (
+            <span className="cf-takeover">
+              {identity.controlledByHouse ? 'House takeover' : 'Replacement controller'} · generation{' '}
+              {identity.controllerGeneration + 1}
+            </span>
+          )
         )}
       </div>
     </div>
@@ -239,7 +242,15 @@ function ActOneHandoff({ view }: { view: CodingFinaleView }) {
   );
 }
 
-function TierChip({ tier, state }: { tier: 1 | 2; state: FinaleProgress['tierOne'] }) {
+function TierChip({
+  tier,
+  state,
+  active,
+}: {
+  tier: 1 | 2;
+  state: FinaleProgress['tierOne'];
+  active: boolean;
+}) {
   const label: Record<FinaleProgress['tierOne'], string> = {
     passed: 'passed',
     open: 'open',
@@ -252,27 +263,57 @@ function TierChip({ tier, state }: { tier: 1 | 2; state: FinaleProgress['tierOne
   else if (state === 'locked') icon = <LockKeyhole aria-hidden="true" />;
 
   return (
-    <span className={`cf-tier cf-tier-${state}`}>
+    <span className={`cf-tier cf-tier-${state} ${active ? 'is-working' : ''}`}>
+      {active && <span className="cf-working-dot" aria-hidden="true" />}
       {icon}T{tier} {label[state]}
     </span>
   );
 }
 
-function FinalistRow({ finalist }: { finalist: FinaleProgress }) {
+function FinalistRow({
+  finalist,
+  terminal,
+  winner,
+  racing,
+}: {
+  finalist: FinaleProgress;
+  terminal: boolean;
+  winner: boolean;
+  racing: boolean;
+}) {
+  const working =
+    racing &&
+    !finalist.awaitingReconnect &&
+    !finalist.inFlight &&
+    finalist.attemptsUsed < 10 &&
+    !finalist.forfeit;
+
   return (
-    <article className="cf-finalist">
+    <article className={`cf-finalist ${winner ? 'is-winner' : ''}`}>
       <Identity identity={finalist} />
       <div className="cf-tier-stack">
-        <TierChip tier={1} state={finalist.tierOne} />
-        <TierChip tier={2} state={finalist.tierTwo} />
+        <TierChip tier={1} state={finalist.tierOne} active={working && finalist.tierOne === 'open'} />
+        <TierChip tier={2} state={finalist.tierTwo} active={working && finalist.tierTwo === 'open'} />
       </div>
       <div className="cf-attempts">
         <span>Attempts</span>
         <strong>{finalist.attemptsUsed} / 10</strong>
       </div>
-      <span className={`cf-flight ${finalist.inFlight ? 'is-pending' : ''}`}>
-        {finalist.inFlight && <LoaderCircle aria-hidden="true" />}
-        {finalist.inFlight ? 'Judging' : 'Ready'}
+      <span className={`cf-flight ${finalist.inFlight && !terminal ? 'is-pending' : ''}`}>
+        {finalist.inFlight && !terminal && <LoaderCircle aria-hidden="true" />}
+        {winner
+          ? 'Champion'
+          : terminal
+            ? 'Finished'
+            : finalist.awaitingReconnect
+              ? 'Awaiting reconnect'
+              : finalist.inFlight
+                ? 'Judging'
+                : finalist.attemptsUsed >= 10
+                  ? 'Attempts used'
+                  : finalist.tierOne === 'passed'
+                    ? 'Solving Tier 2'
+                    : 'Solving Tier 1'}
       </span>
     </article>
   );
@@ -393,75 +434,16 @@ function Activity({ view }: { view: CodingFinaleView }) {
   );
 }
 
-function Chat({ view, onChat }: { view: CodingFinaleView; onChat?: (message: string) => void }) {
-  const [message, setMessage] = useState('');
-  const finalist = view.viewer.kind === 'finalist';
-
-  return (
-    <section className="cf-chat" aria-labelledby="cf-chat-title">
-      <header>
-        <div>
-          <small>PUBLIC</small>
-          <h2 id="cf-chat-title">Finalist chat</h2>
-        </div>
-        {!finalist && (
-          <span>
-            <Eye aria-hidden="true" /> Spectators read only
-          </span>
-        )}
-      </header>
-      <ol>
-        {view.chat.map((entry) => (
-          <li key={entry.id}>
-            <div>
-              <strong>{entry.agentName}</strong>
-              <Time value={entry.at} />
-            </div>
-            <p>{entry.text}</p>
-          </li>
-        ))}
-      </ol>
-      {finalist && view.phase === 'racing' && (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-
-            if (!message.trim() || !onChat) return;
-            onChat(message.trim());
-            setMessage('');
-          }}
-        >
-          <label htmlFor="cf-chat-message">Message all finalists</label>
-          <div>
-            <input
-              id="cf-chat-message"
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-              maxLength={500}
-            />
-            <button
-              className="cf-button"
-              disabled={!message.trim() || !onChat}
-              aria-label="Send public message"
-            >
-              <Send aria-hidden="true" />
-            </button>
-          </div>
-        </form>
-      )}
-    </section>
-  );
-}
-
 export interface CodingFinaleProps {
   view: CodingFinaleView;
   connected?: boolean;
   error?: string;
   onRetry?: () => void;
   onSubmit?: (source: string, language: 'javascript' | 'typescript') => void;
-  onChat?: (message: string) => void;
   onOpenSource?: (sequence: number) => Promise<SourceArchive>;
   actOne?: ReactNode;
+  puzzles?: ReactNode;
+  race?: ReactNode;
 }
 
 export function CodingFinale({
@@ -470,9 +452,10 @@ export function CodingFinale({
   error,
   onRetry,
   onSubmit,
-  onChat,
   onOpenSource,
   actOne,
+  puzzles,
+  race,
 }: CodingFinaleProps) {
   const terminal = view.phase === 'finished' || view.phase === 'interrupted';
 
@@ -524,13 +507,12 @@ export function CodingFinale({
           <RaceClock view={view} />
         </header>
       )}
-      <nav className="cf-reading-nav" aria-label="Match sections">
-        <a href="#cf-act-one">Act I record</a>
-        {view.act === 2 && <a href="#cf-finalists">Finalists</a>}
-        {view.act === 2 && <a href="#cf-activity">Activity</a>}
-        {view.act === 2 && <a href="#cf-chat">Chat</a>}
-      </nav>
-      <div id="cf-act-one">{actOne ?? <ActOneHandoff view={view} />}</div>
+      {view.act === 1 && <div id="cf-act-one">{actOne ?? <ActOneHandoff view={view} />}</div>}
+      {view.act === 2 && (
+        <section className="cf-act-one-archive" id="cf-act-one" aria-label="Act I timeline">
+          {actOne ?? <ActOneHandoff view={view} />}
+        </section>
+      )}
       {view.act === 2 && (
         <section className="cf-finalists" id="cf-finalists" aria-labelledby="cf-finalists-title">
           <header>
@@ -542,42 +524,47 @@ export function CodingFinale({
           </header>
           <div>
             {view.finalists.map((finalist) => (
-              <FinalistRow finalist={finalist} key={finalist.seat} />
+              <FinalistRow
+                finalist={finalist}
+                terminal={terminal}
+                racing={view.phase === 'racing'}
+                winner={view.result?.winner.seat === finalist.seat}
+                key={finalist.seat}
+              />
             ))}
           </div>
         </section>
       )}
-      {view.act === 2 && (
-        <div className="cf-columns">
-          <div>
-            {view.challenge && (
-              <ChallengeWorkspace
-                challenge={view.challenge}
-                disabled={view.phase !== 'racing'}
-                onSubmit={onSubmit}
-              />
-            )}
-            {view.viewer.kind === 'spectator' && !terminal && (
-              <div className="cf-spectator-note">
-                <Eye aria-hidden="true" />
-                <div>
-                  <strong>You are watching the public race.</strong>
-                  <span>
-                    Challenge specifications, programs, and submission controls are private to each authorized
-                    finalist.
-                  </span>
+      {view.act === 2 && puzzles}
+      {view.act === 2 &&
+        (race ?? (
+          <div className="cf-columns">
+            <div>
+              {view.challenge && (
+                <ChallengeWorkspace
+                  challenge={view.challenge}
+                  disabled={view.phase !== 'racing'}
+                  onSubmit={onSubmit}
+                />
+              )}
+              {view.viewer.kind === 'spectator' && !terminal && (
+                <div className="cf-spectator-note">
+                  <Eye aria-hidden="true" />
+                  <div>
+                    <strong>You are watching the public race.</strong>
+                    <span>
+                      Follow the public puzzles and progress. Programs and judging inputs are revealed after
+                      the race.
+                    </span>
+                  </div>
                 </div>
+              )}
+              <div id="cf-activity">
+                <Activity view={view} />
               </div>
-            )}
-            <div id="cf-activity">
-              <Activity view={view} />
             </div>
           </div>
-          <div id="cf-chat">
-            <Chat view={view} onChat={onChat} />
-          </div>
-        </div>
-      )}
+        ))}
     </div>
   );
 }

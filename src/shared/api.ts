@@ -1,11 +1,12 @@
 import { Schema } from 'effect';
+import { ChatActionSchema } from './chat';
 import { AgentPictureSchema, type AgentPicture } from './agent-picture';
 import type { ActionRequest, Observation, Role } from '../game/types';
 import type { GameDescriptor, GameId } from '../game/contracts';
 import type { ActionRequest2, IndividualResult2 } from './succession';
 import { Action2Schema, Observation2Schema } from './succession';
 import { ProgramSchema } from '../game/coding-finale/types';
-import { RoutingInputSchema } from '../game/coding-finale/routing';
+import { CodingInputSchema } from '../game/coding-finale/puzzle-input';
 import { IndividualResult3Schema } from './coding-finale';
 import type { ActionRequest3, IndividualResult3 } from './coding-finale';
 
@@ -14,7 +15,7 @@ export const AuthProviderSchema = Schema.Literals(['github', 'google']);
 export type AuthProvider = typeof AuthProviderSchema.Type;
 
 export const GameActionSchema = Schema.Union([
-  Schema.Struct({ type: Schema.Literal('chat'), text: Schema.String }),
+  ChatActionSchema,
   Schema.Struct({ type: Schema.Literal('nominate'), target: Schema.Number }),
   Schema.Struct({ type: Schema.Literal('vote'), approve: Schema.Boolean }),
   Schema.Struct({ type: Schema.Literal('discard'), cardId: Schema.String }),
@@ -55,10 +56,7 @@ export const CodingPracticeSchema = Schema.Struct({
   program: ProgramSchema.check(
     Schema.makeFilter((value) => new TextEncoder().encode(value.source).length <= 32768),
   ),
-  inputs: Schema.mutable(Schema.Array(RoutingInputSchema)).check(
-    Schema.isMinLength(1),
-    Schema.isMaxLength(8),
-  ),
+  inputs: Schema.mutable(Schema.Array(CodingInputSchema)).check(Schema.isMinLength(1), Schema.isMaxLength(8)),
 });
 
 export type TransportActionRequest = typeof TransportActionRequestSchema.Type;
@@ -95,6 +93,7 @@ export const GameDescriptorSchema: Schema.Codec<GameDescriptor> = Schema.Struct(
   rulesUrl: Schema.String,
   ratingUrl: Schema.String,
   housePolicyVersion: Schema.String,
+  controllerRecovery: Schema.optional(Schema.Literal('recoverable-house-1')),
   timing: Schema.Struct({
     nomination: Schema.Number,
     debate: Schema.Number,
@@ -127,6 +126,7 @@ export type ApiRequestBody =
   | typeof PairStartSchema.Type
   | typeof PairApproveSchema.Type
   | typeof QueueJoinSchema.Type
+  | ReclaimRequest
   | Record<string, never>;
 
 export interface OwnerProfile {
@@ -511,6 +511,13 @@ export const PairingDetailsSchema = Schema.Struct({
 
 export const MatchAssignmentSchema = Schema.Struct({ matchId: Schema.String });
 
+export const ReclaimRequestSchema = Schema.Struct({
+  requestId: Schema.String.check(Schema.isPattern(/^[\w:-]{8,160}$/)),
+  expectedGeneration: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
+});
+
+export type ReclaimRequest = typeof ReclaimRequestSchema.Type;
+
 export const ErrorResponseSchema = Schema.Struct({
   error: Schema.Struct({
     code: Schema.optional(Schema.String),
@@ -556,6 +563,12 @@ export const ObservationSchema: Schema.Codec<Observation> = Schema.Struct({
         rating: Schema.Number,
         role: Schema.optional(RoleSchema),
         vote: Schema.optional(Schema.Boolean),
+        control: Schema.optional(
+          Schema.Literals(['entrant', 'temporary-house', 'permanent-house', 'house-entrant']),
+        ),
+        recoveryCount: Schema.optional(Schema.Int),
+        recoveryLimit: Schema.optional(Schema.Int),
+        recoverable: Schema.optional(Schema.Boolean),
       }),
     ),
   ),
@@ -583,6 +596,13 @@ export const ObservationSchema: Schema.Codec<Observation> = Schema.Struct({
       alive: Schema.Boolean,
       forfeited: Schema.Boolean,
       generation: Schema.Number,
+      control: Schema.optional(
+        Schema.Literals(['entrant', 'temporary-house', 'permanent-house', 'house-entrant']),
+      ),
+      recoveryCount: Schema.optional(Schema.Int),
+      recoveryLimit: Schema.optional(Schema.Int),
+      recoverable: Schema.optional(Schema.Boolean),
+      canReclaim: Schema.optional(Schema.Boolean),
     }),
   ),
   private: Schema.NullOr(

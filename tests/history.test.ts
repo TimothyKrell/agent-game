@@ -55,6 +55,27 @@ beforeAll(async () => {
   await start();
 }, 600_000);
 
+it('accepts reply references only to actual public chats with the recorded speaker', async () => {
+  const base = { at: 1, act: 1 as const, round: 1, seat: 2, type: 'chat', text: 'Why did you discard it?' };
+  await command('replies', {
+    type: 'append',
+    events: [
+      { ...base, eventKey: 'match_reply:1', visibility: 'public' },
+      { ...base, eventKey: 'match_reply:2', visibility: 2 },
+      { ...base, eventKey: 'match_reply:3', visibility: 'public', type: 'nomination' },
+    ],
+  });
+  expect((await command('replies', { type: 'reply', eventKey: 'match_reply:1', seat: 2 })).status).toBe(200);
+
+  for (const reply of [
+    { eventKey: 'match_reply:1', seat: 3 },
+    { eventKey: 'match_reply:2', seat: 2 },
+    { eventKey: 'match_reply:3', seat: 2 },
+    { eventKey: 'different-match:1', seat: 2 },
+  ])
+    expect((await command('replies', { type: 'reply', ...reply })).status).toBe(400);
+});
+
 it('replays a concurrent population batch from its exact receipt and rejects conflicting provenance', async () => {
   const batch = { type: 'populate', expectedOffset: 0, count: 4, escaping: false };
   const responses = await Promise.all([command('receipts', batch), command('receipts', batch)]);
@@ -194,6 +215,54 @@ async function page(
 function fact(text: string, visibility: HistoryEvent['visibility']): HistoryEvent {
   return { eventKey: crypto.randomUUID(), at: 100, act: 1, round: 1, type: 'fact', text, visibility };
 }
+
+it('restores future private history without exposing facts created during temporary coverage', async () => {
+  const original = { seat: 3, house: false, terminal: false };
+  await command('recoverable-entitlements', { type: 'enable-recovery' });
+  await command('recoverable-entitlements', {
+    type: 'append',
+    events: [fact('public before', 'public'), fact('private before', 3)],
+  });
+  await command('recoverable-entitlements', { type: 'freeze', seat: 3 });
+  await command('recoverable-entitlements', {
+    type: 'append',
+    events: [fact('coverage public', 'public'), fact('house private', 3)],
+  });
+  await command('recoverable-entitlements', { type: 'restore', seat: 3 });
+  await command('recoverable-entitlements', {
+    type: 'append',
+    events: [fact('reclaimed public', 'public'), fact('private after', 3)],
+  });
+  const reset = await page('recoverable-entitlements', original);
+  const read = await page('recoverable-entitlements', original, { epoch: reset.visibilityEpoch });
+
+  expect(read.events.map((event) => event.text)).toEqual([
+    'public before',
+    'private before',
+    'coverage public',
+    'reclaimed public',
+    'private after',
+  ]);
+  expect(read.events.map((event) => event.text)).not.toContain('house private');
+  expect(
+    await (
+      await command('recoverable-entitlements', {
+        type: 'checkpoint',
+        audience: original,
+        cursor: 3,
+      })
+    ).json(),
+  ).toMatchObject({ privateEntitled: false });
+  expect(
+    await (
+      await command('recoverable-entitlements', {
+        type: 'checkpoint',
+        audience: original,
+        cursor: 4,
+      })
+    ).json(),
+  ).toMatchObject({ privateEntitled: true });
+});
 
 it('retains a replaced original private prefix and only the future public tail, then resets to the complete archive', async () => {
   const original = { seat: 3, house: false, terminal: false };

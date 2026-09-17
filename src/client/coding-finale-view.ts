@@ -1,4 +1,5 @@
 import type { Observation3 } from '../shared/coding-finale';
+import { controllerStatus } from './controller-status';
 
 /**
  * TIM-49 presentation-only model. This is intentionally not the protocol-v3 wire shape.
@@ -22,6 +23,8 @@ export interface FinaleIdentity {
   controllerGeneration: number;
   controlledByHouse: boolean;
   forfeit: boolean;
+  controllerStatus?: string | null;
+  awaitingReconnect?: boolean;
 }
 
 export interface FinaleProgress extends FinaleIdentity {
@@ -114,6 +117,8 @@ export function codingFinaleView(
       controllerGeneration: seat.generation,
       controlledByHouse: seat.house,
       forfeit: seat.forfeited,
+      controllerStatus: controllerStatus(seat),
+      awaitingReconnect: seat.recoverable === true,
     };
   };
 

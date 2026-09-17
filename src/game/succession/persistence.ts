@@ -127,6 +127,8 @@ const SeatSchema = Schema.Struct({
   generation: Integer,
   houseProfile: Schema.NullOr(Text),
   lastChatAt: Schema.NullOr(Time),
+  recoveryCount: Schema.optional(Integer),
+  maxRecoveries: Schema.optional(Integer),
 });
 
 const Roster = Schema.mutable(Schema.Array(SeatSchema)).check(

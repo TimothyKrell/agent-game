@@ -173,8 +173,8 @@ it.skipIf(process.env.FINALE_INTEGRATION !== '1')(
     ).toBe(409);
     expect(
       (await call(`${base}/say`, first.token, { text: 'Tier 1 complete. Working on the extension.' })).status,
-    ).toBe(200);
-    expect(await (await call(`${base}/history?after=0`, null)).text()).toContain('Tier 1 complete');
+    ).toBe(409);
+    expect(await (await call(`${base}/history?after=0`, null)).text()).not.toContain('Tier 1 complete');
     expect((await call(`${base}/say`, null, { text: 'Spectator interference' })).status).toBe(401);
 
     expect((await send(second.token, 1, source, 'other-tier-one')).status).toBe(200);
