@@ -8,7 +8,7 @@ export class MatchObject extends ApplicationMatch {
   fixtureRows() {
     return this.ctx.storage.sql
       .exec<{ name: string }>(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT GLOB '__cf_*'",
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT GLOB '__cf_*' AND name NOT GLOB '_cf_*'",
       )
       .toArray()
       .map(({ name }) => ({
